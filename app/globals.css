@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-coral: #B85C4A;
+  --brand-coral-dark: #8E4232;
+  --brand-coral-light: #D98876;
+  --brand-coral-soft: #FDE3DA;
+  --brand-coral-bright: #D7503A;
+  --brand-primary: #B85C4A;
+  --brand-primary-dark: #8E4232;
+  --brand-cream: #F5EFE6;
+  --brand-cream-soft: #FAF6EE;
+  --ink: #1A1A1A;
+  --ink-muted: #6B6258;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background: var(--brand-cream);
+  color: var(--ink);
+  font-family: 'Nunito', system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 60rem 30rem at 110% -10%, rgba(184, 92, 74, 0.10), transparent 60%),
+    radial-gradient(ellipse 50rem 30rem at -10% 110%, rgba(232, 165, 60, 0.10), transparent 60%);
+  background-attachment: fixed;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Tooltip de veterinarias en el mapa ── */
+.leaflet-tooltip {
+  background: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.22) !important;
+  padding: 8px 12px !important;
+  font-family: 'Nunito', system-ui, sans-serif !important;
+  pointer-events: none;
+}
+.leaflet-tooltip::before {
+  border-top-color: white !important;
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-white shadow-soft ring-1 ring-black/5;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-primary px-5 py-3.5 font-bold text-white shadow-soft transition hover:bg-brand-primary-dark active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary bg-white px-5 py-3.5 font-bold text-brand-primary transition hover:bg-brand-primary/5 active:scale-[0.99];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-ink transition hover:bg-brand-cream;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-ink shadow-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/25;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+}

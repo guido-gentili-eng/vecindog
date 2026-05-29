@@ -1,0 +1,117 @@
+/**
+ * Tipos y funciones Supabase para la tabla `posts`.
+ */
+import { supabase } from './supabase';
+import type { Animal } from './mockData';
+
+/* ─────────────────── Tipo ─────────────────── */
+
+export interface Post {
+  id:          string;
+  created_at:  string;
+  user_id:     string | null;
+  categoria:   'perdido' | 'encontrado' | 'adopcion';
+  especie:     string;
+  nombre:      string | null;
+  raza:        string | null;
+  color:       string | null;
+  tamano:      'pequeño' | 'mediano' | 'grande' | null;
+  collar:      boolean | null;
+  chapita:     boolean | null;
+  descripcion: string;
+  zona:        string;
+  fecha:       string;   // date → string "YYYY-MM-DD"
+  horario:     string | null;
+  contacto:    string;
+  images:      string[];
+  estado:      'activo' | 'resuelto';
+  lat:         number | null;
+  lng:         number | null;
+}
+
+/* ─────────────────── Adapter ─────────────────── */
+
+/** Convierte un Post de Supabase al tipo Animal que usan los componentes existentes. */
+export function postToAnimal(p: Post): Animal {
+  return {
+    id:          p.id,
+    categoria:   p.categoria,
+    especie:     p.especie as Animal['especie'],
+    nombre:      p.nombre,
+    descripcion: p.descripcion,
+    zona:        p.zona,
+    ciudad:      '',           // sin columna ciudad por ahora
+    fecha:       p.fecha,
+    imagenes:    p.images,
+    contacto:    p.contacto,
+    estado:      'vivo',
+    recompensa:  null,
+  };
+}
+
+/* ─────────────────── Consultas ─────────────────── */
+
+export async function listarPosts(): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .neq('estado', 'resuelto')   // oculta los resueltos; null (legacy) pasa igual
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Post[];
+}
+
+export async function obtenerPost(id: string): Promise<Post | null> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) return null;
+  return data as Post;
+}
+
+/** Marca el aviso como resuelto (encontrado / reclamado / adoptado). */
+export async function resolverPost(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('posts')
+    .update({ estado: 'resuelto' })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/** Sube el aviso al tope de la lista actualizando created_at. */
+export async function renovarPost(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('posts')
+    .update({ created_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/** Elimina el aviso y sus fotos del storage. */
+export async function listarPostsResueltos(limite = 20): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('estado', 'resuelto')
+    .order('created_at', { ascending: false })
+    .limit(limite);
+  if (error) throw error;
+  return (data ?? []) as Post[];
+}
+
+export async function eliminarPost(id: string, images: string[]): Promise<void> {
+  // Borrar fotos del bucket
+  const paths = images
+    .map((url) => {
+      const m = url.match(/\/storage\/v1\/object\/public\/posts\/(.+)$/);
+      return m ? m[1] : null;
+    })
+    .filter(Boolean) as string[];
+  if (paths.length) {
+    await supabase.storage.from('posts').remove(paths);
+  }
+  const { error } = await supabase.from('posts').delete().eq('id', id);
+  if (error) throw error;
+}

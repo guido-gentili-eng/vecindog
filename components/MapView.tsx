@@ -25,19 +25,27 @@ const CAT_LABEL: Record<string, string> = {
 
 /* ──────────────────── Íconos ──────────────────── */
 
-/** Pin de colores para avisos (teardrop con letra) */
+/** Pin Vecindog con color de categoría */
 function createPinIcon(categoria: string) {
-  const color = CAT_COLOR[categoria] ?? '#6b7280';
-  const letra = categoria === 'perdido' ? 'P' : categoria === 'encontrado' ? 'E' : 'A';
+  const pinColor  = CAT_COLOR[categoria] ?? '#6b7280';
+  const dogColor  = '#1A1A1A';
+  const eyeColor  = '#F5EFE6';
   const html = `
-    <div style="position:relative;width:30px;height:40px;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))">
-      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40" style="position:absolute;top:0;left:0">
-        <path d="M15 0C6.7 0 0 6.7 0 15C0 26.3 15 40 15 40S30 26.3 30 15C30 6.7 23.3 0 15 0Z" fill="${color}"/>
-        <circle cx="15" cy="15" r="9.5" fill="white" opacity="0.95"/>
+    <div style="width:36px;height:44px;cursor:pointer;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.40))">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="36" height="44">
+        <path d="M50 4 C72 4 90 22 90 44 C90 66 50 116 50 116 C50 116 10 66 10 44 C10 22 28 4 50 4 Z" fill="${pinColor}"/>
+        <circle cx="50" cy="44" r="30" fill="#F5EFE6"/>
+        <g transform="translate(50 44)" fill="${dogColor}">
+          <ellipse cx="-13" cy="-8" rx="7" ry="13" transform="rotate(-22 -13 -8)"/>
+          <ellipse cx="-2" cy="0" rx="18" ry="14"/>
+          <ellipse cx="14" cy="3" rx="10" ry="7.5"/>
+          <ellipse cx="22" cy="2" rx="2.5" ry="2"/>
+        </g>
+        <circle cx="46" cy="40" r="1.8" fill="${eyeColor}"/>
+        <path d="M72 49 Q78 55 78 62 Q78 68 74 68 Q70 68 70 62 Q70 56 72 52" fill="none" stroke="${dogColor}" stroke-width="3" stroke-linecap="round"/>
       </svg>
-      <div style="position:absolute;top:8px;left:0;width:30px;text-align:center;font-size:11px;font-weight:900;color:${color};font-family:Arial,sans-serif;line-height:1">${letra}</div>
     </div>`;
-  return L.divIcon({ className: '', html, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -42] });
+  return L.divIcon({ className: '', html, iconSize: [36, 44], iconAnchor: [18, 44], popupAnchor: [0, -46] });
 }
 
 /** Ícono de veterinaria: cuadrado teal con cruz blanca */

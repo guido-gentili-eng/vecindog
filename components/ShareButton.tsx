@@ -29,14 +29,12 @@ export default function ShareButton({
     }
 
     // Fallback: copiar al portapapeles.
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(url);
-        setEstado('copiado');
-        setTimeout(() => setEstado('idle'), 2000);
-      } catch {
-        // ignorar
-      }
+    try {
+      await window.navigator.clipboard.writeText(url);
+      setEstado('copiado');
+      setTimeout(() => setEstado('idle'), 2000);
+    } catch {
+      // ignorar
     }
   }
 

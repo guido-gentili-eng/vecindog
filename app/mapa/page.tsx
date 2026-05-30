@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
 import type { Vet } from '@/lib/vetRatings';
 import VetPanel from '@/components/VetPanel';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
@@ -19,6 +20,7 @@ const MapView = dynamic(() => import('@/components/MapView'), {
 interface LatLng { lat: number; lng: number }
 
 export default function MapaPage() {
+  const { ciudad } = useAuth();
   const [posts,       setPosts]       = useState<Post[]>([]);
   const [cargando,    setCargando]    = useState(true);
   const [center,      setCenter]      = useState<LatLng>({ lat: -34.6, lng: -58.44 });
@@ -70,6 +72,7 @@ export default function MapaPage() {
         posts={posts}
         userLoc={null}
         cargando={cargando}
+        ciudad={ciudad ?? undefined}
         onVetClick={setVetSeleccionada}
       />
 

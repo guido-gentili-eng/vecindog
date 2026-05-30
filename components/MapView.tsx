@@ -132,12 +132,21 @@ function saveGeoCache(c: Record<string, LatLng>) {
   try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(c)); } catch {}
 }
 
-async function geocodificarZona(zona: string, cache: Record<string, LatLng>): Promise<LatLng | null> {
+async function geocodificarZona(zona: string, cache: Record<string, LatLng>, ciudad?: string): Promise<LatLng | null> {
   const key = zona.toLowerCase().trim();
   if (cache[key]) return cache[key];
+
+  // Armar la query: si la zona ya menciona la ciudad no duplicar, si no, agregarla
+  const ciudadLower = ciudad?.toLowerCase() ?? '';
+  const zonaLower   = zona.toLowerCase();
+  const yaIncluyeCiudad = ciudadLower && zonaLower.includes(ciudadLower.split(' ')[0]);
+  const query = yaIncluyeCiudad || !ciudad
+    ? `${zona}, Argentina`
+    : `${zona}, ${ciudad}, Argentina`;
+
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zona + ', Argentina')}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
       { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' } }
     );
     const data = await res.json();
@@ -161,12 +170,13 @@ interface MapViewProps {
   posts:        Post[];
   userLoc:      LatLng | null;
   cargando:     boolean;
+  ciudad?:      string;
   onVetClick?:  (vet: Vet) => void;
 }
 
 /* ──────────────────── Componente ──────────────────── */
 
-export default function MapView({ center, posts, userLoc, cargando, onVetClick }: MapViewProps) {
+export default function MapView({ center, posts, userLoc, cargando, ciudad, onVetClick }: MapViewProps) {
   const containerRef   = useRef<HTMLDivElement>(null);
   const mapRef         = useRef<L.Map | null>(null);
   const userMarkerRef  = useRef<L.Marker | null>(null);
@@ -232,7 +242,7 @@ export default function MapView({ center, posts, userLoc, cargando, onVetClick }
       const zonas = [...new Set(sinCoords.map((p) => p.zona.toLowerCase().trim()))];
       for (const zona of zonas) {
         if (cancelled) return;
-        const coords = await geocodificarZona(zona, cache);
+        const coords = await geocodificarZona(zona, cache, ciudad);
         if (coords) {
           sinCoords
             .filter((p) => p.zona.toLowerCase().trim() === zona)
@@ -252,10 +262,12 @@ export default function MapView({ center, posts, userLoc, cargando, onVetClick }
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
+    let cancelled = false;
 
     async function cargarVets(lat: number, lng: number) {
       lastVetCenter.current = { lat, lng };
       const vets = await fetchVets(lat, lng);
+      if (cancelled || !map.getContainer()) return;
       vets.forEach((vet) => {
         if (vetIdsRef.current.has(vet.id)) return;
         vetIdsRef.current.add(vet.id);
@@ -277,7 +289,7 @@ export default function MapView({ center, posts, userLoc, cargando, onVetClick }
     }
 
     map.on('moveend', onMoveEnd);
-    return () => { map.off('moveend', onMoveEnd); };
+    return () => { cancelled = true; map.off('moveend', onMoveEnd); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center]);
 
@@ -309,24 +321,85 @@ function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number) {
     .addTo(map);
 }
 
-function agregarMarcadorVet(map: L.Map, vet: Vet, onVetClick?: (v: Vet) => void) {
-  const dirRow = vet.direccion
-    ? `<div style="display:flex;align-items:center;gap:5px;margin-top:4px;font-size:11px;color:#4b5563">
-         <span>📍</span><span>${vet.direccion}</span>
-       </div>`
-    : '';
+/* Días OSM → índice JS (0=Dom, 1=Lun … 6=Sáb) */
+const OSM_DAY: Record<string, number> = { Su:0, Mo:1, Tu:2, We:3, Th:4, Fr:5, Sa:6 };
+const DAY_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-  const horRow = vet.horario
-    ? `<div style="display:flex;align-items:flex-start;gap:5px;margin-top:3px;font-size:11px;color:#4b5563">
-         <span>🕐</span><span>${vet.horario.replace(/;/g, '<br>')}</span>
-       </div>`
+function parseHour(h: string): number {
+  const [hh, mm] = h.split(':').map(Number);
+  return hh * 60 + (mm ?? 0);
+}
+
+/** Devuelve true si el horario OSM indica que ahora está abierto */
+function estaAbierto(oh: string): boolean {
+  if (oh.trim() === '24/7') return true;
+  const now   = new Date();
+  const dow   = now.getDay();   // 0=Dom
+  const mins  = now.getHours() * 60 + now.getMinutes();
+
+  for (const rule of oh.split(';')) {
+    const m = rule.trim().match(/^([A-Za-z,\-]+)\s+(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+    if (!m) continue;
+    const [, days, from, to] = m;
+    const open  = parseHour(from);
+    const close = parseHour(to);
+
+    // Expandir rango de días "Mo-Fr" o lista "Mo,We,Fr"
+    let activeDays: number[] = [];
+    if (days.includes('-')) {
+      const [s, e] = days.split('-');
+      const si = OSM_DAY[s], ei = OSM_DAY[e];
+      if (si != null && ei != null) {
+        for (let d = si; d <= ei; d++) activeDays.push(d);
+      }
+    } else {
+      activeDays = days.split(',').map((d) => OSM_DAY[d.trim()]).filter((d) => d != null);
+    }
+
+    if (activeDays.includes(dow) && mins >= open && mins < close) return true;
+  }
+  return false;
+}
+
+/** Convierte "Mo-Fr 09:00-18:00; Sa 09:00-13:00" en líneas legibles */
+function formatHorario(oh: string): string {
+  if (oh.trim() === '24/7') return '24 hs todos los días';
+  return oh
+    .split(';')
+    .map((rule) => {
+      const m = rule.trim().match(/^([A-Za-z,\-]+)\s+(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+      if (!m) return rule.trim();
+      const [, days, from, to] = m;
+      // Traducir días
+      const daysEs = days
+        .replace(/Mo/g,'Lun').replace(/Tu/g,'Mar').replace(/We/g,'Mié')
+        .replace(/Th/g,'Jue').replace(/Fr/g,'Vie').replace(/Sa/g,'Sáb').replace(/Su/g,'Dom');
+      return `${daysEs} ${from}–${to}`;
+    })
+    .join('<br>');
+}
+
+function agregarMarcadorVet(map: L.Map, vet: Vet, onVetClick?: (v: Vet) => void) {
+  let estadoBadge = '';
+  let horarioLineas = '';
+
+  if (vet.horario) {
+    const abierto = estaAbierto(vet.horario);
+    estadoBadge = `<span style="display:inline-block;margin-top:4px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:800;background:${abierto ? '#dcfce7' : '#fee2e2'};color:${abierto ? '#15803d' : '#b91c1c'}">${abierto ? '✓ Abierto ahora' : '✗ Cerrado ahora'}</span>`;
+    horarioLineas = `<div style="margin-top:5px;font-size:11px;color:#4b5563;line-height:1.5">🕐 ${formatHorario(vet.horario)}</div>`;
+  }
+
+  const dirRow = vet.direccion
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📍 ${vet.direccion}</div>`
     : '';
 
   const tooltipHtml = `
-    <div style="min-width:160px;max-width:220px;padding:2px 0">
-      <div style="font-weight:800;font-size:12px;color:#0d9488">${vet.nombre}</div>
-      ${dirRow}${horRow}
-      ${!dirRow && !horRow ? '<div style="font-size:11px;color:#9ca3af;margin-top:3px">Hacé click para más info</div>' : ''}
+    <div style="min-width:170px;max-width:230px;padding:3px 0">
+      <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${vet.nombre}</div>
+      ${estadoBadge}
+      ${horarioLineas}
+      ${dirRow}
+      ${!vet.horario && !dirRow ? '<div style="font-size:11px;color:#9ca3af;margin-top:3px">Hacé click para más info</div>' : ''}
     </div>`;
 
   const marker = L.marker([vet.lat, vet.lng], { icon: vetIcon })

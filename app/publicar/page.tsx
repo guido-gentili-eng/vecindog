@@ -535,9 +535,12 @@ export default function PublicarPage() {
             )}
 
             <div className="sm:col-span-2">
-              <Field label="Zona / barrio">
-                <input type="text" className="field" placeholder="Ej: Villa Mitre"
+              <Field label="Barrio o zona (sin número exacto)">
+                <input type="text" className="field" placeholder="Ej: Villa Mitre, Palihue, Centro…"
                   value={form.zona} onChange={(e) => handleChange('zona', e.target.value)} required />
+                <p className="mt-1 text-xs text-ink-muted">
+                  Por tu seguridad, escribí el barrio o zona general, no la dirección exacta.
+                </p>
               </Field>
 
               {/* Botón GPS para pin en el mapa */}

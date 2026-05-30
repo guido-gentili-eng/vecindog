@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
-  Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp,
+  Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock,
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
@@ -45,7 +45,7 @@ const LABEL_RENOVAR: Record<string, string> = {
 export default function DetalleAvisoPage() {
   const { id }    = useParams<{ id: string }>();
   const router    = useRouter();
-  const { user }  = useAuth();
+  const { user, isAuthenticated }  = useAuth();
 
   const [post,        setPost]        = useState<Post | null>(null);
   const [cargando,    setCargando]    = useState(true);
@@ -173,7 +173,10 @@ export default function DetalleAvisoPage() {
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-ink-muted">
               <span className="inline-flex items-center gap-1">
                 <MapPin className="h-4 w-4 text-brand-primary" />
-                <span className="font-bold text-ink">{post.zona}</span>
+                {isAuthenticated
+                  ? <span className="font-bold text-ink">{post.zona}</span>
+                  : <span className="select-none font-bold text-ink" style={{ filter: 'blur(5px)' }}>Villa Ejemplo</span>
+                }
               </span>
               <span className="inline-flex items-center gap-1">
                 <Calendar className="h-4 w-4" /> {post.fecha}
@@ -346,7 +349,15 @@ export default function DetalleAvisoPage() {
             </h2>
             <dl className="mt-3 space-y-2 text-sm">
               <Row label="Tipo"      value={ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} />
-              <Row label="Zona"      value={post.zona} />
+              {isAuthenticated
+                ? <Row label="Zona" value={post.zona} />
+                : <div className="flex items-center justify-between gap-3 border-b border-black/5 pb-2">
+                    <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">Zona</dt>
+                    <dd className="flex items-center gap-1 text-xs font-bold text-ink-muted">
+                      <Lock className="h-3 w-3" /> Solo usuarios registrados
+                    </dd>
+                  </div>
+              }
               <Row label="Publicado" value={post.fecha} />
               {post.horario && <Row label="Horario" value={post.horario} />}
               <Row

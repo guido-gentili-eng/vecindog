@@ -174,6 +174,11 @@ async function geocodificarZona(
 function delay(ms: number) { return new Promise<void>((r) => setTimeout(r, ms)); }
 function jitter(v: number, a = 0.0008) { return v + (Math.random() - 0.5) * a; }
 
+/** Quita número de calle al final: "Quintana 4768" → "Quintana" */
+function sanitizarZona(zona: string): string {
+  return zona.replace(/\s+\d+[\w\s]*$/i, '').trim() || zona;
+}
+
 /* ──────────────────── Props ──────────────────── */
 
 interface MapViewProps {
@@ -324,7 +329,7 @@ function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number) {
       ${imgHtml}
       <span style="display:inline-block;background:${color};color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${label}</span>
       <div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:2px">${post.nombre ?? 'Sin nombre'}</div>
-      <div style="font-size:11px;color:#6b6258;margin-bottom:6px">${post.zona} · ${post.fecha}</div>
+      <div style="font-size:11px;color:#6b6258;margin-bottom:6px">${sanitizarZona(post.zona)} · ${post.fecha}</div>
       <a href="/publicaciones/${post.id}" style="display:block;background:${color};color:white;text-align:center;border-radius:8px;padding:6px;font-size:12px;font-weight:700;text-decoration:none">Ver aviso →</a>
     </div>`;
   L.marker([lat, lng], { icon: createPinIcon(post.categoria) })

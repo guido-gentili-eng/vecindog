@@ -75,19 +75,19 @@ export default function ActionCards() {
   return (
     <section aria-label="Acciones principales">
       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-        {ACCIONES.map((a) => (
-          <Card key={a.href} {...a} />
+        {ACCIONES.map((a, i) => (
+          <Card key={a.href} {...a} last={i === ACCIONES.length - 1 && ACCIONES.length % 2 !== 0} />
         ))}
       </div>
     </section>
   );
 }
 
-function Card({ href, icon: Icon, titulo, texto, chip, bg, text, iconBg, accent }: Accion) {
+function Card({ href, icon: Icon, titulo, texto, chip, bg, text, iconBg, accent, last }: Accion & { last?: boolean }) {
   return (
     <Link
       href={href}
-      className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] ${bg} ${text}`}
+      className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] ${bg} ${text} ${last ? 'sm:col-span-2 sm:mx-auto sm:w-1/2' : ''}`}
     >
       {/* Strip lateral de color (accent) */}
       <div className={`w-1.5 shrink-0 ${accent}`} />

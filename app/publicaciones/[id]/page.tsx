@@ -196,7 +196,7 @@ export default function DetalleAvisoPage() {
 
         {/* Columna derecha sticky */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          {post.categoria === 'adopcion' && !resuelto && (
+          {post.categoria === 'adopcion' && !resuelto && isAuthenticated && (
             <button
               type="button"
               onClick={() => setAdoptarOpen(true)}

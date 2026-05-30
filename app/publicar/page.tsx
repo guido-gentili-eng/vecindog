@@ -88,6 +88,14 @@ function generarDescripcion(p: Perro): string {
   return partes.length > 0 ? partes.join(', ') + '.' : '';
 }
 
+/** Agrega la ciudad a la zona si no está ya incluida, para que el geocoding funcione bien */
+function appendCiudad(zona: string, ciudad: string | null): string {
+  if (!ciudad || !zona.trim()) return zona;
+  const ciudadBase = ciudad.toLowerCase().split(' ')[0];
+  if (zona.toLowerCase().includes(ciudadBase)) return zona;
+  return `${zona.trim()}, ${ciudad}`;
+}
+
 /* ─── Página ─── */
 
 export default function PublicarPage() {
@@ -221,7 +229,7 @@ export default function PublicarPage() {
         collar:      form.collar,
         chapita:     form.chapita,
         descripcion: form.descripcion,
-        zona:        form.zona,
+        zona:        appendCiudad(form.zona, ciudad),
         fecha:       form.fecha,
         horario:     form.horario     || null,
         contacto:    form.contacto,

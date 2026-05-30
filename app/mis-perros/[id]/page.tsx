@@ -218,7 +218,7 @@ function EditForm({
       let fotoUrl = form.foto_url;
       if (fotoFile) fotoUrl = await subirFotoPerro(fotoFile);
       await actualizarPerro(perro.id, { ...form, foto_url: fotoUrl });
-      onSave({ ...perro, ...form, foto_url: fotoUrl });
+      onSave({ ...perro, ...form, tamano: form.tamano || null, sexo: form.sexo || null, foto_url: fotoUrl });
     } catch {
       setError('No se pudo guardar. Intentá de nuevo.');
       setSaving(false);

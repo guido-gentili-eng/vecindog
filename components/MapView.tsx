@@ -131,7 +131,7 @@ async function fetchVets(lat: number, lng: number, radiusM = 10000): Promise<Vet
 
 /* ──────────────────── Nominatim geocoding ──────────────────── */
 
-const SESSION_KEY = 'geo_cache_v2';
+const SESSION_KEY = 'geo_cache_v3';
 function loadGeoCache(): Record<string, LatLng> {
   try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? '{}'); }
   catch { return {}; }
@@ -158,8 +158,11 @@ async function geocodificarZona(
     ? `${zona}, Argentina`
     : `${zona}, ${ciudad}, Argentina`;
 
-  // Viewbox: si tenemos coordenadas de referencia, sesgar Nominatim hacia esa área (±0.5°)
-  const viewboxParam = centerHint
+  // Viewbox solo cuando NO hay ciudad en la query Y el center no es el default de Buenos Aires
+  const DEFAULT_BA = { lat: -34.6, lng: -58.44 };
+  const centerEsDefault = !centerHint ||
+    (Math.abs(centerHint.lat - DEFAULT_BA.lat) < 0.1 && Math.abs(centerHint.lng - DEFAULT_BA.lng) < 0.1);
+  const viewboxParam = (!ciudad && centerHint && !centerEsDefault)
     ? `&viewbox=${centerHint.lng - 0.5},${centerHint.lat + 0.5},${centerHint.lng + 0.5},${centerHint.lat - 0.5}&bounded=1`
     : '';
 
@@ -201,11 +204,12 @@ interface MapViewProps {
 /* ──────────────────── Componente ──────────────────── */
 
 export default function MapView({ center, posts, userLoc, cargando, ciudad, onVetClick }: MapViewProps) {
-  const containerRef   = useRef<HTMLDivElement>(null);
-  const mapRef         = useRef<L.Map | null>(null);
-  const userMarkerRef  = useRef<L.Marker | null>(null);
-  const vetIdsRef      = useRef<Set<number>>(new Set());
-  const lastVetCenter  = useRef<LatLng | null>(null);
+  const containerRef      = useRef<HTMLDivElement>(null);
+  const mapRef            = useRef<L.Map | null>(null);
+  const userMarkerRef     = useRef<L.Marker | null>(null);
+  const postMarkersRef    = useRef<L.Marker[]>([]);
+  const vetIdsRef         = useRef<Set<number>>(new Set());
+  const lastVetCenter     = useRef<LatLng | null>(null);
   const [, setGeocodificando] = useState(false);
   const [, setColocados]      = useState(0);
 
@@ -251,6 +255,10 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
     const cache = loadGeoCache();
     let cancelled = false;
 
+    // Limpiar markers previos para re-dibujar con ciudad/center actualizado
+    postMarkersRef.current.forEach((m) => m.remove());
+    postMarkersRef.current = [];
+
     async function colocarMarcadores() {
       setGeocodificando(true);
       let count = 0;
@@ -259,7 +267,8 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
 
       for (const p of conCoords) {
         if (cancelled) return;
-        agregarMarcadorPost(map, p, jitter(p.lat!), jitter(p.lng!));
+        const m = agregarMarcadorPost(map, p, jitter(p.lat!), jitter(p.lng!));
+        postMarkersRef.current.push(m);
         setColocados(++count);
       }
 
@@ -270,7 +279,11 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
         if (coords) {
           sinCoords
             .filter((p) => p.zona.toLowerCase().trim() === zona)
-            .forEach((p) => { agregarMarcadorPost(map, p, jitter(coords.lat), jitter(coords.lng)); setColocados(++count); });
+            .forEach((p) => {
+              const m = agregarMarcadorPost(map, p, jitter(coords.lat), jitter(coords.lng));
+              postMarkersRef.current.push(m);
+              setColocados(++count);
+            });
         }
         await delay(1300);
       }
@@ -280,7 +293,7 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
     colocarMarcadores();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [posts, cargando]);
+  }, [posts, cargando, ciudad]);
 
   /* ── 5. Veterinarias (Overpass API) ── */
   useEffect(() => {
@@ -326,7 +339,7 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
 
 /* ──────────────────── Helpers de marcadores ──────────────────── */
 
-function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number) {
+function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number): L.Marker {
   const color = CAT_COLOR[post.categoria] ?? '#6b7280';
   const label = CAT_LABEL[post.categoria] ?? post.categoria;
   const imgHtml = post.images?.[0]
@@ -340,7 +353,7 @@ function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number) {
       <div style="font-size:11px;color:#6b6258;margin-bottom:6px">${sanitizarZona(post.zona)} · ${post.fecha}</div>
       <a href="/publicaciones/${post.id}" style="display:block;background:${color};color:white;text-align:center;border-radius:8px;padding:6px;font-size:12px;font-weight:700;text-decoration:none">Ver aviso →</a>
     </div>`;
-  L.marker([lat, lng], { icon: createPinIcon(post.categoria) })
+  return L.marker([lat, lng], { icon: createPinIcon(post.categoria) })
     .bindPopup(html, { maxWidth: 210 })
     .addTo(map);
 }

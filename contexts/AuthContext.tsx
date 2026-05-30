@@ -21,6 +21,7 @@ interface AuthCtx {
   clearCiudad:     () => void;
   signIn:          (email: string, pw: string) => Promise<string | null>;
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  signInWithGoogle: () => Promise<void>;
   verifyOtp:       (email: string, token: string) => Promise<string | null>;
   resendConfirm:   (email: string) => Promise<void>;
   signOut:         () => Promise<void>;
@@ -86,6 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, needsConfirm: true };
   };
 
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/` },
+    });
+  };
+
   const verifyOtp = async (email: string, token: string): Promise<string | null> => {
     const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
     return error?.message ?? null;
@@ -118,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasCity:         !!ciudad,
       setCiudad,
       clearCiudad,
-      signIn, signUp, verifyOtp, resendConfirm, signOut, enterAsGuest,
+      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, signOut, enterAsGuest,
     }}>
       {children}
     </AuthContext.Provider>

@@ -13,6 +13,7 @@
     "@types/leaflet": "^1.9.21",
     "leaflet": "^1.9.4",
     "lucide-react": "0.408.0",
+    "mercadopago": "^3.0.0",
     "next": "14.2.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",

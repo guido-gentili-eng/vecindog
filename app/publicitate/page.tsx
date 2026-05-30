@@ -1,15 +1,12 @@
-import type { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   Megaphone, CheckCircle2, ArrowRight, Star, LayoutTemplate,
-  Layers, Sidebar, Mail, MessageCircle, TrendingUp, Users, MapPin, Target
+  Layers, Sidebar, Mail, MessageCircle, TrendingUp, Users, MapPin, Target,
+  X, Loader2, AlertCircle,
 } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Publicitate en Vecindog | Llegá a los dueños de mascotas de tu ciudad',
-  description:
-    'Mostrá tu veterinaria, petshop o servicio a cientos de vecinos que ya buscan ayuda para sus mascotas. Publicidad local, efectiva y accesible.',
-};
 
 const WHATSAPP = '5492914050210';
 const EMAIL    = 'hola@mivecindog.com.ar';
@@ -118,8 +115,9 @@ const FAQ = [
 /* ─────────────────────── PAGE ─────────────────────── */
 
 export default function PublicitatePage() {
-  const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quiero publicitar mi negocio en Vecindog')}`;
+  const waLink   = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quiero publicitar mi negocio en Vecindog')}`;
   const mailLink = `mailto:${EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`;
+  const [planSeleccionado, setPlanSeleccionado] = useState<string | null>(null);
 
   return (
     <div className="py-10 md:py-14">
@@ -252,16 +250,17 @@ export default function PublicitatePage() {
                 ))}
               </ul>
 
-              <a
-                href={`${mailLink}&body=Hola%2C%20me%20interesa%20el%20plan%20${encodeURIComponent(nombre)}`}
+              <button
+                type="button"
+                onClick={() => setPlanSeleccionado(nombre.toLowerCase())}
                 className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold transition ${
                   destacado
-                    ? 'bg-brand-primary text-white hover:bg-brand-primary-dark'
+                    ? 'bg-brand-primary text-white hover:opacity-90'
                     : 'border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary hover:bg-brand-primary/5'
                 }`}
               >
                 {cta} <ArrowRight className="h-4 w-4" />
-              </a>
+              </button>
             </div>
           ))}
         </div>
@@ -355,6 +354,104 @@ export default function PublicitatePage() {
         </div>
       </section>
 
+      {planSeleccionado && (
+        <PagoModal plan={planSeleccionado} onClose={() => setPlanSeleccionado(null)} />
+      )}
+    </div>
+  );
+}
+
+/* ── Modal de datos + pago ── */
+const PLAN_LABEL: Record<string, string> = {
+  basico: 'Plan Básico — $15.000/mes',
+  estándar: 'Plan Estándar — $28.000/mes',
+  premium: 'Plan Premium — $45.000/mes',
+};
+
+function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
+  const [negocio,  setNegocio]  = useState('');
+  const [email,    setEmail]    = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
+
+  // Normalizar key del plan
+  const planKey = plan === 'estándar' ? 'estandar' : plan;
+
+  async function handlePagar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!negocio.trim()) { setError('Ingresá el nombre de tu negocio.'); return; }
+    if (!email.trim())   { setError('Ingresá tu email.'); return; }
+    setError(''); setLoading(true);
+    try {
+      const res  = await fetch('/api/pago/publicidad', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planKey, negocio, email, telefono }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error ?? 'Error al procesar el pago.');
+        setLoading(false);
+      }
+    } catch {
+      setError('Error de conexión. Intentá de nuevo.');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-xl font-black text-ink capitalize">
+              {PLAN_LABEL[planKey] ?? `Plan ${plan}`}
+            </h2>
+            <p className="text-sm text-ink-muted">Completá tus datos para continuar al pago</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-black/5">
+            <X className="h-5 w-5 text-ink-muted" />
+          </button>
+        </div>
+
+        <form onSubmit={handlePagar} className="space-y-3">
+          <div>
+            <label className="label">Nombre de tu negocio *</label>
+            <input className="field w-full" placeholder="Veterinaria Central"
+              value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
+          </div>
+          <div>
+            <label className="label">Email de contacto *</label>
+            <input type="email" className="field w-full" placeholder="info@tunegocio.com"
+              value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <label className="label">Teléfono / WhatsApp</label>
+            <input className="field w-full" placeholder="+54 9 291 ..."
+              value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          </div>
+
+          {error && (
+            <p className="flex items-center gap-2 rounded-2xl bg-bad/10 p-3 text-sm font-bold text-bad">
+              <AlertCircle className="h-4 w-4 shrink-0" /> {error}
+            </p>
+          )}
+
+          <div className="rounded-2xl bg-brand-cream p-3 text-xs text-ink-muted">
+            Serás redirigido a Mercado Pago para completar el pago de forma segura.
+          </div>
+
+          <button type="submit" disabled={loading}
+            className="btn-primary w-full justify-center disabled:opacity-60">
+            {loading
+              ? <Loader2 className="h-5 w-5 animate-spin" />
+              : <><CheckCircle2 className="h-5 w-5" /> Ir a pagar con Mercado Pago</>}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

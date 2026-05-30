@@ -123,7 +123,7 @@ async function fetchVets(lat: number, lng: number, radiusM = 10000): Promise<Vet
 
 /* ──────────────────── Nominatim geocoding ──────────────────── */
 
-const SESSION_KEY = 'geo_cache_v1';
+const SESSION_KEY = 'geo_cache_v2';
 function loadGeoCache(): Record<string, LatLng> {
   try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? '{}'); }
   catch { return {}; }
@@ -132,11 +132,17 @@ function saveGeoCache(c: Record<string, LatLng>) {
   try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(c)); } catch {}
 }
 
-async function geocodificarZona(zona: string, cache: Record<string, LatLng>, ciudad?: string): Promise<LatLng | null> {
-  const key = zona.toLowerCase().trim();
+async function geocodificarZona(
+  zona: string,
+  cache: Record<string, LatLng>,
+  ciudad?: string,
+  centerHint?: LatLng,
+): Promise<LatLng | null> {
+  const ciudadSuffix = ciudad ? `|${ciudad.toLowerCase().trim()}` : '';
+  const key = `${zona.toLowerCase().trim()}${ciudadSuffix}`;
   if (cache[key]) return cache[key];
 
-  // Armar la query: si la zona ya menciona la ciudad no duplicar, si no, agregarla
+  // Query: si hay ciudad y la zona no la menciona, agregarla
   const ciudadLower = ciudad?.toLowerCase() ?? '';
   const zonaLower   = zona.toLowerCase();
   const yaIncluyeCiudad = ciudadLower && zonaLower.includes(ciudadLower.split(' ')[0]);
@@ -144,9 +150,14 @@ async function geocodificarZona(zona: string, cache: Record<string, LatLng>, ciu
     ? `${zona}, Argentina`
     : `${zona}, ${ciudad}, Argentina`;
 
+  // Viewbox: si tenemos coordenadas de referencia, sesgar Nominatim hacia esa área (±0.5°)
+  const viewboxParam = centerHint
+    ? `&viewbox=${centerHint.lng - 0.5},${centerHint.lat + 0.5},${centerHint.lng + 0.5},${centerHint.lat - 0.5}&bounded=1`
+    : '';
+
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1${viewboxParam}`,
       { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' } }
     );
     const data = await res.json();
@@ -242,7 +253,7 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
       const zonas = [...new Set(sinCoords.map((p) => p.zona.toLowerCase().trim()))];
       for (const zona of zonas) {
         if (cancelled) return;
-        const coords = await geocodificarZona(zona, cache, ciudad);
+        const coords = await geocodificarZona(zona, cache, ciudad, center);
         if (coords) {
           sinCoords
             .filter((p) => p.zona.toLowerCase().trim() === zona)

@@ -81,8 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, pw: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password: pw });
     if (error) return { error: error.message, needsConfirm: false };
-    const needsConfirm = !data.session; // sin sesión → confirmar email
-    return { error: null, needsConfirm };
+    // Siempre cerrar la sesión inmediata para forzar confirmación por email
+    if (data.session) await supabase.auth.signOut();
+    return { error: null, needsConfirm: true };
   };
 
   const verifyOtp = async (email: string, token: string): Promise<string | null> => {

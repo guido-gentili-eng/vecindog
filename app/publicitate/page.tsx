@@ -252,7 +252,7 @@ export default function PublicitatePage() {
 
               <button
                 type="button"
-                onClick={() => setPlanSeleccionado(nombre.toLowerCase())}
+                onClick={() => setPlanSeleccionado(nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''))}
                 className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold transition ${
                   destacado
                     ? 'bg-brand-primary text-white hover:opacity-90'

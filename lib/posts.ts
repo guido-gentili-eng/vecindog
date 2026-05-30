@@ -71,7 +71,16 @@ export async function obtenerPost(id: string): Promise<Post | null> {
   return data as Post;
 }
 
-/** Marca el aviso como resuelto (encontrado / reclamado / adoptado). */
+/** Convierte un aviso "perdido" en "encontrado" (activo) para que aparezca en el filtro verde. */
+export async function encontrarPost(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('posts')
+    .update({ categoria: 'encontrado', estado: 'activo' })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/** Marca el aviso como resuelto (dueño reclamó / adoptado / volvió a casa). */
 export async function resolverPost(id: string): Promise<void> {
   const { error } = await supabase
     .from('posts')

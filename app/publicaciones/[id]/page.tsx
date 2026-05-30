@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
-  obtenerPost, resolverPost, renovarPost, eliminarPost, type Post,
+  obtenerPost, resolverPost, encontrarPost, renovarPost, eliminarPost, type Post,
 } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
 import PhotoGallery from '@/components/PhotoGallery';
@@ -114,13 +114,22 @@ export default function DetalleAvisoPage() {
   async function handleResuelto() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
-      await resolverPost(post!.id);
-      setPost((p) => p ? { ...p, estado: 'resuelto' } : p);
-      setConfirmResuelto(false);
-      // Redirigir a Mis Perros para que vea que el perfil del perro sigue intacto
-      router.push('/mis-perros?resuelto=1');
+      if (post!.categoria === 'perdido') {
+        // Perdido → cambia a "encontrado activo" para que aparezca en el filtro verde
+        await encontrarPost(post!.id);
+        setPost((p) => p ? { ...p, categoria: 'encontrado', estado: 'activo' } : p);
+        setConfirmResuelto(false);
+        setMsgOk('¡Aviso actualizado a Encontrado! Ahora aparece en el filtro verde.');
+      } else {
+        // Encontrado / adopcion → marcar resuelto y redirigir
+        await resolverPost(post!.id);
+        setPost((p) => p ? { ...p, estado: 'resuelto' } : p);
+        setConfirmResuelto(false);
+        router.push('/mis-perros?resuelto=1');
+      }
     } catch {
       setMsgErr('No se pudo actualizar el aviso.');
+    } finally {
       setAccionando(false);
     }
   }
@@ -282,10 +291,14 @@ export default function DetalleAvisoPage() {
                   {confirmResuelto && (
                     <div className="rounded-xl bg-good/8 p-3">
                       <p className="text-xs font-bold text-ink">
-                        ¿Confirmás que el aviso se resolvió? Se va a ocultar de la lista.
+                        {post.categoria === 'perdido'
+                          ? '¿Confirmás que lo encontraste? El aviso va a pasar al filtro verde de Encontrados.'
+                          : '¿Confirmás que el aviso se resolvió? Se va a ocultar de la lista.'}
                       </p>
                       <p className="mt-1 text-[11px] text-ink-muted">
-                        El perfil del perro en Mis Perros <strong>no se borra</strong>. Si lo volvés a perder, podés publicar otro aviso desde ahí.
+                        {post.categoria === 'perdido'
+                          ? 'Vas a poder marcarlo como "Volvió a casa" desde ahí cuando el dueño lo reclame.'
+                          : <>El perfil del perro en Mis Perros <strong>no se borra</strong>.</>}
                       </p>
                       <div className="mt-2 flex gap-2">
                         <button

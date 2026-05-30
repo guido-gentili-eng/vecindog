@@ -119,6 +119,27 @@ export async function crearPerro(
   return perroId;
 }
 
+export async function actualizarPerro(
+  id: string,
+  input: Partial<PerroInput>,
+): Promise<void> {
+  const patch: Record<string, unknown> = {};
+  if (input.nombre       !== undefined) patch.nombre       = input.nombre       || null;
+  if (input.raza         !== undefined) patch.raza         = input.raza         || null;
+  if (input.color        !== undefined) patch.color        = input.color        || null;
+  if (input.tamano       !== undefined) patch.tamano       = input.tamano       || null;
+  if (input.sexo         !== undefined) patch.sexo         = input.sexo         || null;
+  if (input.fecha_nac    !== undefined) patch.fecha_nac    = input.fecha_nac    || null;
+  if (input.chip         !== undefined) patch.chip         = input.chip         || null;
+  if (input.esterilizado !== undefined) patch.esterilizado = input.esterilizado;
+  if (input.descripcion  !== undefined) patch.descripcion  = input.descripcion  || null;
+  if (input.direccion    !== undefined) patch.direccion    = input.direccion    || null;
+  if (input.foto_url     !== undefined) patch.foto_url     = input.foto_url     || null;
+
+  const { error } = await supabase.from('perros').update(patch).eq('id', id);
+  if (error) throw error;
+}
+
 export async function eliminarPerro(id: string): Promise<void> {
   const { error } = await supabase.from('perros').delete().eq('id', id);
   if (error) throw error;

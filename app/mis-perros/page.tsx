@@ -162,7 +162,7 @@ function PerroCard({
   return (
     <div className="card overflow-hidden p-0">
       {/* Foto */}
-      <div className="relative h-40 w-full overflow-hidden bg-brand-cream">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-cream">
         {perro.foto_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

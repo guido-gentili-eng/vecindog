@@ -21,6 +21,8 @@ interface AuthCtx {
   clearCiudad:     () => void;
   signIn:          (email: string, pw: string) => Promise<string | null>;
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  verifyOtp:       (email: string, token: string) => Promise<string | null>;
+  resendConfirm:   (email: string) => Promise<void>;
   signOut:         () => Promise<void>;
   enterAsGuest:    () => void;
 }
@@ -83,6 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, needsConfirm };
   };
 
+  const verifyOtp = async (email: string, token: string): Promise<string | null> => {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+    return error?.message ?? null;
+  };
+
+  const resendConfirm = async (email: string) => {
+    await supabase.auth.resend({ type: 'signup', email });
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     if (typeof window !== 'undefined') {
@@ -106,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasCity:         !!ciudad,
       setCiudad,
       clearCiudad,
-      signIn, signUp, signOut, enterAsGuest,
+      signIn, signUp, verifyOtp, resendConfirm, signOut, enterAsGuest,
     }}>
       {children}
     </AuthContext.Provider>

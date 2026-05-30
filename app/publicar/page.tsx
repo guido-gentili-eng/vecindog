@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, Plus, ImagePlus, X, AlertCircle, Camera, Star,
   ArrowLeft, Dog, Loader2, Home, MapPin, ScanSearch, Sparkles, ArrowRight,
-  Navigation, CheckCheck,
+  Navigation, CheckCheck, Lock,
 } from 'lucide-react';
 import {
   type Categoria, type Especie,
@@ -94,7 +94,7 @@ export default function PublicarPage() {
   const searchParams = useSearchParams();
   const catParam  = searchParams.get('cat');
   const perroId   = searchParams.get('perro');
-  const { ciudad, user } = useAuth();
+  const { ciudad, user, isGuest } = useAuth();
   const cityLabel = ciudad ? nombreCorto(ciudad) : 'tu ciudad';
 
   const [form,        setForm]        = useState<FormState>(estadoInicial(catParam));
@@ -243,6 +243,30 @@ export default function PublicarPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  /* ── Bloqueo invitados ── */
+  if (isGuest) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center">
+        <div className="card p-8">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+            <Lock className="h-8 w-8" />
+          </div>
+          <h1 className="mt-4 font-display text-2xl font-black text-ink">Necesitás una cuenta</h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            Para publicar un aviso tenés que estar registrado. Es gratis y tarda menos de un minuto.
+          </p>
+          <a
+            href="/"
+            onClick={() => { if (typeof window !== 'undefined') localStorage.removeItem('vecindog_guest'); }}
+            className="btn-primary mt-6 inline-flex"
+          >
+            Crear cuenta gratis
+          </a>
+        </div>
+      </div>
+    );
   }
 
   /* ── Pantalla de éxito ── */

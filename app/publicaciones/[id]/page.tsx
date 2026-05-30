@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
-  Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock,
+  Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock, Heart,
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PhotoGallery from '@/components/PhotoGallery';
 import ContactBlock from '@/components/ContactBlock';
 import AdSlot from '@/components/AdSlot';
+import AdoptionSheet from '@/components/AdoptionSheet';
 
 /* ──────────── Constantes ──────────── */
 
@@ -50,6 +51,7 @@ export default function DetalleAvisoPage() {
   const [post,        setPost]        = useState<Post | null>(null);
   const [cargando,    setCargando]    = useState(true);
   const [panelAbierto, setPanelAbierto] = useState(false);
+  const [adoptarOpen,  setAdoptarOpen]  = useState(false);
 
   /* estados de acción */
   const [confirmBorrar,  setConfirmBorrar]  = useState(false);
@@ -194,6 +196,16 @@ export default function DetalleAvisoPage() {
 
         {/* Columna derecha sticky */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          {post.categoria === 'adopcion' && !resuelto && (
+            <button
+              type="button"
+              onClick={() => setAdoptarOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-brand-gold to-brand-gold-dark py-4 text-base font-bold text-[#5b3a0e] shadow-soft transition hover:opacity-90"
+            >
+              <Heart className="h-5 w-5" /> Quiero adoptarlo
+            </button>
+          )}
+
           <ContactBlock
             waNumero={waNumero}
             waTexto={waTexto}
@@ -369,6 +381,9 @@ export default function DetalleAvisoPage() {
           </div>
         </aside>
       </div>
+      {adoptarOpen && post && (
+        <AdoptionSheet post={post} onClose={() => setAdoptarOpen(false)} />
+      )}
     </article>
   );
 }

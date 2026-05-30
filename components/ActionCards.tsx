@@ -51,17 +51,6 @@ const ACCIONES: Accion[] = [
     accent: 'bg-brand-sage-dark'
   },
   {
-    href: '/adoptar',
-    icon: Heart,
-    titulo: 'Quiero adoptar',
-    texto: 'Completá tu solicitud y te conectamos con el perro ideal.',
-    chip: 'Adopción responsable',
-    bg:     'bg-brand-gold',
-    text:   'text-[#5b3a0e]',     // texto oscuro para contraste sobre dorado
-    iconBg: 'bg-white/30',
-    accent: 'bg-brand-gold-dark'
-  },
-  {
     href: '/publicar?cat=adopcion',
     icon: Home,
     titulo: 'Doy en adopción',

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const RADIO_KM = 5;
+const RADIO_KM = 1;
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
                 </a>
               </div>
               <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
-                Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso a menos de ${RADIO_KM}km de tu casa.<br/>
+                Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso a menos de 1km de tu casa.<br/>
                 <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Actualizar mi perfil</a>
               </p>
             </div>

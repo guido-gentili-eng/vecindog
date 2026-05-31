@@ -156,20 +156,6 @@ export default function PublicitatePage() {
         </div>
       </section>
 
-      {/* ── STATS ─────────────────────────────────────────────── */}
-      <section className="mb-16 md:mb-20">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {STATS.map(({ value, label, icon: Icon }) => (
-            <div key={label} className="card p-5 text-center">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
-                <Icon className="h-5 w-5" />
-              </span>
-              <p className="mt-3 font-display text-3xl font-black text-ink">{value}</p>
-              <p className="mt-1 text-xs font-semibold text-ink-muted">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ── FORMATOS ──────────────────────────────────────────── */}
       <section className="mb-16 md:mb-20">

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
-  RefreshCw, Search,
+  RefreshCw, Search, FileText,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
@@ -81,13 +81,21 @@ export default function PerroDetallePage() {
           <ChevronLeft className="h-4 w-4" /> Mis perros
         </Link>
         {!editando && (
-          <button
-            type="button"
-            onClick={() => setEditando(true)}
-            className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10"
-          >
-            <Pencil className="h-3.5 w-3.5" /> Editar perfil
-          </button>
+          <div className="flex gap-2">
+            <Link
+              href={`/mis-perros/${id}/cartel`}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
+            >
+              <FileText className="h-3.5 w-3.5" /> Generar cartel
+            </Link>
+            <button
+              type="button"
+              onClick={() => setEditando(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Editar perfil
+            </button>
+          </div>
         )}
       </div>
 

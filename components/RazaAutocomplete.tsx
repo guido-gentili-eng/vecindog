@@ -61,16 +61,19 @@ export default function RazaAutocomplete({ value, onChange, className = '', requ
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
     onChange(val);
-    if (val.length >= 2) {
-      const filtered = RAZAS.filter((r) =>
-        r.toLowerCase().includes(val.toLowerCase())
-      ).slice(0, 8);
-      setSuggestions(filtered);
-      setOpen(filtered.length > 0);
-    } else {
-      setSuggestions([]);
-      setOpen(false);
-    }
+    const filtered = val.length === 0
+      ? RAZAS
+      : RAZAS.filter((r) => r.toLowerCase().includes(val.toLowerCase()));
+    setSuggestions(filtered);
+    setOpen(filtered.length > 0);
+  }
+
+  function handleFocus() {
+    const filtered = value.length === 0
+      ? RAZAS
+      : RAZAS.filter((r) => r.toLowerCase().includes(value.toLowerCase()));
+    setSuggestions(filtered);
+    setOpen(filtered.length > 0);
   }
 
   function handleSelect(raza: string) {
@@ -87,15 +90,13 @@ export default function RazaAutocomplete({ value, onChange, className = '', requ
         placeholder="Ej: Labrador, mestizo…"
         value={value}
         onChange={handleChange}
-        onFocus={() => {
-          if (value.length >= 2 && suggestions.length > 0) setOpen(true);
-        }}
+        onFocus={handleFocus}
         className="field w-full"
         autoComplete="off"
       />
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-lg overflow-hidden">
+        <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-lg overflow-y-auto max-h-56">
           {suggestions.map((r) => (
             <li key={r}>
               <button

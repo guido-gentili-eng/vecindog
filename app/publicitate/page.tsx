@@ -178,30 +178,123 @@ export default function PublicitatePage() {
             Formatos disponibles
           </h2>
           <p className="mt-2 text-ink-muted">
-            Tres ubicaciones pensadas para distintos momentos del recorrido del usuario.
+            Así se ve tu negocio en Vecindog. Cada formato está diseñado para un momento distinto.
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
-          {FORMATOS.map(({ icon: Icon, nombre, descripcion, specs, badge, badgeColor }) => (
-            <div key={nombre} className="card flex flex-col p-6">
-              <div className="flex items-start justify-between gap-3">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-primary/10 text-brand-primary">
-                  <Icon className="h-6 w-6" />
-                </span>
-                <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${badgeColor}`}>
-                  {badge}
-                </span>
-              </div>
+        <div className="space-y-8">
 
-              <h3 className="mt-4 font-display text-lg font-black text-ink">{nombre}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-muted">{descripcion}</p>
-
-              <div className="mt-5 rounded-xl bg-brand-cream px-3 py-2 text-xs font-semibold text-ink-muted">
-                {specs}
+          {/* ── BANNER ── */}
+          <div className="card overflow-hidden p-0">
+            <div className="flex items-start justify-between gap-3 p-6 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-primary/10 text-brand-primary">
+                    <LayoutTemplate className="h-5 w-5" />
+                  </span>
+                  <h3 className="font-display text-lg font-black text-ink">Banner entre secciones</h3>
+                  <span className="rounded-full bg-brand-primary px-2.5 py-1 text-[11px] font-bold text-white">Más visto</span>
+                </div>
+                <p className="mt-2 text-sm text-ink-muted">Aparece en el inicio entre secciones. Full width, alta visibilidad.</p>
               </div>
             </div>
-          ))}
+            {/* Preview */}
+            <div className="mx-6 mb-6 rounded-2xl border-2 border-dashed border-brand-primary/20 bg-brand-cream/50 p-3">
+              <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">Vista previa</p>
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-brand-primary to-brand-coral-dark px-5 py-4 text-white">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl font-black">V</div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Publicidad</p>
+                    <p className="font-display text-base font-black">Veterinaria San Jorge</p>
+                    <p className="text-xs opacity-80">Turno online · Vacunas · Cirugía</p>
+                  </div>
+                </div>
+                <div className="shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-bold text-brand-primary">Ver más →</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD ── */}
+          <div className="card overflow-hidden p-0">
+            <div className="flex items-start gap-3 p-6 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-good/10 text-good">
+                    <Layers className="h-5 w-5" />
+                  </span>
+                  <h3 className="font-display text-lg font-black text-ink">Card en grilla de avisos</h3>
+                  <span className="rounded-full bg-good px-2.5 py-1 text-[11px] font-bold text-white">Más clics</span>
+                </div>
+                <p className="mt-2 text-sm text-ink-muted">Aparece integrada cada 4 avisos. El usuario la ve mientras busca su perro.</p>
+              </div>
+            </div>
+            {/* Preview — simula la grilla */}
+            <div className="mx-6 mb-6 rounded-2xl border-2 border-dashed border-brand-primary/20 bg-brand-cream/50 p-3">
+              <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">Vista previa</p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {/* Aviso real (simulado) */}
+                {[1,2,3].map((i) => (
+                  <div key={i} className="rounded-xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+                    <div className="mb-2 h-20 rounded-lg bg-brand-cream" />
+                    <div className="h-3 w-3/4 rounded bg-black/10" />
+                    <div className="mt-1 h-2.5 w-1/2 rounded bg-black/5" />
+                  </div>
+                ))}
+                {/* Card publicitaria */}
+                <div className="rounded-xl bg-gradient-to-br from-brand-primary/10 to-brand-coral/10 p-3 ring-2 ring-brand-primary/30">
+                  <div className="mb-1 flex justify-between">
+                    <span className="rounded-full bg-brand-primary px-2 py-0.5 text-[9px] font-bold text-white">Publicidad</span>
+                  </div>
+                  <div className="mb-1 flex h-16 items-center justify-center rounded-lg bg-brand-primary/10 text-2xl font-black text-brand-primary">P</div>
+                  <p className="text-xs font-bold text-ink">Petshop El Hueso</p>
+                  <p className="text-[10px] text-ink-muted">Accesorios · Baño · Peluquería</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── SIDEBAR ── */}
+          <div className="card overflow-hidden p-0">
+            <div className="flex items-start gap-3 p-6 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#5b8e3a]/10 text-[#5b8e3a]">
+                    <Sidebar className="h-5 w-5" />
+                  </span>
+                  <h3 className="font-display text-lg font-black text-ink">Panel lateral de contacto</h3>
+                  <span className="rounded-full bg-[#5b8e3a] px-2.5 py-1 text-[11px] font-bold text-white">Alta intención</span>
+                </div>
+                <p className="mt-2 text-sm text-ink-muted">Aparece en el detalle de cada aviso, justo debajo del contacto. Alta intención de compra.</p>
+              </div>
+            </div>
+            {/* Preview */}
+            <div className="mx-6 mb-6 rounded-2xl border-2 border-dashed border-brand-primary/20 bg-brand-cream/50 p-3">
+              <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">Vista previa</p>
+              <div className="mx-auto max-w-xs space-y-2">
+                {/* Simula bloque de contacto del aviso */}
+                <div className="rounded-xl bg-white p-3 ring-1 ring-black/5">
+                  <p className="text-[10px] font-bold uppercase text-ink-muted">Contacto del aviso</p>
+                  <div className="mt-1 h-8 rounded-lg bg-good/20" />
+                </div>
+                {/* Ad sidebar */}
+                <div className="rounded-xl border border-brand-primary/20 bg-white p-3">
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">Publicidad</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-sm font-black text-brand-primary">🐾</div>
+                    <div>
+                      <p className="text-sm font-bold text-ink">Centro Veterinario Norte</p>
+                      <p className="text-xs text-ink-muted">Urgencias 24hs · Bahía Blanca</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 rounded-lg bg-brand-primary px-3 py-2 text-center text-xs font-bold text-white">
+                    Sacar turno →
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 

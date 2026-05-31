@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Megaphone, CheckCircle2, ArrowRight, Star, LayoutTemplate,
   Layers, Sidebar, Mail, MessageCircle, TrendingUp, Users, MapPin, Target,
-  X, Loader2, AlertCircle,
+  X, Loader2, AlertCircle, ImagePlus,
 } from 'lucide-react';
 
 const WHATSAPP = '5492914050210';
@@ -458,32 +458,57 @@ export default function PublicitatePage() {
 }
 
 /* ── Modal de datos + pago ── */
-const PLAN_LABEL: Record<string, string> = {
-  basico: 'Plan Básico — $15.000/mes',
-  estándar: 'Plan Estándar — $28.000/mes',
-  premium: 'Plan Premium — $45.000/mes',
+const PLAN_INFO: Record<string, { label: string; precio: string; slots: string[] }> = {
+  basico:   { label: 'Plan Básico',    precio: '$15.000/mes', slots: ['Sidebar en detalle de aviso'] },
+  estandar: { label: 'Plan Estándar',  precio: '$28.000/mes', slots: ['Sidebar en detalle de aviso', 'Card en grilla de avisos'] },
+  premium:  { label: 'Plan Premium',   precio: '$45.000/mes', slots: ['Banner en inicio', 'Card en grilla', 'Sidebar en detalle'] },
 };
 
 function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
-  const [negocio,  setNegocio]  = useState('');
-  const [email,    setEmail]    = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const planKey  = plan === 'estándar' ? 'estandar' : plan;
+  const info     = PLAN_INFO[planKey] ?? PLAN_INFO.basico;
+  const fileRef  = useRef<HTMLInputElement>(null);
 
-  // Normalizar key del plan
-  const planKey = plan === 'estándar' ? 'estandar' : plan;
+  const [negocio,   setNegocio]   = useState('');
+  const [tagline,   setTagline]   = useState('');
+  const [link,      setLink]      = useState('');
+  const [cta,       setCta]       = useState('');
+  const [email,     setEmail]     = useState('');
+  const [telefono,  setTelefono]  = useState('');
+  const [fotoFile,  setFotoFile]  = useState<File | null>(null);
+  const [preview,   setPreview]   = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+
+  function onFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError('La imagen debe pesar menos de 5 MB.'); return; }
+    setFotoFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
 
   async function handlePagar(e: React.FormEvent) {
     e.preventDefault();
     if (!negocio.trim()) { setError('Ingresá el nombre de tu negocio.'); return; }
     if (!email.trim())   { setError('Ingresá tu email.'); return; }
+    if (!link.trim())    { setError('Ingresá el link de tu negocio.'); return; }
     setError(''); setLoading(true);
+
     try {
-      const res  = await fetch('/api/pago/publicidad', {
+      // Subir logo si hay
+      let imagen_url = '';
+      if (fotoFile) {
+        const { subirImagenAd } = await import('@/lib/ads');
+        imagen_url = await subirImagenAd(fotoFile);
+      }
+
+      const res = await fetch('/api/pago/publicidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey, negocio, email, telefono }),
+        body: JSON.stringify({
+          plan: planKey, negocio, tagline, link, cta, email, telefono, imagen_url,
+        }),
       });
       const data = await res.json();
       if (data.url) {
@@ -499,35 +524,80 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl my-4">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl bg-white px-6 py-4 border-b border-black/5">
           <div>
-            <h2 className="font-display text-xl font-black text-ink capitalize">
-              {PLAN_LABEL[planKey] ?? `Plan ${plan}`}
-            </h2>
-            <p className="text-sm text-ink-muted">Completá tus datos para continuar al pago</p>
+            <h2 className="font-display text-xl font-black text-ink">{info.label}</h2>
+            <p className="text-sm text-ink-muted">{info.precio} · {info.slots.join(' + ')}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-black/5">
             <X className="h-5 w-5 text-ink-muted" />
           </button>
         </div>
 
-        <form onSubmit={handlePagar} className="space-y-3">
+        <form onSubmit={handlePagar} className="p-6 space-y-5">
+
+          {/* Logo */}
           <div>
-            <label className="label">Nombre de tu negocio *</label>
-            <input className="field w-full" placeholder="Veterinaria Central"
-              value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
+            <label className="label">Logo de tu negocio</label>
+            <div
+              onClick={() => fileRef.current?.click()}
+              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-black/10 bg-brand-cream p-6 hover:border-brand-primary/40 transition"
+            >
+              {preview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview} alt="" className="h-16 object-contain" />
+              ) : (
+                <>
+                  <ImagePlus className="h-8 w-8 text-brand-primary/40" />
+                  <span className="text-sm font-bold text-ink-muted">Subir logo</span>
+                  <span className="text-xs text-ink-muted">PNG, JPG · máx 5 MB · fondo blanco recomendado</span>
+                </>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
           </div>
-          <div>
-            <label className="label">Email de contacto *</label>
-            <input type="email" className="field w-full" placeholder="info@tunegocio.com"
-              value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+          {/* Datos del negocio */}
+          <div className="space-y-3">
+            <div>
+              <label className="label">Nombre del negocio <span className="text-bad">*</span></label>
+              <input className="field w-full" placeholder="Veterinaria Central"
+                value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
+            </div>
+            <div>
+              <label className="label">Descripción corta (tagline)</label>
+              <input className="field w-full" placeholder="Turnos online · Vacunas · Bahía Blanca"
+                value={tagline} onChange={(e) => setTagline(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Link del negocio <span className="text-bad">*</span></label>
+              <input className="field w-full" placeholder="https://instagram.com/tunegocio"
+                value={link} onChange={(e) => setLink(e.target.value)} required />
+              <p className="mt-1 text-xs text-ink-muted">Web, Instagram, WhatsApp — adonde van los clicks</p>
+            </div>
+            <div>
+              <label className="label">Texto del botón</label>
+              <input className="field w-full" placeholder="Ver local · Pedir turno · Ver Instagram"
+                value={cta} onChange={(e) => setCta(e.target.value)} />
+            </div>
           </div>
-          <div>
-            <label className="label">Teléfono / WhatsApp</label>
-            <input className="field w-full" placeholder="+54 9 291 ..."
-              value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+
+          {/* Contacto */}
+          <div className="space-y-3 rounded-2xl bg-brand-cream p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Tus datos de contacto</p>
+            <div>
+              <label className="label">Email <span className="text-bad">*</span></label>
+              <input type="email" className="field w-full" placeholder="info@tunegocio.com"
+                value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+            <div>
+              <label className="label">Teléfono / WhatsApp</label>
+              <input className="field w-full" placeholder="+54 9 291 405-0210"
+                value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+            </div>
           </div>
 
           {error && (
@@ -536,12 +606,12 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             </p>
           )}
 
-          <div className="rounded-2xl bg-brand-cream p-3 text-xs text-ink-muted">
-            Serás redirigido a Mercado Pago para completar el pago de forma segura.
-          </div>
+          <p className="text-xs text-ink-muted text-center">
+            Serás redirigido a Mercado Pago. Tu anuncio se activa automáticamente al confirmar el pago.
+          </p>
 
           <button type="submit" disabled={loading}
-            className="btn-primary w-full justify-center disabled:opacity-60">
+            className="btn-primary w-full justify-center disabled:opacity-60 text-base">
             {loading
               ? <Loader2 className="h-5 w-5 animate-spin" />
               : <><CheckCircle2 className="h-5 w-5" /> Ir a pagar con Mercado Pago</>}

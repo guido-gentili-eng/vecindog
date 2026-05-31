@@ -3,10 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 
+interface Address {
+  road?: string;
+  house_number?: string;
+  suburb?: string;
+  neighbourhood?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  state?: string;
+}
+
 interface Suggestion {
   display_name: string;
   lat: string;
   lon: string;
+  address?: Address;
 }
 
 interface Props {
@@ -72,10 +84,27 @@ export default function AddressAutocomplete({
   }
 
   function handleSelect(s: Suggestion) {
-    // Simplificar el nombre: mostrar solo calle, número y ciudad
-    const parts = s.display_name.split(',');
-    const simplified = parts.slice(0, 3).join(',').trim();
-    onChange(simplified);
+    // Construir dirección legible: Calle Número, Barrio, Ciudad
+    const a = s.address;
+    let formatted = '';
+    if (a) {
+      const calle = a.road ?? '';
+      const numero = a.house_number ?? '';
+      const barrio = a.suburb ?? a.neighbourhood ?? '';
+      const ciudad = a.city ?? a.town ?? a.village ?? '';
+      const partes = [
+        [calle, numero].filter(Boolean).join(' '),
+        barrio,
+        ciudad,
+      ].filter(Boolean);
+      formatted = partes.join(', ');
+    }
+    // Fallback: tomar los primeros segmentos del display_name
+    if (!formatted) {
+      const parts = s.display_name.split(',');
+      formatted = parts.slice(0, 4).join(',').trim();
+    }
+    onChange(formatted);
     setSuggestions([]);
     setOpen(false);
   }

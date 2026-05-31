@@ -14,8 +14,10 @@ export interface Profile {
   nombre:    string;
   apellido:  string;
   telefono:  string;
-  direccion: string;
   ciudad:    string;
+  provincia: string;
+  pais:      string;
+  direccion: string;
 }
 
 interface AuthCtx {
@@ -139,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let lat: number | null = null;
     let lng: number | null = null;
     try {
-      const q = encodeURIComponent(`${data.direccion}, ${data.ciudad}, Argentina`);
+      const q = encodeURIComponent(`${data.direccion}, ${data.ciudad}, ${data.provincia}, ${data.pais}`);
       const geoRes = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
         { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }

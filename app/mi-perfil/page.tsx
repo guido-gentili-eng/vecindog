@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect } from 'react';
@@ -26,6 +26,8 @@ export default function MiPerfilPage() {
   const [apellido,     setApellido]     = useState('');
   const [telefono,     setTelefono]     = useState('');
   const [ciudadPerfil, setCiudadPerfil] = useState('');
+  const [provincia,    setProvincia]    = useState('');
+  const [pais,         setPais]         = useState('Argentina');
   const [direccion,    setDireccion]    = useState('');
 
   useEffect(() => {
@@ -35,8 +37,16 @@ export default function MiPerfilPage() {
       setTelefono(profile.telefono);
       setDireccion(profile.direccion);
       setCiudadPerfil(profile.ciudad ?? '');
+      setProvincia(profile.provincia ?? '');
+      setPais(profile.pais ?? 'Argentina');
     }
   }, [profile]);
+
+  function handleCiudadChange(nombre: string) {
+    setCiudadPerfil(nombre);
+    const found = CIUDADES.find((c) => c.nombre === nombre);
+    if (found) setProvincia(found.provincia);
+  }
 
   useEffect(() => {
     if (authLoading || !isAuthenticated) { setCargando(false); return; }
@@ -49,7 +59,7 @@ export default function MiPerfilPage() {
   async function handleGuardar(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setSuccess(''); setSubmitting(true);
-    const err = await saveProfile({ nombre, apellido, telefono, direccion, ciudad: ciudadPerfil });
+    const err = await saveProfile({ nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion });
     setSubmitting(false);
     if (err) { setError(err); return; }
     setSuccess('Perfil actualizado correctamente.');
@@ -121,13 +131,25 @@ export default function MiPerfilPage() {
             {/* Ciudad */}
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
-              <select required value={ciudadPerfil} onChange={(e) => setCiudadPerfil(e.target.value)}
+              <select required value={ciudadPerfil} onChange={(e) => handleCiudadChange(e.target.value)}
                 className="field pl-9 appearance-none">
                 <option value="">Seleccioná tu ciudad</option>
                 {CIUDADES.map((c) => (
-                  <option key={c.nombre} value={c.nombre}>{c.nombre}, {c.provincia}</option>
+                  <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
                 ))}
               </select>
+            </div>
+            {/* Provincia */}
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <input type="text" required placeholder="Provincia" value={provincia}
+                onChange={(e) => setProvincia(e.target.value)} className="field pl-9" />
+            </div>
+            {/* País */}
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <input type="text" required placeholder="País" value={pais}
+                onChange={(e) => setPais(e.target.value)} className="field pl-9" />
             </div>
             <AddressAutocomplete
               value={direccion}
@@ -161,6 +183,8 @@ export default function MiPerfilPage() {
             <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label="Nombre" value={profile ? `${profile.nombre} ${profile.apellido}` : '—'} />
             <InfoRow icon={<Phone className="h-4 w-4 text-brand-primary" />} label="Teléfono" value={profile?.telefono ?? '—'} />
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Ciudad" value={profile?.ciudad ?? '—'} />
+            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Provincia" value={profile?.provincia ?? '—'} />
+            <InfoRow icon={<Globe className="h-4 w-4 text-brand-primary" />} label="País" value={profile?.pais ?? '—'} />
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Dirección" value={profile?.direccion ?? '—'} />
           </div>
         )}

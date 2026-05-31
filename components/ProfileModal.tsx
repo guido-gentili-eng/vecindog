@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, MapPin, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Phone, MapPin, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
@@ -9,22 +9,30 @@ import { CIUDADES } from '@/lib/ciudades';
 export default function ProfileModal() {
   const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
 
-  const [nombre,    setNombre]    = useState('');
-  const [apellido,  setApellido]  = useState('');
-  const [telefono,  setTelefono]  = useState('');
+  const [nombre,       setNombre]       = useState('');
+  const [apellido,     setApellido]     = useState('');
+  const [telefono,     setTelefono]     = useState('');
   const [ciudadPerfil, setCiudadPerfil] = useState('');
-  const [direccion, setDireccion] = useState('');
-  const [error,     setError]     = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [provincia,    setProvincia]    = useState('');
+  const [pais,         setPais]         = useState('Argentina');
+  const [direccion,    setDireccion]    = useState('');
+  const [error,        setError]        = useState('');
+  const [submitting,   setSubmitting]   = useState(false);
 
   if (loading || !isAuthenticated || hasProfile) return null;
+
+  function handleCiudadChange(nombre: string) {
+    setCiudadPerfil(nombre);
+    const found = CIUDADES.find((c) => c.nombre === nombre);
+    if (found) setProvincia(found.provincia);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      const err = await saveProfile({ nombre, apellido, telefono, direccion, ciudad: ciudadPerfil });
+      const err = await saveProfile({ nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion });
       if (err) setError(err);
     } finally {
       setSubmitting(false);
@@ -33,7 +41,7 @@ export default function ProfileModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8">
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8 max-h-[90vh] overflow-y-auto">
 
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
 
@@ -41,20 +49,14 @@ export default function ProfileModal() {
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-soft">
             <User className="h-8 w-8" />
           </span>
-          <h1 className="mt-3 font-display text-2xl font-black text-ink">
-            Completá tu perfil
-          </h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            Necesitamos algunos datos para continuar
-          </p>
+          <h1 className="mt-3 font-display text-2xl font-black text-ink">Completá tu perfil</h1>
+          <p className="mt-1 text-sm text-ink-muted">Necesitamos algunos datos para continuar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Email (solo lectura) */}
-          <div className="relative">
-            <input type="email" value={user?.email ?? ''} disabled
-              className="field w-full bg-black/5 text-ink-muted cursor-not-allowed" />
-          </div>
+          {/* Email */}
+          <input type="email" value={user?.email ?? ''} disabled
+            className="field w-full bg-black/5 text-ink-muted cursor-not-allowed" />
 
           {/* Nombre */}
           <div className="relative">
@@ -80,22 +82,32 @@ export default function ProfileModal() {
           {/* Ciudad */}
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
-            <select required value={ciudadPerfil} onChange={(e) => setCiudadPerfil(e.target.value)}
+            <select required value={ciudadPerfil} onChange={(e) => handleCiudadChange(e.target.value)}
               className="field pl-9 appearance-none">
               <option value="">Seleccioná tu ciudad</option>
               {CIUDADES.map((c) => (
-                <option key={c.nombre} value={c.nombre}>{c.nombre}, {c.provincia}</option>
+                <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
               ))}
             </select>
           </div>
 
+          {/* Provincia (autocompletada) */}
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+            <input type="text" required placeholder="Provincia" value={provincia}
+              onChange={(e) => setProvincia(e.target.value)} className="field pl-9" />
+          </div>
+
+          {/* País */}
+          <div className="relative">
+            <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+            <input type="text" required placeholder="País" value={pais}
+              onChange={(e) => setPais(e.target.value)} className="field pl-9" />
+          </div>
+
           {/* Dirección */}
-          <AddressAutocomplete
-            value={direccion}
-            onChange={setDireccion}
-            ciudad={ciudadPerfil}
-            required
-          />
+          <AddressAutocomplete value={direccion} onChange={setDireccion}
+            ciudad={ciudadPerfil} required />
 
           {error && (
             <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">

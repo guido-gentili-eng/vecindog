@@ -68,10 +68,13 @@ export default function Header() {
             <div className="hidden items-center gap-2 md:flex">
               {isAuthenticated ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink">
+                  <Link
+                    href="/mi-perfil"
+                    className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary"
+                  >
                     <User className="h-3.5 w-3.5 text-brand-primary" />
                     {user?.email?.split('@')[0]}
-                  </span>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => signOut()}
@@ -148,9 +151,13 @@ export default function Header() {
                 {isAuthenticated && (
                   <>
                     <div className="mt-2 border-t border-black/5 pt-2">
-                      <p className="px-3 py-1 text-xs text-ink-muted">
-                        Sesión: <span className="font-bold text-ink">{user?.email}</span>
-                      </p>
+                      <Link
+                        href="/mi-perfil"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
+                      >
+                        <User className="h-4 w-4 text-brand-primary" /> Mi perfil
+                      </Link>
                       <button
                         type="button"
                         onClick={() => { signOut(); setOpen(false); }}

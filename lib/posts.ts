@@ -10,6 +10,7 @@ export interface Post {
   id:          string;
   created_at:  string;
   user_id:     string | null;
+  perro_id:    string | null;
   categoria:   'perdido' | 'encontrado' | 'adopcion';
   especie:     string;
   nombre:      string | null;
@@ -20,7 +21,7 @@ export interface Post {
   chapita:     boolean | null;
   descripcion: string;
   zona:        string;
-  fecha:       string;   // date → string "YYYY-MM-DD"
+  fecha:       string;
   horario:     string | null;
   contacto:    string;
   images:      string[];
@@ -96,6 +97,20 @@ export async function renovarPost(id: string): Promise<void> {
     .update({ created_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw error;
+}
+
+/** Busca si un perro tiene un aviso de tipo 'perdido' activo. */
+export async function buscarPostActivoDePerro(perroId: string): Promise<Post | null> {
+  const { data } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('perro_id', perroId)
+    .eq('categoria', 'perdido')
+    .neq('estado', 'resuelto')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  return data as Post | null;
 }
 
 /** Elimina el aviso y sus fotos del storage. */

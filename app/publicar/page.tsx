@@ -221,6 +221,7 @@ export default function PublicarPage() {
 
       const { error: insErr } = await supabase.from('posts').insert({
         user_id:     user?.id         ?? null,
+        perro_id:    perroData?.id    ?? null,
         categoria:   form.categoria,
         especie:     form.especie,
         nombre:      form.nombre      || null,

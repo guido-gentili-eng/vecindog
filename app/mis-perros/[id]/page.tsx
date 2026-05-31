@@ -6,11 +6,13 @@ import Link from 'next/link';
 import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
+  RefreshCw, Search,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
   type Perro, type Vacuna, type PerroInput,
 } from '@/lib/perros';
+import { buscarPostActivoDePerro, renovarPost, type Post } from '@/lib/posts';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -20,13 +22,34 @@ export default function PerroDetallePage() {
   const esNuevo       = searchParams.get('nuevo') === '1';
   const { ciudad }    = useAuth();
 
-  const [perro,     setPerro]    = useState<Perro | null>(null);
-  const [cargando,  setCargando] = useState(true);
-  const [editando,  setEditando] = useState(false);
+  const [perro,       setPerro]       = useState<Perro | null>(null);
+  const [postActivo,  setPostActivo]  = useState<Post | null | undefined>(undefined);
+  const [cargando,    setCargando]    = useState(true);
+  const [editando,    setEditando]    = useState(false);
+  const [renovando,   setRenovando]   = useState(false);
+  const [renovado,    setRenovado]    = useState(false);
 
   useEffect(() => {
-    obtenerPerro(id).then(setPerro).finally(() => setCargando(false));
+    obtenerPerro(id)
+      .then((p) => {
+        setPerro(p);
+        if (p) return buscarPostActivoDePerro(p.id);
+        return null;
+      })
+      .then((post) => setPostActivo(post))
+      .finally(() => setCargando(false));
   }, [id]);
+
+  async function handleRenovar() {
+    if (!postActivo) return;
+    setRenovando(true);
+    try {
+      await renovarPost(postActivo.id);
+      setRenovado(true);
+    } finally {
+      setRenovando(false);
+    }
+  }
 
   if (cargando) return (
     <div className="flex min-h-[40vh] items-center justify-center">
@@ -149,19 +172,60 @@ export default function PerroDetallePage() {
             )}
           </div>
 
-          {/* CTA publicar aviso */}
-          <div className="mt-6 rounded-2xl bg-gradient-to-br from-brand-coral/10 to-brand-coral/5 p-5 ring-1 ring-brand-coral/20">
-            <p className="text-sm font-bold text-ink">¿Perdiste a {perro.nombre}?</p>
-            <p className="mt-0.5 text-xs text-ink-muted">
-              Publicá un aviso ahora con toda esta información para que los vecinos te ayuden.
-            </p>
-            <Link
-              href={`/publicar?cat=perdido&perro=${perro.id}`}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-coral-dark"
-            >
-              <MapPin className="h-3.5 w-3.5" /> Publicar aviso de búsqueda
-            </Link>
-          </div>
+          {/* CTA: aviso activo o publicar */}
+          {postActivo !== undefined && (
+            postActivo ? (
+              /* Ya tiene aviso activo */
+              <div className="mt-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-5 ring-1 ring-amber-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <Search className="h-4 w-4 text-amber-600" />
+                  <p className="text-sm font-bold text-ink">Aviso activo — en búsqueda</p>
+                </div>
+                <p className="text-xs text-ink-muted mb-3">
+                  Ya hay un aviso publicado para {perro.nombre}. ¿Lo seguís buscando? Renovalo para que aparezca primero.
+                </p>
+                <div className="flex gap-2">
+                  {renovado ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-2xl bg-good/15 px-4 py-2 text-sm font-bold text-good">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> ¡Aviso renovado!
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleRenovar}
+                      disabled={renovando}
+                      className="inline-flex items-center gap-1.5 rounded-2xl bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-60"
+                    >
+                      {renovando
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <RefreshCw className="h-3.5 w-3.5" />}
+                      ¿Seguís buscando? Renovar aviso
+                    </button>
+                  )}
+                  <Link
+                    href={`/publicaciones/${postActivo.id}`}
+                    className="inline-flex items-center gap-1 rounded-2xl border-2 border-amber-200 px-4 py-2 text-sm font-bold text-amber-700 transition hover:bg-amber-50"
+                  >
+                    Ver aviso
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* Sin aviso activo */
+              <div className="mt-6 rounded-2xl bg-gradient-to-br from-brand-coral/10 to-brand-coral/5 p-5 ring-1 ring-brand-coral/20">
+                <p className="text-sm font-bold text-ink">¿Perdiste a {perro.nombre}?</p>
+                <p className="mt-0.5 text-xs text-ink-muted">
+                  Publicá un aviso ahora con toda esta información para que los vecinos te ayuden.
+                </p>
+                <Link
+                  href={`/publicar?cat=perdido&perro=${perro.id}`}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-coral-dark"
+                >
+                  <MapPin className="h-3.5 w-3.5" /> Publicar aviso de búsqueda
+                </Link>
+              </div>
+            )
+          )}
         </>
       )}
     </div>

@@ -27,6 +27,7 @@ interface Props {
   placeholder?: string;
   className?: string;
   required?: boolean;
+  ciudad?: string | null;
 }
 
 export default function AddressAutocomplete({
@@ -35,6 +36,7 @@ export default function AddressAutocomplete({
   placeholder = 'Dirección (calle y número)',
   className = '',
   required,
+  ciudad,
 }: Props) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading,     setLoading]     = useState(false);
@@ -68,7 +70,9 @@ export default function AddressAutocomplete({
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const q = encodeURIComponent(`${val}, Argentina`);
+        // Incluir ciudad para resultados locales
+        const query = ciudad ? `${val}, ${ciudad}, Argentina` : `${val}, Argentina`;
+        const q = encodeURIComponent(query);
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&countrycodes=ar`,
           { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }

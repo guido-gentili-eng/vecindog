@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 export default function ProfileModal() {
-  const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
+  const { user, isAuthenticated, hasProfile, loading, saveProfile, ciudad } = useAuth();
 
   const [nombre,    setNombre]    = useState('');
   const [apellido,  setApellido]  = useState('');
@@ -102,6 +102,7 @@ export default function ProfileModal() {
           <AddressAutocomplete
             value={direccion}
             onChange={setDireccion}
+            ciudad={ciudad}
             required
           />
 

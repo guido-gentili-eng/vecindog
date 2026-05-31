@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 export default function MiPerfilPage() {
-  const { user, profile, isAuthenticated, loading: authLoading, saveProfile } = useAuth();
+  const { user, profile, isAuthenticated, loading: authLoading, saveProfile, ciudad } = useAuth();
 
   const [perros,    setPerros]    = useState<Perro[]>([]);
   const [cargando,  setCargando]  = useState(true);
@@ -118,6 +118,7 @@ export default function MiPerfilPage() {
             <AddressAutocomplete
               value={direccion}
               onChange={setDireccion}
+              ciudad={ciudad}
               required
             />
             {error && (

@@ -621,6 +621,7 @@ export default function PublicarPage() {
                   value={form.zona}
                   onChange={(v) => handleChange('zona', v)}
                   placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
+                  ciudad={ciudad}
                   required
                 />
                 <p className="mt-1 text-xs text-ink-muted">

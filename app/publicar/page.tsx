@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import RazaAutocomplete from '@/components/RazaAutocomplete';
 
 /* ─── Tipos ─── */
 
@@ -504,14 +505,7 @@ export default function PublicarPage() {
             {/* Raza + Color */}
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Raza">
-                <input list="razas-pub" className="field" placeholder="Labrador, mestizo, caniche…"
-                  value={form.raza} onChange={(e) => handleChange('raza', e.target.value)} />
-                <datalist id="razas-pub">
-                  {['Mestizo', 'Labrador', 'Golden', 'Border Collie', 'Caniche', 'Bulldog',
-                    'Pastor Alemán', 'Chihuahua', 'Pitbull', 'Beagle', 'Boxer', 'Cocker',
-                    'Dálmata', 'Husky', 'Salchicha', 'Yorkshire', 'Schnauzer', 'Shih Tzu',
-                  ].map((r) => <option key={r} value={r} />)}
-                </datalist>
+                <RazaAutocomplete value={form.raza} onChange={(v) => handleChange('raza', v)} />
               </Field>
 
               <div>

@@ -11,6 +11,7 @@ import {
   crearPerro, subirFotoPerro, VACUNAS_COMUNES, VACUNA_VACIA,
   type PerroInput, type VacunaInput,
 } from '@/lib/perros';
+import RazaAutocomplete from '@/components/RazaAutocomplete';
 
 /* ─── Tipos internos ─── */
 interface FotoPreview { file: File; preview: string; }
@@ -159,12 +160,7 @@ export default function NuevoPerroPage() {
             {/* Raza */}
             <div>
               <label className="label">Raza</label>
-              <input
-                className="field w-full"
-                placeholder="Ej: Labrador, mestizo…"
-                value={form.raza}
-                onChange={(e) => campo('raza', e.target.value)}
-              />
+              <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
             </div>
             {/* Color */}
             <div>

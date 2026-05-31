@@ -13,6 +13,7 @@ import {
   type Perro, type Vacuna, type PerroInput,
 } from '@/lib/perros';
 import { buscarPostActivoDePerro, renovarPost, type Post } from '@/lib/posts';
+import RazaAutocomplete from '@/components/RazaAutocomplete';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -324,8 +325,7 @@ function EditForm({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Raza</label>
-            <input className="field w-full" value={form.raza} placeholder="Labrador, mestizo…"
-              onChange={(e) => campo('raza', e.target.value)} />
+            <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
           </div>
           <div>
             <label className="label">Color</label>

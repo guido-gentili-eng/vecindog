@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 /* ─── Tipos ─── */
 
@@ -615,11 +616,15 @@ export default function PublicarPage() {
             )}
 
             <div className="sm:col-span-2">
-              <Field label="Barrio o zona (sin número exacto)">
-                <input type="text" className="field" placeholder="Ej: Villa Mitre, Palihue, Centro…"
-                  value={form.zona} onChange={(e) => handleChange('zona', e.target.value)} required />
+              <Field label="Barrio o zona donde fue visto">
+                <AddressAutocomplete
+                  value={form.zona}
+                  onChange={(v) => handleChange('zona', v)}
+                  placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
+                  required
+                />
                 <p className="mt-1 text-xs text-ink-muted">
-                  Por tu seguridad, escribí el barrio o zona general, no la dirección exacta.
+                  Podés escribir la calle y elegir una sugerencia, o escribir el barrio general.
                 </p>
               </Field>
 

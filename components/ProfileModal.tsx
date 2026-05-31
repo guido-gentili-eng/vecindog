@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, MapPin, Globe, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Phone, MapPin, Globe, AlertCircle, Loader2, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
@@ -19,7 +19,8 @@ export default function ProfileModal() {
   const [error,        setError]        = useState('');
   const [submitting,   setSubmitting]   = useState(false);
 
-  if (loading || !isAuthenticated || hasProfile) return null;
+  const [cerrado, setCerrado] = useState(false);
+  if (loading || !isAuthenticated || hasProfile || cerrado) return null;
 
   function handleCiudadChange(nombre: string) {
     setCiudadPerfil(nombre);
@@ -41,9 +42,15 @@ export default function ProfileModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8 max-h-[90vh] overflow-y-auto">
 
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+
+        {/* Botón cerrar */}
+        <button type="button" onClick={() => setCerrado(true)}
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-xl text-ink-muted hover:bg-black/5 hover:text-ink transition">
+          <X className="h-4 w-4" />
+        </button>
 
         <div className="mb-6 text-center">
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-soft">

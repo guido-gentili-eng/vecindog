@@ -56,6 +56,18 @@ export async function POST(req: NextRequest) {
     const nombrePerro = nombre_perro || 'un perro';
     const zonaLabel = [zona, ciudad].filter(Boolean).join(', ');
 
+    // Insertar notificaciones en la tabla
+    const notifRows = cercanos.map((p: { id: string }) => ({
+      user_id:  p.id,
+      post_id:  post_id ?? null,
+      tipo:     categoria,
+      mensaje:  `🐾 Aviso de ${categoriaLabel}${nombre_perro ? ` (${nombre_perro})` : ''} cerca de tu casa en ${zonaLabel}.`,
+      leida:    false,
+    }));
+    if (notifRows.length > 0) {
+      await admin.from('notifications').insert(notifRows);
+    }
+
     // Enviar emails via Resend
     let enviados = 0;
     for (const perfil of cercanos as Array<{ id: string; nombre: string }>) {

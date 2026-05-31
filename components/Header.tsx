@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Bell, Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
+import NotificationsBell from '@/components/NotificationsBell';
 
 const NAV = [
   { href: '/',              label: 'Inicio'  },
@@ -93,14 +94,7 @@ export default function Header() {
             </div>
           )}
 
-          <button
-            type="button"
-            aria-label="Notificaciones"
-            className="relative grid h-10 w-10 place-items-center rounded-2xl text-ink hover:bg-brand-cream"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute right-2 top-2 inline-block h-2 w-2 rounded-full bg-brand-coral ring-2 ring-white" />
-          </button>
+          <NotificationsBell />
 
           <Link
             href="/publicar"

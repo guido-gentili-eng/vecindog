@@ -96,7 +96,11 @@ export default function Footer() {
       <div className="border-t border-black/5">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-ink-muted sm:flex-row">
           <p>© {new Date().getFullYear()} Vecindog · Buscá. Encontrá. Adoptá.</p>
-          <p>Hecho con cariño en Argentina 🐾</p>
+          <div className="flex items-center gap-4">
+            <Link href="/terminos" className="hover:text-brand-primary transition">Términos y Condiciones</Link>
+            <Link href="/privacidad" className="hover:text-brand-primary transition">Política de Privacidad</Link>
+            <p>Hecho con cariño en Argentina 🐾</p>
+          </div>
         </div>
       </div>
     </footer>

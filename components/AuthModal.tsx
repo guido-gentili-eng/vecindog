@@ -176,6 +176,20 @@ export default function AuthModal() {
                 </button>
               </div>
 
+              {/* Checkbox términos — solo en registro */}
+              {mode === 'register' && (
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" required className="mt-0.5 h-4 w-4 accent-brand-primary shrink-0" />
+                  <span className="text-xs text-ink-muted leading-relaxed">
+                    Acepto los{' '}
+                    <a href="/terminos" target="_blank" className="font-bold text-brand-primary underline">Términos y Condiciones</a>
+                    {' '}y la{' '}
+                    <a href="/privacidad" target="_blank" className="font-bold text-brand-primary underline">Política de Privacidad</a>
+                    {' '}de Vecindog.
+                  </span>
+                </label>
+              )}
+
               {error && (
                 <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}

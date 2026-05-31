@@ -106,8 +106,8 @@ export default function AuthModal() {
                 ref={codeRef}
                 type="text"
                 inputMode="numeric"
-                maxLength={8}
-                placeholder="12345678"
+                maxLength={6}
+                placeholder="123456"
                 value={code}
                 onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
                 className="field w-full text-center text-xl font-mono tracking-[0.3em] py-4"

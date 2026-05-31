@@ -84,27 +84,22 @@ export default function AddressAutocomplete({
   }
 
   function handleSelect(s: Suggestion) {
-    // Construir dirección legible: Calle Número, Barrio, Ciudad
+    // Mantener lo que el usuario escribió (conserva el número)
+    // pero agregar ciudad/barrio si no está ya incluido
     const a = s.address;
-    let formatted = '';
-    if (a) {
-      const calle = a.road ?? '';
-      const numero = a.house_number ?? '';
-      const barrio = a.suburb ?? a.neighbourhood ?? '';
-      const ciudad = a.city ?? a.town ?? a.village ?? '';
-      const partes = [
-        [calle, numero].filter(Boolean).join(' '),
-        barrio,
-        ciudad,
-      ].filter(Boolean);
-      formatted = partes.join(', ');
+    const ciudad = a?.city ?? a?.town ?? a?.village ?? '';
+    const barrio = a?.suburb ?? a?.neighbourhood ?? '';
+
+    let result = value.trim();
+    // Agregar barrio y ciudad si no están ya
+    if (barrio && !result.toLowerCase().includes(barrio.toLowerCase())) {
+      result = `${result}, ${barrio}`;
     }
-    // Fallback: tomar los primeros segmentos del display_name
-    if (!formatted) {
-      const parts = s.display_name.split(',');
-      formatted = parts.slice(0, 4).join(',').trim();
+    if (ciudad && !result.toLowerCase().includes(ciudad.toLowerCase())) {
+      result = `${result}, ${ciudad}`;
     }
-    onChange(formatted);
+
+    onChange(result);
     setSuggestions([]);
     setOpen(false);
   }

@@ -8,6 +8,7 @@ import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircl
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect } from 'react';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 export default function MiPerfilPage() {
   const { user, profile, isAuthenticated, loading: authLoading, saveProfile } = useAuth();
@@ -114,11 +115,11 @@ export default function MiPerfilPage() {
               <input type="tel" required placeholder="Teléfono" value={telefono}
                 onChange={(e) => setTelefono(e.target.value)} className="field pl-9" />
             </div>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="text" required placeholder="Dirección" value={direccion}
-                onChange={(e) => setDireccion(e.target.value)} className="field pl-9" />
-            </div>
+            <AddressAutocomplete
+              value={direccion}
+              onChange={setDireccion}
+              required
+            />
             {error && (
               <p className="flex items-center gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
                 <AlertCircle className="h-4 w-4 shrink-0" />{error}

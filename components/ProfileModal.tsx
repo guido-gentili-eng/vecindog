@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, MapPin, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 export default function ProfileModal() {
   const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
@@ -98,17 +99,11 @@ export default function ProfileModal() {
           </div>
 
           {/* Dirección */}
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input
-              type="text"
-              required
-              placeholder="Dirección (calle y número)"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              className="field pl-9"
-            />
-          </div>
+          <AddressAutocomplete
+            value={direccion}
+            onChange={setDireccion}
+            required
+          />
 
           {error && (
             <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">

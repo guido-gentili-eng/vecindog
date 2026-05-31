@@ -168,7 +168,7 @@ export default function PublicitatePage() {
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 mx-auto max-w-2xl">
 
           {/* ── BANNER ── */}
           <div className="card overflow-hidden p-0">

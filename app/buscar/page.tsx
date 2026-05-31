@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
 import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
+import RazaAutocomplete from '@/components/RazaAutocomplete';
 
 /* ─────────────── Tipos del formulario ─────────────── */
 
@@ -31,6 +32,7 @@ interface Resultado {
   score:      number;
   max:        number;
   porcentaje: number;
+  excluir:    boolean;
 }
 
 const FORM_INICIAL: BuscarForm = {
@@ -56,109 +58,156 @@ function norm(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-function calcularScore(post: Post, f: BuscarForm): { score: number; max: number } {
+/**
+ * Nuevo sistema de matching: filtros obligatorios + score de confianza.
+ *
+ * Si un criterio está especificado Y el aviso tiene ese dato Y no coincide → EXCLUIR.
+ * Si el aviso no tiene ese dato → no excluir (puede ser que no lo cargaron).
+ * El score sirve solo para ordenar entre los que pasan el filtro.
+ */
+function calcularScore(post: Post, f: BuscarForm): { score: number; max: number; excluir: boolean } {
   const desc = norm(post.descripcion);
   const zona = norm(post.zona);
-  let score = 0;
-  let max   = 0;
+  let score   = 0;
+  let max     = 0;
+  let excluir = false;
 
-  /* Raza — campo estructurado primero, texto como fallback */
+  /* ── RAZA (filtro obligatorio + score alto) ── */
   if (f.raza.trim()) {
-    max += 30;
+    max += 40;
+    const razaBuscada = norm(f.raza);
     if (post.raza) {
-      if (norm(post.raza).includes(norm(f.raza))) score += 30;
-    } else {
-      if (desc.includes(norm(f.raza))) score += 30;
-    }
-  }
-
-  /* Color */
-  if (f.color) {
-    max += 25;
-    if (post.color) {
-      if (norm(post.color) === norm(f.color)) score += 25;
-    } else {
-      if (desc.includes(norm(f.color))) score += 25;
-    }
-  }
-
-  /* Tamaño */
-  if (f.tamano) {
-    max += 15;
-    if (post.tamano) {
-      if (post.tamano === f.tamano) score += 15;
-    } else {
-      const palabras: Record<string, string[]> = {
-        pequeño: ['pequeno', 'pequeño', 'chico', 'mini', 'toy'],
-        mediano: ['mediano'],
-        grande:  ['grande'],
-      };
-      if (palabras[f.tamano]?.some((p) => desc.includes(p))) score += 15;
-    }
-  }
-
-  /* Sexo (solo texto, no está en la tabla posts) */
-  if (f.sexo !== 'ns') {
-    max += 10;
-    if (desc.includes(f.sexo)) score += 10;
-  }
-
-  /* Collar */
-  if (f.collar !== 'ns') {
-    max += 10;
-    if (post.collar !== null && post.collar !== undefined) {
-      if ((f.collar === 'si') === post.collar) score += 10;
-    } else {
-      if (f.collar === 'si') {
-        if (desc.includes('collar') && !desc.includes('sin collar')) score += 10;
+      const razaPost = norm(post.raza);
+      if (razaPost.includes(razaBuscada) || razaBuscada.includes(razaPost)) {
+        score += 40; // coincidencia exacta en campo estructurado
+      } else if (desc.includes(razaBuscada)) {
+        score += 20; // menciona la raza en la descripción
       } else {
-        if (desc.includes('sin collar') || !desc.includes('collar')) score += 10;
+        excluir = true; // tiene raza distinta → excluir
       }
+    } else {
+      // No tiene raza cargada → buscar en descripción
+      if (desc.includes(razaBuscada)) score += 20;
+      // Si no está en descripción, no excluir (dato ausente = desconocido)
     }
   }
 
-  /* Color del collar (texto) */
-  if (f.collar === 'si' && f.colorCollar.trim()) {
+  /* ── COLOR (filtro obligatorio) ── */
+  if (f.color && !excluir) {
+    max += 30;
+    const colorBuscado = norm(f.color);
+    if (post.color) {
+      if (norm(post.color) === colorBuscado || norm(post.color).includes(colorBuscado)) {
+        score += 30;
+      } else if (desc.includes(colorBuscado)) {
+        score += 15; // mencionado en descripción aunque campo distinto
+      } else {
+        excluir = true; // color claramente diferente → excluir
+      }
+    } else {
+      if (desc.includes(colorBuscado)) score += 15;
+      // Si no, dato ausente → no excluir
+    }
+  }
+
+  /* ── TAMAÑO (filtro obligatorio) ── */
+  if (f.tamano && !excluir) {
+    max += 15;
+    const palabrasTamano: Record<string, string[]> = {
+      pequeño: ['pequeno', 'pequeño', 'chico', 'mini', 'toy'],
+      mediano: ['mediano'],
+      grande:  ['grande'],
+    };
+    if (post.tamano) {
+      if (post.tamano === f.tamano) {
+        score += 15;
+      } else {
+        excluir = true; // tamaño diferente → excluir
+      }
+    } else {
+      if (palabrasTamano[f.tamano]?.some((p) => desc.includes(p))) score += 15;
+    }
+  }
+
+  /* ── SEXO (filtro obligatorio) ── */
+  if (f.sexo !== 'ns' && !excluir) {
+    max += 10;
+    // El sexo puede estar en la descripción o en el campo estructurado
+    const sexoPost = (post as unknown as Record<string, string | undefined>).sexo;
+    if (sexoPost) {
+      if (norm(sexoPost) === f.sexo) {
+        score += 10;
+      } else {
+        excluir = true;
+      }
+    } else if (desc.includes(f.sexo)) {
+      score += 10;
+    } else {
+      // Buscar variantes
+      const esMacho  = ['macho', 'perrito', 'cachorro macho'].some((p) => desc.includes(p));
+      const esHembra = ['hembra', 'perrita', 'cachorra'].some((p) => desc.includes(p));
+      if (f.sexo === 'macho'  && esHembra) { excluir = true; }
+      else if (f.sexo === 'hembra' && esMacho) { excluir = true; }
+      else if (f.sexo === 'macho'  && esMacho)  { score += 10; }
+      else if (f.sexo === 'hembra' && esHembra) { score += 10; }
+    }
+  }
+
+  /* ── COLLAR (filtro cuando hay datos explícitos) ── */
+  if (f.collar !== 'ns' && !excluir) {
+    max += 8;
+    if (post.collar !== null && post.collar !== undefined) {
+      if ((f.collar === 'si') === post.collar) score += 8;
+      else excluir = true;
+    } else {
+      if (f.collar === 'si' && desc.includes('collar') && !desc.includes('sin collar')) score += 8;
+      else if (f.collar === 'no' && (desc.includes('sin collar') || !desc.includes('collar'))) score += 8;
+    }
+  }
+
+  /* Color del collar (solo informativo, no excluye) */
+  if (f.collar === 'si' && f.colorCollar.trim() && !excluir) {
     max += 5;
     if (desc.includes(norm(f.colorCollar))) score += 5;
   }
 
-  /* Chapita */
-  if (f.chapita !== 'ns') {
-    max += 10;
+  /* ── CHAPITA (filtro cuando hay datos explícitos) ── */
+  if (f.chapita !== 'ns' && !excluir) {
+    max += 7;
     if (post.chapita !== null && post.chapita !== undefined) {
-      if ((f.chapita === 'si') === post.chapita) score += 10;
+      if ((f.chapita === 'si') === post.chapita) score += 7;
+      else excluir = true;
     } else {
-      if (f.chapita === 'si') {
-        if (desc.includes('chapita') || desc.includes('chapa') || desc.includes('plaquita')) score += 10;
-      } else {
-        if (desc.includes('sin chapita') || desc.includes('sin chapa')) score += 10;
-      }
+      if (f.chapita === 'si' && (desc.includes('chapita') || desc.includes('plaquita'))) score += 7;
+      else if (f.chapita === 'no' && desc.includes('sin chapita')) score += 7;
     }
   }
 
-  /* Zona */
-  if (f.zona.trim()) {
-    max += 10;
-    if (zona.includes(norm(f.zona))) score += 10;
+  /* ── ZONA (no excluye, pero suma mucho si coincide) ── */
+  if (f.zona.trim() && !excluir) {
+    max += 15;
+    const zonaBuscada = norm(f.zona);
+    if (zona.includes(zonaBuscada) || zonaBuscada.includes(zona.split(',')[0])) score += 15;
+    else if (zona.split(' ').some((w) => w.length > 3 && zonaBuscada.includes(w))) score += 8;
   }
 
-  /* Fecha (dentro de los 7 días) */
-  if (f.fecha) {
+  /* ── FECHA (rango de 7 días, no excluye) ── */
+  if (f.fecha && !excluir) {
     max += 5;
     const dias = Math.abs(new Date(post.fecha).getTime() - new Date(f.fecha).getTime()) / (1000 * 60 * 60 * 24);
-    if (dias <= 7) score += 5;
+    if (dias <= 3) score += 5;
+    else if (dias <= 7) score += 3;
   }
 
-  /* Horario (±3 horas) */
-  if (f.horario && post.horario) {
+  /* ── HORARIO (±3 hs, no excluye) ── */
+  if (f.horario && post.horario && !excluir) {
     max += 5;
     const [hB, mB] = f.horario.split(':').map(Number);
     const [hP, mP] = post.horario.split(':').map(Number);
     if (Math.abs((hB * 60 + mB) - (hP * 60 + mP)) <= 180) score += 5;
   }
 
-  return { score, max };
+  return { score, max, excluir };
 }
 
 /* ─────────────── Página ─────────────── */
@@ -195,16 +244,16 @@ export default function BuscarPage() {
       if (!hayAlgunCriterio) {
         /* Sin criterios → mostrar todos los encontrado/perdido sin score */
         lista = candidatos.map((post) => ({
-          post, score: 0, max: 0, porcentaje: 0,
+          post, score: 0, max: 0, porcentaje: 0, excluir: false,
         }));
       } else {
         lista = candidatos
           .map((post) => {
-            const { score, max } = calcularScore(post, form);
+            const { score, max, excluir } = calcularScore(post, form);
             const porcentaje = max > 0 ? Math.round((score / max) * 100) : 0;
-            return { post, score, max, porcentaje };
+            return { post, score, max, porcentaje, excluir };
           })
-          .filter((r) => r.score > 0)
+          .filter((r) => !r.excluir && r.score > 0)
           .sort((a, b) => b.porcentaje - a.porcentaje);
       }
 
@@ -251,19 +300,8 @@ export default function BuscarPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">Raza</label>
-                <input
-                  list="razas-list"
-                  className="field w-full"
-                  placeholder="Labrador, mestizo, caniche…"
-                  value={form.raza}
-                  onChange={(e) => campo('raza', e.target.value)}
-                />
-                <datalist id="razas-list">
-                  {['Mestizo', 'Labrador', 'Golden', 'Border Collie', 'Caniche', 'Bulldog',
-                    'Pastor Alemán', 'Chihuahua', 'Pitbull', 'Beagle', 'Boxer', 'Cocker',
-                    'Dálmata', 'Husky', 'Salchicha', 'Yorkshire', 'Schnauzer', 'Shih Tzu',
-                  ].map((r) => <option key={r} value={r} />)}
-                </datalist>
+                <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
+                <p className="mt-1 text-xs text-ink-muted">Si especificás raza, solo aparecen perros de esa raza</p>
               </div>
 
               {/* Color */}

@@ -82,12 +82,14 @@ export default function PerroDetallePage() {
         </Link>
         {!editando && (
           <div className="flex gap-2">
-            <Link
-              href={`/mis-perros/${id}/cartel`}
-              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
-            >
-              <FileText className="h-3.5 w-3.5" /> Generar cartel
-            </Link>
+            {postActivo && (
+              <Link
+                href={`/mis-perros/${id}/cartel`}
+                className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
+              >
+                <FileText className="h-3.5 w-3.5" /> Generar cartel
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setEditando(true)}

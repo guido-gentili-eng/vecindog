@@ -34,12 +34,8 @@ export default function FoundModal({ nombrePerro, onClose }: Props) {
         </h1>
 
         <p className="text-ink-muted text-base leading-relaxed mb-6">
-          Cada reencuentro es una historia que nos llena el corazón. Gracias a vos y a los vecinos que se ayudan, más perros vuelven a sus hogares. 🏠
+          Cada reencuentro es una historia que nos llena el corazón. Gracias a vos y a los vecinos que ayudan, más perros vuelven a sus casas. 🏠
         </p>
-
-        <div className="rounded-2xl bg-brand-cream p-4 mb-6 text-sm text-ink-muted italic">
-          "Un perro no es solo una mascota, es un pedazo del corazón que camina afuera de tu cuerpo."
-        </div>
 
         <button
           type="button"

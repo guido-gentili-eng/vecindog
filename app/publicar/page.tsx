@@ -239,6 +239,54 @@ export default function PublicarPage() {
       });
       if (insErr) throw insErr;
 
+      // Obtener el post recién creado para tener el ID
+      const { data: postData } = await supabase
+        .from('posts')
+        .select('id, lat, lng')
+        .eq('user_id', user?.id ?? '')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      // Notificar vecinos cercanos (fire & forget)
+      if (postData) {
+        let notifLat = postData.lat;
+        let notifLng = postData.lng;
+
+        // Si no hay coords GPS, geocodificar la zona
+        if (!notifLat || !notifLng) {
+          try {
+            const q = encodeURIComponent(`${form.zona}${ciudad ? ', ' + ciudad : ''}, Argentina`);
+            const geoRes = await fetch(
+              `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
+              { headers: { 'User-Agent': 'Vecindog/1.0' } }
+            );
+            const geoData = await geoRes.json();
+            if (geoData?.[0]) {
+              notifLat = parseFloat(geoData[0].lat);
+              notifLng = parseFloat(geoData[0].lon);
+            }
+          } catch { /* sin coords */ }
+        }
+
+        if (notifLat && notifLng) {
+          fetch('/api/notificar-vecinos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              post_id: postData.id,
+              lat: notifLat,
+              lng: notifLng,
+              zona: form.zona,
+              ciudad,
+              categoria: form.categoria,
+              nombre_perro: form.nombre || null,
+              publicador_id: user?.id ?? null,
+            }),
+          }).catch(() => {});
+        }
+      }
+
       setEnviado(true);
     } catch (err: unknown) {
       const msg =

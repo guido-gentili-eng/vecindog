@@ -133,9 +133,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
     if (!user) return 'No hay sesión activa.';
+
+    // Geocodificar dirección para notificaciones por proximidad
+    let lat: number | null = null;
+    let lng: number | null = null;
+    try {
+      const q = encodeURIComponent(`${data.direccion}, Argentina`);
+      const geoRes = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
+        { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+      );
+      const geoData = await geoRes.json();
+      if (geoData?.[0]) {
+        lat = parseFloat(geoData[0].lat);
+        lng = parseFloat(geoData[0].lon);
+      }
+    } catch { /* sin coords, ok igual */ }
+
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
       ...data,
+      ...(lat !== null && lng !== null ? { lat, lng } : {}),
     });
     if (error) return error.message;
     setProfile({ id: user.id, ...data });

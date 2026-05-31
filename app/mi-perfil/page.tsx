@@ -9,22 +9,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect } from 'react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { CIUDADES } from '@/lib/ciudades';
 
 export default function MiPerfilPage() {
-  const { user, profile, isAuthenticated, loading: authLoading, saveProfile, ciudad } = useAuth();
+  const { user, profile, isAuthenticated, loading: authLoading, saveProfile } = useAuth();
 
-  const [perros,    setPerros]    = useState<Perro[]>([]);
-  const [cargando,  setCargando]  = useState(true);
-  const [editando,  setEditando]  = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [success,   setSuccess]   = useState('');
-  const [error,     setError]     = useState('');
+  const [perros,       setPerros]       = useState<Perro[]>([]);
+  const [cargando,     setCargando]     = useState(true);
+  const [editando,     setEditando]     = useState(false);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [success,      setSuccess]      = useState('');
+  const [error,        setError]        = useState('');
 
   // Form state
-  const [nombre,    setNombre]    = useState('');
-  const [apellido,  setApellido]  = useState('');
-  const [telefono,  setTelefono]  = useState('');
-  const [direccion, setDireccion] = useState('');
+  const [nombre,       setNombre]       = useState('');
+  const [apellido,     setApellido]     = useState('');
+  const [telefono,     setTelefono]     = useState('');
+  const [ciudadPerfil, setCiudadPerfil] = useState('');
+  const [direccion,    setDireccion]    = useState('');
 
   useEffect(() => {
     if (profile) {
@@ -32,6 +34,7 @@ export default function MiPerfilPage() {
       setApellido(profile.apellido);
       setTelefono(profile.telefono);
       setDireccion(profile.direccion);
+      setCiudadPerfil(profile.ciudad ?? '');
     }
   }, [profile]);
 
@@ -46,7 +49,7 @@ export default function MiPerfilPage() {
   async function handleGuardar(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setSuccess(''); setSubmitting(true);
-    const err = await saveProfile({ nombre, apellido, telefono, direccion });
+    const err = await saveProfile({ nombre, apellido, telefono, direccion, ciudad: ciudadPerfil });
     setSubmitting(false);
     if (err) { setError(err); return; }
     setSuccess('Perfil actualizado correctamente.');
@@ -115,10 +118,21 @@ export default function MiPerfilPage() {
               <input type="tel" required placeholder="Teléfono" value={telefono}
                 onChange={(e) => setTelefono(e.target.value)} className="field pl-9" />
             </div>
+            {/* Ciudad */}
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
+              <select required value={ciudadPerfil} onChange={(e) => setCiudadPerfil(e.target.value)}
+                className="field pl-9 appearance-none">
+                <option value="">Seleccioná tu ciudad</option>
+                {CIUDADES.map((c) => (
+                  <option key={c.nombre} value={c.nombre}>{c.nombre}, {c.provincia}</option>
+                ))}
+              </select>
+            </div>
             <AddressAutocomplete
               value={direccion}
               onChange={setDireccion}
-              ciudad={ciudad}
+              ciudad={ciudadPerfil}
               required
             />
             {error && (
@@ -146,6 +160,7 @@ export default function MiPerfilPage() {
             <InfoRow icon={<Mail className="h-4 w-4 text-brand-primary" />} label="Email" value={user?.email ?? ''} />
             <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label="Nombre" value={profile ? `${profile.nombre} ${profile.apellido}` : '—'} />
             <InfoRow icon={<Phone className="h-4 w-4 text-brand-primary" />} label="Teléfono" value={profile?.telefono ?? '—'} />
+            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Ciudad" value={profile?.ciudad ?? '—'} />
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Dirección" value={profile?.direccion ?? '—'} />
           </div>
         )}

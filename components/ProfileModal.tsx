@@ -1,21 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Phone, MapPin, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { CIUDADES } from '@/lib/ciudades';
 
 export default function ProfileModal() {
-  const { user, isAuthenticated, hasProfile, loading, saveProfile, ciudad } = useAuth();
+  const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
 
   const [nombre,    setNombre]    = useState('');
   const [apellido,  setApellido]  = useState('');
   const [telefono,  setTelefono]  = useState('');
+  const [ciudadPerfil, setCiudadPerfil] = useState('');
   const [direccion, setDireccion] = useState('');
   const [error,     setError]     = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Solo mostrar si está autenticado, no es invitado, no tiene perfil aún y no está cargando
   if (loading || !isAuthenticated || hasProfile) return null;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +24,7 @@ export default function ProfileModal() {
     setError('');
     setSubmitting(true);
     try {
-      const err = await saveProfile({ nombre, apellido, telefono, direccion });
+      const err = await saveProfile({ nombre, apellido, telefono, direccion, ciudad: ciudadPerfil });
       if (err) setError(err);
     } finally {
       setSubmitting(false);
@@ -51,58 +52,48 @@ export default function ProfileModal() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Email (solo lectura) */}
           <div className="relative">
-            <input
-              type="email"
-              value={user?.email ?? ''}
-              disabled
-              className="field w-full bg-black/5 text-ink-muted cursor-not-allowed"
-            />
+            <input type="email" value={user?.email ?? ''} disabled
+              className="field w-full bg-black/5 text-ink-muted cursor-not-allowed" />
           </div>
 
           {/* Nombre */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input
-              type="text"
-              required
-              placeholder="Nombre"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="field pl-9"
-            />
+            <input type="text" required placeholder="Nombre" value={nombre}
+              onChange={(e) => setNombre(e.target.value)} className="field pl-9" />
           </div>
 
           {/* Apellido */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input
-              type="text"
-              required
-              placeholder="Apellido"
-              value={apellido}
-              onChange={(e) => setApellido(e.target.value)}
-              className="field pl-9"
-            />
+            <input type="text" required placeholder="Apellido" value={apellido}
+              onChange={(e) => setApellido(e.target.value)} className="field pl-9" />
           </div>
 
           {/* Teléfono */}
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input
-              type="tel"
-              required
-              placeholder="Teléfono (ej: 1123456789)"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="field pl-9"
-            />
+            <input type="tel" required placeholder="Teléfono (ej: 1123456789)" value={telefono}
+              onChange={(e) => setTelefono(e.target.value)} className="field pl-9" />
+          </div>
+
+          {/* Ciudad */}
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
+            <select required value={ciudadPerfil} onChange={(e) => setCiudadPerfil(e.target.value)}
+              className="field pl-9 appearance-none">
+              <option value="">Seleccioná tu ciudad</option>
+              {CIUDADES.map((c) => (
+                <option key={c.nombre} value={c.nombre}>{c.nombre}, {c.provincia}</option>
+              ))}
+            </select>
           </div>
 
           {/* Dirección */}
           <AddressAutocomplete
             value={direccion}
             onChange={setDireccion}
-            ciudad={ciudad}
+            ciudad={ciudadPerfil}
             required
           />
 
@@ -112,11 +103,7 @@ export default function ProfileModal() {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="btn-primary w-full disabled:opacity-60"
-          >
+          <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
             {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Guardar y continuar'}
           </button>
         </form>

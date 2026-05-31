@@ -9,14 +9,24 @@ import { supabase } from '@/lib/supabase';
 const GUEST_KEY  = 'vecindog_guest';
 const CITY_KEY   = 'vecindog_ciudad';
 
+export interface Profile {
+  id:        string;
+  nombre:    string;
+  apellido:  string;
+  telefono:  string;
+  direccion: string;
+}
+
 interface AuthCtx {
   user:            User | null;
+  profile:         Profile | null;
   isGuest:         boolean;
   loading:         boolean;
-  isAuthenticated: boolean;   // tiene cuenta + sesión activa
-  hasChosen:       boolean;   // eligió algo (cuenta o invitado)
-  ciudad:          string | null; // ciudad seleccionada
-  hasCity:         boolean;       // ya eligió ciudad
+  isAuthenticated: boolean;
+  hasChosen:       boolean;
+  hasProfile:      boolean;
+  ciudad:          string | null;
+  hasCity:         boolean;
   setCiudad:       (c: string) => void;
   clearCiudad:     () => void;
   signIn:          (email: string, pw: string) => Promise<string | null>;
@@ -24,6 +34,7 @@ interface AuthCtx {
   signInWithGoogle: () => Promise<void>;
   verifyOtp:       (email: string, token: string) => Promise<string | null>;
   resendConfirm:   (email: string) => Promise<void>;
+  saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
   signOut:         () => Promise<void>;
   enterAsGuest:    () => void;
 }
@@ -32,9 +43,19 @@ const AuthContext = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user,    setUser]    = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [ciudad,  setCiudadState] = useState<string | null>(null);
+
+  async function fetchProfile(userId: string) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    setProfile(data ?? null);
+  }
 
   useEffect(() => {
     // Restore ciudad from localStorage
@@ -45,8 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       const u = data.session?.user ?? null;
-      setUser(u);
-      if (!u && typeof window !== 'undefined') {
+      const confirmedUser = u?.email_confirmed_at ? u : null;
+      setUser(confirmedUser);
+      if (confirmedUser) {
+        fetchProfile(confirmedUser.id);
+      } else if (typeof window !== 'undefined') {
         setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
       }
       setLoading(false);
@@ -54,10 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
+      const confirmedUser = u?.email_confirmed_at ? u : null;
+      setUser(confirmedUser);
+      if (confirmedUser) {
         setIsGuest(false);
         if (typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);
+        fetchProfile(confirmedUser.id);
+      } else {
+        setProfile(null);
       }
     });
 
@@ -103,13 +131,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.resend({ type: 'signup', email });
   };
 
+  const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
+    if (!user) return 'No hay sesión activa.';
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      ...data,
+    });
+    if (error) return error.message;
+    setProfile({ id: user.id, ...data });
+    return null;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     if (typeof window !== 'undefined') {
       localStorage.removeItem(GUEST_KEY);
-      // Mantener la ciudad al cerrar sesión
     }
     setIsGuest(false);
+    setProfile(null);
   };
 
   const enterAsGuest = () => {
@@ -119,14 +158,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, isGuest, loading,
+      user, profile, isGuest, loading,
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
+      hasProfile:      !!profile,
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,
       clearCiudad,
-      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, signOut, enterAsGuest,
+      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, saveProfile, signOut, enterAsGuest,
     }}>
       {children}
     </AuthContext.Provider>

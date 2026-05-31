@@ -59,7 +59,7 @@ export default function AuthModal() {
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
-    if (code.length < 6) { setError('Ingresá el código de 6 dígitos.'); return; }
+    if (code.length < 6) { setError('Ingresá el código de verificación.'); return; }
     setError(''); setSubmitting(true);
     try {
       const err = await verifyOtp(email, code.trim());
@@ -92,7 +92,7 @@ export default function AuthModal() {
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
             {step === 'confirm'
-              ? <>Te enviamos un código de 6 dígitos a <strong>{email}</strong></>
+              ? <>Te enviamos un código de verificación a <strong>{email}</strong></>
               : 'Registrate para ver los datos de contacto de los avisos.'}
           </p>
         </div>
@@ -106,11 +106,11 @@ export default function AuthModal() {
                 ref={codeRef}
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
-                placeholder="123456"
+                maxLength={8}
+                placeholder="12345678"
                 value={code}
                 onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
-                className="field w-full text-center text-2xl font-mono tracking-[0.4em] py-4"
+                className="field w-full text-center text-xl font-mono tracking-[0.3em] py-4"
                 autoComplete="one-time-code"
               />
             </div>

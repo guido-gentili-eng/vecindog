@@ -17,7 +17,7 @@ const LANGS: { lang: Lang; flag: string; label: string }[] = [
 
 const NAV = [
   { href: '/',              label: 'Inicio'  },
-  { href: '/mapa',          label: 'Mapas',  icon: 'map' },
+  { href: '/mapa',          label: 'Mapa',   icon: 'map' },
   { href: '/publicaciones', label: 'Avisos'  },
 ];
 

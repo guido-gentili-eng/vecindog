@@ -50,7 +50,7 @@ export default function TabsLayout() {
 
 import { Text, View } from 'react-native';
 
-function TabIcon({ emoji, color }: { emoji: string; color: string }) {
+function TabIcon({ emoji, color }: { emoji: string; color: import('react-native').ColorValue }) {
   return <Text style={{ fontSize: 22, opacity: color === Colors.primary ? 1 : 0.5 }}>{emoji}</Text>;
 }
 

@@ -208,7 +208,7 @@ export default function PerroDetallePage() {
           </div>
 
           {/* Vacunas */}
-          <div className="card p-5">
+          <div className="card p-5 mb-5">
             <h2 className="mb-4 flex items-center gap-2 font-display text-base font-extrabold text-ink">
               <Syringe className="h-4 w-4 text-brand-primary" /> Carnet de vacunas
               {vacunas.length > 0 && (

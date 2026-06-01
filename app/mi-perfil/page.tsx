@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect } from 'react';
@@ -12,7 +12,14 @@ import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
 
 export default function MiPerfilPage() {
-  const { user, profile, isAuthenticated, loading: authLoading, saveProfile } = useAuth();
+  const { user, profile, isAuthenticated, loading: authLoading, saveProfile, resetPassword } = useAuth();
+  const [pwSent, setPwSent] = useState(false);
+
+  async function handleChangePassword() {
+    if (!user?.email) return;
+    const err = await resetPassword(user.email);
+    if (!err) { setPwSent(true); setTimeout(() => setPwSent(false), 6000); }
+  }
 
   const [perros,       setPerros]       = useState<Perro[]>([]);
   const [cargando,     setCargando]     = useState(true);
@@ -197,6 +204,24 @@ export default function MiPerfilPage() {
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Provincia" value={profile?.provincia ?? '—'} />
             <InfoRow icon={<Globe className="h-4 w-4 text-brand-primary" />} label="País" value={profile?.pais ?? '—'} />
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Dirección" value={profile?.direccion ?? '—'} />
+
+            {/* Fila contraseña */}
+            <div className="flex items-center gap-3 py-2">
+              <span className="shrink-0"><Lock className="h-4 w-4 text-brand-primary" /></span>
+              <span className="text-xs text-ink-muted w-20 shrink-0">Contraseña</span>
+              <span className="text-sm font-semibold text-ink tracking-widest">••••••••</span>
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                title="Cambiar contraseña por email"
+                className="ml-auto inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition hover:bg-brand-primary/10
+                  text-brand-primary"
+              >
+                {pwSent
+                  ? <><CheckCircle2 className="h-3.5 w-3.5 text-good" /><span className="text-good">Link enviado</span></>
+                  : <><KeyRound className="h-3.5 w-3.5" /> Cambiar</>}
+              </button>
+            </div>
           </div>
         )}
       </div>

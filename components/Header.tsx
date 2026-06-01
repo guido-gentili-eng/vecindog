@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, KeyRound, CheckCircle2 } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -23,16 +23,8 @@ const NAV = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [pwSent, setPwSent] = useState(false);
-  const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad, resetPassword } = useAuth();
+  const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad } = useAuth();
   const { lang, setLang } = useLanguage();
-
-  async function handleChangePassword() {
-    if (!user?.email) return;
-    await resetPassword(user.email);
-    setPwSent(true);
-    setTimeout(() => setPwSent(false), 5000);
-  }
 
   const navConPerros = isAuthenticated
     ? [...NAV, { href: '/mis-perros', label: 'Mis perros' }]
@@ -89,16 +81,6 @@ export default function Header() {
                     <User className="h-3.5 w-3.5 text-brand-primary" />
                     {profile ? `${profile.nombre} ${profile.apellido}` : user?.email?.split('@')[0]}
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleChangePassword}
-                    title="Cambiar contraseña"
-                    className="inline-flex items-center gap-1 rounded-2xl px-2.5 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-cream hover:text-brand-primary"
-                  >
-                    {pwSent
-                      ? <CheckCircle2 className="h-3.5 w-3.5 text-good" />
-                      : <KeyRound className="h-3.5 w-3.5" />}
-                  </button>
                   <button
                     type="button"
                     onClick={() => signOut()}
@@ -204,16 +186,6 @@ export default function Header() {
                       >
                         <User className="h-4 w-4 text-brand-primary" /> Mi perfil
                       </Link>
-                      <button
-                        type="button"
-                        onClick={async () => { await handleChangePassword(); }}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
-                      >
-                        {pwSent
-                          ? <CheckCircle2 className="h-4 w-4 text-good" />
-                          : <KeyRound className="h-4 w-4 text-brand-primary" />}
-                        {pwSent ? 'Link enviado al email ✓' : 'Cambiar contraseña'}
-                      </button>
                       <button
                         type="button"
                         onClick={() => { signOut(); setOpen(false); }}

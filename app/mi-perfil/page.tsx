@@ -315,7 +315,7 @@ function QRModal({ userId, nombre, onClose }: { userId: string; nombre: string; 
   // Genera el token basado en ventana de 30 segundos
   const generarQR = useCallback(async () => {
     const window30 = Math.floor(Date.now() / 30000);
-    const payload  = `vecindog://usuario/${userId}/${window30}`;
+    const payload  = `https://www.mivecindog.com.ar/verificar/${userId}?t=${window30}`;
     try {
       const url = await QRCode.toDataURL(payload, {
         width: 280,

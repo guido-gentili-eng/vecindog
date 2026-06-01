@@ -1,18 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
-  RefreshCw, Search, FileText,
+  RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
+  Upload, Trash2, Send, Mail, MessageCircle, Copy, Check,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
   type Perro, type Vacuna, type PerroInput,
 } from '@/lib/perros';
 import { buscarPostActivoDePerro, renovarPost, type Post } from '@/lib/posts';
+import {
+  listarEstudios, subirArchivoEstudio, agregarEstudio, eliminarEstudio,
+  type Estudio, type TipoEstudio,
+} from '@/lib/estudios';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
 import { nombreCorto } from '@/lib/ciudades';
@@ -24,23 +29,51 @@ export default function PerroDetallePage() {
   const esNuevo       = searchParams.get('nuevo') === '1';
   const { ciudad, profile } = useAuth();
 
-  const [perro,       setPerro]       = useState<Perro | null>(null);
-  const [postActivo,  setPostActivo]  = useState<Post | null | undefined>(undefined);
-  const [cargando,    setCargando]    = useState(true);
-  const [editando,    setEditando]    = useState(false);
-  const [renovando,   setRenovando]   = useState(false);
-  const [renovado,    setRenovado]    = useState(false);
+  const [perro,             setPerro]             = useState<Perro | null>(null);
+  const [postActivo,        setPostActivo]        = useState<Post | null | undefined>(undefined);
+  const [estudios,          setEstudios]          = useState<Estudio[]>([]);
+  const [cargando,          setCargando]          = useState(true);
+  const [editando,          setEditando]          = useState(false);
+  const [renovando,         setRenovando]         = useState(false);
+  const [renovado,          setRenovado]          = useState(false);
+  const [subiendoTipo,      setSubiendoTipo]      = useState<TipoEstudio | null>(null);
+  const [estudioEnviar,     setEstudioEnviar]     = useState<Estudio | null>(null);
 
   useEffect(() => {
     obtenerPerro(id)
       .then((p) => {
         setPerro(p);
-        if (p) return buscarPostActivoDePerro(p.id);
+        if (p) {
+          buscarPostActivoDePerro(p.id).then(setPostActivo);
+          listarEstudios(p.id).then(setEstudios);
+        }
         return null;
       })
-      .then((post) => setPostActivo(post))
       .finally(() => setCargando(false));
   }, [id]);
+
+  async function handleSubirEstudio(tipo: TipoEstudio, file: File) {
+    if (!perro) return;
+    setSubiendoTipo(tipo);
+    try {
+      const url  = await subirArchivoEstudio(file);
+      const nuevo = await agregarEstudio({
+        perro_id:    perro.id,
+        tipo,
+        nombre:      file.name,
+        archivo_url: url,
+        fecha:       new Date().toISOString().slice(0, 10),
+        notas:       null,
+      });
+      setEstudios((prev) => [nuevo, ...prev]);
+    } catch { /* silencioso */ }
+    finally  { setSubiendoTipo(null); }
+  }
+
+  async function handleEliminarEstudio(id: string) {
+    await eliminarEstudio(id);
+    setEstudios((prev) => prev.filter((e) => e.id !== id));
+  }
 
   async function handleRenovar() {
     if (!postActivo) return;
@@ -192,6 +225,54 @@ export default function PerroDetallePage() {
               </div>
             )}
           </div>
+
+          {/* Análisis de Laboratorio */}
+          <EstudiosSection
+            tipo="laboratorio"
+            titulo="Análisis de Laboratorio"
+            icono={<FlaskConical className="h-4 w-4 text-brand-primary" />}
+            accept=".pdf"
+            estudios={estudios.filter((e) => e.tipo === 'laboratorio')}
+            subiendo={subiendoTipo === 'laboratorio'}
+            onSubir={(f) => handleSubirEstudio('laboratorio', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Radiografía */}
+          <EstudiosSection
+            tipo="radiografia"
+            titulo="Radiografías"
+            icono={<ScanLine className="h-4 w-4 text-brand-primary" />}
+            accept=".pdf,.jpg,.jpeg,.png"
+            estudios={estudios.filter((e) => e.tipo === 'radiografia')}
+            subiendo={subiendoTipo === 'radiografia'}
+            onSubir={(f) => handleSubirEstudio('radiografia', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Ecografías */}
+          <EstudiosSection
+            tipo="ecografia"
+            titulo="Ecografías"
+            icono={<Activity className="h-4 w-4 text-brand-primary" />}
+            accept=".pdf,.mp4,.mov,.avi,.jpg,.jpeg,.png"
+            estudios={estudios.filter((e) => e.tipo === 'ecografia')}
+            subiendo={subiendoTipo === 'ecografia'}
+            onSubir={(f) => handleSubirEstudio('ecografia', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Modal enviar estudio */}
+          {estudioEnviar && (
+            <EnviarEstudioModal
+              estudio={estudioEnviar}
+              perroNombre={perro.nombre}
+              onClose={() => setEstudioEnviar(null)}
+            />
+          )}
 
           {/* CTA: aviso activo o publicar */}
           {postActivo !== undefined && (
@@ -466,6 +547,178 @@ function VacunaItem({ vacuna }: { vacuna: Vacuna }) {
         {proxima && <span className={vencida ? 'font-bold text-bad' : ''}>Próxima: {formatFecha(vacuna.proxima)}</span>}
       </div>
       {vacuna.notas && <p className="mt-1 text-[11px] text-ink-muted/70 italic">{vacuna.notas}</p>}
+    </div>
+  );
+}
+
+/* ── Sección de estudios ── */
+function EstudiosSection({
+  tipo, titulo, icono, accept, estudios, subiendo, onSubir, onEnviar, onEliminar,
+}: {
+  tipo:       TipoEstudio;
+  titulo:     string;
+  icono:      React.ReactNode;
+  accept:     string;
+  estudios:   Estudio[];
+  subiendo:   boolean;
+  onSubir:    (f: File) => void;
+  onEnviar:   (e: Estudio) => void;
+  onEliminar: (id: string) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          {icono} {titulo}
+          {estudios.length > 0 && (
+            <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {estudios.length}
+            </span>
+          )}
+        </h2>
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={subiendo}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
+        >
+          {subiendo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          Subir archivo
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) { onSubir(f); e.target.value = ''; } }}
+        />
+      </div>
+
+      {estudios.length === 0 ? (
+        <p className="text-sm text-ink-muted">No hay archivos subidos.</p>
+      ) : (
+        <div className="space-y-2">
+          {estudios.map((e) => (
+            <div key={e.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+              <FileText className="h-4 w-4 shrink-0 text-brand-primary/60" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink truncate">{e.nombre}</p>
+                {e.fecha && <p className="text-xs text-ink-muted">{formatFecha(e.fecha)}</p>}
+              </div>
+              <a href={e.archivo_url} target="_blank" rel="noopener noreferrer"
+                className="text-xs font-bold text-brand-primary hover:underline shrink-0">
+                Ver
+              </a>
+              <button type="button" onClick={() => onEnviar(e)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+              <button type="button" onClick={() => onEliminar(e.id)}
+                className="text-ink-muted/40 hover:text-bad transition shrink-0">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Modal enviar estudio ── */
+function EnviarEstudioModal({
+  estudio, perroNombre, onClose,
+}: {
+  estudio:      Estudio;
+  perroNombre:  string;
+  onClose:      () => void;
+}) {
+  const [email,  setEmail]  = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const texto = `Estudio de ${perroNombre} — ${estudio.nombre}\n${estudio.archivo_url}`;
+
+  function enviarEmail() {
+    const subject = encodeURIComponent(`Estudio de ${perroNombre}: ${estudio.nombre}`);
+    const body    = encodeURIComponent(`Hola,\n\nTe comparto el estudio "${estudio.nombre}" de ${perroNombre}:\n${estudio.archivo_url}`);
+    const to      = encodeURIComponent(email.trim());
+    window.open(`mailto:${to}?subject=${subject}&body=${body}`, '_blank');
+  }
+
+  function enviarWhatsApp() {
+    const msg = encodeURIComponent(texto);
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  }
+
+  async function copiarLink() {
+    await navigator.clipboard.writeText(estudio.archivo_url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+
+        <div className="mb-5">
+          <h2 className="font-display text-xl font-black text-ink">Enviar estudio</h2>
+          <p className="mt-1 text-sm text-ink-muted truncate">{estudio.nombre}</p>
+        </div>
+
+        {/* Copiar link */}
+        <button type="button" onClick={copiarLink}
+          className="mb-4 flex w-full items-center justify-between gap-2 rounded-2xl bg-brand-cream px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10">
+          <span className="truncate text-xs text-ink-muted">{estudio.archivo_url}</span>
+          {copied
+            ? <Check className="h-4 w-4 shrink-0 text-good" />
+            : <Copy className="h-4 w-4 shrink-0 text-brand-primary" />}
+        </button>
+
+        {/* Email */}
+        <div className="mb-3">
+          <label className="label mb-1 flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="destinatario@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="field flex-1 text-sm"
+            />
+            <button
+              type="button"
+              onClick={enviarEmail}
+              disabled={!email.trim()}
+              className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40"
+            >
+              Enviar
+            </button>
+          </div>
+        </div>
+
+        <div className="my-4 flex items-center gap-3">
+          <div className="flex-1 border-t border-black/10" />
+          <span className="text-xs text-ink-muted">o</span>
+          <div className="flex-1 border-t border-black/10" />
+        </div>
+
+        {/* WhatsApp */}
+        <button type="button" onClick={enviarWhatsApp}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
+          <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+        </button>
+
+        <button type="button" onClick={onClose}
+          className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
+          Cancelar
+        </button>
+      </div>
     </div>
   );
 }

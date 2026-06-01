@@ -123,30 +123,30 @@ export default function PerroDetallePage() {
         />
       ) : (
         <>
-          {/* Documento / ficha del perro */}
+          {/* Documento / ficha del perro — compact */}
           <div className="mb-5">
             <PerroDocumento
               perro={perro}
               profile={profile}
               perdido={!!postActivo}
+              compact
             />
           </div>
 
-          {/* Foto + nombre */}
-          <div className="card mb-5 overflow-hidden p-0">
-            <div className="relative aspect-[4/3] w-full bg-brand-cream">
-              {perro.foto_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={perro.foto_url} alt={perro.nombre} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-brand-primary/20">
-                  <Dog className="h-20 w-20" />
-                </div>
-              )}
-            </div>
-            <div className="p-5">
-              <h1 className="font-display text-3xl font-black text-ink">{perro.nombre}</h1>
-              <div className="mt-1 flex flex-wrap gap-2">
+          {/* Header del perro: foto chica + nombre + chips */}
+          <div className="card mb-5 flex items-center gap-4 p-4">
+            {perro.foto_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={perro.foto_url} alt={perro.nombre}
+                className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-cream">
+                <Dog className="h-8 w-8 text-brand-primary/30" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl font-black text-ink leading-tight">{perro.nombre}</h1>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {perro.raza         && <Chip>{perro.raza}</Chip>}
                 {perro.color        && <Chip>{perro.color}</Chip>}
                 {perro.sexo         && <Chip className="capitalize">{perro.sexo}</Chip>}
@@ -155,7 +155,7 @@ export default function PerroDetallePage() {
                 {perro.esterilizado && <Chip className="text-good">Esterilizado/a</Chip>}
               </div>
               {perro.descripcion && (
-                <p className="mt-3 text-sm text-ink-muted leading-relaxed">{perro.descripcion}</p>
+                <p className="mt-2 text-xs text-ink-muted leading-relaxed line-clamp-2">{perro.descripcion}</p>
               )}
             </div>
           </div>

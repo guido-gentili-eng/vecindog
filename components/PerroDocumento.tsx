@@ -9,14 +9,50 @@ interface Props {
   perro:   Perro;
   profile: Profile | null;
   perdido: boolean;
+  compact?: boolean;
 }
 
-export default function PerroDocumento({ perro, profile, perdido }: Props) {
+export default function PerroDocumento({ perro, profile, perdido, compact = false }: Props) {
   const [qr, setQr] = useState('');
 
   const accent      = perdido ? '#dc2626' : '#1e3a5f';
   const accentBg    = perdido ? '#fef2f2' : '#eff6ff';
   const accentLight = perdido ? '#fee2e2' : '#dbeafe';
+
+  // Escala de tamaños según modo compact
+  const sz = compact ? {
+    headerPad:   '10px 14px 8px',
+    titleSize:   perdido ? '14px' : '11px',
+    bodyPad:     '10px 14px',
+    photoW:      '88px',
+    photoH:      '100px',
+    nameSize:    '13px',
+    tableFont:   '11px',
+    labelFont:   '10px',
+    contactPad:  '10px 12px',
+    qrSize:      '54px',
+    ownerName:   '12px',
+    ownerPhone:  '15px',
+    footerPad:   '6px 14px',
+    borderTop:   '4px',
+    borderBot:   '4px',
+  } : {
+    headerPad:   '14px 18px 12px',
+    titleSize:   perdido ? '18px' : '14px',
+    bodyPad:     '14px 18px',
+    photoW:      '120px',
+    photoH:      '140px',
+    nameSize:    '15px',
+    tableFont:   '12px',
+    labelFont:   '11px',
+    contactPad:  '12px 16px',
+    qrSize:      '70px',
+    ownerName:   '13px',
+    ownerPhone:  '18px',
+    footerPad:   '8px 18px',
+    borderTop:   '6px',
+    borderBot:   '6px',
+  };
 
   useEffect(() => {
     if (!profile?.telefono) return;
@@ -38,11 +74,11 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
       style={{ background: '#fff', fontFamily: 'Arial, sans-serif' }}
     >
       {/* Borde superior */}
-      <div style={{ height: '6px', background: accent }} />
+      <div style={{ height: sz.borderTop, background: accent }} />
 
       {/* Header */}
       <div style={{
-        padding: '14px 18px 12px',
+        padding: sz.headerPad,
         borderBottom: `1.5px solid ${accentLight}`,
         display: 'flex',
         alignItems: 'center',
@@ -53,7 +89,7 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
           <p style={{ margin: 0, fontSize: '9px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#aaa' }}>
             Vecindog · mivecindog.com.ar
           </p>
-          <p style={{ margin: '2px 0 0', fontSize: perdido ? '18px' : '14px', fontWeight: 900, color: accent, letterSpacing: '-0.3px' }}>
+          <p style={{ margin: '2px 0 0', fontSize: sz.titleSize, fontWeight: 900, color: accent, letterSpacing: '-0.3px' }}>
             {perdido ? '⚠ SE BUSCA — PERRO PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
           </p>
         </div>
@@ -67,25 +103,25 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
       </div>
 
       {/* Cuerpo */}
-      <div style={{ padding: '14px 18px', display: 'flex', gap: '14px' }}>
+      <div style={{ padding: sz.bodyPad, display: 'flex', gap: '14px' }}>
 
         {/* Foto */}
-        <div style={{ flex: '0 0 auto', width: '120px' }}>
+        <div style={{ flex: '0 0 auto', width: sz.photoW }}>
           {perro.foto_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={perro.foto_url}
               alt={perro.nombre}
-              style={{ width: '120px', height: '140px', objectFit: 'cover', borderRadius: '8px', border: `2.5px solid ${accent}`, display: 'block' }}
+              style={{ width: sz.photoW, height: sz.photoH, objectFit: 'cover', borderRadius: '8px', border: `2.5px solid ${accent}`, display: 'block' }}
             />
           ) : (
-            <div style={{ width: '120px', height: '140px', background: accentBg, borderRadius: '8px', border: `2px solid ${accentLight}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '44px' }}>
+            <div style={{ width: sz.photoW, height: sz.photoH, background: accentBg, borderRadius: '8px', border: `2px solid ${accentLight}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '44px' }}>
               🐶
             </div>
           )}
           {/* Nombre */}
           <div style={{ marginTop: '6px', background: accent, borderRadius: '6px', padding: '4px 8px', textAlign: 'center' }}>
-            <p style={{ margin: 0, fontSize: '15px', fontWeight: 900, color: '#fff' }}>{perro.nombre}</p>
+            <p style={{ margin: 0, fontSize: sz.nameSize, fontWeight: 900, color: '#fff' }}>{perro.nombre}</p>
           </div>
         </div>
 
@@ -93,7 +129,7 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ background: accentBg, borderRadius: '8px', padding: '10px 12px', marginBottom: '10px' }}>
             <p style={{ margin: '0 0 6px', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: accent }}>Características</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: sz.tableFont }}>
               <tbody>
                 {([
                   ['Raza',      perro.raza],
@@ -103,8 +139,8 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
                   ['Chip',      perro.chip],
                 ] as [string, string | null | undefined][]).filter(([, v]) => v).map(([label, value]) => (
                   <tr key={label}>
-                    <td style={{ padding: '2px 6px 2px 0', color: '#666', fontWeight: 600, width: '70px', fontSize: '11px' }}>{label}</td>
-                    <td style={{ padding: '2px 0', color: '#1a1a1a', fontWeight: 700, textTransform: 'capitalize', fontSize: '12px' }}>{value}</td>
+                    <td style={{ padding: '2px 6px 2px 0', color: '#666', fontWeight: 600, width: '70px', fontSize: sz.labelFont }}>{label}</td>
+                    <td style={{ padding: '2px 0', color: '#1a1a1a', fontWeight: 700, textTransform: 'capitalize', fontSize: sz.tableFont }}>{value}</td>
                   </tr>
                 ))}
               </tbody>
@@ -120,11 +156,11 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
       </div>
 
       {/* Contacto + QR */}
-      <div style={{ margin: '0 18px 14px', background: accent, borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div style={{ margin: compact ? '0 14px 10px' : '0 18px 14px', background: accent, borderRadius: '10px', padding: sz.contactPad, display: 'flex', alignItems: 'center', gap: '14px' }}>
         {qr && (
           <div style={{ flex: '0 0 auto', textAlign: 'center' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qr} alt="QR" style={{ width: '70px', height: '70px', borderRadius: '6px', background: '#fff', padding: '3px', display: 'block' }} />
+            <img src={qr} alt="QR" style={{ width: sz.qrSize, height: sz.qrSize, borderRadius: '6px', background: '#fff', padding: '3px', display: 'block' }} />
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '8px', margin: '3px 0 0', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>WhatsApp</p>
           </div>
         )}
@@ -132,20 +168,20 @@ export default function PerroDocumento({ perro, profile, perdido }: Props) {
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '9px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
             {perdido ? 'Si lo encontraste, contactate' : 'Contacto del dueño'}
           </p>
-          {nombreDuenio && <p style={{ color: '#fff', fontSize: '13px', fontWeight: 800, margin: '0 0 2px' }}>{nombreDuenio}</p>}
-          {telefono && <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0 }}>{telefono}</p>}
+          {nombreDuenio && <p style={{ color: '#fff', fontSize: sz.ownerName, fontWeight: 800, margin: '0 0 2px' }}>{nombreDuenio}</p>}
+          {telefono && <p style={{ color: '#fff', fontSize: sz.ownerPhone, fontWeight: 900, margin: 0 }}>{telefono}</p>}
         </div>
         <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '18px', margin: 0, flex: '0 0 auto' }}>🐾</p>
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: `1px solid ${accentLight}`, padding: '8px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ borderTop: `1px solid ${accentLight}`, padding: sz.footerPad, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ margin: 0, fontSize: '9px', color: '#ccc' }}>mivecindog.com.ar · Red vecinal de mascotas</p>
         <div style={{ height: '3px', width: '50px', background: accent, borderRadius: '2px' }} />
       </div>
 
       {/* Borde inferior */}
-      <div style={{ height: '6px', background: accent }} />
+      <div style={{ height: sz.borderBot, background: accent }} />
     </div>
   );
 }

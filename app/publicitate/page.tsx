@@ -168,7 +168,7 @@ export default function PublicitatePage() {
           </p>
         </div>
 
-        <div className="space-y-8 mx-auto max-w-2xl">
+        <div className="grid gap-6 md:grid-cols-3">
 
           {/* ── BANNER ── */}
           <div className="card overflow-hidden p-0">
@@ -218,7 +218,7 @@ export default function PublicitatePage() {
             {/* Preview — simula la grilla */}
             <div className="mx-6 mb-6 rounded-2xl border-2 border-dashed border-brand-primary/20 bg-brand-cream/50 p-3">
               <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">Vista previa</p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-2">
                 {/* Aviso real (simulado) */}
                 {[1,2,3].map((i) => (
                   <div key={i} className="rounded-xl bg-white p-3 shadow-soft ring-1 ring-black/5">

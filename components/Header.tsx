@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -22,9 +22,21 @@ const NAV = [
 ];
 
 export default function Header() {
-  const [open, setOpen] = useState(false);
+  const [open,     setOpen]     = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
   const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad } = useAuth();
   const { lang, setLang } = useLanguage();
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const navConPerros = isAuthenticated
     ? [...NAV, { href: '/mis-perros', label: 'Mis perros' }]
@@ -97,18 +109,29 @@ export default function Header() {
                 </span>
               ) : null}
 
-              {/* Selector de idioma — desktop, junto a usuario/salir/campanita */}
-              <div className="flex items-center gap-0.5 rounded-2xl bg-brand-cream p-0.5">
-                {LANGS.map(({ lang: l, flag, label }) => (
-                  <button key={l} type="button" onClick={() => setLang(l)}
-                    title={label}
-                    className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
-                      lang === l ? 'bg-white text-ink shadow-soft' : 'text-ink-muted hover:text-ink'
-                    }`}>
-                    <span>{flag}</span>
-                    <span>{label}</span>
-                  </button>
-                ))}
+              {/* Selector de idioma — dropdown */}
+              <div ref={langRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setLangOpen((o) => !o)}
+                  className="flex items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10"
+                >
+                  <span>{LANGS.find((l) => l.lang === lang)?.flag}</span>
+                  <span>{LANGS.find((l) => l.lang === lang)?.label}</span>
+                  <ChevronDown className={`h-3 w-3 text-ink-muted transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {langOpen && (
+                  <div className="absolute right-0 top-full mt-1 z-50 flex flex-col gap-0.5 rounded-2xl bg-white p-1 shadow-lg ring-1 ring-black/10">
+                    {LANGS.filter((l) => l.lang !== lang).map(({ lang: l, flag, label }) => (
+                      <button key={l} type="button"
+                        onClick={() => { setLang(l); setLangOpen(false); }}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-ink-muted hover:bg-brand-cream hover:text-ink transition whitespace-nowrap"
+                      >
+                        <span>{flag}</span><span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -4,16 +4,18 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
+import QRCode from 'qrcode';
 
 export default function MiPerfilPage() {
   const { user, profile, isAuthenticated, loading: authLoading, saveProfile, resetPassword } = useAuth();
-  const [pwSent, setPwSent] = useState(false);
+  const [pwSent,   setPwSent]   = useState(false);
+  const [qrOpen,   setQrOpen]   = useState(false);
 
   async function handleChangePassword() {
     if (!user?.email) return;
@@ -99,9 +101,19 @@ export default function MiPerfilPage() {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
             <User className="h-3.5 w-3.5" /> Mi perfil
           </span>
-          <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink">
-            {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
-          </h1>
+          <div className="mt-2 flex items-center gap-3">
+            <h1 className="font-display text-3xl font-black tracking-tight text-ink">
+              {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
+            </h1>
+            {/* Botón QR */}
+            <button
+              type="button"
+              onClick={() => setQrOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
+            >
+              <QrCode className="h-4 w-4" /> QR
+            </button>
+          </div>
         </div>
         <a
           href="/plan-obediencia-canina.pdf"
@@ -113,6 +125,15 @@ export default function MiPerfilPage() {
           Plan de Obediencia
         </a>
       </div>
+
+      {/* Modal QR */}
+      {qrOpen && user && (
+        <QRModal
+          userId={user.id}
+          nombre={profile ? `${profile.nombre} ${profile.apellido}` : user.email ?? ''}
+          onClose={() => setQrOpen(false)}
+        />
+      )}
 
       {/* Datos personales */}
       <div className="card p-6 space-y-4">
@@ -282,6 +303,106 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
       <span className="shrink-0">{icon}</span>
       <span className="text-xs text-ink-muted w-20 shrink-0">{label}</span>
       <span className="text-sm font-semibold text-ink">{value}</span>
+    </div>
+  );
+}
+
+/* ── Modal QR rotativo ── */
+function QRModal({ userId, nombre, onClose }: { userId: string; nombre: string; onClose: () => void }) {
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [countdown, setCountdown] = useState(0);
+
+  // Genera el token basado en ventana de 30 segundos
+  const generarQR = useCallback(async () => {
+    const window30 = Math.floor(Date.now() / 30000);
+    const payload  = `vecindog://usuario/${userId}/${window30}`;
+    try {
+      const url = await QRCode.toDataURL(payload, {
+        width: 280,
+        margin: 2,
+        color: { dark: '#1e3a5f', light: '#ffffff' },
+      });
+      setQrDataUrl(url);
+    } catch { /* ignore */ }
+  }, [userId]);
+
+  useEffect(() => {
+    generarQR();
+
+    // Calcular segundos restantes hasta próxima ventana
+    function calcCountdown() {
+      return 30 - (Math.floor(Date.now() / 1000) % 30);
+    }
+
+    setCountdown(calcCountdown());
+
+    const tick = setInterval(() => {
+      const secs = calcCountdown();
+      setCountdown(secs);
+      if (secs === 30) generarQR(); // Nueva ventana → nuevo QR
+    }, 1000);
+
+    return () => clearInterval(tick);
+  }, [generarQR]);
+
+  // Porcentaje del arco de cuenta regresiva
+  const pct      = countdown / 30;
+  const r        = 20;
+  const circum   = 2 * Math.PI * r;
+  const dashOffset = circum * (1 - pct);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-xs rounded-[32px] bg-white px-7 py-8 shadow-2xl text-center">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="text-left">
+            <p className="text-xs font-bold uppercase tracking-widest text-ink-muted">Vecindog</p>
+            <p className="font-display text-lg font-black text-ink leading-tight">{nombre}</p>
+          </div>
+          <button type="button" onClick={onClose}
+            className="rounded-xl p-1.5 text-ink-muted hover:bg-brand-cream transition">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* QR */}
+        <div className="flex justify-center mb-4">
+          {qrDataUrl
+            ? <img src={qrDataUrl} alt="QR Vecindog" className="rounded-2xl" width={220} height={220} />
+            : <div className="h-[220px] w-[220px] rounded-2xl bg-brand-cream animate-pulse" />
+          }
+        </div>
+
+        {/* Cuenta regresiva circular */}
+        <div className="flex flex-col items-center gap-1.5 mb-4">
+          <div className="relative h-12 w-12">
+            <svg className="absolute inset-0 -rotate-90" width="48" height="48" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r={r} fill="none" stroke="#e5e7eb" strokeWidth="4" />
+              <circle
+                cx="24" cy="24" r={r}
+                fill="none" stroke="#EE5A3B" strokeWidth="4"
+                strokeDasharray={circum}
+                strokeDashoffset={dashOffset}
+                strokeLinecap="round"
+                style={{ transition: 'stroke-dashoffset 0.9s linear' }}
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-sm font-black text-ink">
+              {countdown}
+            </span>
+          </div>
+          <p className="text-xs text-ink-muted">Caduca en {countdown}s · se renueva solo</p>
+        </div>
+
+        {/* Nota plan pago */}
+        <div className="rounded-2xl bg-brand-cream px-4 py-3 text-xs text-ink-muted">
+          🏷️ Mostrá este QR para acceder a descuentos exclusivos de socios Vecindog.
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Vecindog",
+    "slug": "vecindog",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "vecindog",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EE5A3B"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vecindog.app"
+    },
+    "android": {
+      "package": "com.vecindog.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#EE5A3B",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        { "photosPermission": "Vecindog necesita acceso a tus fotos para subir imágenes de tu perro." }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Vecindog usa tu ubicación para mostrar avisos cercanos.",
+          "locationWhenInUsePermission": "Vecindog usa tu ubicación para mostrar avisos cercanos."
+        }
+      ],
+      [
+        "expo-notifications",
+        { "icon": "./assets/icon.png", "color": "#EE5A3B" }
+      ]
+    ],
+    "extra": {
+      "eas": { "projectId": "vecindog" }
+    }
+  }
+}

@@ -22,17 +22,18 @@ const NAV = [
 ];
 
 export default function Header() {
-  const [open,     setOpen]     = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
-  const langRef = useRef<HTMLDivElement>(null);
+  const [open,        setOpen]        = useState(false);
+  const [langOpen,    setLangOpen]    = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const langRef    = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad } = useAuth();
   const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
+      if (langRef.current    && !langRef.current.contains(e.target as Node))    setLangOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -84,38 +85,14 @@ export default function Header() {
             </button>
           )}
 
-          {/* Estado de autenticación + idioma (desktop) */}
+          {/* Desktop: idioma + campanita + perfil/publicar */}
           {!loading && (
             <div className="hidden items-center gap-2 md:flex">
-              {isAuthenticated ? (
-                <>
-                  <span className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink">
-                    <User className="h-3.5 w-3.5 text-brand-primary" />
-                    {profile ? `${profile.nombre} ${profile.apellido}` : user?.email?.split('@')[0]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => signOut()}
-                    className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-cream hover:text-bad"
-                    aria-label="Cerrar sesión"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Salir
-                  </button>
-                </>
-              ) : isGuest ? (
-                <span className="inline-flex items-center gap-1 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-semibold text-ink-muted">
-                  Invitado
-                </span>
-              ) : null}
 
               {/* Selector de idioma — dropdown */}
               <div ref={langRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setLangOpen((o) => !o)}
-                  className="flex items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10"
-                >
+                <button type="button" onClick={() => setLangOpen((o) => !o)}
+                  className="flex items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10">
                   <span>{LANGS.find((l) => l.lang === lang)?.flag}</span>
                   <span>{LANGS.find((l) => l.lang === lang)?.label}</span>
                   <ChevronDown className={`h-3 w-3 text-ink-muted transition-transform ${langOpen ? 'rotate-180' : ''}`} />
@@ -125,25 +102,54 @@ export default function Header() {
                     {LANGS.filter((l) => l.lang !== lang).map(({ lang: l, flag, label }) => (
                       <button key={l} type="button"
                         onClick={() => { setLang(l); setLangOpen(false); }}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-ink-muted hover:bg-brand-cream hover:text-ink transition whitespace-nowrap"
-                      >
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-ink-muted hover:bg-brand-cream hover:text-ink transition whitespace-nowrap">
                         <span>{flag}</span><span>{label}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
+
+              <NotificationsBell />
+
+              {isAuthenticated ? (
+                /* Dropdown Mi perfil */
+                <div ref={profileRef} className="relative">
+                  <button type="button" onClick={() => setProfileOpen((o) => !o)}
+                    className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
+                    <User className="h-4 w-4" /> Mi perfil
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {profileOpen && (
+                    <div className="absolute right-0 top-full mt-1 z-50 w-48 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/10">
+                      <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
+                        <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
+                      </Link>
+                      <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
+                        <Dog className="h-4 w-4 text-brand-primary" /> Cambiar de perfil
+                      </Link>
+                      <div className="my-1 border-t border-black/5" />
+                      <button type="button" onClick={() => { signOut(); setProfileOpen(false); }}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-bad hover:bg-bad/5 transition">
+                        <LogOut className="h-4 w-4" /> Cerrar sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : isGuest ? (
+                <span className="inline-flex items-center gap-1 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-semibold text-ink-muted">
+                  Invitado
+                </span>
+              ) : (
+                <Link href="/publicar"
+                  className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
+                  <Plus className="h-4 w-4" /> Publicar
+                </Link>
+              )}
             </div>
           )}
-
-          <NotificationsBell />
-
-          <Link
-            href="/publicar"
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark"
-          >
-            <Plus className="h-4 w-4" /> Publicar
-          </Link>
 
           {/* Hamburger mobile */}
           <button
@@ -200,24 +206,20 @@ export default function Header() {
             {!loading && (
               <>
                 {isAuthenticated && (
-                  <>
-                    <div className="mt-2 border-t border-black/5 pt-2">
-                      <Link
-                        href="/mi-perfil"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
-                      >
-                        <User className="h-4 w-4 text-brand-primary" /> Mi perfil
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => { signOut(); setOpen(false); }}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5"
-                      >
-                        <LogOut className="h-4 w-4" /> Cerrar sesión
-                      </button>
-                    </div>
-                  </>
+                  <div className="mt-2 border-t border-black/5 pt-2">
+                    <Link href="/mi-perfil" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
+                    </Link>
+                    <Link href="/mi-perfil" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <Dog className="h-4 w-4 text-brand-primary" /> Cambiar de perfil
+                    </Link>
+                    <button type="button" onClick={() => { signOut(); setOpen(false); }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">
+                      <LogOut className="h-4 w-4" /> Cerrar sesión
+                    </button>
+                  </div>
                 )}
                 {isGuest && (
                   <div className="mt-2 border-t border-black/5 pt-2 px-3 py-2">

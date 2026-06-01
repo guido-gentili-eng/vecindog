@@ -14,6 +14,7 @@ import {
 } from '@/lib/perros';
 import { buscarPostActivoDePerro, renovarPost, type Post } from '@/lib/posts';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
+import PerroDocumento from '@/components/PerroDocumento';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,7 +22,7 @@ export default function PerroDetallePage() {
   const { id }        = useParams<{ id: string }>();
   const searchParams  = useSearchParams();
   const esNuevo       = searchParams.get('nuevo') === '1';
-  const { ciudad }    = useAuth();
+  const { ciudad, profile } = useAuth();
 
   const [perro,       setPerro]       = useState<Perro | null>(null);
   const [postActivo,  setPostActivo]  = useState<Post | null | undefined>(undefined);
@@ -122,6 +123,15 @@ export default function PerroDetallePage() {
         />
       ) : (
         <>
+          {/* Documento / ficha del perro */}
+          <div className="mb-5">
+            <PerroDocumento
+              perro={perro}
+              profile={profile}
+              perdido={!!postActivo}
+            />
+          </div>
+
           {/* Foto + nombre */}
           <div className="card mb-5 overflow-hidden p-0">
             <div className="relative aspect-[4/3] w-full bg-brand-cream">

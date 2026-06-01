@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, BookOpen, KeyRound, CheckCircle2 } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, KeyRound, CheckCircle2 } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -57,16 +57,6 @@ export default function Header() {
                 : item.label}
             </Link>
           ))}
-          {isAuthenticated && (
-            <a
-              href="/plan-obediencia-canina.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-ink-muted transition hover:bg-brand-cream hover:text-ink"
-            >
-              <BookOpen className="h-3.5 w-3.5" /> Obediencia
-            </a>
-          )}
           <Link
             href="/publicitate"
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
@@ -182,17 +172,6 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-            {isAuthenticated && (
-              <a
-                href="/plan-obediencia-canina.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
-              >
-                <BookOpen className="h-4 w-4 text-brand-primary" /> Plan de Obediencia
-              </a>
-            )}
             <Link
               href="/publicitate"
               onClick={() => setOpen(false)}

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect } from 'react';
@@ -87,13 +87,24 @@ export default function MiPerfilPage() {
     <div className="mx-auto max-w-2xl py-8 md:py-10 space-y-6">
 
       {/* Título */}
-      <div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-          <User className="h-3.5 w-3.5" /> Mi perfil
-        </span>
-        <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink">
-          {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
-        </h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
+            <User className="h-3.5 w-3.5" /> Mi perfil
+          </span>
+          <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink">
+            {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
+          </h1>
+        </div>
+        <a
+          href="/plan-obediencia-canina.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90"
+        >
+          <BookOpen className="h-4 w-4" />
+          Plan de Obediencia
+        </a>
       </div>
 
       {/* Datos personales */}

@@ -16,6 +16,7 @@ import PhotoGallery from '@/components/PhotoGallery';
 import ContactBlock from '@/components/ContactBlock';
 import AdSlot from '@/components/AdSlot';
 import AdoptionSheet from '@/components/AdoptionSheet';
+import FoundModal from '@/components/FoundModal';
 
 /* ──────────── Constantes ──────────── */
 
@@ -54,10 +55,11 @@ export default function DetalleAvisoPage() {
   const [adoptarOpen,  setAdoptarOpen]  = useState(false);
 
   /* estados de acción */
-  const [confirmBorrar,  setConfirmBorrar]  = useState(false);
+  const [confirmBorrar,   setConfirmBorrar]   = useState(false);
   const [confirmResuelto, setConfirmResuelto] = useState(false);
-  const [accionando,     setAccionando]     = useState(false);
-  const [msgOk,          setMsgOk]          = useState('');
+  const [accionando,      setAccionando]      = useState(false);
+  const [showFoundModal,  setShowFoundModal]  = useState(false);
+  const [msgOk,           setMsgOk]           = useState('');
   const [msgErr,         setMsgErr]         = useState('');
 
   useEffect(() => {
@@ -114,17 +116,14 @@ export default function DetalleAvisoPage() {
   async function handleResuelto() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
+      // Todos los casos: marcar como resuelto directamente
+      await resolverPost(post!.id);
+      setPost((p) => p ? { ...p, estado: 'resuelto' } : p);
+      setConfirmResuelto(false);
       if (post!.categoria === 'perdido') {
-        // Perdido → cambia a "encontrado activo" para que aparezca en el filtro verde
-        await encontrarPost(post!.id);
-        setPost((p) => p ? { ...p, categoria: 'encontrado', estado: 'activo' } : p);
-        setConfirmResuelto(false);
-        setMsgOk('¡Aviso actualizado a Encontrado! Ahora aparece en el filtro verde.');
+        // Mostrar modal de celebración; al cerrarlo redirigir
+        setShowFoundModal(true);
       } else {
-        // Encontrado / adopcion → marcar resuelto y redirigir
-        await resolverPost(post!.id);
-        setPost((p) => p ? { ...p, estado: 'resuelto' } : p);
-        setConfirmResuelto(false);
         router.push('/mis-perros?resuelto=1');
       }
     } catch {
@@ -147,6 +146,13 @@ export default function DetalleAvisoPage() {
 
   return (
     <article className="py-8 md:py-10">
+      {showFoundModal && (
+        <FoundModal
+          nombrePerro={post?.nombre ?? null}
+          onClose={() => { setShowFoundModal(false); router.push('/mis-perros?resuelto=1'); }}
+        />
+      )}
+
       <Link
         href="/publicaciones"
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"

@@ -37,6 +37,7 @@ interface AuthCtx {
   signInWithGoogle: () => Promise<void>;
   verifyOtp:       (email: string, token: string) => Promise<string | null>;
   resendConfirm:   (email: string) => Promise<void>;
+  resetPassword:   (email: string) => Promise<string | null>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
   signOut:         () => Promise<void>;
   enterAsGuest:    () => void;
@@ -134,6 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.resend({ type: 'signup', email });
   };
 
+  const resetPassword = async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return error?.message ?? null;
+  };
+
   const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
     if (!user) return 'No hay sesión activa.';
 
@@ -187,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasCity:         !!ciudad,
       setCiudad,
       clearCiudad,
-      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, saveProfile, signOut, enterAsGuest,
+      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, saveProfile, signOut, enterAsGuest,
     }}>
       {children}
     </AuthContext.Provider>

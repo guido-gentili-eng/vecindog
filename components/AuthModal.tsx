@@ -1,13 +1,15 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Dog, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, KeyRound } from 'lucide-react';
+import { Dog, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage, LanguageSwitcher } from '@/contexts/LanguageContext';
 
-type Step = 'form' | 'confirm';
+type Step = 'form' | 'confirm' | 'forgot';
 
 export default function AuthModal() {
-  const { hasChosen, loading, signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, enterAsGuest } = useAuth();
+  const { hasChosen, loading, signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, enterAsGuest } = useAuth();
+  const { t } = useLanguage();
 
   const [mode,       setMode]       = useState<'login' | 'register'>('register');
   const [step,       setStep]       = useState<Step>('form');
@@ -26,6 +28,23 @@ export default function AuthModal() {
     setMode(m); setStep('form'); setError(''); setInfo(''); setCode('');
   }
 
+  function tradError(msg: string): string {
+    if (msg.includes('Invalid login credentials')) return t.errInvalidCredentials;
+    if (msg.includes('Email not confirmed'))        return t.errEmailNotConfirmed;
+    if (msg.includes('User already registered'))    return t.errAlreadyRegistered;
+    if (msg.includes('Password should be'))         return t.errWeakPassword;
+    if (msg.includes('Unable to validate'))         return t.errInvalidEmail;
+    if (msg.includes('is invalid'))                 return t.errInvalidEmail;
+    if (msg.includes('rate limit'))                 return t.errRateLimit;
+    if (msg.includes('over_email_send_rate_limit')) return t.errRateLimit;
+    if (msg.includes('Token has expired'))          return t.errTokenExpired;
+    if (msg.includes('Token not found'))            return t.errTokenNotFound;
+    if (msg.includes('signup disabled'))            return t.errSignupDisabled;
+    if (msg.includes('weak password'))              return t.errWeakPassword;
+    if (msg.includes('network'))                    return t.errNetwork;
+    return msg;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setInfo(''); setSubmitting(true);
@@ -34,10 +53,9 @@ export default function AuthModal() {
         const err = await signIn(email, password);
         if (err) {
           if (err.includes('Email not confirmed')) {
-            // Reenviar código y mostrar paso de confirmación
             await resendConfirm(email);
             setStep('confirm');
-            setInfo('Te reenviamos el código de confirmación al email.');
+            setInfo(t.infoResent);
           } else {
             setError(tradError(err));
           }
@@ -59,12 +77,11 @@ export default function AuthModal() {
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
-    if (code.length < 6) { setError('Ingresá el código de verificación.'); return; }
+    if (code.length < 6) { setError(t.codeError); return; }
     setError(''); setSubmitting(true);
     try {
       const err = await verifyOtp(email, code.trim());
       if (err) setError(tradError(err));
-      // Si no hay error, onAuthStateChange maneja el login automático
     } finally {
       setSubmitting(false);
     }
@@ -73,7 +90,22 @@ export default function AuthModal() {
   async function handleResend() {
     setError(''); setInfo('');
     await resendConfirm(email);
-    setInfo('Código reenviado. Revisá tu bandeja de entrada (y spam).');
+    setInfo(t.infoResentOk);
+  }
+
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setError(''); setSubmitting(true);
+    try {
+      const err = await resetPassword(email);
+      if (err) {
+        setError(tradError(err));
+      } else {
+        setInfo(t.forgotSuccess);
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -82,26 +114,33 @@ export default function AuthModal() {
 
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
 
+        {/* Selector de idioma */}
+        <LanguageSwitcher />
+
         {/* Logo + título */}
         <div className="mb-6 text-center">
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-soft">
             {step === 'confirm' ? <KeyRound className="h-8 w-8" /> : <PawIcon className="h-8 w-8" />}
           </span>
           <h1 className="mt-3 font-display text-2xl font-black text-ink">
-            {step === 'confirm' ? 'Confirmá tu email' : 'Bienvenido a Vecindog'}
+            {step === 'confirm' ? t.confirmEmail
+              : step === 'forgot' ? t.forgotTitle
+              : t.welcome}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
             {step === 'confirm'
-              ? <>Te enviamos un código de verificación a <strong>{email}</strong></>
-              : 'Registrate para ver los datos de contacto de los avisos.'}
+              ? <>{t.confirmEmailSub} <strong>{email}</strong></>
+              : step === 'forgot'
+              ? t.forgotSub
+              : t.welcomeSub}
           </p>
         </div>
 
         {step === 'confirm' ? (
-          /* ── Paso 2: ingresar código ── */
+          /* ── Paso: ingresar código OTP ── */
           <form onSubmit={handleVerify} className="space-y-3">
             <div>
-              <label className="label text-center block mb-1">Código de verificación</label>
+              <label className="label text-center block mb-1">{t.codeLabel}</label>
               <input
                 ref={codeRef}
                 type="text"
@@ -115,34 +154,52 @@ export default function AuthModal() {
               />
             </div>
 
-            {error && (
-              <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}
-              </p>
-            )}
-            {info && (
-              <p className="flex items-start gap-1.5 rounded-xl bg-good/10 p-3 text-sm font-semibold text-good">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />{info}
-              </p>
-            )}
+            {error && <AlertBanner>{error}</AlertBanner>}
+            {info  && <InfoBanner>{info}</InfoBanner>}
 
             <button type="submit" disabled={submitting || code.length < 6}
               className="btn-primary w-full disabled:opacity-60">
-              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Confirmar y entrar'}
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t.btnConfirm}
             </button>
 
             <div className="flex items-center justify-between pt-1 text-xs text-ink-muted">
               <button type="button" onClick={handleResend} className="font-bold text-brand-primary hover:underline">
-                Reenviar código
+                {t.resendCode}
               </button>
               <button type="button" onClick={() => { setStep('form'); setCode(''); setError(''); }}
                 className="hover:underline">
-                Cambiar email
+                {t.changeEmail}
               </button>
             </div>
           </form>
+
+        ) : step === 'forgot' ? (
+          /* ── Paso: recuperar contraseña ── */
+          <form onSubmit={handleForgot} className="space-y-3">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <input type="email" required placeholder={t.emailPlaceholder}
+                value={email} onChange={(e) => setEmail(e.target.value)} className="field pl-9" />
+            </div>
+
+            {error && <AlertBanner>{error}</AlertBanner>}
+            {info  && <InfoBanner>{info}</InfoBanner>}
+
+            {!info && (
+              <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t.btnSendReset}
+              </button>
+            )}
+
+            <button type="button"
+              onClick={() => { setStep('form'); setMode('login'); setError(''); setInfo(''); }}
+              className="flex w-full items-center justify-center gap-1.5 text-sm font-bold text-ink-muted hover:text-brand-primary transition">
+              <ArrowLeft className="h-4 w-4" /> {t.backToLogin}
+            </button>
+          </form>
+
         ) : (
-          /* ── Paso 1: email + contraseña ── */
+          /* ── Paso principal: email + contraseña ── */
           <>
             <div className="mb-5 flex rounded-2xl bg-brand-cream p-1">
               {(['register', 'login'] as const).map((m) => (
@@ -150,7 +207,7 @@ export default function AuthModal() {
                   className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition ${
                     mode === m ? 'bg-white text-ink shadow-soft' : 'text-ink-muted hover:text-ink'
                   }`}>
-                  {m === 'register' ? 'Crear cuenta' : 'Iniciar sesión'}
+                  {m === 'register' ? t.tabRegister : t.tabLogin}
                 </button>
               ))}
             </div>
@@ -158,75 +215,81 @@ export default function AuthModal() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-                <input type="email" required placeholder="tu@email.com" autoComplete="email"
+                <input type="email" required placeholder={t.emailPlaceholder} autoComplete="email"
                   value={email} onChange={(e) => setEmail(e.target.value)} className="field pl-9" />
               </div>
 
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                 <input type={showPass ? 'text' : 'password'} required minLength={6}
-                  placeholder="Contraseña (mín. 6 caracteres)"
+                  placeholder={t.passwordPlaceholder}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   value={password} onChange={(e) => setPassword(e.target.value)}
                   className="field pl-9 pr-10" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted"
-                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                  aria-label={showPass ? t.hidePassword : t.showPassword}>
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+
+              {/* Link "olvidé contraseña" — solo en login */}
+              {mode === 'login' && (
+                <div className="text-right">
+                  <button type="button"
+                    onClick={() => { setStep('forgot'); setError(''); setInfo(''); }}
+                    className="text-xs font-bold text-brand-primary hover:underline">
+                    {t.forgotLink}
+                  </button>
+                </div>
+              )}
 
               {/* Checkbox términos — solo en registro */}
               {mode === 'register' && (
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" required className="mt-0.5 h-4 w-4 accent-brand-primary shrink-0" />
                   <span className="text-xs text-ink-muted leading-relaxed">
-                    Acepto los{' '}
-                    <a href="/terminos" target="_blank" className="font-bold text-brand-primary underline">Términos y Condiciones</a>
-                    {' '}y la{' '}
-                    <a href="/privacidad" target="_blank" className="font-bold text-brand-primary underline">Política de Privacidad</a>
-                    {' '}de Vecindog.
+                    {t.termsPrefix}{' '}
+                    <a href="/terminos" target="_blank" className="font-bold text-brand-primary underline">{t.termsLink}</a>
+                    {' '}{t.termsMiddle}{' '}
+                    <a href="/privacidad" target="_blank" className="font-bold text-brand-primary underline">{t.privacyLink}</a>
+                    {' '}{t.termsSuffix}
                   </span>
                 </label>
               )}
 
-              {error && (
-                <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}
-                </p>
-              )}
+              {error && <AlertBanner>{error}</AlertBanner>}
 
               <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
                 {submitting ? <Loader2 className="h-5 w-5 animate-spin" />
-                  : mode === 'register' ? 'Crear cuenta gratis' : 'Iniciar sesión'}
+                  : mode === 'register' ? t.btnRegister : t.btnLogin}
               </button>
             </form>
 
             <div className="my-4 flex items-center gap-3">
               <div className="flex-1 border-t border-black/10" />
-              <span className="text-xs text-ink-muted">o</span>
+              <span className="text-xs text-ink-muted">{t.or}</span>
               <div className="flex-1 border-t border-black/10" />
             </div>
 
-            {/* Google */}
             <button type="button" onClick={signInWithGoogle}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-black/10 bg-white py-3 text-sm font-bold text-ink transition hover:border-black/20 hover:bg-black/5">
               <GoogleIcon className="h-5 w-5" />
-              Continuar con Google
+              {t.continueGoogle}
             </button>
 
             <div className="my-4 flex items-center gap-3">
               <div className="flex-1 border-t border-black/10" />
-              <span className="text-xs text-ink-muted">o</span>
+              <span className="text-xs text-ink-muted">{t.or}</span>
               <div className="flex-1 border-t border-black/10" />
             </div>
 
             <button type="button" onClick={enterAsGuest}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink transition hover:border-brand-primary hover:text-brand-primary">
-              <Dog className="h-4 w-4" /> Entrar como invitado
+              <Dog className="h-4 w-4" /> {t.enterGuest}
             </button>
             <p className="mt-2 text-center text-xs text-ink-muted">
-              Como invitado no podrás ver el WhatsApp de contacto.
+              {t.guestNote}
             </p>
           </>
         )}
@@ -235,21 +298,20 @@ export default function AuthModal() {
   );
 }
 
-function tradError(msg: string): string {
-  if (msg.includes('Invalid login credentials')) return 'Email o contraseña incorrectos.';
-  if (msg.includes('Email not confirmed'))        return 'Confirmá tu email antes de iniciar sesión.';
-  if (msg.includes('User already registered'))    return 'Ya existe una cuenta con ese email. Iniciá sesión.';
-  if (msg.includes('Password should be'))         return 'La contraseña debe tener al menos 6 caracteres.';
-  if (msg.includes('Unable to validate'))         return 'Email inválido.';
-  if (msg.includes('is invalid'))                 return 'Email inválido. Revisá que esté bien escrito.';
-  if (msg.includes('rate limit'))                 return 'Demasiados intentos. Esperá unos minutos y volvé a intentar.';
-  if (msg.includes('over_email_send_rate_limit')) return 'Demasiados intentos. Esperá unos minutos y volvé a intentar.';
-  if (msg.includes('Token has expired'))          return 'El código expiró. Pedí uno nuevo.';
-  if (msg.includes('Token not found'))            return 'Código incorrecto. Revisá el email o pedí uno nuevo.';
-  if (msg.includes('signup disabled'))            return 'El registro está deshabilitado temporalmente.';
-  if (msg.includes('weak password'))              return 'La contraseña es muy débil. Usá al menos 6 caracteres.';
-  if (msg.includes('network'))                    return 'Error de conexión. Verificá tu internet.';
-  return msg;
+function AlertBanner({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-start gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
+      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{children}
+    </p>
+  );
+}
+
+function InfoBanner({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-start gap-1.5 rounded-xl bg-good/10 p-3 text-sm font-semibold text-good">
+      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />{children}
+    </p>
+  );
 }
 
 function GoogleIcon({ className }: { className?: string }) {

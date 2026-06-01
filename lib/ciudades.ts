@@ -98,14 +98,18 @@ export const CIUDADES: Ciudad[] = [
   { nombre: 'Charata',                   provincia: 'Chaco' },
 ];
 
-/** Devuelve las ciudades que matchean el término de búsqueda */
+function sinTildes(s: string) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/** Devuelve las ciudades que matchean el término de búsqueda (ignora tildes) */
 export function buscarCiudades(q: string): Ciudad[] {
-  const term = q.trim().toLowerCase();
+  const term = sinTildes(q.trim());
   if (!term) return CIUDADES;
   return CIUDADES.filter(
     (c) =>
-      c.nombre.toLowerCase().includes(term) ||
-      c.provincia.toLowerCase().includes(term)
+      sinTildes(c.nombre).includes(term) ||
+      sinTildes(c.provincia).includes(term)
   );
 }
 

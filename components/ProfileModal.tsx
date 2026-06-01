@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { User, Phone, MapPin, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
 
 export default function ProfileModal() {
   const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
+  const { t } = useLanguage();
 
   const [nombre,       setNombre]       = useState('');
   const [apellido,     setApellido]     = useState('');
@@ -49,8 +51,8 @@ export default function ProfileModal() {
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-soft">
             <User className="h-8 w-8" />
           </span>
-          <h1 className="mt-3 font-display text-2xl font-black text-ink">Completá tu perfil</h1>
-          <p className="mt-1 text-sm text-ink-muted">Necesitamos algunos datos para continuar</p>
+          <h1 className="mt-3 font-display text-2xl font-black text-ink">{t.profileTitle}</h1>
+          <p className="mt-1 text-sm text-ink-muted">{t.profileSub}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -61,21 +63,21 @@ export default function ProfileModal() {
           {/* Nombre */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input type="text" required placeholder="Nombre" value={nombre}
+            <input type="text" required placeholder={t.firstName} value={nombre}
               onChange={(e) => setNombre(e.target.value)} className="field pl-9" />
           </div>
 
           {/* Apellido */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input type="text" required placeholder="Apellido" value={apellido}
+            <input type="text" required placeholder={t.lastName} value={apellido}
               onChange={(e) => setApellido(e.target.value)} className="field pl-9" />
           </div>
 
           {/* Teléfono */}
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input type="tel" required placeholder="Teléfono (ej: 1123456789)" value={telefono}
+            <input type="tel" required placeholder={t.phone} value={telefono}
               onChange={(e) => setTelefono(e.target.value)} className="field pl-9" />
           </div>
 
@@ -84,7 +86,7 @@ export default function ProfileModal() {
             <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
             <select required value={ciudadPerfil} onChange={(e) => handleCiudadChange(e.target.value)}
               className="field pl-9 appearance-none">
-              <option value="">Seleccioná tu ciudad</option>
+              <option value="">{t.selectCity}</option>
               {CIUDADES.map((c) => (
                 <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
               ))}
@@ -94,14 +96,14 @@ export default function ProfileModal() {
           {/* Provincia (autocompletada) */}
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input type="text" required placeholder="Provincia" value={provincia}
+            <input type="text" required placeholder={t.province} value={provincia}
               onChange={(e) => setProvincia(e.target.value)} className="field pl-9" />
           </div>
 
           {/* País */}
           <div className="relative">
             <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <input type="text" required placeholder="País" value={pais}
+            <input type="text" required placeholder={t.country} value={pais}
               onChange={(e) => setPais(e.target.value)} className="field pl-9" />
           </div>
 
@@ -116,7 +118,7 @@ export default function ProfileModal() {
           )}
 
           <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
-            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Guardar y continuar'}
+            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t.btnSave}
           </button>
         </form>
       </div>

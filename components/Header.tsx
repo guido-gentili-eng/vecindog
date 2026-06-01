@@ -24,7 +24,7 @@ const NAV = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [pwSent, setPwSent] = useState(false);
-  const { user, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad, resetPassword } = useAuth();
+  const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad, resetPassword } = useAuth();
   const { lang, setLang } = useLanguage();
 
   async function handleChangePassword() {
@@ -85,13 +85,10 @@ export default function Header() {
             <div className="hidden items-center gap-2 md:flex">
               {isAuthenticated ? (
                 <>
-                  <Link
-                    href="/mi-perfil"
-                    className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary"
-                  >
+                  <span className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink">
                     <User className="h-3.5 w-3.5 text-brand-primary" />
-                    {user?.email?.split('@')[0]}
-                  </Link>
+                    {profile ? `${profile.nombre} ${profile.apellido}` : user?.email?.split('@')[0]}
+                  </span>
                   <button
                     type="button"
                     onClick={handleChangePassword}

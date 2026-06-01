@@ -275,6 +275,15 @@ export default function PerroDetallePage() {
             />
           )}
 
+          {/* Historia Clínica */}
+          <HistoriaClinica
+            perro={perro}
+            vacunas={vacunas}
+            estudios={estudios}
+            ciudad={ciudad ?? null}
+            edad={edad}
+          />
+
           {/* CTA: aviso activo o publicar */}
           {postActivo !== undefined && (
             postActivo ? (
@@ -774,6 +783,143 @@ function EnviarEstudioModal({
           Cancelar
         </button>
       </div>
+    </div>
+  );
+}
+
+/* ── Historia Clínica completa ── */
+function HistoriaClinica({
+  perro, vacunas, estudios, ciudad, edad,
+}: {
+  perro:    Perro;
+  vacunas:  Vacuna[];
+  estudios: Estudio[];
+  ciudad:   string | null;
+  edad:     string | null;
+}) {
+  const labs  = estudios.filter((e) => e.tipo === 'laboratorio');
+  const radios = estudios.filter((e) => e.tipo === 'radiografia');
+  const ecos  = estudios.filter((e) => e.tipo === 'ecografia');
+
+  return (
+    <div className="card p-5 mb-5 mt-2">
+      {/* Título */}
+      <div className="flex items-center gap-2 mb-5">
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-primary/10 text-brand-primary">
+          <FileText className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="font-display text-base font-extrabold text-ink">Historia Clínica</h2>
+          <p className="text-[11px] text-ink-muted">{perro.nombre} · resumen completo</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+
+        {/* ── Perfil ── */}
+        <HCSection titulo="Perfil" lleno>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+            {[
+              ['Raza',      perro.raza],
+              ['Color',     perro.color],
+              ['Sexo',      perro.sexo],
+              ['Tamaño',    perro.tamano],
+              ['Microchip', perro.chip],
+              ['Edad',      edad],
+              ['Ciudad',    ciudad],
+              ['Esterilizado', perro.esterilizado ? 'Sí' : null],
+            ].filter(([, v]) => v).map(([label, value]) => (
+              <div key={label as string}>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{label}</span>
+                <p className="font-semibold text-ink capitalize">{value as string}</p>
+              </div>
+            ))}
+          </div>
+          {perro.descripcion && (
+            <p className="mt-2 text-xs text-ink-muted italic border-t border-black/5 pt-2">
+              {perro.descripcion}
+            </p>
+          )}
+        </HCSection>
+
+        {/* ── Vacunas ── */}
+        <HCSection titulo="Carnet de Vacunas" lleno={vacunas.length > 0}>
+          {vacunas.length > 0 ? (
+            <div className="space-y-1.5">
+              {vacunas.map((v) => (
+                <div key={v.id} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-ink">{v.nombre}</span>
+                  <span className="text-xs text-ink-muted">{formatFecha(v.fecha)}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </HCSection>
+
+        {/* ── Análisis ── */}
+        <HCSection titulo="Análisis de Laboratorio" lleno={labs.length > 0}>
+          {labs.length > 0 ? (
+            <EstudiosList estudios={labs} />
+          ) : null}
+        </HCSection>
+
+        {/* ── Radiografías ── */}
+        <HCSection titulo="Radiografías" lleno={radios.length > 0}>
+          {radios.length > 0 ? (
+            <EstudiosList estudios={radios} />
+          ) : null}
+        </HCSection>
+
+        {/* ── Ecografías ── */}
+        <HCSection titulo="Ecografías" lleno={ecos.length > 0}>
+          {ecos.length > 0 ? (
+            <EstudiosList estudios={ecos} />
+          ) : null}
+        </HCSection>
+
+      </div>
+    </div>
+  );
+}
+
+function HCSection({
+  titulo, lleno, children,
+}: {
+  titulo:   string;
+  lleno:    boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={`rounded-2xl border ${lleno ? 'border-brand-primary/15 bg-brand-cream/40' : 'border-black/5 bg-black/2'} p-3`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">{titulo}</span>
+        {!lleno && (
+          <span className="flex items-center gap-0.5 text-[11px] font-bold text-ink-muted/40">
+            <X className="h-3.5 w-3.5" /> Sin datos
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EstudiosList({ estudios }: { estudios: Estudio[] }) {
+  return (
+    <div className="space-y-1.5">
+      {estudios.map((e) => (
+        <div key={e.id} className="flex items-center justify-between text-sm">
+          <span className="font-semibold text-ink truncate max-w-[70%]">{e.nombre}</span>
+          <a
+            href={e.archivo_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold text-brand-primary hover:underline shrink-0"
+          >
+            Ver →
+          </a>
+        </div>
+      ))}
     </div>
   );
 }

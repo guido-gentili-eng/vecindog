@@ -56,7 +56,7 @@ export default function PerroDetallePage() {
     if (!perro) return;
     setSubiendoTipo(tipo);
     try {
-      const url  = await subirArchivoEstudio(file);
+      const url   = await subirArchivoEstudio(file);
       const nuevo = await agregarEstudio({
         perro_id:    perro.id,
         tipo,
@@ -66,8 +66,9 @@ export default function PerroDetallePage() {
         notas:       null,
       });
       setEstudios((prev) => [nuevo, ...prev]);
-    } catch { /* silencioso */ }
-    finally  { setSubiendoTipo(null); }
+    } finally {
+      setSubiendoTipo(null);
+    }
   }
 
   async function handleEliminarEstudio(id: string) {
@@ -561,11 +562,24 @@ function EstudiosSection({
   accept:     string;
   estudios:   Estudio[];
   subiendo:   boolean;
-  onSubir:    (f: File) => void;
+  onSubir:    (f: File) => Promise<void>;
   onEnviar:   (e: Estudio) => void;
   onEliminar: (id: string) => void;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef                     = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState('');
+
+  async function confirmarSubida() {
+    if (!pendingFile) return;
+    setUploadError('');
+    try {
+      await onSubir(pendingFile);
+      setPendingFile(null);
+    } catch {
+      setUploadError('No se pudo subir el archivo. Verificá tu conexión e intentá de nuevo.');
+    }
+  }
 
   return (
     <div className="card p-5 mb-5">
@@ -578,27 +592,68 @@ function EstudiosSection({
             </span>
           )}
         </h2>
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={subiendo}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
-        >
-          {subiendo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-          Subir archivo
-        </button>
+        {!pendingFile && (
+          <button
+            type="button"
+            onClick={() => { setUploadError(''); fileRef.current?.click(); }}
+            disabled={subiendo}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
+          >
+            <Upload className="h-3.5 w-3.5" /> Subir archivo
+          </button>
+        )}
         <input
           ref={fileRef}
           type="file"
           accept={accept}
           className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) { onSubir(f); e.target.value = ''; } }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) { setPendingFile(f); setUploadError(''); }
+            e.target.value = '';
+          }}
         />
       </div>
 
-      {estudios.length === 0 ? (
+      {/* Confirmación de subida */}
+      {pendingFile && (
+        <div className="mb-4 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink truncate">{pendingFile.name}</p>
+              <p className="text-xs text-ink-muted">{(pendingFile.size / 1024 / 1024).toFixed(1)} MB</p>
+            </div>
+          </div>
+          {uploadError && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {uploadError}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={confirmarSubida}
+              disabled={subiendo}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
+            >
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPendingFile(null); setUploadError(''); }}
+              disabled={subiendo}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {estudios.length === 0 && !pendingFile ? (
         <p className="text-sm text-ink-muted">No hay archivos subidos.</p>
-      ) : (
+      ) : estudios.length > 0 ? (
         <div className="space-y-2">
           {estudios.map((e) => (
             <div key={e.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
@@ -622,7 +677,7 @@ function EstudiosSection({
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

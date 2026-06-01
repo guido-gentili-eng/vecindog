@@ -29,6 +29,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
     }
 
+    // Validar que el link sea una URL segura (http/https)
+    if (link) {
+      try {
+        const parsed = new URL(link);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          return NextResponse.json({ error: 'El link debe ser una URL válida (http o https)' }, { status: 400 });
+        }
+      } catch {
+        return NextResponse.json({ error: 'El link debe ser una URL válida' }, { status: 400 });
+      }
+    }
+
+    // Validar longitudes
+    if (negocio && negocio.length > 100) return NextResponse.json({ error: 'Nombre demasiado largo' }, { status: 400 });
+    if (tagline  && tagline.length  > 150) return NextResponse.json({ error: 'Tagline demasiado largo' }, { status: 400 });
+    if (cta      && cta.length      > 50)  return NextResponse.json({ error: 'Texto del botón demasiado largo' }, { status: 400 });
+
     // Guardar ad en Supabase como pendiente
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -85,9 +102,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!result.init_point) {
+      return NextResponse.json({ error: 'Mercado Pago no devolvió URL de pago' }, { status: 502 });
+    }
     return NextResponse.json({ url: result.init_point });
-  } catch (err) {
-    console.error('MP error:', err);
-    return NextResponse.json({ error: 'Error al crear preferencia' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Error al crear preferencia de pago' }, { status: 500 });
   }
 }

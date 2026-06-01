@@ -3,6 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 
 const RADIO_KM = 1;
 
+/** Escapa caracteres HTML para evitar inyección en emails */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -17,17 +27,66 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 
 export async function POST(req: NextRequest) {
   try {
-    const { lat, lng, zona, ciudad, categoria, nombre_perro, post_id, publicador_id } = await req.json();
+    // ── Autenticación: verificar sesión del usuario ──────────────────
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.slice(7);
 
-    if (!lat || !lng) return NextResponse.json({ ok: false, reason: 'sin coords' });
+    const anonClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Cliente admin para leer todos los perfiles
+    // ── Parsear y validar input ──────────────────────────────────────
+    const body = await req.json();
+    const { lat, lng, zona, ciudad, categoria, nombre_perro, post_id, publicador_id } = body;
+
+    // Validar coordenadas
+    const latN = Number(lat);
+    const lngN = Number(lng);
+    if (
+      !Number.isFinite(latN) || !Number.isFinite(lngN) ||
+      latN < -90 || latN > 90 || lngN < -180 || lngN > 180
+    ) {
+      return NextResponse.json({ ok: false, reason: 'coords inválidas' });
+    }
+
+    // Validar categoría
+    if (!['perdido', 'encontrado', 'adopcion'].includes(categoria)) {
+      return NextResponse.json({ ok: false, reason: 'categoría inválida' });
+    }
+
+    // Sanitizar strings
+    const zonaS       = String(zona       ?? '').slice(0, 100);
+    const ciudadS     = String(ciudad     ?? '').slice(0, 100);
+    const nombrePerroS = String(nombre_perro ?? '').slice(0, 80);
+    const postIdS     = String(post_id    ?? '').slice(0, 64);
+
+    // ── Cliente admin ────────────────────────────────────────────────
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Traer perfiles con coordenadas (excluir al publicador)
+    // ── Verificar que el post pertenece al usuario autenticado ───────
+    if (postIdS) {
+      const { data: postCheck } = await admin
+        .from('posts')
+        .select('user_id')
+        .eq('id', postIdS)
+        .single();
+      if (!postCheck || postCheck.user_id !== user.id) {
+        return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    // ── Traer perfiles con coordenadas ───────────────────────────────
     const { data: profiles } = await admin
       .from('profiles')
       .select('id, nombre, apellido, lat, lng')
@@ -39,40 +98,48 @@ export async function POST(req: NextRequest) {
 
     // Filtrar por radio
     const cercanos = profiles.filter((p: { lat: number; lng: number }) =>
-      haversineKm(lat, lng, p.lat, p.lng) <= RADIO_KM
+      haversineKm(latN, lngN, p.lat, p.lng) <= RADIO_KM
     );
-
     if (cercanos.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 
-    // Obtener emails de auth.users
+    // ── Obtener emails en batch ──────────────────────────────────────
     const ids = cercanos.map((p: { id: string }) => p.id);
     const emailsMap: Record<string, string> = {};
-    for (const id of ids) {
-      const { data: userData } = await admin.auth.admin.getUserById(id);
-      if (userData?.user?.email) emailsMap[id] = userData.user.email;
+    // Usar listUsers para evitar N+1 queries
+    const { data: { users: authUsers } } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    for (const u of authUsers) {
+      if (ids.includes(u.id) && u.email) emailsMap[u.id] = u.email;
     }
 
-    const categoriaLabel = categoria === 'perdido' ? 'perro perdido' : categoria === 'encontrado' ? 'perro encontrado' : 'perro en adopción';
-    const nombrePerro = nombre_perro || 'un perro';
-    const zonaLabel = [zona, ciudad].filter(Boolean).join(', ');
+    const categoriaLabel =
+      categoria === 'perdido'    ? 'perro perdido' :
+      categoria === 'encontrado' ? 'perro encontrado' :
+      'perro en adopción';
 
-    // Insertar notificaciones en la tabla
+    const zonaLabel = [zonaS, ciudadS].filter(Boolean).join(', ');
+
+    // ── Insertar notificaciones ──────────────────────────────────────
     const notifRows = cercanos.map((p: { id: string }) => ({
-      user_id:  p.id,
-      post_id:  post_id ?? null,
-      tipo:     categoria,
-      mensaje:  `🐾 Aviso de ${categoriaLabel}${nombre_perro ? ` (${nombre_perro})` : ''} cerca de tu casa en ${zonaLabel}.`,
-      leida:    false,
+      user_id: p.id,
+      post_id: postIdS || null,
+      tipo:    categoria,
+      mensaje: `🐾 Aviso de ${categoriaLabel}${nombrePerroS ? ` (${esc(nombrePerroS)})` : ''} cerca de tu casa en ${esc(zonaLabel)}.`,
+      leida:   false,
     }));
     if (notifRows.length > 0) {
       await admin.from('notifications').insert(notifRows);
     }
 
-    // Enviar emails via Resend
+    // ── Enviar emails ────────────────────────────────────────────────
     let enviados = 0;
     for (const perfil of cercanos as Array<{ id: string; nombre: string }>) {
       const email = emailsMap[perfil.id];
       if (!email) continue;
+
+      const saludo    = esc(perfil.nombre ?? 'Vecino');
+      const nombreEsc = nombrePerroS ? `<strong>${esc(nombrePerroS)}</strong>` : 'un perro';
+      const zonaEsc   = esc(zonaLabel);
+      const postUrl   = `https://www.mivecindog.com.ar/publicaciones/${esc(postIdS)}`;
 
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -89,19 +156,19 @@ export async function POST(req: NextRequest) {
               <div style="background: #EE5A3B; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
                 <h1 style="color: white; margin: 0; font-size: 22px;">🐾 Vecindog</h1>
               </div>
-              <h2 style="color: #1a1a1a;">Hola ${perfil.nombre},</h2>
+              <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
               <p style="color: #555; font-size: 16px; line-height: 1.6;">
-                Se publicó un aviso de <strong>${categoriaLabel}</strong> cerca de tu hogar:
+                Se publicó un aviso de <strong>${esc(categoriaLabel)}</strong> cerca de tu hogar:
               </p>
               <div style="background: #FFF8F0; border-radius: 12px; padding: 16px; margin: 16px 0; border-left: 4px solid #EE5A3B;">
-                <p style="margin: 0; font-size: 16px;"><strong>🐶 ${nombrePerro}</strong></p>
-                <p style="margin: 4px 0 0; color: #888; font-size: 14px;">📍 ${zonaLabel}</p>
+                <p style="margin: 0; font-size: 16px;">🐶 ${nombreEsc}</p>
+                <p style="margin: 4px 0 0; color: #888; font-size: 14px;">📍 ${zonaEsc}</p>
               </div>
               <p style="color: #555; font-size: 15px;">
                 Si lo viste o podés ayudar, entrá al aviso y contactá al dueño.
               </p>
               <div style="text-align: center; margin-top: 24px;">
-                <a href="https://www.mivecindog.com.ar/publicaciones/${post_id}"
+                <a href="${postUrl}"
                    style="background: #EE5A3B; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px;">
                   Ver aviso
                 </a>
@@ -119,8 +186,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, enviados });
-  } catch (err) {
-    console.error('notificar-vecinos error:', err);
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 500 });
   }
 }

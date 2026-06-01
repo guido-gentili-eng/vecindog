@@ -273,20 +273,26 @@ export default function PublicarPage() {
         }
 
         if (notifLat && notifLng) {
-          fetch('/api/notificar-vecinos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              post_id: postData.id,
-              lat: notifLat,
-              lng: notifLng,
-              zona: form.zona,
-              ciudad,
-              categoria: form.categoria,
-              nombre_perro: form.nombre || null,
-              publicador_id: user?.id ?? null,
-            }),
-          }).catch(() => {});
+          // Pasar el token de sesión para que la API valide el usuario
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            fetch('/api/notificar-vecinos', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+              },
+              body: JSON.stringify({
+                post_id: postData.id,
+                lat: notifLat,
+                lng: notifLng,
+                zona: form.zona,
+                ciudad,
+                categoria: form.categoria,
+                nombre_perro: form.nombre || null,
+                publicador_id: user?.id ?? null,
+              }),
+            }).catch(() => {});
+          });
         }
       }
 

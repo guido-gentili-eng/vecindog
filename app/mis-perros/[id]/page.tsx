@@ -231,7 +231,7 @@ export default function PerroDetallePage() {
             tipo="laboratorio"
             titulo="Análisis de Laboratorio"
             icono={<FlaskConical className="h-4 w-4 text-brand-primary" />}
-            accept=".pdf"
+            accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'laboratorio')}
             subiendo={subiendoTipo === 'laboratorio'}
             onSubir={(f) => handleSubirEstudio('laboratorio', f)}
@@ -244,7 +244,7 @@ export default function PerroDetallePage() {
             tipo="radiografia"
             titulo="Radiografías"
             icono={<ScanLine className="h-4 w-4 text-brand-primary" />}
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'radiografia')}
             subiendo={subiendoTipo === 'radiografia'}
             onSubir={(f) => handleSubirEstudio('radiografia', f)}
@@ -257,7 +257,7 @@ export default function PerroDetallePage() {
             tipo="ecografia"
             titulo="Ecografías"
             icono={<Activity className="h-4 w-4 text-brand-primary" />}
-            accept=".pdf,.mp4,.mov,.avi,.jpg,.jpeg,.png"
+            accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'ecografia')}
             subiendo={subiendoTipo === 'ecografia'}
             onSubir={(f) => handleSubirEstudio('ecografia', f)}

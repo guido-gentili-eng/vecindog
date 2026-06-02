@@ -322,7 +322,7 @@ export default function DetalleAvisoPage() {
                     <div className="rounded-xl bg-good/8 p-3">
                       <p className="text-xs font-bold text-ink">
                         {post.categoria === 'perdido'
-                          ? '¿Confirmás que lo encontraste? El aviso va a pasar al filtro verde de Encontrados.'
+                          ? '¿Confirmás que lo encontraste? El aviso va a pasar al filtro verde de Vistos.'
                           : '¿Confirmás que el aviso se resolvió? Se va a ocultar de la lista.'}
                       </p>
                       <p className="mt-1 text-[11px] text-ink-muted">

@@ -19,7 +19,7 @@ const CAT_COLOR: Record<string, string> = {
 };
 const CAT_LABEL: Record<string, string> = {
   perdido:    'Perdido',
-  encontrado: 'Encontrado',
+  encontrado: 'Visto',
   adopcion:   'Adopción',
 };
 

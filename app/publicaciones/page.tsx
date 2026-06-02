@@ -23,17 +23,17 @@ const CAT_VALIDAS: FiltroCategoria[] = [
 
 const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
   todas:      'Todos los avisos',
-  buscar:     'Perdidos y encontrados',
+  buscar:     'Perdidos y vistos',
   perdido:    'Perros perdidos',
-  encontrado: 'Perros encontrados',
+  encontrado: 'Perros vistos',
   adopcion:   'Perros en adopción'
 };
 
 const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
   todas:      'Los perros publicados por los vecinos de tu ciudad.',
-  buscar:     'Perros perdidos y encontrados cerca tuyo.',
+  buscar:     'Perros perdidos y vistos cerca tuyo.',
   perdido:    'Familias buscando a su perro. ¿Lo viste?',
-  encontrado: 'Perros encontrados que buscan a su familia.',
+  encontrado: 'Perros vistos en la calle que buscan a su familia.',
   adopcion:   'Perros que buscan una familia responsable.'
 };
 

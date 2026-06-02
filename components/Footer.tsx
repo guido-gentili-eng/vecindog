@@ -11,7 +11,7 @@ const LINKS = {
   ],
   comunidad: [
     { href: '/publicaciones?cat=perdido',    label: 'Perdidos' },
-    { href: '/publicaciones?cat=encontrado', label: 'Encontrados' },
+    { href: '/publicaciones?cat=encontrado', label: 'Vistos' },
     { href: '/publicaciones?cat=adopcion',   label: 'En adopción' }
   ],
   negocios: [

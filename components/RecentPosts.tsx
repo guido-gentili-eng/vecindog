@@ -36,7 +36,7 @@ export default function RecentPosts() {
       <div className="hide-scrollbar mb-5 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         <Chip href="/publicaciones">Todos ({conteo.activos})</Chip>
         <Chip href="/publicaciones?cat=perdido"    tone="bg-lost/10 text-lost">Perdidos ({conteo.perdidos})</Chip>
-        <Chip href="/publicaciones?cat=encontrado" tone="bg-found/10 text-found">Encontrados ({conteo.encontrados})</Chip>
+        <Chip href="/publicaciones?cat=encontrado" tone="bg-found/10 text-found">Vistos ({conteo.encontrados})</Chip>
         <Chip href="/publicaciones?cat=adopcion"   tone="bg-adopt/15 text-[#8a6014]">En adopción ({conteo.adopcion})</Chip>
       </div>
 

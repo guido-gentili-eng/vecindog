@@ -62,9 +62,9 @@ export default function Filters({
             }
           >
             <option value="todas">Todos</option>
-            <option value="buscar">Perdidos y encontrados</option>
+            <option value="buscar">Perdidos y vistos</option>
             <option value="perdido">Perdidos</option>
-            <option value="encontrado">Encontrados</option>
+            <option value="encontrado">Vistos</option>
             <option value="adopcion">En adopción</option>
           </select>
         </label>

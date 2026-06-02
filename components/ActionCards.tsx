@@ -42,7 +42,7 @@ const ACCIONES: Accion[] = [
   {
     href: '/publicar?cat=encontrado',
     icon: MapPin,
-    titulo: 'Encontré un perro',
+    titulo: 'Vi un perro perdido',
     texto: 'Avisá a la comunidad para ayudarlo a volver a casa.',
     chip: 'Tarda 1 minuto',
     bg:     'bg-brand-sage',

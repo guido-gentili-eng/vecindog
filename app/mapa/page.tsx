@@ -74,7 +74,7 @@ export default function MapaPage() {
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-lost" /> Perdido
           </span>
           <span className="flex items-center gap-1.5 text-found">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-found" /> Encontrado
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-found" /> Visto
           </span>
           <span className="flex items-center gap-1.5 text-adopt">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-adopt" /> Adopción

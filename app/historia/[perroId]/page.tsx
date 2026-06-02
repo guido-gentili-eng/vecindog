@@ -125,7 +125,7 @@ export default async function HistoriaPublicaPage({ params }: Props) {
               {(posts ?? []).map((post) => {
                 const catLabel =
                   post.categoria === 'perdido'    ? 'Perdido'      :
-                  post.categoria === 'encontrado' ? 'Encontrado'   : 'En adopción';
+                  post.categoria === 'encontrado' ? 'Visto'        : 'En adopción';
                 const catColor =
                   post.categoria === 'perdido'    ? 'bg-[#D7503A] text-white' :
                   post.categoria === 'encontrado' ? 'bg-[#3F8B5C] text-white' :

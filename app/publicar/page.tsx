@@ -388,17 +388,17 @@ export default function PublicarPage() {
         }`}>
           <Dog className="h-3.5 w-3.5" />
           {form.categoria === 'perdido'    ? 'Perro perdido' :
-           form.categoria === 'encontrado' ? 'Encontré un perro' :
+           form.categoria === 'encontrado' ? 'Vi un perro perdido' :
                                             'Doy en adopción'}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
           {form.categoria === 'perdido'    ? 'Perdí a mi perro' :
-           form.categoria === 'encontrado' ? 'Encontré un perro' :
+           form.categoria === 'encontrado' ? 'Vi un perro perdido' :
                                             'Doy en adopción'}
         </h1>
         <p className="mt-1 text-ink-muted">
           {form.categoria === 'perdido'    ? 'Completá los datos y los vecinos te van a ayudar a encontrarlo.' :
-           form.categoria === 'encontrado' ? 'Cargá los datos del perro para que su familia lo pueda encontrar.' :
+           form.categoria === 'encontrado' ? 'Cargá los datos del perro que viste para que su familia lo encuentre.' :
                                             'Completá la información para encontrarle una familia responsable.'}
         </p>
       </header>
@@ -499,7 +499,7 @@ export default function PublicarPage() {
         <StepCard n={2} titulo="Datos del perro"
           subtitulo={
             form.categoria === 'perdido'    ? 'Completá lo que sepas. Más datos = más chances de encontrarlo.' :
-            form.categoria === 'encontrado' ? 'Describí al perro para que su familia lo reconozca.' :
+            form.categoria === 'encontrado' ? 'Describí el perro que viste para que su familia lo reconozca.' :
                                              'Contanos cómo es el perro que das en adopción.'
           }>
           <div className="space-y-4">
@@ -573,7 +573,7 @@ export default function PublicarPage() {
         <StepCard n={3}
           titulo={
             form.categoria === 'perdido'    ? '¿Dónde y cuándo se perdió?' :
-            form.categoria === 'encontrado' ? '¿Dónde y cuándo lo encontraste?' :
+            form.categoria === 'encontrado' ? '¿Dónde y cuándo lo viste?' :
                                              '¿Dónde está el perro?'
           }>
           <div className="grid gap-4 sm:grid-cols-2">

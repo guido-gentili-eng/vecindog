@@ -457,7 +457,7 @@ export default function BuscarPage() {
                 href="/publicaciones?cat=encontrado"
                 className="btn-secondary mt-4 inline-flex"
               >
-                Ver todos los encontrados
+                Ver todos los vistos
               </Link>
             </div>
           ) : (

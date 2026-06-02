@@ -67,7 +67,7 @@ export function listarAnimales(filtros?: {
 
 export const ETIQUETA_CATEGORIA: Record<Categoria, string> = {
   perdido: 'Perdido',
-  encontrado: 'Encontrado',
+  encontrado: 'Visto',
   adopcion: 'En adopcion'
 };
 

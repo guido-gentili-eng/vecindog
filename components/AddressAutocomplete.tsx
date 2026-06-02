@@ -3,37 +3,55 @@
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 
-interface Address {
+interface NominatimAddress {
   road?: string;
+  pedestrian?: string;
   house_number?: string;
   suburb?: string;
   neighbourhood?: string;
+  quarter?: string;
   city?: string;
   town?: string;
   village?: string;
+  municipality?: string;
   state?: string;
+  county?: string;
 }
 
 interface Suggestion {
   display_name: string;
   lat: string;
   lon: string;
-  address?: Address;
+  address: NominatimAddress;
 }
 
 interface Props {
-  value: string;
-  onChange: (value: string) => void;
+  value:        string;
+  onChange:     (value: string) => void;
   placeholder?: string;
-  className?: string;
-  required?: boolean;
-  ciudad?: string | null;
+  className?:   string;
+  required?:    boolean;
+  ciudad?:      string | null;
+}
+
+/** Extrae calle + número de la respuesta Nominatim */
+function extractStreet(a: NominatimAddress): string {
+  const road = a.road ?? a.pedestrian ?? '';
+  const num  = a.house_number ?? '';
+  return [road, num].filter(Boolean).join(' ');
+}
+
+/** Extrae ciudad + provincia de forma legible */
+function extractLocation(a: NominatimAddress): string {
+  const ciudad   = a.city ?? a.town ?? a.village ?? a.municipality ?? '';
+  const provincia = a.state ?? a.county ?? '';
+  return [ciudad, provincia].filter(Boolean).join(', ');
 }
 
 export default function AddressAutocomplete({
   value,
   onChange,
-  placeholder = 'Dirección (calle y número)',
+  placeholder = 'Calle y número',
   className = '',
   required,
   ciudad,
@@ -41,10 +59,9 @@ export default function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading,     setLoading]     = useState(false);
   const [open,        setOpen]        = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef  = useRef<HTMLDivElement>(null);
 
-  // Cerrar al hacer clic afuera
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -62,7 +79,7 @@ export default function AddressAutocomplete({
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    if (val.length < 4) {
+    if (val.trim().length < 3) {
       setSuggestions([]);
       return;
     }
@@ -70,40 +87,25 @@ export default function AddressAutocomplete({
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        // Incluir ciudad para resultados locales
         const query = ciudad ? `${val}, ${ciudad}, Argentina` : `${val}, Argentina`;
-        const q = encodeURIComponent(query);
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&countrycodes=ar`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1&countrycodes=ar`,
           { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
         );
         const data: Suggestion[] = await res.json();
-        setSuggestions(data);
+        // Filtrar resultados que tengan al menos calle
+        setSuggestions(data.filter((s) => s.address?.road || s.address?.pedestrian));
       } catch {
         setSuggestions([]);
       } finally {
         setLoading(false);
       }
-    }, 400);
+    }, 380);
   }
 
   function handleSelect(s: Suggestion) {
-    // Mantener lo que el usuario escribió (conserva el número)
-    // pero agregar ciudad/barrio si no está ya incluido
-    const a = s.address;
-    const ciudad = a?.city ?? a?.town ?? a?.village ?? '';
-    const barrio = a?.suburb ?? a?.neighbourhood ?? '';
-
-    let result = value.trim();
-    // Agregar barrio y ciudad si no están ya
-    if (barrio && !result.toLowerCase().includes(barrio.toLowerCase())) {
-      result = `${result}, ${barrio}`;
-    }
-    if (ciudad && !result.toLowerCase().includes(ciudad.toLowerCase())) {
-      result = `${result}, ${ciudad}`;
-    }
-
-    onChange(result);
+    const calle = extractStreet(s.address);
+    onChange(calle || value);
     setSuggestions([]);
     setOpen(false);
   }
@@ -126,19 +128,28 @@ export default function AddressAutocomplete({
       )}
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-lg overflow-hidden">
-          {suggestions.map((s, i) => (
-            <li key={i}>
-              <button
-                type="button"
-                onMouseDown={() => handleSelect(s)}
-                className="flex w-full items-start gap-2 px-4 py-3 text-left text-sm hover:bg-brand-cream transition"
-              >
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary" />
-                <span className="text-ink line-clamp-2">{s.display_name}</span>
-              </button>
-            </li>
-          ))}
+        <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
+          {suggestions.map((s, i) => {
+            const calle    = extractStreet(s.address);
+            const location = extractLocation(s.address);
+            return (
+              <li key={i} className="border-b border-black/5 last:border-0">
+                <button
+                  type="button"
+                  onMouseDown={() => handleSelect(s)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-brand-cream transition"
+                >
+                  <MapPin className="h-4 w-4 shrink-0 text-ink-muted/50" />
+                  <div className="min-w-0">
+                    <p className="font-bold text-ink text-sm truncate">{calle}</p>
+                    {location && (
+                      <p className="text-xs text-ink-muted truncate">{location}</p>
+                    )}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

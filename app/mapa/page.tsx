@@ -29,13 +29,32 @@ export default function MapaPage() {
   useEffect(() => {
     listarPosts().then(setPosts).finally(() => setCargando(false));
 
+    // 1. Intentar geolocalización del navegador (más precisa)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {}
+        // 2. Si falla o el usuario rechaza → geocodificar la ciudad guardada
+        () => { if (ciudad) geocodificarCiudad(ciudad); }
       );
+    } else if (ciudad) {
+      // Sin soporte de geolocalización → usar ciudad guardada
+      geocodificarCiudad(ciudad);
     }
-  }, []);
+  }, [ciudad]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function geocodificarCiudad(nombre: string) {
+    try {
+      const q   = encodeURIComponent(`${nombre}, Argentina`);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=ar`,
+        { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+      );
+      const data = await res.json();
+      if (data?.[0]) {
+        setCenter({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+      }
+    } catch { /* sin coords, queda el default */ }
+  }
 
   return (
     <div className="relative h-full w-full">

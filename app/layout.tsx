@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
+import InstallBanner from '@/components/InstallBanner';
 
 export const viewport: Viewport = {
   themeColor: '#B85C4A',
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main className="mx-auto max-w-6xl px-4 pb-16">{children}</main>
           <Footer />
+          <InstallBanner />
         </Providers>
       </body>
     </html>

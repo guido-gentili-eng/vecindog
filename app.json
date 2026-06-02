@@ -28,7 +28,9 @@
       "expo-secure-store",
       [
         "expo-image-picker",
-        { "photosPermission": "Vecindog necesita acceso a tus fotos para subir imágenes de tu perro." }
+        {
+          "photosPermission": "Vecindog necesita acceso a tus fotos para subir imágenes de tu perro."
+        }
       ],
       [
         "expo-location",
@@ -39,11 +41,17 @@
       ],
       [
         "expo-notifications",
-        { "icon": "./assets/icon.png", "color": "#EE5A3B" }
-      ]
+        {
+          "icon": "./assets/icon.png",
+          "color": "#EE5A3B"
+        }
+      ],
+      "expo-sharing"
     ],
     "extra": {
-      "eas": { "projectId": "vecindog" }
+      "eas": {
+        "projectId": "vecindog"
+      }
     }
   }
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown, Download } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -67,6 +67,12 @@ export default function Header() {
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
           >
             <Megaphone className="h-3.5 w-3.5" /> Publicitate
+          </Link>
+          <Link
+            href="/descargas"
+            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
+          >
+            <Download className="h-3.5 w-3.5" /> Descargas
           </Link>
         </nav>
 
@@ -186,6 +192,13 @@ export default function Header() {
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-primary hover:bg-brand-primary/10"
             >
               <Megaphone className="h-4 w-4" /> Publicitate
+            </Link>
+            <Link
+              href="/descargas"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-primary hover:bg-brand-primary/10"
+            >
+              <Download className="h-4 w-4" /> Descargas
             </Link>
             {/* Selector de idioma mobile */}
             <div className="mt-2 border-t border-black/5 pt-3 px-3">

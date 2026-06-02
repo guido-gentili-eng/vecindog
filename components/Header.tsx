@@ -145,9 +145,19 @@ export default function Header() {
                   )}
                 </div>
               ) : isGuest ? (
-                <span className="inline-flex items-center gap-1 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-semibold text-ink-muted">
-                  Invitado
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-semibold text-ink-muted">
+                    Invitado
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    title="Salir del modo invitado"
+                    className="inline-flex items-center gap-1 rounded-2xl border border-black/10 bg-white px-3 py-1.5 text-xs font-bold text-ink transition hover:border-brand-primary hover:text-brand-primary"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Salir
+                  </button>
+                </div>
               ) : (
                 <Link href="/publicar"
                   className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
@@ -235,8 +245,15 @@ export default function Header() {
                   </div>
                 )}
                 {isGuest && (
-                  <div className="mt-2 border-t border-black/5 pt-2 px-3 py-2">
-                    <p className="text-xs font-semibold text-ink-muted">Modo invitado · <Link href="/" className="text-brand-primary underline" onClick={() => setOpen(false)}>Crear cuenta</Link></p>
+                  <div className="mt-2 border-t border-black/5 pt-2">
+                    <p className="px-3 py-1 text-xs font-semibold text-ink-muted">Modo invitado</p>
+                    <button
+                      type="button"
+                      onClick={() => { signOut(); setOpen(false); }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5 transition"
+                    >
+                      <LogOut className="h-4 w-4" /> Salir y crear cuenta
+                    </button>
                   </div>
                 )}
                 {ciudad && (

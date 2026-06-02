@@ -8,23 +8,26 @@ const publicDir = join(__dirname, '..', 'public');
 
 mkdirSync(join(publicDir, 'icons'), { recursive: true });
 
-// SVG icon: fondo coral con huella de perro (paw)
+// SVG icon: fondo coral con huella de perro (paw print)
 const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Fondo redondeado -->
-  <rect width="512" height="512" rx="100" fill="#B85C4A"/>
-  <!-- Texto "V" estilizado -->
-  <text x="256" y="340"
-    font-family="Arial Black, sans-serif"
-    font-size="300"
-    font-weight="900"
-    fill="white"
-    text-anchor="middle"
-    dominant-baseline="auto">V</text>
-  <!-- Puntitos decorativos (pata) -->
-  <circle cx="150" cy="160" r="40" fill="rgba(255,255,255,0.3)"/>
-  <circle cx="200" cy="110" r="30" fill="rgba(255,255,255,0.3)"/>
-  <circle cx="312" cy="110" r="30" fill="rgba(255,255,255,0.3)"/>
-  <circle cx="362" cy="160" r="40" fill="rgba(255,255,255,0.3)"/>
+  <!-- Fondo redondeado color coral -->
+  <rect width="512" height="512" rx="110" fill="#B85C4A"/>
+
+  <!-- Huella de perro centrada y escalada -->
+  <!-- Almohadilla central (grande, forma de corazón invertido) -->
+  <ellipse cx="256" cy="340" rx="95" ry="75" fill="white"/>
+  <!-- Muesca superior para forma de corazón invertido -->
+  <ellipse cx="222" cy="305" rx="48" ry="42" fill="white"/>
+  <ellipse cx="290" cy="305" rx="48" ry="42" fill="white"/>
+
+  <!-- Dedo 1 - izquierda abajo -->
+  <ellipse cx="135" cy="295" rx="42" ry="52" fill="white" transform="rotate(-20 135 295)"/>
+  <!-- Dedo 2 - izquierda arriba -->
+  <ellipse cx="178" cy="195" rx="38" ry="50" fill="white" transform="rotate(-8 178 195)"/>
+  <!-- Dedo 3 - derecha arriba -->
+  <ellipse cx="334" cy="195" rx="38" ry="50" fill="white" transform="rotate(8 334 195)"/>
+  <!-- Dedo 4 - derecha abajo -->
+  <ellipse cx="377" cy="295" rx="42" ry="52" fill="white" transform="rotate(20 377 295)"/>
 </svg>`;
 
 const svgBuffer = Buffer.from(svgIcon);

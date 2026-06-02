@@ -12,6 +12,7 @@ import {
   obtenerPost, resolverPost, encontrarPost, renovarPost, eliminarPost, type Post,
 } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import PhotoGallery from '@/components/PhotoGallery';
 import ContactBlock from '@/components/ContactBlock';
 import AdSlot from '@/components/AdSlot';
@@ -67,6 +68,29 @@ export default function DetalleAvisoPage() {
       .then(setPost)
       .finally(() => setCargando(false));
   }, [id]);
+
+  // Notifica al dueño cuando un usuario logueado (no dueño) visita el aviso
+  useEffect(() => {
+    if (!post || !isAuthenticated || !user) return;
+    if (post.user_id === user.id) return;
+    if (post.estado === 'resuelto') return;
+
+    const key = `visita_notif_${post.id}`;
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(key)) return;
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(key, '1');
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.access_token) return;
+      fetch('/api/notificar-visita', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ post_id: post.id }),
+      }).catch(() => {});
+    });
+  }, [post, isAuthenticated, user]);
 
   if (cargando) {
     return (

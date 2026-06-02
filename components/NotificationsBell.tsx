@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Dog, X, CheckCheck, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react';
+import { Bell, Dog, Eye, X, CheckCheck, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -156,8 +156,14 @@ export default function NotificationsBell() {
                 <div key={n.id}
                   className={`px-4 py-3 border-b border-black/5 last:border-0 transition ${!n.leida ? 'bg-brand-primary/5' : ''}`}>
                   <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${n.tipo === 'expiracion' ? 'bg-amber-100 text-amber-600' : !n.leida ? 'bg-brand-primary text-white' : 'bg-brand-cream text-brand-primary'}`}>
-                      {n.tipo === 'expiracion' ? '⏰' : <Dog className="h-4 w-4" />}
+                    <div className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${
+                      n.tipo === 'expiracion' ? 'bg-amber-100 text-amber-600' :
+                      n.tipo === 'visita'     ? 'bg-blue-50 text-blue-500' :
+                      !n.leida ? 'bg-brand-primary text-white' : 'bg-brand-cream text-brand-primary'
+                    }`}>
+                      {n.tipo === 'expiracion' ? '⏰' :
+                       n.tipo === 'visita'     ? <Eye className="h-4 w-4" /> :
+                       <Dog className="h-4 w-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-ink leading-snug">{n.mensaje}</p>

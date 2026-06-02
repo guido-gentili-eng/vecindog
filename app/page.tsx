@@ -2,6 +2,7 @@ import Hero from '@/components/Hero';
 import ActionCards from '@/components/ActionCards';
 import HowItWorks from '@/components/HowItWorks';
 import VolvieronACasa from '@/components/VolvieronACasa';
+import TopEscapistas from '@/components/TopEscapistas';
 import TrustSection from '@/components/TrustSection';
 import AdSlot from '@/components/AdSlot';
 
@@ -22,6 +23,8 @@ export default function HomePage() {
         <AdSlot variant="leaderboard" />
 
         <VolvieronACasa />
+
+        <TopEscapistas />
 
         <TrustSection />
       </div>

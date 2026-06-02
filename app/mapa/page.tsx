@@ -88,7 +88,7 @@ export default function MapaPage() {
       {/* Mapa */}
       <MapView
         center={center}
-        posts={posts.filter((p) => p.categoria !== 'encontrado')}
+        posts={posts}
         userLoc={null}
         cargando={cargando}
         ciudad={ciudad ?? undefined}

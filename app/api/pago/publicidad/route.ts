@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         auto_return:          'approved',
         statement_descriptor: 'VECINDOG',
         external_reference:   `${plan}-${adIds.join('-')}-${Date.now()}`,
-        metadata: { negocio, email, telefono, plan, adIds },
+        metadata: { negocio, email, telefono, plan, ad_ids: adIds },
       },
     });
 

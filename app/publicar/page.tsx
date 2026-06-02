@@ -298,6 +298,7 @@ export default function PublicarPage() {
       }
 
       setEnviado(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: unknown) {
       const msg =
         err instanceof Error

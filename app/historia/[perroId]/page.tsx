@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 interface Props { params: { perroId: string } }
 
@@ -17,11 +18,12 @@ export default async function HistoriaPublicaPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Cargar perro + vacunas + estudios en paralelo
-  const [{ data: perro }, { data: vacunas }, { data: estudios }] = await Promise.all([
+  // Cargar perro + vacunas + estudios + avisos en paralelo
+  const [{ data: perro }, { data: vacunas }, { data: estudios }, { data: posts }] = await Promise.all([
     admin.from('perros').select('*').eq('id', perroId).single(),
     admin.from('vacunas').select('*').eq('perro_id', perroId).order('fecha', { ascending: false }),
     admin.from('estudios').select('*').eq('perro_id', perroId).order('created_at', { ascending: false }),
+    admin.from('posts').select('id, categoria, nombre, zona, fecha, created_at, estado, images').eq('perro_id', perroId).order('created_at', { ascending: false }),
   ]);
 
   if (!perro) notFound();
@@ -114,6 +116,64 @@ export default async function HistoriaPublicaPage({ params }: Props) {
         {/* Ecografías */}
         <Section titulo="Ecografías" lleno={ecos.length > 0}>
           {ecos.length > 0 ? <ArchivosList items={ecos} /> : null}
+        </Section>
+
+        {/* Avisos históricos */}
+        <Section titulo="Historial de avisos" lleno={(posts ?? []).length > 0}>
+          {(posts ?? []).length > 0 ? (
+            <div className="space-y-3">
+              {(posts ?? []).map((post) => {
+                const catLabel =
+                  post.categoria === 'perdido'    ? 'Perdido'      :
+                  post.categoria === 'encontrado' ? 'Encontrado'   : 'En adopción';
+                const catColor =
+                  post.categoria === 'perdido'    ? 'bg-[#D7503A] text-white' :
+                  post.categoria === 'encontrado' ? 'bg-[#3F8B5C] text-white' :
+                  'bg-[#E8A53C] text-[#5b3a0e]';
+                const resuelto = post.estado === 'resuelto';
+
+                return (
+                  <Link
+                    key={post.id}
+                    href={`/publicaciones/${post.id}`}
+                    className="flex items-center gap-3 rounded-2xl border border-black/5 bg-[#faf7f4] p-3 transition hover:border-brand-primary/20 hover:bg-white"
+                  >
+                    {/* Miniatura */}
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
+                      {post.images?.[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={post.images[0]} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl">🐾</div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${catColor}`}>
+                          {catLabel}
+                        </span>
+                        {resuelto && (
+                          <span className="rounded-full bg-good/15 px-2 py-0.5 text-[10px] font-bold text-good">
+                            ✓ Resuelto
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-bold text-ink truncate">
+                        {post.nombre ?? perro.nombre}
+                      </p>
+                      <p className="text-xs text-ink-muted">
+                        {post.zona} · {fmt(post.fecha ?? post.created_at)}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 text-xs font-bold text-brand-primary">Ver →</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </Section>
 
         {/* Footer */}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Megaphone, CheckCircle2, ArrowRight, Star, LayoutTemplate,
   Layers, Sidebar, Mail, MessageCircle, TrendingUp, Users, MapPin, Target,
@@ -454,6 +454,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const planKey  = plan === 'estándar' ? 'estandar' : plan;
   const info     = PLAN_INFO[planKey] ?? PLAN_INFO.basico;
   const fileRef  = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const [negocio,   setNegocio]   = useState('');
   const [tagline,   setTagline]   = useState('');
@@ -465,6 +466,11 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const [preview,   setPreview]   = useState('');
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
+
+  // Siempre abrir desde arriba
+  useEffect(() => {
+    modalRef.current?.scrollTo({ top: 0 });
+  }, []);
 
   function onFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -482,7 +488,6 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     setError(''); setLoading(true);
 
     try {
-      // Subir logo si hay
       let imagen_url = '';
       if (fotoFile) {
         const { subirImagenAd } = await import('@/lib/ads');
@@ -510,9 +515,13 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl my-4">
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-6 backdrop-blur-sm">
+      {/* Modal con scroll propio */}
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl overflow-y-auto max-h-[90vh]"
+      >
+        {/* Header fijo dentro del modal */}
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl bg-white px-6 py-4 border-b border-black/5">
           <div>
             <h2 className="font-display text-xl font-black text-ink">{info.label}</h2>
@@ -525,39 +534,52 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
 
         <form onSubmit={handlePagar} className="p-6 space-y-5">
 
-          {/* Logo */}
-          <div>
-            <label className="label">Logo de tu negocio</label>
-            <div
-              onClick={() => fileRef.current?.click()}
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-black/10 bg-brand-cream p-6 hover:border-brand-primary/40 transition"
-            >
-              {preview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="" className="h-16 object-contain" />
-              ) : (
-                <>
-                  <ImagePlus className="h-8 w-8 text-brand-primary/40" />
-                  <span className="text-sm font-bold text-ink-muted">Subir logo</span>
-                  <span className="text-xs text-ink-muted">PNG, JPG · máx 5 MB · fondo blanco recomendado</span>
-                </>
-              )}
+          {/* Logo + Nombre — primera sección, siempre visible */}
+          <div className="flex items-start gap-4">
+            {/* Logo compacto */}
+            <div className="shrink-0">
+              <p className="label mb-1.5">Logo</p>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/30 bg-brand-cream transition hover:border-brand-primary"
+              >
+                {preview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={preview} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <ImagePlus className="h-6 w-6 text-brand-primary/50" />
+                    <span className="text-[10px] font-bold text-brand-primary/50">Subir</span>
+                  </div>
+                )}
+                {preview && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition">
+                    <ImagePlus className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </button>
+              <p className="mt-1 text-[10px] text-ink-muted/60 text-center w-20">PNG/JPG</p>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
+
+            {/* Nombre y tagline */}
+            <div className="flex-1 space-y-3">
+              <div>
+                <label className="label">Nombre del negocio <span className="text-bad">*</span></label>
+                <input className="field w-full" placeholder="Veterinaria Central"
+                  value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
+              </div>
+              <div>
+                <label className="label">Descripción corta</label>
+                <input className="field w-full" placeholder="Vacunas · Bahía Blanca"
+                  value={tagline} onChange={(e) => setTagline(e.target.value)} />
+              </div>
+            </div>
           </div>
 
-          {/* Datos del negocio */}
+          {/* Resto de campos */}
           <div className="space-y-3">
-            <div>
-              <label className="label">Nombre del negocio <span className="text-bad">*</span></label>
-              <input className="field w-full" placeholder="Veterinaria Central"
-                value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
-            </div>
-            <div>
-              <label className="label">Descripción corta (tagline)</label>
-              <input className="field w-full" placeholder="Turnos online · Vacunas · Bahía Blanca"
-                value={tagline} onChange={(e) => setTagline(e.target.value)} />
-            </div>
             <div>
               <label className="label">Link del negocio <span className="text-bad">*</span></label>
               <input className="field w-full" placeholder="https://instagram.com/tunegocio"
@@ -592,7 +614,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             </p>
           )}
 
-          <p className="text-xs text-ink-muted text-center">
+          <p className="text-center text-xs text-ink-muted">
             Serás redirigido a Mercado Pago. Tu anuncio se activa automáticamente al confirmar el pago.
           </p>
 

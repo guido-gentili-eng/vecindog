@@ -10,6 +10,7 @@
     "mobile": "cd ../vecindog-mobile && npx expo start --web --port 3003"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",

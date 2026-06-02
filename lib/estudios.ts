@@ -1,13 +1,13 @@
 import { supabase } from './supabase';
 
-export type TipoEstudio = 'laboratorio' | 'radiografia' | 'ecografia';
+export type TipoEstudio = 'laboratorio' | 'radiografia' | 'ecografia' | 'certificado_chip' | 'certificado_cvi' | 'certificado_antiparasitario' | 'vacuna_antirrabica' | 'airtag';
 
 export interface Estudio {
   id:          string;
   perro_id:    string;
   tipo:        TipoEstudio;
   nombre:      string;
-  archivo_url: string;
+  archivo_url: string | null;
   fecha:       string | null;
   notas:       string | null;
   created_at:  string;

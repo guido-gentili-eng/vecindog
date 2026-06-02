@@ -145,6 +145,37 @@ export async function eliminarPerro(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/* ─────────────────── CRUD vacunas ─────────────────── */
+
+export async function agregarVacuna(perroId: string, input: VacunaInput): Promise<Vacuna> {
+  const { data, error } = await supabase.from('vacunas').insert({
+    perro_id:    perroId,
+    nombre:      input.nombre,
+    fecha:       input.fecha,
+    veterinario: input.veterinario || null,
+    proxima:     input.proxima     || null,
+    notas:       input.notas       || null,
+  }).select().single();
+  if (error) throw error;
+  return data as Vacuna;
+}
+
+export async function actualizarVacuna(id: string, input: VacunaInput): Promise<void> {
+  const { error } = await supabase.from('vacunas').update({
+    nombre:      input.nombre,
+    fecha:       input.fecha,
+    veterinario: input.veterinario || null,
+    proxima:     input.proxima     || null,
+    notas:       input.notas       || null,
+  }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function eliminarVacuna(id: string): Promise<void> {
+  const { error } = await supabase.from('vacunas').delete().eq('id', id);
+  if (error) throw error;
+}
+
 /* ─────────────────── Storage helpers ─────────────────── */
 
 export async function subirFotoPerro(file: File): Promise<string> {

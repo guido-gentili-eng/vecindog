@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Vecindog</string>
+    <string name="title_activity_main">Vecindog</string>
+    <string name="package_name">ar.com.mivecindog</string>
+    <string name="custom_url_scheme">ar.com.mivecindog</string>
+</resources>

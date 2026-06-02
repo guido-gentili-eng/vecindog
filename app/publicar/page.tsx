@@ -104,8 +104,9 @@ export default function PublicarPage() {
   const searchParams = useSearchParams();
   const catParam  = searchParams.get('cat');
   const perroId   = searchParams.get('perro');
-  const { ciudad, user, isGuest } = useAuth();
-  const cityLabel = ciudad ? nombreCorto(ciudad) : 'tu ciudad';
+  const { ciudad, user, isGuest, profile } = useAuth();
+  const efectivaCiudad = profile?.ciudad || ciudad;
+  const cityLabel = efectivaCiudad ? nombreCorto(efectivaCiudad) : 'tu ciudad';
 
   const [form,        setForm]        = useState<FormState>(estadoInicial(catParam));
   const [fotos,       setFotos]       = useState<FotoPreview[]>([]);
@@ -232,7 +233,7 @@ export default function PublicarPage() {
         collar:      form.collar,
         chapita:     form.chapita,
         descripcion: form.descripcion,
-        zona:        appendCiudad(form.zona, ciudad),
+        zona:        appendCiudad(form.zona, efectivaCiudad),
         fecha:       form.fecha,
         horario:     form.horario     || null,
         contacto:    form.contacto,
@@ -259,7 +260,7 @@ export default function PublicarPage() {
         // Si no hay coords GPS, geocodificar la zona
         if (!notifLat || !notifLng) {
           try {
-            const q = encodeURIComponent(`${form.zona}${ciudad ? ', ' + ciudad : ''}, Argentina`);
+            const q = encodeURIComponent(`${form.zona}${efectivaCiudad ? ', ' + efectivaCiudad : ''}, Argentina`);
             const geoRes = await fetch(
               `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
               { headers: { 'User-Agent': 'Vecindog/1.0' } }
@@ -286,7 +287,7 @@ export default function PublicarPage() {
                 lat: notifLat,
                 lng: notifLng,
                 zona: form.zona,
-                ciudad,
+                ciudad: efectivaCiudad,
                 categoria: form.categoria,
                 nombre_perro: form.nombre || null,
                 publicador_id: user?.id ?? null,
@@ -622,7 +623,7 @@ export default function PublicarPage() {
                   value={form.zona}
                   onChange={(v) => handleChange('zona', v)}
                   placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
-                  ciudad={ciudad}
+                  ciudad={efectivaCiudad}
                   required
                 />
                 <p className="mt-1 text-xs text-ink-muted">
@@ -641,6 +642,8 @@ export default function PublicarPage() {
                   >
                     {gpsEstado === 'cargando'
                       ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Obteniendo ubicación…</>
+                      : gpsEstado === 'error'
+                      ? <><Navigation className="h-3.5 w-3.5" /> No se pudo obtener el GPS — tocar para reintentar</>
                       : <><Navigation className="h-3.5 w-3.5" /> Agregar ubicación GPS (opcional — aparece en el mapa)</>
                     }
                   </button>
@@ -648,9 +651,6 @@ export default function PublicarPage() {
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-good/10 px-3 py-1.5 text-xs font-bold text-good">
                     <CheckCheck className="h-3.5 w-3.5" /> Ubicación GPS capturada — va a aparecer en el mapa
                   </span>
-                )}
-                {gpsEstado === 'error' && (
-                  <p className="mt-1 text-[11px] text-ink-muted">No pudimos obtener tu GPS. El aviso igual se publica.</p>
                 )}
               </div>
             </div>

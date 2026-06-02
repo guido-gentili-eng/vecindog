@@ -34,11 +34,17 @@ interface Props {
   ciudad?:      string | null;
 }
 
-/** Extrae calle + número de la respuesta Nominatim */
-function extractStreet(a: NominatimAddress): string {
+/** Extrae calle + número de la respuesta Nominatim, usando el número del query si Nominatim no lo devuelve */
+function extractStreet(a: NominatimAddress, fallbackNum?: string): string {
   const road = a.road ?? a.pedestrian ?? '';
-  const num  = a.house_number ?? '';
+  const num  = a.house_number ?? fallbackNum ?? '';
   return [road, num].filter(Boolean).join(' ');
+}
+
+/** Extrae el primer número encontrado en el texto escrito por el usuario */
+function extractTypedNumber(query: string): string {
+  const match = query.match(/\d+/);
+  return match ? match[0] : '';
 }
 
 /** Extrae ciudad + provincia de forma legible */
@@ -104,7 +110,7 @@ export default function AddressAutocomplete({
   }
 
   function handleSelect(s: Suggestion) {
-    const calle = extractStreet(s.address);
+    const calle = extractStreet(s.address, extractTypedNumber(value));
     onChange(calle || value);
     setSuggestions([]);
     setOpen(false);
@@ -130,7 +136,7 @@ export default function AddressAutocomplete({
       {open && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
           {suggestions.map((s, i) => {
-            const calle    = extractStreet(s.address);
+            const calle    = extractStreet(s.address, extractTypedNumber(value));
             const location = extractLocation(s.address);
             return (
               <li key={i} className="border-b border-black/5 last:border-0">
@@ -140,12 +146,12 @@ export default function AddressAutocomplete({
                   className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-brand-cream transition"
                 >
                   <MapPin className="h-4 w-4 shrink-0 text-ink-muted/50" />
-                  <div className="min-w-0">
-                    <p className="font-bold text-ink text-sm truncate">{calle}</p>
+                  <p className="text-sm truncate min-w-0">
+                    <span className="font-bold text-ink">{calle}</span>
                     {location && (
-                      <p className="text-xs text-ink-muted truncate">{location}</p>
+                      <span className="text-ink-muted font-normal"> {location}</span>
                     )}
-                  </div>
+                  </p>
                 </button>
               </li>
             );

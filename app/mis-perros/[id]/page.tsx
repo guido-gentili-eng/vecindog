@@ -7,11 +7,14 @@ import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
   RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
-  Upload, Trash2, Send, Mail, MessageCircle, Copy, Check,
+  Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
+  Globe, ChevronDown,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
-  type Perro, type Vacuna, type PerroInput,
+  agregarVacuna, actualizarVacuna, eliminarVacuna,
+  VACUNAS_COMUNES,
+  type Perro, type Vacuna, type VacunaInput, type PerroInput,
 } from '@/lib/perros';
 import { buscarPostActivoDePerro, renovarPost, type Post } from '@/lib/posts';
 import {
@@ -32,18 +35,25 @@ export default function PerroDetallePage() {
   const [perro,             setPerro]             = useState<Perro | null>(null);
   const [postActivo,        setPostActivo]        = useState<Post | null | undefined>(undefined);
   const [estudios,          setEstudios]          = useState<Estudio[]>([]);
+  const [vacunas,           setVacunas]           = useState<Vacuna[]>([]);
   const [cargando,          setCargando]          = useState(true);
   const [editando,          setEditando]          = useState(false);
   const [renovando,         setRenovando]         = useState(false);
   const [renovado,          setRenovado]          = useState(false);
   const [subiendoTipo,      setSubiendoTipo]      = useState<TipoEstudio | null>(null);
   const [estudioEnviar,     setEstudioEnviar]     = useState<Estudio | null>(null);
+  const [editandoVacunaId,  setEditandoVacunaId]  = useState<string | null>(null);
+  const [agregandoVacuna,   setAgregandoVacuna]   = useState(false);
 
   useEffect(() => {
     obtenerPerro(id)
       .then((p) => {
         setPerro(p);
         if (p) {
+          const sorted = (p.vacunas ?? []).sort((a, b) =>
+            new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+          );
+          setVacunas(sorted);
           buscarPostActivoDePerro(p.id).then(setPostActivo);
           listarEstudios(p.id).then(setEstudios);
         }
@@ -87,6 +97,27 @@ export default function PerroDetallePage() {
     }
   }
 
+  const sortVacunas = (list: Vacuna[]) =>
+    [...list].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+  async function handleAgregarVacuna(input: VacunaInput) {
+    if (!perro) return;
+    const nueva = await agregarVacuna(perro.id, input);
+    setVacunas((prev) => sortVacunas([nueva, ...prev]));
+    setAgregandoVacuna(false);
+  }
+
+  async function handleActualizarVacuna(vacunaId: string, input: VacunaInput) {
+    await actualizarVacuna(vacunaId, input);
+    setVacunas((prev) => sortVacunas(prev.map((v) => v.id === vacunaId ? { ...v, ...input } : v)));
+    setEditandoVacunaId(null);
+  }
+
+  async function handleEliminarVacuna(vacunaId: string) {
+    await eliminarVacuna(vacunaId);
+    setVacunas((prev) => prev.filter((v) => v.id !== vacunaId));
+  }
+
   if (cargando) return (
     <div className="flex min-h-[40vh] items-center justify-center">
       <Loader2 className="h-7 w-7 animate-spin text-brand-primary" />
@@ -101,9 +132,6 @@ export default function PerroDetallePage() {
     </div>
   );
 
-  const vacunas = (perro.vacunas ?? []).sort((a, b) =>
-    new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-  );
   const edad = perro.fecha_nac ? calcularEdad(perro.fecha_nac) : null;
 
   return (
@@ -196,9 +224,18 @@ export default function PerroDetallePage() {
 
           {/* Identificación */}
           <div className="card mb-5 p-5">
-            <h2 className="mb-3 flex items-center gap-2 font-display text-base font-extrabold text-ink">
-              <Cpu className="h-4 w-4 text-brand-primary" /> Identificación
-            </h2>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+                <Cpu className="h-4 w-4 text-brand-primary" /> Identificación
+              </h2>
+              <Link
+                href={`/mis-perros/${id}/cartel`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+              >
+                <Download className="h-3.5 w-3.5" /> Guardar / Enviar PDF
+              </Link>
+            </div>
             <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
               <DataItem label="Microchip"      value={perro.chip      || '—'} mono />
               <DataItem label="Fecha de nac."  value={perro.fecha_nac ? formatFecha(perro.fecha_nac) : '—'} />
@@ -210,19 +247,52 @@ export default function PerroDetallePage() {
 
           {/* Vacunas */}
           <div className="card p-5 mb-5">
-            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-extrabold text-ink">
-              <Syringe className="h-4 w-4 text-brand-primary" /> Carnet de vacunas
-              {vacunas.length > 0 && (
-                <span className="ml-auto rounded-full bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
-                  {vacunas.length} registrada{vacunas.length > 1 ? 's' : ''}
-                </span>
-              )}
-            </h2>
-            {vacunas.length === 0 ? (
+            <div className="mb-4 flex items-center gap-2">
+              <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+                <Syringe className="h-4 w-4 text-brand-primary" /> Carnet de vacunas
+                {vacunas.length > 0 && (
+                  <span className="rounded-full bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
+                    {vacunas.length} registrada{vacunas.length > 1 ? 's' : ''}
+                  </span>
+                )}
+              </h2>
+              <button
+                type="button"
+                onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
+                className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+              >
+                + Agregar
+              </button>
+            </div>
+
+            {agregandoVacuna && (
+              <VacunaForm
+                onSave={handleAgregarVacuna}
+                onCancel={() => setAgregandoVacuna(false)}
+              />
+            )}
+
+            {vacunas.length === 0 && !agregandoVacuna ? (
               <p className="text-sm text-ink-muted">No hay vacunas registradas.</p>
             ) : (
               <div className="space-y-3">
-                {vacunas.map((v) => <VacunaItem key={v.id} vacuna={v} />)}
+                {vacunas.map((v) =>
+                  editandoVacunaId === v.id ? (
+                    <VacunaForm
+                      key={v.id}
+                      inicial={v}
+                      onSave={(input) => handleActualizarVacuna(v.id, input)}
+                      onCancel={() => setEditandoVacunaId(null)}
+                    />
+                  ) : (
+                    <VacunaItem
+                      key={v.id}
+                      vacuna={v}
+                      onEdit={() => { setEditandoVacunaId(v.id); setAgregandoVacuna(false); }}
+                      onDelete={() => handleEliminarVacuna(v.id)}
+                    />
+                  )
+                )}
               </div>
             )}
           </div>
@@ -264,6 +334,60 @@ export default function PerroDetallePage() {
             onSubir={(f) => handleSubirEstudio('ecografia', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Certificado de Chip */}
+          <ChipCertificadoSection
+            perro={perro}
+            estudios={estudios.filter((e) => e.tipo === 'certificado_chip')}
+            subiendo={subiendoTipo === 'certificado_chip'}
+            onSubir={(f) => handleSubirEstudio('certificado_chip', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+            onChipUpdate={(chip) => setPerro((p) => p ? { ...p, chip } : p)}
+          />
+
+          {/* Certificado CVI */}
+          <CVISection
+            estudios={estudios.filter((e) => e.tipo === 'certificado_cvi')}
+            subiendo={subiendoTipo === 'certificado_cvi'}
+            onSubir={(f) => handleSubirEstudio('certificado_cvi', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Certificado Antiparasitario */}
+          <EstudiosSection
+            tipo="certificado_antiparasitario"
+            titulo="Certificado Antiparasitario"
+            icono={<Activity className="h-4 w-4 text-brand-primary" />}
+            accept="image/*,.pdf"
+            estudios={estudios.filter((e) => e.tipo === 'certificado_antiparasitario')}
+            subiendo={subiendoTipo === 'certificado_antiparasitario'}
+            onSubir={(f) => handleSubirEstudio('certificado_antiparasitario', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* Vacuna Antirrábica */}
+          <EstudiosSection
+            tipo="vacuna_antirrabica"
+            titulo="Vacuna Antirrábica"
+            icono={<Syringe className="h-4 w-4 text-brand-primary" />}
+            accept="image/*,.pdf"
+            estudios={estudios.filter((e) => e.tipo === 'vacuna_antirrabica')}
+            subiendo={subiendoTipo === 'vacuna_antirrabica'}
+            onSubir={(f) => handleSubirEstudio('vacuna_antirrabica', f)}
+            onEnviar={setEstudioEnviar}
+            onEliminar={handleEliminarEstudio}
+          />
+
+          {/* AirTag */}
+          <AirTagSection
+            perroId={perro.id}
+            airtags={estudios.filter((e) => e.tipo === 'airtag')}
+            onAdd={(e) => setEstudios((prev) => [e, ...prev])}
+            onDelete={(id) => setEstudios((prev) => prev.filter((e) => e.id !== id))}
           />
 
           {/* Modal enviar estudio */}
@@ -538,18 +662,32 @@ function DataItem({ label, value, mono = false }: { label: string; value: string
   );
 }
 
-function VacunaItem({ vacuna }: { vacuna: Vacuna }) {
+function VacunaItem({ vacuna, onEdit, onDelete }: {
+  vacuna:   Vacuna;
+  onEdit:   () => void;
+  onDelete: () => void;
+}) {
   const proxima = vacuna.proxima ? new Date(vacuna.proxima) : null;
   const vencida  = proxima && proxima < new Date();
   return (
     <div className="rounded-2xl bg-brand-cream p-3.5">
       <div className="flex items-start justify-between gap-2">
         <span className="font-bold text-ink">{vacuna.nombre}</span>
-        {proxima && (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${vencida ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
-            {vencida ? 'Vencida' : 'Vigente'}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {proxima && (
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${vencida ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
+              {vencida ? 'Vencida' : 'Vigente'}
+            </span>
+          )}
+          <button type="button" onClick={onEdit}
+            className="rounded-lg p-1 text-ink-muted/50 transition hover:bg-black/5 hover:text-brand-primary">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button type="button" onClick={onDelete}
+            className="rounded-lg p-1 text-ink-muted/50 transition hover:bg-bad/10 hover:text-bad">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
         <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {formatFecha(vacuna.fecha)}</span>
@@ -557,6 +695,728 @@ function VacunaItem({ vacuna }: { vacuna: Vacuna }) {
         {proxima && <span className={vencida ? 'font-bold text-bad' : ''}>Próxima: {formatFecha(vacuna.proxima)}</span>}
       </div>
       {vacuna.notas && <p className="mt-1 text-[11px] text-ink-muted/70 italic">{vacuna.notas}</p>}
+    </div>
+  );
+}
+
+function VacunaForm({ inicial, onSave, onCancel }: {
+  inicial?:  Vacuna;
+  onSave:    (input: VacunaInput) => Promise<void>;
+  onCancel:  () => void;
+}) {
+  const [form, setForm] = useState<VacunaInput>({
+    nombre:      inicial?.nombre      ?? '',
+    fecha:       inicial?.fecha       ?? new Date().toISOString().slice(0, 10),
+    veterinario: inicial?.veterinario ?? '',
+    proxima:     inicial?.proxima     ?? '',
+    notas:       inicial?.notas       ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+
+  function campo<K extends keyof VacunaInput>(k: K, v: VacunaInput[K]) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.nombre || !form.fecha) { setError('Nombre y fecha son obligatorios.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      await onSave(form);
+    } catch {
+      setError('No se pudo guardar. Intentá de nuevo.');
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSave} className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3 mb-3">
+      <div>
+        <label className="label text-xs">Vacuna <span className="text-bad">*</span></label>
+        <input
+          list="vacunas-comunes"
+          className="field w-full text-sm"
+          placeholder="Séxtuple, Antirrábica…"
+          value={form.nombre}
+          onChange={(e) => campo('nombre', e.target.value)}
+          required
+        />
+        <datalist id="vacunas-comunes">
+          {VACUNAS_COMUNES.map((v) => <option key={v} value={v} />)}
+        </datalist>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+          <input type="date" className="field w-full text-sm" value={form.fecha}
+            onChange={(e) => campo('fecha', e.target.value)} required />
+        </div>
+        <div>
+          <label className="label text-xs">Próxima dosis</label>
+          <input type="date" className="field w-full text-sm" value={form.proxima}
+            onChange={(e) => campo('proxima', e.target.value)} />
+        </div>
+      </div>
+
+      <div>
+        <label className="label text-xs">Veterinario</label>
+        <input className="field w-full text-sm" placeholder="Dr. García…" value={form.veterinario}
+          onChange={(e) => campo('veterinario', e.target.value)} />
+      </div>
+
+      <div>
+        <label className="label text-xs">Notas</label>
+        <input className="field w-full text-sm" placeholder="Observaciones…" value={form.notas}
+          onChange={(e) => campo('notas', e.target.value)} />
+      </div>
+
+      {error && (
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+        </p>
+      )}
+
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? 'Guardar cambios' : 'Agregar vacuna'}</>}
+        </button>
+        <button type="button" onClick={onCancel} disabled={saving}
+          className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* ── AirTag ── */
+function AirTagSection({
+  perroId, airtags, onAdd, onDelete,
+}: {
+  perroId:  string;
+  airtags:  Estudio[];
+  onAdd:    (e: Estudio) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [agregando, setAgregando] = useState(false);
+  const [serial,    setSerial]    = useState('');
+  const [saving,    setSaving]    = useState(false);
+  const [error,     setError]     = useState('');
+
+  async function handleGuardar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!serial.trim()) { setError('Ingresá el número de serie.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const nuevo = await agregarEstudio({
+        perro_id:    perroId,
+        tipo:        'airtag',
+        nombre:      serial.trim(),
+        archivo_url: null,
+        fecha:       new Date().toISOString().slice(0, 10),
+        notas:       null,
+      });
+      onAdd(nuevo);
+      setSerial('');
+      setAgregando(false);
+    } catch {
+      setError('No se pudo guardar. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <span className="text-base">📍</span> AirTag de Apple
+          {airtags.length > 0 && (
+            <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {airtags.length}
+            </span>
+          )}
+        </h2>
+        {!agregando && (
+          <button type="button" onClick={() => setAgregando(true)}
+            className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            + Agregar
+          </button>
+        )}
+      </div>
+
+      {/* Formulario agregar */}
+      {agregando && (
+        <form onSubmit={handleGuardar} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div>
+            <label className="label text-xs">Número de serie del AirTag <span className="text-bad">*</span></label>
+            <input
+              className="field w-full font-mono text-sm"
+              placeholder="Ej: XXXXXXXX"
+              value={serial}
+              onChange={(e) => setSerial(e.target.value)}
+              autoFocus
+            />
+            <p className="mt-1 text-[11px] text-ink-muted">
+              Lo encontrás en Ajustes → Apple ID → Buscar → tu AirTag, o en la caja.
+            </p>
+          </div>
+          {error && (
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+            </button>
+            <button type="button" onClick={() => { setAgregando(false); setSerial(''); setError(''); }} disabled={saving}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Lista de AirTags */}
+      {airtags.length === 0 && !agregando ? (
+        <p className="text-sm text-ink-muted">No hay AirTag registrado.</p>
+      ) : (
+        <div className="space-y-3">
+          {airtags.map((a) => (
+            <div key={a.id} className="rounded-2xl bg-brand-cream p-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">N° de serie</p>
+                  <p className="mt-0.5 font-mono text-sm font-bold text-ink">{a.nombre}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <a
+                    href="https://www.icloud.com/find"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-2.5 py-1.5 text-xs font-bold text-white transition hover:opacity-90"
+                  >
+                    <MapPin className="h-3 w-3" /> Find My
+                  </a>
+                  <button type="button" onClick={() => onDelete(a.id)}
+                    className="rounded-lg p-1 text-ink-muted/40 transition hover:bg-bad/10 hover:text-bad">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tip modo perdido */}
+      <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3">
+        <p className="text-xs font-bold text-amber-700 mb-1">💡 Si se perdió tu perro</p>
+        <p className="text-xs text-amber-600 leading-relaxed">
+          Activá el <strong>Modo Perdido</strong> en la app Buscar de tu iPhone. Así cualquier iPhone cercano que detecte el AirTag te manda su ubicación automáticamente.
+        </p>
+        <a
+          href="https://support.apple.com/es-ar/HT212331"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline"
+        >
+          <Globe className="h-3 w-3" /> Cómo activar Modo Perdido
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ── Certificado de Chip ── */
+function ChipCertificadoSection({
+  perro, estudios, subiendo, onSubir, onEnviar, onEliminar, onChipUpdate,
+}: {
+  perro:         Perro;
+  estudios:      Estudio[];
+  subiendo:      boolean;
+  onSubir:       (f: File) => Promise<void>;
+  onEnviar:      (e: Estudio) => void;
+  onEliminar:    (id: string) => void;
+  onChipUpdate:  (chip: string) => void;
+}) {
+  const fileRef                       = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState('');
+  const [editandoChip, setEditandoChip] = useState(false);
+  const [chip,         setChip]         = useState(perro.chip ?? '');
+  const [savingChip,   setSavingChip]   = useState(false);
+  const [chipError,    setChipError]    = useState('');
+
+  async function confirmarSubida() {
+    if (!pendingFile) return;
+    setUploadError('');
+    try {
+      await onSubir(pendingFile);
+      setPendingFile(null);
+    } catch {
+      setUploadError('No se pudo subir el archivo. Verificá tu conexión e intentá de nuevo.');
+    }
+  }
+
+  async function handleSaveChip(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingChip(true);
+    setChipError('');
+    try {
+      await actualizarPerro(perro.id, { chip });
+      onChipUpdate(chip);
+      setEditandoChip(false);
+    } catch {
+      setChipError('No se pudo guardar. Intentá de nuevo.');
+    } finally {
+      setSavingChip(false);
+    }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Cpu className="h-4 w-4 text-brand-primary" /> Certificado de Chip
+          {estudios.length > 0 && (
+            <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {estudios.length}
+            </span>
+          )}
+        </h2>
+        {!pendingFile && (
+          <button
+            type="button"
+            onClick={() => { setUploadError(''); fileRef.current?.click(); }}
+            disabled={subiendo}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
+          >
+            <Upload className="h-3.5 w-3.5" /> Subir certificado
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*,.pdf"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) { setPendingFile(f); setUploadError(''); }
+            e.target.value = '';
+          }}
+        />
+      </div>
+
+      {/* Número de chip */}
+      <div className="mb-4 rounded-2xl bg-brand-cream p-3.5">
+        {editandoChip ? (
+          <form onSubmit={handleSaveChip} className="flex items-center gap-2">
+            <input
+              className="field flex-1 font-mono text-sm"
+              placeholder="Nº de chip (15 dígitos)"
+              value={chip}
+              onChange={(e) => setChip(e.target.value)}
+              autoFocus
+            />
+            <button type="submit" disabled={savingChip}
+              className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-60 shrink-0">
+              {savingChip ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5" /> Guardar</>}
+            </button>
+            <button type="button" onClick={() => { setEditandoChip(false); setChip(perro.chip ?? ''); }}
+              className="rounded-xl border-2 border-black/10 px-3 py-2 text-xs font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad shrink-0">
+              Cancelar
+            </button>
+          </form>
+        ) : (
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
+              <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
+                {perro.chip || 'Sin registrar'}
+              </p>
+            </div>
+            <button type="button" onClick={() => setEditandoChip(true)}
+              className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
+              <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
+            </button>
+          </div>
+        )}
+        {chipError && (
+          <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-bad">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {chipError}
+          </p>
+        )}
+      </div>
+
+      {/* Confirmación de subida */}
+      {pendingFile && (
+        <div className="mb-4 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink truncate">{pendingFile.name}</p>
+              <p className="text-xs text-ink-muted">{(pendingFile.size / 1024 / 1024).toFixed(1)} MB</p>
+            </div>
+          </div>
+          {uploadError && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {uploadError}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={confirmarSubida} disabled={subiendo}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60">
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+            </button>
+            <button type="button" onClick={() => { setPendingFile(null); setUploadError(''); }} disabled={subiendo}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de certificados */}
+      {estudios.length === 0 && !pendingFile ? (
+        <p className="text-sm text-ink-muted">No hay certificados subidos.</p>
+      ) : estudios.length > 0 ? (
+        <div className="space-y-2">
+          {estudios.map((e) => (
+            <div key={e.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+              <FileText className="h-4 w-4 shrink-0 text-brand-primary/60" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink truncate">{e.nombre}</p>
+                {e.fecha && <p className="text-xs text-ink-muted">{e.fecha.slice(0, 10).split('-').reverse().join('/')}</p>}
+              </div>
+              <a href={e.archivo_url ?? ''} target="_blank" rel="noopener noreferrer"
+                className="text-xs font-bold text-brand-primary hover:underline shrink-0">Ver</a>
+              <button type="button" onClick={() => onEnviar(e)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+              <button type="button" onClick={() => onEliminar(e.id)}
+                className="text-ink-muted/40 hover:text-bad transition shrink-0">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ── Certificado Veterinario Internacional (CVI) ── */
+const SENASA_URL = 'https://mascotas.senasa.gob.ar/index.php/consultar_requisitos';
+const ARG_BASE   = 'https://www.argentina.gob.ar/senasa/informacion-al-viajero/viajar-al-exterior/envios-al-exterior-perros-yo-gatos/requisitos-particulares-por-destino';
+
+const CVI_PAISES: { bandera: string; nombre: string; url: string; pdf?: string }[] = [
+  // ── América del Sur ──
+  { bandera:'🇦🇷', nombre:'Argentina (tránsito)',   url: SENASA_URL },
+  { bandera:'🇺🇾', nombre:'Uruguay',               url: SENASA_URL },
+  { bandera:'🇧🇷', nombre:'Brasil',                url: SENASA_URL },
+  { bandera:'🇨🇱', nombre:'Chile',                 url: SENASA_URL },
+  { bandera:'🇨🇱', nombre:'Chile (tránsito zona australiana)', url: SENASA_URL },
+  { bandera:'🇵🇾', nombre:'Paraguay',              url: SENASA_URL },
+  { bandera:'🇵🇪', nombre:'Perú',                  url: SENASA_URL },
+  { bandera:'🇧🇴', nombre:'Bolivia',               url: SENASA_URL },
+  { bandera:'🇨🇴', nombre:'Colombia',              url: SENASA_URL },
+  { bandera:'🇪🇨', nombre:'Ecuador',               url: SENASA_URL },
+  { bandera:'🇻🇪', nombre:'Venezuela',             url: SENASA_URL },
+  // ── América del Norte ──
+  { bandera:'🇺🇸', nombre:'EE.UU. (caninos)',      url: SENASA_URL },
+  { bandera:'🇺🇸', nombre:'EE.UU. (felinos)',      url: SENASA_URL },
+  { bandera:'🇺🇸', nombre:'Hawaii',                url: SENASA_URL },
+  { bandera:'🇲🇽', nombre:'México',                url: SENASA_URL },
+  { bandera:'🇨🇦', nombre:'Canadá',                url: SENASA_URL },
+  // ── América Central / Caribe ──
+  { bandera:'🇵🇦', nombre:'Panamá',                url: SENASA_URL },
+  { bandera:'🇨🇷', nombre:'Costa Rica',            url: SENASA_URL },
+  { bandera:'🇨🇺', nombre:'Cuba',                  url: SENASA_URL },
+  { bandera:'🇯🇲', nombre:'Jamaica',               url: SENASA_URL },
+  { bandera:'🇩🇴', nombre:'República Dominicana',  url: SENASA_URL },
+  { bandera:'🇭🇹', nombre:'Haití',                 url: SENASA_URL },
+  { bandera:'🇵🇷', nombre:'Puerto Rico',           url: SENASA_URL },
+  { bandera:'🇬🇹', nombre:'Guatemala',             url: SENASA_URL },
+  { bandera:'🇭🇳', nombre:'Honduras',              url: SENASA_URL },
+  { bandera:'🇸🇻', nombre:'El Salvador',           url: SENASA_URL },
+  { bandera:'🇳🇮', nombre:'Nicaragua',             url: SENASA_URL },
+  { bandera:'🇧🇸', nombre:'Bahamas',               url: SENASA_URL },
+  { bandera:'🇧🇧', nombre:'Barbados',              url: SENASA_URL },
+  { bandera:'🇹🇹', nombre:'Trinidad y Tobago',     url: SENASA_URL },
+  { bandera:'🏝️', nombre:'Aruba',                 url: SENASA_URL },
+  { bandera:'🏝️', nombre:'Curazao',               url: SENASA_URL },
+  { bandera:'🏝️', nombre:'Bonaire',               url: SENASA_URL },
+  { bandera:'🏝️', nombre:'Isla Martinica',        url: SENASA_URL },
+  // ── Unión Europea ──
+  { bandera:'🇪🇸', nombre:'España',                url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇮🇹', nombre:'Italia',                url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇫🇷', nombre:'Francia',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇩🇪', nombre:'Alemania',              url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇵🇹', nombre:'Portugal',              url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇬🇷', nombre:'Grecia',                url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇧🇪', nombre:'Bélgica',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇳🇱', nombre:'Países Bajos',          url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇦🇹', nombre:'Austria',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇵🇱', nombre:'Polonia',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇸🇪', nombre:'Suecia',                url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇩🇰', nombre:'Dinamarca',             url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇫🇮', nombre:'Finlandia',             url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇮🇪', nombre:'Irlanda',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇨🇿', nombre:'República Checa',       url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇭🇺', nombre:'Hungría',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇷🇴', nombre:'Rumania',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇧🇬', nombre:'Bulgaria',              url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇸🇰', nombre:'Eslovaquia',            url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇸🇮', nombre:'Eslovenia',             url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇨🇾', nombre:'Chipre',                url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇪🇪', nombre:'Estonia',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇱🇻', nombre:'Letonia',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇱🇹', nombre:'Lituania',              url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇱🇺', nombre:'Luxemburgo',            url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇲🇹', nombre:'Malta',                 url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  { bandera:'🇭🇷', nombre:'Croacia',               url:`${ARG_BASE}/union-europea`, pdf:'https://www.argentina.gob.ar/sites/default/files/402-2025-pasaportes_mascotas-1_1.pdf' },
+  // ── Europa no-UE ──
+  { bandera:'🇬🇧', nombre:'Gran Bretaña',           url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇨🇭', nombre:'Suiza',                  url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇳🇴', nombre:'Noruega',                url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇷🇸', nombre:'Serbia',                 url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇲🇪', nombre:'Montenegro',             url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇧🇦', nombre:'Bosnia y Herzegovina',   url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇦🇩', nombre:'Andorra',                url:`${ARG_BASE}/europa/europa-no-ue` },
+  { bandera:'🇺🇦', nombre:'Ucrania',                url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇷🇺', nombre:'Rusia',                  url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇦🇲', nombre:'Armenia',                url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇬🇪', nombre:'Georgia',                url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇦🇿', nombre:'Azerbaiyán',             url:`${ARG_BASE}/asia/azerbaijan-singapur` },
+  { bandera:'🇰🇿', nombre:'Kazajistán',             url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇰🇬', nombre:'Kirguistán',             url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  { bandera:'🇧🇾', nombre:'Bielorrusia',            url:`${ARG_BASE}/europa/union-economica-euroasiatica` },
+  // ── Asia ──
+  { bandera:'🇯🇵', nombre:'Japón',                  url:`${ARG_BASE}/asia/japon` },
+  { bandera:'🇨🇳', nombre:'China',                  url:'https://www.argentina.gob.ar/senasa/china' },
+  { bandera:'🇰🇷', nombre:'Corea del Sur',          url:`${ARG_BASE}/asia/corea` },
+  { bandera:'🇸🇬', nombre:'Singapur',               url:'https://www.argentina.gob.ar/senasa/singapur' },
+  { bandera:'🇭🇰', nombre:'Hong Kong',              url:`${ARG_BASE}/asia/hong-kong` },
+  { bandera:'🇹🇭', nombre:'Tailandia',              url:`${ARG_BASE}/asia/tailandia` },
+  { bandera:'🇲🇾', nombre:'Malasia',                url:`${ARG_BASE}/asia/malasia` },
+  { bandera:'🇵🇭', nombre:'Filipinas',              url:'https://www.argentina.gob.ar/senasa/filipinas' },
+  { bandera:'🇮🇳', nombre:'India',                  url:`${ARG_BASE}/asia/india-o-pakistan` },
+  { bandera:'🇵🇰', nombre:'Pakistán',               url:`${ARG_BASE}/asia/india-o-pakistan` },
+  { bandera:'🇧🇩', nombre:'Bangladesh',             url: SENASA_URL },
+  { bandera:'🇹🇼', nombre:'Taiwán',                 url:`${ARG_BASE}/asia/taiwan` },
+  { bandera:'🇻🇳', nombre:'Vietnam',                url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇮🇩', nombre:'Indonesia',              url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇳🇵', nombre:'Nepal',                  url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇲🇲', nombre:'Myanmar',                url:`${ARG_BASE}/asia/myanmar-o-birmania` },
+  { bandera:'🇰🇭', nombre:'Camboya',                url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇱🇦', nombre:'Laos',                   url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇱🇰', nombre:'Sri Lanka',              url:`${ARG_BASE}/asia/sri-lanka` },
+  // ── Medio Oriente ──
+  { bandera:'🇦🇪', nombre:'Emiratos Árabes Unidos', url:'https://www.argentina.gob.ar/senasa/emiratos-arabes' },
+  { bandera:'🇸🇦', nombre:'Arabia Saudita',         url:`${ARG_BASE}/asia/arabia-saudita` },
+  { bandera:'🇶🇦', nombre:'Qatar',                  url:'https://www.argentina.gob.ar/senasa/qatar' },
+  { bandera:'🇰🇼', nombre:'Kuwait',                 url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  { bandera:'🇴🇲', nombre:'Omán',                   url:`${ARG_BASE}/asia/oman` },
+  { bandera:'🇯🇴', nombre:'Jordania',               url: SENASA_URL },
+  { bandera:'🇱🇧', nombre:'Líbano',                 url: SENASA_URL },
+  { bandera:'🇮🇱', nombre:'Israel',                 url: SENASA_URL },
+  { bandera:'🇮🇷', nombre:'Irán',                   url:`${ARG_BASE}/asia/china-iran-kuwait-laos-siriavietnam-camboya-nepal-e-indonesia` },
+  // ── Oceanía ──
+  { bandera:'🇦🇺', nombre:'Australia (perros)',      url:`${ARG_BASE}/oceania/australia-perros` },
+  { bandera:'🇦🇺', nombre:'Australia (gatos)',       url:`${ARG_BASE}/oceania/australia-gatos` },
+  { bandera:'🇳🇿', nombre:'Nueva Zelanda (perros)',  url:`${ARG_BASE}/oceania/nueva-zelanda` },
+  { bandera:'🇳🇿', nombre:'Nueva Zelanda (gatos)',   url:'https://www.argentina.gob.ar/senasa/nueva-zelanda-felinos' },
+  { bandera:'🏝️', nombre:'Guam',                   url:`${ARG_BASE}/oceania/guam` },
+  // ── África ──
+  { bandera:'🇿🇦', nombre:'Sudáfrica',              url:`${ARG_BASE}/africa/sudafrica` },
+  { bandera:'🇪🇬', nombre:'Egipto',                 url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇲🇦', nombre:'Marruecos',              url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇰🇪', nombre:'Kenia',                  url:`${ARG_BASE}/africa/cabo-verde-y-kenia` },
+  { bandera:'🇨🇻', nombre:'Cabo Verde',             url:`${ARG_BASE}/africa/cabo-verde-y-kenia` },
+  { bandera:'🇳🇬', nombre:'Nigeria',                url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇬🇭', nombre:'Ghana',                  url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇸🇳', nombre:'Senegal',                url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇦🇴', nombre:'Angola',                 url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇹🇳', nombre:'Túnez',                  url:'https://www.argentina.gob.ar/senasa/tunez' },
+  { bandera:'🇿🇼', nombre:'Zimbabue',               url:`${ARG_BASE}/africa/zimbabue` },
+  { bandera:'🇳🇦', nombre:'Namibia',                url:'https://www.argentina.gob.ar/senasa/namibia' },
+  { bandera:'🇪🇹', nombre:'Etiopía',                url:'https://www.argentina.gob.ar/senasa/etiopia' },
+  { bandera:'🇨🇮', nombre:'Costa de Marfil',        url:`${ARG_BASE}/africa/costa-de-marfil` },
+  { bandera:'🇱🇾', nombre:'Libia',                  url:`${ARG_BASE}/africa/angola-egipto-libia-marruecos-nigeria-ghana-nambia-y-senegal` },
+  { bandera:'🇹🇿', nombre:'Tanzania',               url: SENASA_URL },
+];
+
+function CVISection({
+  estudios, subiendo, onSubir, onEnviar, onEliminar,
+}: {
+  estudios:   Estudio[];
+  subiendo:   boolean;
+  onSubir:    (f: File) => Promise<void>;
+  onEnviar:   (e: Estudio) => void;
+  onEliminar: (id: string) => void;
+}) {
+  const fileRef                       = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState('');
+  const [requisitosOpen, setRequisitosOpen] = useState(false);
+  const [paisExpandido, setPaisExpandido]   = useState<string | null>(null);
+
+  async function confirmarSubida() {
+    if (!pendingFile) return;
+    setUploadError('');
+    try {
+      await onSubir(pendingFile);
+      setPendingFile(null);
+    } catch {
+      setUploadError('No se pudo subir el archivo. Verificá tu conexión e intentá de nuevo.');
+    }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Globe className="h-4 w-4 text-brand-primary" /> Certificado CVI
+          {estudios.length > 0 && (
+            <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {estudios.length}
+            </span>
+          )}
+        </h2>
+        {!pendingFile && (
+          <button type="button"
+            onClick={() => { setUploadError(''); fileRef.current?.click(); }}
+            disabled={subiendo}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60">
+            <Upload className="h-3.5 w-3.5" /> Subir certificado
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) { setPendingFile(f); setUploadError(''); }
+            e.target.value = '';
+          }} />
+      </div>
+
+      {/* Selector de país */}
+      <button
+        type="button"
+        onClick={() => setRequisitosOpen((o) => !o)}
+        className="mb-4 flex w-full items-center justify-between rounded-2xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
+      >
+        <span className="flex items-center gap-2">
+          <Globe className="h-4 w-4" />
+          Consultá los requisitos por país
+        </span>
+        <ChevronDown className={`h-4 w-4 transition-transform ${requisitosOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {requisitosOpen && (
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar país de destino…"
+            value={paisExpandido ?? ''}
+            onChange={(e) => setPaisExpandido(e.target.value || null)}
+            className="field w-full mb-3 text-sm"
+            autoFocus
+          />
+          <div className="max-h-64 overflow-y-auto rounded-2xl border border-black/5 divide-y divide-black/5">
+            {CVI_PAISES.filter((p) =>
+              !paisExpandido || p.nombre.toLowerCase().includes(paisExpandido.toLowerCase())
+            ).map((p) => (
+              <div key={p.nombre} className="flex items-center gap-3 px-4 py-3 hover:bg-brand-cream transition">
+                <span className="text-lg shrink-0">{p.bandera}</span>
+                <span className="flex-1 text-sm font-semibold text-ink">{p.nombre}</span>
+                {p.pdf && (
+                  <a href={p.pdf} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-xl bg-good/10 px-2.5 py-1.5 text-xs font-bold text-good transition hover:bg-good/20 shrink-0">
+                    <FileText className="h-3 w-3" /> PDF
+                  </a>
+                )}
+                <a href={p.url} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-2.5 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 shrink-0">
+                  <Globe className="h-3 w-3" /> Ver
+                </a>
+              </div>
+            ))}
+            {CVI_PAISES.filter((p) =>
+              !paisExpandido || p.nombre.toLowerCase().includes(paisExpandido.toLowerCase())
+            ).length === 0 && (
+              <p className="px-4 py-3 text-sm text-ink-muted">No se encontró ese destino.</p>
+            )}
+          </div>
+          <p className="mt-2 text-[11px] text-ink-muted">
+            Fuente: SENASA · Los requisitos pueden cambiar sin previo aviso.
+          </p>
+        </div>
+      )}
+
+      {/* Confirmación de subida */}
+      {pendingFile && (
+        <div className="mb-4 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink truncate">{pendingFile.name}</p>
+              <p className="text-xs text-ink-muted">{(pendingFile.size / 1024 / 1024).toFixed(1)} MB</p>
+            </div>
+          </div>
+          {uploadError && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {uploadError}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={confirmarSubida} disabled={subiendo}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60">
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+            </button>
+            <button type="button" onClick={() => { setPendingFile(null); setUploadError(''); }} disabled={subiendo}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de certificados */}
+      {estudios.length === 0 && !pendingFile ? (
+        <p className="text-sm text-ink-muted">No hay certificados subidos.</p>
+      ) : estudios.length > 0 ? (
+        <div className="space-y-2">
+          {estudios.map((e) => (
+            <div key={e.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+              <FileText className="h-4 w-4 shrink-0 text-brand-primary/60" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink truncate">{e.nombre}</p>
+                {e.fecha && <p className="text-xs text-ink-muted">{e.fecha.slice(0, 10).split('-').reverse().join('/')}</p>}
+              </div>
+              <a href={e.archivo_url ?? ''} target="_blank" rel="noopener noreferrer"
+                className="text-xs font-bold text-brand-primary hover:underline shrink-0">Ver</a>
+              <button type="button" onClick={() => onEnviar(e)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+              <button type="button" onClick={() => onEliminar(e.id)}
+                className="text-ink-muted/40 hover:text-bad transition shrink-0">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -671,7 +1531,7 @@ function EstudiosSection({
                 <p className="text-sm font-semibold text-ink truncate">{e.nombre}</p>
                 {e.fecha && <p className="text-xs text-ink-muted">{formatFecha(e.fecha)}</p>}
               </div>
-              <a href={e.archivo_url} target="_blank" rel="noopener noreferrer"
+              <a href={e.archivo_url ?? ''} target="_blank" rel="noopener noreferrer"
                 className="text-xs font-bold text-brand-primary hover:underline shrink-0">
                 Ver
               </a>
@@ -717,7 +1577,7 @@ function EnviarEstudioModal({
   }
 
   async function copiarLink() {
-    await navigator.clipboard.writeText(estudio.archivo_url);
+    await navigator.clipboard.writeText(estudio.archivo_url ?? '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -941,7 +1801,7 @@ function EstudiosList({ estudios }: { estudios: Estudio[] }) {
         <div key={e.id} className="flex items-center justify-between text-sm">
           <span className="font-semibold text-ink truncate max-w-[70%]">{e.nombre}</span>
           <a
-            href={e.archivo_url}
+            href={e.archivo_url ?? ''}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-bold text-brand-primary hover:underline shrink-0"

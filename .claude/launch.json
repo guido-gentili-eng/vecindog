@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
       "port": 3001
+    },
+    {
+      "name": "vecindog-mobile",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "mobile"],
+      "port": 3003
     }
   ]
 }

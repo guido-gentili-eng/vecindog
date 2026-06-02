@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useFocusEffect } from 'expo-router';
 
 const CATEGORIAS = [
   { key: 'perdido',    label: '🔴 Perdidos',    color: '#fef2f2', border: '#fca5a5' },
@@ -15,11 +16,21 @@ const CATEGORIAS = [
 ];
 
 export default function HomeScreen() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [posts,      setPosts]      = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [catFilter,  setCatFilter]  = useState<string | null>(null);
+  const [noLeidas,   setNoLeidas]   = useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!user) return;
+      supabase.from('notifications').select('id', { count: 'exact' })
+        .eq('user_id', user.id).eq('leida', false)
+        .then(({ count }) => setNoLeidas(count ?? 0));
+    }, [user])
+  );
 
   async function cargar() {
     let q = supabase
@@ -50,7 +61,14 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.subGreeting}>Red vecinal de mascotas</Text>
         </View>
-        <Text style={styles.logo}>🐾</Text>
+        <TouchableOpacity style={styles.bellBtn} onPress={() => router.push('/notificaciones')}>
+          <Text style={{ fontSize: 22 }}>🔔</Text>
+          {noLeidas > 0 && (
+            <View style={styles.bellBadge}>
+              <Text style={styles.bellBadgeText}>{noLeidas > 9 ? '9+' : noLeidas}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Filtros */}
@@ -121,7 +139,9 @@ const styles = StyleSheet.create({
   header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16, backgroundColor: Colors.white },
   greeting:       { fontSize: 20, fontWeight: '800', color: Colors.ink },
   subGreeting:    { fontSize: 13, color: Colors.inkMuted, marginTop: 2 },
-  logo:           { fontSize: 28 },
+  bellBtn:        { position: 'relative', padding: 4 },
+  bellBadge:      { position: 'absolute', top: 0, right: 0, backgroundColor: Colors.bad, borderRadius: 8, minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  bellBadgeText:  { color: Colors.white, fontSize: 9, fontWeight: '900' },
   filters:        { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.white, maxHeight: 56 },
   chip:           { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: Colors.cream, marginRight: 8, borderWidth: 1, borderColor: Colors.border },
   chipActive:     { backgroundColor: Colors.primary, borderColor: Colors.primary },

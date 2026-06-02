@@ -25,6 +25,9 @@ function RootLayoutNav() {
       <Stack.Screen name="(auth)"            options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)"            options={{ headerShown: false }} />
       <Stack.Screen name="mis-perros"        options={{ headerShown: false }} />
+      <Stack.Screen name="notificaciones"
+        options={{ headerShown: true, title: 'Notificaciones', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+      />
       <Stack.Screen name="publicaciones/[id]"
         options={{ headerShown: true, title: 'Aviso', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />

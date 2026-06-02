@@ -8,26 +8,22 @@ const publicDir = join(__dirname, '..', 'public');
 
 mkdirSync(join(publicDir, 'icons'), { recursive: true });
 
-// SVG icon: fondo coral con huella de perro (paw print)
+// SVG icon: misma huella que el AuthModal — bg-brand-primary + rounded-2xl
+// PawIcon original: viewBox="0 0 32 32", escalado a 512x512 con padding
 const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Fondo redondeado color coral -->
-  <rect width="512" height="512" rx="110" fill="#B85C4A"/>
+  <!-- Fondo coral con rounded-2xl (~20% = 102px de radio) -->
+  <rect width="512" height="512" rx="102" fill="#B85C4A"/>
 
-  <!-- Huella de perro centrada y escalada -->
-  <!-- Almohadilla central (grande, forma de corazón invertido) -->
-  <ellipse cx="256" cy="340" rx="95" ry="75" fill="white"/>
-  <!-- Muesca superior para forma de corazón invertido -->
-  <ellipse cx="222" cy="305" rx="48" ry="42" fill="white"/>
-  <ellipse cx="290" cy="305" rx="48" ry="42" fill="white"/>
-
-  <!-- Dedo 1 - izquierda abajo -->
-  <ellipse cx="135" cy="295" rx="42" ry="52" fill="white" transform="rotate(-20 135 295)"/>
-  <!-- Dedo 2 - izquierda arriba -->
-  <ellipse cx="178" cy="195" rx="38" ry="50" fill="white" transform="rotate(-8 178 195)"/>
-  <!-- Dedo 3 - derecha arriba -->
-  <ellipse cx="334" cy="195" rx="38" ry="50" fill="white" transform="rotate(8 334 195)"/>
-  <!-- Dedo 4 - derecha abajo -->
-  <ellipse cx="377" cy="295" rx="42" ry="52" fill="white" transform="rotate(20 377 295)"/>
+  <!-- Huella escalada: viewBox 0 0 32 32 -> centro en 256,256, escala ~11.5x, con padding -->
+  <g transform="translate(80, 90) scale(11.0)">
+    <!-- 4 dedos (toe pads) -->
+    <ellipse cx="7"  cy="11" rx="3" ry="4"  fill="white"/>
+    <ellipse cx="14" cy="6"  rx="3" ry="4"  fill="white"/>
+    <ellipse cx="22" cy="6"  rx="3" ry="4"  fill="white"/>
+    <ellipse cx="29" cy="11" rx="3" ry="4"  fill="white"/>
+    <!-- Almohadilla central -->
+    <path d="M18 14c-6 0-10 5-10 9 0 4 4 6 10 6s10-2 10-6c0-4-9-9-10-9z" fill="white"/>
+  </g>
 </svg>`;
 
 const svgBuffer = Buffer.from(svgIcon);

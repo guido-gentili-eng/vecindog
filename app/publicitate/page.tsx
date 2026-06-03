@@ -492,6 +492,15 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     if (!negocio.trim()) { setError('Ingresá el nombre de tu negocio.'); return; }
     if (!email.trim())   { setError('Ingresá tu email.'); return; }
     if (!link.trim())    { setError('Ingresá el link de tu negocio.'); return; }
+    // Validar URL antes de ir a la API
+    try {
+      const urlCheck = link.includes('://') ? link : `https://${link}`;
+      const parsed = new URL(urlCheck);
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error();
+    } catch {
+      setError('El link debe ser una URL válida. Ejemplo: https://instagram.com/tunegocio');
+      return;
+    }
     if (telefono.trim()) {
       const digitos = telefono.replace(/\D/g, '');
       if (digitos.length < 8) { setError('El teléfono debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210'); return; }
@@ -597,9 +606,18 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
           {/* Resto de campos */}
           <div className="space-y-3">
             <div>
-              <label className="label">Link del negocio <span className="text-bad">*</span></label>
-              <input className="field w-full" placeholder="https://instagram.com/tunegocio"
-                value={link} onChange={(e) => setLink(e.target.value)} required />
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">Link del negocio <span className="text-bad">*</span></label>
+              <input
+                className="field w-full"
+                placeholder="https://instagram.com/tunegocio"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                onBlur={() => {
+                  const v = link.trim();
+                  if (v && !v.includes('://')) setLink(`https://${v}`);
+                }}
+                required
+              />
               <p className="mt-1 text-xs text-ink-muted">Web, Instagram, WhatsApp — adonde van los clicks</p>
             </div>
             <div>

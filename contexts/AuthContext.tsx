@@ -6,8 +6,9 @@ import {
 import { type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
-const GUEST_KEY  = 'vecindog_guest';
-const CITY_KEY   = 'vecindog_ciudad';
+const GUEST_KEY    = 'vecindog_guest';
+const CITY_KEY     = 'vecindog_ciudad';
+const ADMIN_EMAIL  = 'guido-gentili@live.com.ar';
 
 export interface Profile {
   id:                string;
@@ -201,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
-      isPro:           profile?.plan === 'pro',
+      isPro:           profile?.plan === 'pro' || user?.email === ADMIN_EMAIL,
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,

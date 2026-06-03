@@ -29,6 +29,7 @@ interface Props {
   value:             string;
   onChange:          (value: string) => void;
   onSelectCoords?:   (lat: number, lng: number) => void;
+  onClearCoords?:    () => void;
   placeholder?:      string;
   className?:        string;
   required?:         boolean;
@@ -59,14 +60,16 @@ export default function AddressAutocomplete({
   value,
   onChange,
   onSelectCoords,
+  onClearCoords,
   placeholder = 'Calle y número',
   className = '',
   required,
   ciudad,
 }: Props) {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [loading,     setLoading]     = useState(false);
-  const [open,        setOpen]        = useState(false);
+  const [suggestions,    setSuggestions]    = useState<Suggestion[]>([]);
+  const [loading,        setLoading]        = useState(false);
+  const [open,           setOpen]           = useState(false);
+  const [pinConfirmado,  setPinConfirmado]  = useState<string | null>(null);
   const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef  = useRef<HTMLDivElement>(null);
 
@@ -89,6 +92,7 @@ export default function AddressAutocomplete({
 
     if (val.trim().length < 3) {
       setSuggestions([]);
+      setPinConfirmado(null);
       return;
     }
 
@@ -97,12 +101,27 @@ export default function AddressAutocomplete({
       try {
         const query = ciudad ? `${val}, ${ciudad}, Argentina` : `${val}, Argentina`;
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1&countrycodes=ar`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=8&addressdetails=1&countrycodes=ar`,
           { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
         );
         const data: Suggestion[] = await res.json();
         // Filtrar resultados que tengan al menos calle
-        setSuggestions(data.filter((s) => s.address?.road || s.address?.pedestrian));
+        let resultados = data.filter((s) => s.address?.road || s.address?.pedestrian);
+
+        // Si hay ciudad configurada, priorizar resultados de esa ciudad al tope
+        if (ciudad) {
+          const ciudadNorm = ciudad.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(' ')[0];
+          const locales = resultados.filter((s) => {
+            const loc = [s.address?.city, s.address?.town, s.address?.village, s.address?.municipality]
+              .filter(Boolean).join(' ').toLowerCase()
+              .normalize('NFD').replace(/[̀-ͯ]/g, '');
+            return loc.includes(ciudadNorm);
+          });
+          const otros = resultados.filter((s) => !locales.includes(s));
+          resultados = [...locales, ...otros];
+        }
+
+        setSuggestions(resultados.slice(0, 5));
       } catch {
         setSuggestions([]);
       } finally {
@@ -116,9 +135,16 @@ export default function AddressAutocomplete({
     onChange(calle || value);
     if (onSelectCoords && s.lat && s.lon) {
       onSelectCoords(parseFloat(s.lat), parseFloat(s.lon));
+      const location = extractLocation(s.address);
+      setPinConfirmado(location || 'Ubicación seleccionada');
     }
     setSuggestions([]);
     setOpen(false);
+  }
+
+  function handleClearPin() {
+    setPinConfirmado(null);
+    if (onClearCoords) onClearCoords();
   }
 
   return (
@@ -138,6 +164,22 @@ export default function AddressAutocomplete({
         <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink-muted" />
       )}
 
+      {/* Badge de confirmación del pin seleccionado */}
+      {pinConfirmado && !open && (
+        <div className="mt-1.5 flex items-center gap-2 rounded-xl bg-good/10 px-3 py-1.5 text-xs font-bold text-good ring-1 ring-good/20">
+          <MapPin className="h-3.5 w-3.5 shrink-0" />
+          <span className="flex-1">Pin en: {pinConfirmado}</span>
+          <button
+            type="button"
+            onClick={handleClearPin}
+            className="ml-auto shrink-0 rounded-full text-good/60 hover:text-bad transition"
+            title="Quitar pin"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {open && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
           {suggestions.map((s, i) => {
@@ -151,12 +193,12 @@ export default function AddressAutocomplete({
                   className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-brand-cream transition"
                 >
                   <MapPin className="h-4 w-4 shrink-0 text-ink-muted/50" />
-                  <p className="text-sm truncate min-w-0">
-                    <span className="font-bold text-ink">{calle}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-ink truncate">{calle || value}</p>
                     {location && (
-                      <span className="text-ink-muted font-normal"> {location}</span>
+                      <p className="text-xs text-ink-muted truncate">{location}</p>
                     )}
-                  </p>
+                  </div>
                 </button>
               </li>
             );

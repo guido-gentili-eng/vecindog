@@ -972,6 +972,7 @@ export default function PublicarPage() {
                   value={form.zona}
                   onChange={(v) => handleChange('zona', v)}
                   onSelectCoords={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+                  onClearCoords={() => setForm((f) => ({ ...f, lat: null, lng: null }))}
                   placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
                   ciudad={efectivaCiudad}
                   required

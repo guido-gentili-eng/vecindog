@@ -2,23 +2,24 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
 
 interface Usuario {
-  id:         string;
-  email:      string;
-  created_at: string;  // ISO string
-  nombre:     string;
-  apellido:   string;
-  telefono:   string;
-  ciudad:     string;
-  provincia:  string;
-  direccion:  string;
-  plan:       string;
+  id:          string;
+  email:       string;
+  created_at:  string;
+  nombre:      string;
+  apellido:    string;
+  telefono:    string;
+  ciudad:      string;
+  provincia:   string;
+  direccion:   string;
+  plan:        string;
+  suspendido?: boolean;
 }
 
 interface Perro {
@@ -55,7 +56,9 @@ export default function AdminPage() {
   const [perrosMap,  setPerrosMap]  = useState<Record<string, Perro[]>>({});
   const [expandido,  setExpandido]  = useState<string | null>(null);
   const [loadingDog, setLoadingDog] = useState<string | null>(null);
-  const [orden,      setOrden]      = useState<'az' | 'recientes'>('az');
+  const [orden,       setOrden]       = useState<'az' | 'recientes'>('az');
+  const [accionando,  setAccionando]  = useState<string | null>(null);
+  const [confirmar,   setConfirmar]   = useState<{ uid: string; accion: 'pausar' | 'eliminar' } | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -77,6 +80,33 @@ export default function AdminPage() {
         .finally(() => setCargando(false));
     });
   }, [user, loading, router]);
+
+  async function ejecutarAccion(uid: string, accion: 'pausar' | 'reactivar' | 'eliminar') {
+    setAccionando(uid); setConfirmar(null);
+    try {
+      await fetch('/api/admin/user-action', {
+        method:  'POST',
+        headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ uid, accion }),
+      });
+      if (accion === 'eliminar') {
+        setStats((prev) => prev ? {
+          ...prev,
+          ultimosUsuarios: prev.ultimosUsuarios.filter((u) => u.id !== uid),
+          cuentas: { ...prev.cuentas, total: prev.cuentas.total - 1 },
+        } : prev);
+      } else {
+        setStats((prev) => prev ? {
+          ...prev,
+          ultimosUsuarios: prev.ultimosUsuarios.map((u) =>
+            u.id === uid ? { ...u, suspendido: accion === 'pausar' } : u
+          ),
+        } : prev);
+      }
+    } finally {
+      setAccionando(null);
+    }
+  }
 
   async function togglePerros(uid: string, token: string) {
     if (expandido === uid) { setExpandido(null); return; }
@@ -227,22 +257,32 @@ export default function AdminPage() {
 
                   {/* Botones */}
                   <div className="shrink-0 flex flex-col gap-1.5">
-                    <a
-                      href={`/publicaciones?uid=${u.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-xl border border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition"
-                    >
+                    <a href={`/publicaciones?uid=${u.id}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-xl border border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
                       <ExternalLink className="h-3 w-3" /> Avisos
                     </a>
-                    <button
-                      type="button"
-                      onClick={() => togglePerros(u.id, tokenRef.current)}
-                      className="inline-flex items-center gap-1 rounded-xl border border-black/15 px-3 py-1.5 text-xs font-bold text-ink-muted hover:border-brand-primary/30 hover:text-brand-primary transition"
-                    >
-                      <Dog className="h-3 w-3" />
-                      Perros
+                    <button type="button" onClick={() => togglePerros(u.id, tokenRef.current)}
+                      className="inline-flex items-center gap-1 rounded-xl border border-black/15 px-3 py-1.5 text-xs font-bold text-ink-muted hover:border-brand-primary/30 hover:text-brand-primary transition">
+                      <Dog className="h-3 w-3" /> Perros
                       {expandido === u.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </button>
+                    {u.suspendido ? (
+                      <button type="button" disabled={accionando === u.id}
+                        onClick={() => ejecutarAccion(u.id, 'reactivar')}
+                        className="inline-flex items-center gap-1 rounded-xl border border-good/40 bg-good/5 px-3 py-1.5 text-xs font-bold text-good hover:bg-good/10 transition disabled:opacity-60">
+                        <PlayCircle className="h-3 w-3" /> Reactivar
+                      </button>
+                    ) : (
+                      <button type="button" disabled={accionando === u.id}
+                        onClick={() => setConfirmar({ uid: u.id, accion: 'pausar' })}
+                        className="inline-flex items-center gap-1 rounded-xl border border-warn/40 bg-warn/5 px-3 py-1.5 text-xs font-bold text-[#7a4f00] hover:bg-warn/10 transition disabled:opacity-60">
+                        <PauseCircle className="h-3 w-3" /> Pausar
+                      </button>
+                    )}
+                    <button type="button" disabled={accionando === u.id}
+                      onClick={() => setConfirmar({ uid: u.id, accion: 'eliminar' })}
+                      className="inline-flex items-center gap-1 rounded-xl border border-bad/30 bg-bad/5 px-3 py-1.5 text-xs font-bold text-bad hover:bg-bad/10 transition disabled:opacity-60">
+                      <Trash2 className="h-3 w-3" /> Eliminar
                     </button>
                   </div>
                 </div>
@@ -285,6 +325,38 @@ export default function AdminPage() {
           })}
         </ul>
       </div>
+
+      {/* Modal de confirmación */}
+      {confirmar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[28px] bg-white p-7 shadow-2xl">
+            <h3 className="font-display text-lg font-black text-ink">
+              {confirmar.accion === 'eliminar' ? '¿Eliminar usuario?' : '¿Pausar usuario?'}
+            </h3>
+            <p className="mt-2 text-sm text-ink-muted leading-relaxed">
+              {confirmar.accion === 'eliminar'
+                ? 'Esta acción es irreversible. Se borrará la cuenta, el perfil y todos sus datos de Vecindog.'
+                : 'El usuario recibirá un email avisando que su cuenta está siendo revisada, y no podrá acceder a la app hasta que la reactives.'}
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button type="button"
+                onClick={() => ejecutarAccion(confirmar.uid, confirmar.accion)}
+                disabled={!!accionando}
+                className={`flex-1 rounded-2xl py-2.5 text-sm font-extrabold text-white transition disabled:opacity-60 ${
+                  confirmar.accion === 'eliminar' ? 'bg-bad hover:bg-bad/90' : 'bg-[#b45309] hover:opacity-90'
+                }`}>
+                {accionando
+                  ? <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                  : confirmar.accion === 'eliminar' ? 'Sí, eliminar' : 'Sí, pausar'}
+              </button>
+              <button type="button" onClick={() => setConfirmar(null)}
+                className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -23,6 +23,7 @@ export interface Profile {
   facebook?:         string | null;
   plan?:             'free' | 'pro';
   plan_vencimiento?: string | null;
+  suspendido?:       boolean;
 }
 
 interface AuthCtx {
@@ -35,6 +36,7 @@ interface AuthCtx {
   hasChosen:       boolean;
   hasProfile:      boolean;
   isPro:           boolean;
+  isSuspendido:    boolean;
   ciudad:          string | null;
   hasCity:         boolean;
   setCiudad:       (c: string) => void;
@@ -207,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
       isPro:           profile?.plan === 'pro' || user?.email === ADMIN_EMAIL,
+      isSuspendido:    profile?.suspendido === true && user?.email !== ADMIN_EMAIL,
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,

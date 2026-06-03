@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     admin.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
     admin.from('ads').select('id, titulo, anunciante, plan, activo, fecha_fin'),
     admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from('profiles').select('id, nombre, apellido, telefono, ciudad, provincia, direccion, plan'),
+    admin.from('profiles').select('id, nombre, apellido, telefono, ciudad, provincia, direccion, plan, suspendido'),
   ]);
 
   const hoy         = new Date().toISOString().slice(0, 10);
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     .eq('plan', 'pro').lt('plan_vencimiento', hoy);
 
   // Mapa de id → perfil
-  const profileMap: Record<string, { nombre: string; apellido: string; telefono: string; ciudad: string; provincia: string; direccion: string; plan: string }> = {};
+  const profileMap: Record<string, { nombre: string; apellido: string; telefono: string; ciudad: string; provincia: string; direccion: string; plan: string; suspendido: boolean }> = {};
   for (const p of profiles ?? []) {
     profileMap[p.id] = p;
   }
@@ -68,7 +68,8 @@ export async function GET(req: NextRequest) {
       ciudad:     p.ciudad    ?? '',
       provincia:  p.provincia ?? '',
       direccion:  p.direccion ?? '',
-      plan:       p.plan      ?? 'free',
+      plan:       p.plan       ?? 'free',
+      suspendido: p.suspendido ?? false,
     }))
     // Por defecto: orden A-Z (el cliente puede reordenar por fecha)
     .sort((a, b) => {

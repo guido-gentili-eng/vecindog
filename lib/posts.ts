@@ -99,6 +99,22 @@ export async function renovarPost(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Actualiza la zona (y opcionalmente horario/coords) de un aviso perdido con la última ubicación vista. */
+export async function actualizarZonaPost(
+  id: string,
+  zona: string,
+  horario?: string,
+  lat?: number | null,
+  lng?: number | null,
+): Promise<void> {
+  const payload: Record<string, unknown> = { zona };
+  if (horario) payload.horario = horario;
+  if (lat != null) payload.lat = lat;
+  if (lng != null) payload.lng = lng;
+  const { error } = await supabase.from('posts').update(payload).eq('id', id);
+  if (error) throw error;
+}
+
 /** Busca si un perro tiene un aviso de tipo 'perdido' activo. */
 export async function buscarPostActivoDePerro(perroId: string): Promise<Post | null> {
   const { data } = await supabase

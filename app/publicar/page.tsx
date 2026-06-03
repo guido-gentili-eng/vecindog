@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
+import { listarPosts, actualizarZonaPost, type Post } from '@/lib/posts';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 
@@ -121,10 +122,36 @@ export default function PublicarPage() {
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
   const [ubicacion,         setUbicacion]         = useState<'casa' | 'otro' | null>(null);
 
+  /* ── Matching con perdidos (solo para "encontrado") ── */
+  const [matchCandidatos, setMatchCandidatos] = useState<Post[]>([]);
+  const [matchPost,       setMatchPost]       = useState<Post | null>(null);
+  const [mismaZona,       setMismaZona]       = useState<boolean | null>(null);
+  const [zonaVisto,       setZonaVisto]       = useState('');
+  const [latVisto,        setLatVisto]        = useState<number | null>(null);
+  const [lngVisto,        setLngVisto]        = useState<number | null>(null);
+  const [horarioVisto,    setHorarioVisto]    = useState('');
+
   /* Scroll al tope cuando el aviso se publicó exitosamente */
   useEffect(() => {
     if (enviado) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [enviado]);
+
+  /* Buscar coincidencias en avisos perdidos cuando se llena color + tamaño */
+  useEffect(() => {
+    if (form.categoria !== 'encontrado') return;
+    if (!form.color && !form.tamano) { setMatchCandidatos([]); return; }
+    listarPosts().then((posts) => {
+      const candidatos = posts.filter(
+        (p) =>
+          p.categoria === 'perdido' &&
+          p.especie   === form.especie &&
+          (form.color  ? p.color?.toLowerCase()  === form.color.toLowerCase()  : true) &&
+          (form.tamano ? p.tamano === form.tamano : true),
+      );
+      setMatchCandidatos(candidatos);
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.color, form.tamano, form.especie, form.categoria]);
 
   const urlsRef = useRef<string[]>([]);
   useEffect(() => {
@@ -306,6 +333,17 @@ export default function PublicarPage() {
             }).catch(() => {});
           });
         }
+      }
+
+      /* ── Si hay match confirmado en otra zona, actualizar el aviso perdido ── */
+      if (matchPost && mismaZona === false && zonaVisto.trim()) {
+        await actualizarZonaPost(
+          matchPost.id,
+          zonaVisto,
+          horarioVisto || undefined,
+          latVisto,
+          lngVisto,
+        );
       }
 
       setEnviado(true);
@@ -578,6 +616,133 @@ export default function PublicarPage() {
 
           </div>
         </StepCard>
+
+        {/* ── COINCIDENCIAS (solo encontrado) ── */}
+        {form.categoria === 'encontrado' && matchCandidatos.length > 0 && (
+          <div className="rounded-2xl border-2 border-found/30 bg-found/5 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Dog className="h-5 w-5 shrink-0 text-found" />
+              <p className="font-display font-extrabold text-ink">
+                ¿Es alguno de estos perros que estaban buscando?
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {matchCandidatos.slice(0, 3).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    setMatchPost(matchPost?.id === p.id ? null : p);
+                    setMismaZona(null);
+                    setZonaVisto('');
+                    setHorarioVisto('');
+                  }}
+                  className={`w-full flex items-center gap-3 rounded-2xl border-2 p-3 text-left transition ${
+                    matchPost?.id === p.id
+                      ? 'border-found bg-found/10'
+                      : 'border-black/10 bg-white hover:border-found/40'
+                  }`}
+                >
+                  {p.images?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.images[0]} alt="" className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                  ) : (
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-cream">
+                      <Dog className="h-6 w-6 text-brand-primary/40" />
+                    </span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-ink truncate">{p.nombre ?? 'Sin nombre'}</p>
+                    <p className="text-xs text-ink-muted truncate">{p.zona} · {p.fecha}</p>
+                  </div>
+                  {matchPost?.id === p.id && (
+                    <CheckCheck className="h-5 w-5 shrink-0 text-found" />
+                  )}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => { setMatchPost(null); setMismaZona(null); }}
+                className={`w-full rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
+                  matchPost === null && matchCandidatos.length > 0
+                    ? 'border-black/20 bg-black/5 text-ink'
+                    : 'border-black/10 text-ink-muted hover:border-black/20'
+                }`}
+              >
+                No, es otro perro
+              </button>
+            </div>
+
+            {/* Preguntas de zona y horario */}
+            {matchPost && (
+              <div className="space-y-4 border-t border-found/20 pt-4">
+                <div>
+                  <p className="mb-2 text-sm font-bold text-ink">
+                    ¿Lo viste en la misma zona donde se perdió?
+                  </p>
+                  <p className="mb-3 text-xs text-ink-muted">
+                    Se perdió en: <span className="font-bold text-ink">{matchPost.zona}</span>
+                  </p>
+                  <div className="flex gap-2">
+                    {([
+                      [true,  'Sí, misma zona'],
+                      [false, 'No, otra zona'],
+                    ] as const).map(([v, l]) => (
+                      <button
+                        key={String(v)}
+                        type="button"
+                        onClick={() => setMismaZona(v)}
+                        className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
+                          mismaZona === v
+                            ? 'border-found bg-found/10 text-found'
+                            : 'border-black/10 text-ink-muted hover:border-found/40'
+                        }`}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {mismaZona === false && (
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                      ¿En qué zona lo viste?
+                    </label>
+                    <AddressAutocomplete
+                      value={zonaVisto}
+                      onChange={setZonaVisto}
+                      onSelectCoords={(lat, lng) => { setLatVisto(lat); setLngVisto(lng); }}
+                      placeholder="Ej: Av. Colón 1200, Villa Mitre…"
+                      ciudad={efectivaCiudad}
+                    />
+                  </div>
+                )}
+
+                {mismaZona !== null && (
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                      ¿A qué hora lo viste? (opcional)
+                    </label>
+                    <input
+                      type="time"
+                      className="field"
+                      value={horarioVisto}
+                      onChange={(e) => setHorarioVisto(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {mismaZona === false && zonaVisto.trim() && (
+                  <p className="rounded-xl bg-found/10 px-3 py-2 text-xs font-bold text-found">
+                    ✓ Al publicar, el aviso de búsqueda se va a actualizar a la nueva zona.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── PASO 3: dónde y cuándo ── */}
         <StepCard n={3}

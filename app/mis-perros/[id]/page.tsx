@@ -23,7 +23,6 @@ import {
 } from '@/lib/estudios';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
-import ProGate from '@/components/ProGate';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -63,12 +62,6 @@ export default function PerroDetallePage() {
       })
       .finally(() => setCargando(false));
   }, [id]);
-
-  function proSubir(tipo: TipoEstudio): (f: File) => Promise<void> {
-    return isPro
-      ? (f: File) => handleSubirEstudio(tipo, f)
-      : async (_f: File) => { router.push('/planes'); };
-  }
 
   async function handleSubirEstudio(tipo: TipoEstudio, file: File) {
     if (!perro) return;
@@ -304,11 +297,9 @@ export default function PerroDetallePage() {
                   + Agregar
                 </button>
               ) : (
-                <Link href="/planes"
-                  className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
-                >
-                  <Lock className="h-3 w-3" /> Agregar
-                </Link>
+                <span className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+                  <Sparkles className="h-3 w-3" /> VecindogPro
+                </span>
               )}
             </div>
 
@@ -352,9 +343,10 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'laboratorio')}
             subiendo={subiendoTipo === 'laboratorio'}
-            onSubir={proSubir('laboratorio')}
+            onSubir={(f) => handleSubirEstudio('laboratorio', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Radiografía */}
@@ -365,9 +357,10 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'radiografia')}
             subiendo={subiendoTipo === 'radiografia'}
-            onSubir={proSubir('radiografia')}
+            onSubir={(f) => handleSubirEstudio('radiografia', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Ecografías */}
@@ -378,9 +371,10 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'ecografia')}
             subiendo={subiendoTipo === 'ecografia'}
-            onSubir={proSubir('ecografia')}
+            onSubir={(f) => handleSubirEstudio('ecografia', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Certificado de Chip */}
@@ -388,19 +382,21 @@ export default function PerroDetallePage() {
             perro={perro}
             estudios={estudios.filter((e) => e.tipo === 'certificado_chip')}
             subiendo={subiendoTipo === 'certificado_chip'}
-            onSubir={proSubir('certificado_chip')}
+            onSubir={(f) => handleSubirEstudio('certificado_chip', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
             onChipUpdate={(chip) => setPerro((p) => p ? { ...p, chip } : p)}
+            locked={!isPro}
           />
 
           {/* Certificado CVI */}
           <CVISection
             estudios={estudios.filter((e) => e.tipo === 'certificado_cvi')}
             subiendo={subiendoTipo === 'certificado_cvi'}
-            onSubir={proSubir('certificado_cvi')}
+            onSubir={(f) => handleSubirEstudio('certificado_cvi', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Certificado Antiparasitario */}
@@ -411,9 +407,10 @@ export default function PerroDetallePage() {
             accept="image/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'certificado_antiparasitario')}
             subiendo={subiendoTipo === 'certificado_antiparasitario'}
-            onSubir={proSubir('certificado_antiparasitario')}
+            onSubir={(f) => handleSubirEstudio('certificado_antiparasitario', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Vacuna Antirrábica */}
@@ -424,17 +421,19 @@ export default function PerroDetallePage() {
             accept="image/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'vacuna_antirrabica')}
             subiendo={subiendoTipo === 'vacuna_antirrabica'}
-            onSubir={proSubir('vacuna_antirrabica')}
+            onSubir={(f) => handleSubirEstudio('vacuna_antirrabica', f)}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* AirTag */}
           <AirTagSection
             perroId={perro.id}
             airtags={estudios.filter((e) => e.tipo === 'airtag')}
-            onAdd={isPro ? (e) => setEstudios((prev) => [e, ...prev]) : () => router.push('/planes')}
+            onAdd={(e) => setEstudios((prev) => [e, ...prev])}
             onDelete={handleEliminarEstudio}
+            locked={!isPro}
           />
 
           {/* Modal enviar estudio */}
@@ -842,12 +841,13 @@ function VacunaForm({ inicial, onSave, onCancel }: {
 
 /* ── AirTag ── */
 function AirTagSection({
-  perroId, airtags, onAdd, onDelete,
+  perroId, airtags, onAdd, onDelete, locked,
 }: {
   perroId:  string;
   airtags:  Estudio[];
   onAdd:    (e: Estudio) => void;
   onDelete: (id: string) => void;
+  locked?:  boolean;
 }) {
   const [agregando, setAgregando] = useState(false);
   const [serial,    setSerial]    = useState('');
@@ -889,7 +889,11 @@ function AirTagSection({
             </span>
           )}
         </h2>
-        {!agregando && (
+        {locked ? (
+          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </span>
+        ) : !agregando && (
           <button type="button" onClick={() => setAgregando(true)}
             className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             + Agregar
@@ -984,7 +988,7 @@ function AirTagSection({
 
 /* ── Certificado de Chip ── */
 function ChipCertificadoSection({
-  perro, estudios, subiendo, onSubir, onEnviar, onEliminar, onChipUpdate,
+  perro, estudios, subiendo, onSubir, onEnviar, onEliminar, onChipUpdate, locked,
 }: {
   perro:         Perro;
   estudios:      Estudio[];
@@ -993,6 +997,7 @@ function ChipCertificadoSection({
   onEnviar:      (e: Estudio) => void;
   onEliminar:    (id: string) => void;
   onChipUpdate:  (chip: string) => void;
+  locked?:       boolean;
 }) {
   const fileRef                       = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -1039,7 +1044,11 @@ function ChipCertificadoSection({
             </span>
           )}
         </h2>
-        {!pendingFile && (
+        {locked ? (
+          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </span>
+        ) : !pendingFile && (
           <button
             type="button"
             onClick={() => { setUploadError(''); fileRef.current?.click(); }}
@@ -1303,13 +1312,14 @@ const CVI_PAISES: { bandera: string; nombre: string; url: string; pdf?: string }
 ];
 
 function CVISection({
-  estudios, subiendo, onSubir, onEnviar, onEliminar,
+  estudios, subiendo, onSubir, onEnviar, onEliminar, locked,
 }: {
   estudios:   Estudio[];
   subiendo:   boolean;
   onSubir:    (f: File) => Promise<void>;
   onEnviar:   (e: Estudio) => void;
   onEliminar: (id: string) => void;
+  locked?:    boolean;
 }) {
   const fileRef                       = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -1340,7 +1350,11 @@ function CVISection({
             </span>
           )}
         </h2>
-        {!pendingFile && (
+        {locked ? (
+          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </span>
+        ) : !pendingFile && (
           <button type="button"
             onClick={() => { setUploadError(''); fileRef.current?.click(); }}
             disabled={subiendo}
@@ -1470,7 +1484,7 @@ function CVISection({
 
 /* ── Sección de estudios ── */
 function EstudiosSection({
-  tipo, titulo, icono, accept, estudios, subiendo, onSubir, onEnviar, onEliminar,
+  tipo, titulo, icono, accept, estudios, subiendo, onSubir, onEnviar, onEliminar, locked,
 }: {
   tipo:       TipoEstudio;
   titulo:     string;
@@ -1481,6 +1495,7 @@ function EstudiosSection({
   onSubir:    (f: File) => Promise<void>;
   onEnviar:   (e: Estudio) => void;
   onEliminar: (id: string) => void;
+  locked?:    boolean;
 }) {
   const fileRef                     = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -1508,7 +1523,11 @@ function EstudiosSection({
             </span>
           )}
         </h2>
-        {!pendingFile && (
+        {locked ? (
+          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </span>
+        ) : !pendingFile && (
           <button
             type="button"
             onClick={() => { setUploadError(''); fileRef.current?.click(); }}

@@ -147,7 +147,7 @@ export default function HistoriaPage() {
     </div>
   );
 
-  const accent = perdido ? '#ef4444' : '#EE5A3B';
+  const accent = perdido ? '#ef4444' : '#22c55e';
   const igFinal = redes.instagram.handle ? limpiarHandle(redes.instagram.handle) : null;
   const fbFinal = redes.facebook.handle  ? limpiarHandle(redes.facebook.handle)  : null;
 

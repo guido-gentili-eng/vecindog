@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown, Download } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown, Download, LayoutDashboard } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -141,6 +141,15 @@ export default function Header() {
                         <Megaphone className="h-4 w-4 text-brand-primary" />
                         {isPro ? 'Mi plan Pro' : 'Planes'}
                       </Link>
+                      {user?.email === 'guido-gentili@live.com.ar' && (
+                        <>
+                          <div className="my-1 border-t border-black/5" />
+                          <Link href="/admin" onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
+                            <LayoutDashboard className="h-4 w-4 text-brand-primary" /> Panel admin
+                          </Link>
+                        </>
+                      )}
                       <div className="my-1 border-t border-black/5" />
                       <button type="button" onClick={() => { signOut(); setProfileOpen(false); }}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-bad hover:bg-bad/5 transition">

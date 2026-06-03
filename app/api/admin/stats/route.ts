@@ -49,25 +49,32 @@ export async function GET(req: NextRequest) {
     profileMap[p.id] = p;
   }
 
-  // Últimos 10 usuarios registrados con datos completos
-  const ultimosUsuarios = (authUsers?.users ?? [])
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 10)
-    .map((u) => {
-      const p = profileMap[u.id];
-      return {
-        id:         u.id,
-        email:      u.email ?? '',
-        created_at: u.created_at,
-        nombre:     p?.nombre    ?? '',
-        apellido:   p?.apellido  ?? '',
-        telefono:   p?.telefono  ?? '',
-        ciudad:     p?.ciudad    ?? '',
-        provincia:  p?.provincia ?? '',
-        direccion:  p?.direccion ?? '',
-        plan:       p?.plan      ?? 'free',
-      };
+  // Todos los usuarios, ordenados alfabéticamente por nombre y apellido
+  const emailMap: Record<string, string> = {};
+  for (const u of authUsers?.users ?? []) {
+    if (u.email) emailMap[u.id] = u.email;
+  }
+
+  const todosUsuarios = (profiles ?? [])
+    .map((p) => ({
+      id:         p.id,
+      email:      emailMap[p.id] ?? '',
+      nombre:     p.nombre    ?? '',
+      apellido:   p.apellido  ?? '',
+      telefono:   p.telefono  ?? '',
+      ciudad:     p.ciudad    ?? '',
+      provincia:  p.provincia ?? '',
+      direccion:  p.direccion ?? '',
+      plan:       p.plan      ?? 'free',
+    }))
+    .sort((a, b) => {
+      const na = `${a.nombre} ${a.apellido}`.toLowerCase().trim();
+      const nb = `${b.nombre} ${b.apellido}`.toLowerCase().trim();
+      return na.localeCompare(nb, 'es');
     });
+
+  // Para compatibilidad con la página, mantenemos el nombre ultimosUsuarios
+  const ultimosUsuarios = todosUsuarios;
 
   return NextResponse.json({
     cuentas: {

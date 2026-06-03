@@ -485,6 +485,10 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     if (!negocio.trim()) { setError('Ingresá el nombre de tu negocio.'); return; }
     if (!email.trim())   { setError('Ingresá tu email.'); return; }
     if (!link.trim())    { setError('Ingresá el link de tu negocio.'); return; }
+    if (telefono.trim()) {
+      const digitos = telefono.replace(/\D/g, '');
+      if (digitos.length < 8) { setError('El teléfono debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210'); return; }
+    }
     setError(''); setLoading(true);
 
     try {
@@ -602,8 +606,8 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
                 value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div>
-              <label className="label">Teléfono / WhatsApp</label>
-              <input className="field w-full" placeholder="+54 9 291 405-0210"
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">Teléfono / WhatsApp</label>
+              <input type="tel" className="field w-full" placeholder="+54 9 291 405-0210"
                 value={telefono} onChange={(e) => setTelefono(e.target.value)} />
             </div>
           </div>

@@ -204,6 +204,11 @@ export default function PublicarPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError('');
+    const digitos = form.contacto.replace(/\D/g, '');
+    if (digitos.length < 8) {
+      setSubmitError('El WhatsApp debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210');
+      return;
+    }
     setLoading(true);
     try {
       const uploadedUrls: string[] = [];

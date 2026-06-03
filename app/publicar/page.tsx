@@ -966,37 +966,41 @@ export default function PublicarPage() {
                 <AddressAutocomplete
                   value={form.zona}
                   onChange={(v) => handleChange('zona', v)}
-                  onSelectCoords={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
-                  onClearCoords={() => setForm((f) => ({ ...f, lat: null, lng: null }))}
                   placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
                   ciudad={efectivaCiudad}
                   required
                 />
                 <p className="mt-1 text-xs text-ink-muted">
-                  Podés escribir la calle y elegir una sugerencia, o escribir el barrio general.
+                  Podés escribir la calle y elegir una sugerencia, o escribir el barrio general. Para que aparezca en el mapa usá el GPS de abajo.
                 </p>
               </Field>
 
               {/* Botón GPS para pin en el mapa */}
               <div className="mt-2">
-                {gpsEstado !== 'ok' ? (
+                {gpsEstado === 'ok' ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-good/10 px-3 py-1.5 text-xs font-bold text-good">
+                    <CheckCheck className="h-3.5 w-3.5" /> Ubicación GPS capturada — va a aparecer en el mapa
+                  </span>
+                ) : (
                   <button
                     type="button"
                     onClick={capturarGPS}
                     disabled={gpsEstado === 'cargando'}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary hover:text-brand-primary disabled:opacity-60"
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition disabled:opacity-60 ${
+                      form.categoria === 'transito' && form.situacion_transito === 'calle'
+                        ? 'border-2 border-[#7c3aed]/40 bg-[#7c3aed]/5 text-[#7c3aed] hover:bg-[#7c3aed]/10'
+                        : 'border border-black/10 bg-white text-ink-muted hover:border-brand-primary hover:text-brand-primary'
+                    }`}
                   >
                     {gpsEstado === 'cargando'
                       ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Obteniendo ubicación…</>
                       : gpsEstado === 'error'
                       ? <><Navigation className="h-3.5 w-3.5" /> No se pudo obtener el GPS — tocar para reintentar</>
+                      : form.categoria === 'transito' && form.situacion_transito === 'calle'
+                      ? <><Navigation className="h-3.5 w-3.5" /> 📍 Activar GPS — necesario para el mapa</>
                       : <><Navigation className="h-3.5 w-3.5" /> Agregar ubicación GPS (opcional — aparece en el mapa)</>
                     }
                   </button>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-good/10 px-3 py-1.5 text-xs font-bold text-good">
-                    <CheckCheck className="h-3.5 w-3.5" /> Ubicación GPS capturada — va a aparecer en el mapa
-                  </span>
                 )}
               </div>
             </div>

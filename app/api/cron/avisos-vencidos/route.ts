@@ -3,7 +3,76 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const DIAS_EXPIRACION = 5;
+const DIAS_PRIMER_AVISO  = 5;   // día 5: primer email
+const DIAS_SEGUNDO_AVISO = 6;   // día 6: segundo email (último aviso)
+const DIAS_BORRADO       = 7;   // día 7+: se marca como resuelto automáticamente
+
+async function enviarEmailExpiracion(
+  email: string,
+  saludo: string,
+  categoriaLabel: string,
+  nombrePerro: string,
+  zona: string,
+  postId: string,
+  esFinal: boolean,
+): Promise<boolean> {
+  const asunto = esFinal
+    ? `🚨 Último aviso: tu publicación de ${categoriaLabel}${nombrePerro} se eliminará mañana`
+    : `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} venció — ¿lo encontraste?`;
+
+  const intro = esFinal
+    ? `Este es el <strong>último aviso</strong>. Si no respondés hoy, el aviso se eliminará automáticamente mañana.`
+    : `Tu aviso lleva ${DIAS_PRIMER_AVISO} días publicado. Necesitamos saber qué pasó.`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Vecindog <noreply@mivecindog.com.ar>',
+      to:   [email],
+      subject: asunto,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+          <div style="background:${esFinal ? '#b91c1c' : '#EE5A3B'};border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+            <h1 style="color:white;margin:0;font-size:22px">🐾 Vecindog</h1>
+          </div>
+          <h2 style="color:#1a1a1a">${saludo}</h2>
+          <p style="color:#555;font-size:16px;line-height:1.6">
+            Tu aviso de <strong>${categoriaLabel}${nombrePerro}</strong> en <strong>${zona}</strong>.
+          </p>
+          <p style="color:${esFinal ? '#b91c1c' : '#555'};font-size:16px;font-weight:${esFinal ? 'bold' : 'normal'}">
+            ${intro}
+          </p>
+          <p style="color:#555;font-size:16px">¿Qué pasó?</p>
+          <div style="display:flex;gap:12px;margin:24px 0;flex-direction:column">
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}?accion=encontrado"
+               style="background:#22c55e;color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;text-align:center;display:block">
+              ✅ ¡Lo encontré! Marcar como resuelto
+            </a>
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}?accion=renovar"
+               style="background:#EE5A3B;color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;text-align:center;display:block">
+              🔄 Lo sigo buscando — Renovar 5 días más
+            </a>
+          </div>
+          ${esFinal ? `
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;margin-top:16px">
+            <p style="color:#b91c1c;font-size:14px;margin:0;font-weight:bold">
+              ⚠️ Si no respondés antes de mañana, el aviso se eliminará automáticamente.
+            </p>
+          </div>` : ''}
+          <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center">
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}" style="color:#EE5A3B">Ver aviso</a>
+          </p>
+        </div>
+      `,
+    }),
+  });
+
+  return res.ok;
+}
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -16,97 +85,109 @@ export async function GET(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const limite = new Date();
-  limite.setDate(limite.getDate() - DIAS_EXPIRACION);
+  const ahora   = new Date();
+  const dia5    = new Date(ahora); dia5.setDate(dia5.getDate() - DIAS_PRIMER_AVISO);
+  const dia6    = new Date(ahora); dia6.setDate(dia6.getDate() - DIAS_SEGUNDO_AVISO);
+  const dia7    = new Date(ahora); dia7.setDate(dia7.getDate() - DIAS_BORRADO);
 
-  // Posts activos de perdido/encontrado que vencieron y aún no fueron notificados
-  const { data: posts } = await admin
+  let notif1 = 0, notif2 = 0, borrados = 0;
+
+  // ── ETAPA 1: Primer aviso (día 5) ────────────────────────────────
+  const { data: postsDia5 } = await admin
     .from('posts')
     .select('id, user_id, nombre, categoria, zona')
     .in('categoria', ['perdido', 'encontrado'])
     .eq('estado', 'activo')
     .eq('notified_expiration', false)
-    .lte('created_at', limite.toISOString());
+    .lte('created_at', dia5.toISOString());
 
-  if (!posts || posts.length === 0) {
-    return NextResponse.json({ ok: true, procesados: 0 });
-  }
-
-  let enviados = 0;
-
-  for (const post of posts) {
+  for (const post of postsDia5 ?? []) {
     if (!post.user_id) continue;
-
     const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
-    const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
-    const mensaje = `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} venció. ¿Lo encontraste o seguís buscando?`;
+    const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
 
-    // Crear notificación in-app
+    // Notificación in-app
     await admin.from('notifications').insert({
-      user_id: post.user_id,
-      post_id:  post.id,
-      tipo:     'expiracion',
-      mensaje,
-      leida:    false,
+      user_id: post.user_id, post_id: post.id,
+      tipo: 'expiracion',
+      mensaje: `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} venció. ¿Lo encontraste o seguís buscando?`,
+      leida: false,
     });
 
     // Marcar como notificado
     await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
 
-    // Email
     const { data: userData } = await admin.auth.admin.getUserById(post.user_id);
     const email = userData?.user?.email;
     if (!email) continue;
 
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('nombre')
-      .eq('id', post.user_id)
-      .single();
-
+    const { data: profile } = await admin.from('profiles').select('nombre').eq('id', post.user_id).single();
     const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
 
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Vecindog <noreply@mivecindog.com.ar>',
-        to: [email],
-        subject: `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} venció — ¿lo encontraste?`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
-            <div style="background: #EE5A3B; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-              <h1 style="color: white; margin: 0; font-size: 22px;">🐾 Vecindog</h1>
-            </div>
-            <h2 style="color: #1a1a1a;">${saludo}</h2>
-            <p style="color: #555; font-size: 16px; line-height: 1.6;">
-              Tu aviso de <strong>${categoriaLabel}${nombrePerro}</strong> en <strong>${post.zona}</strong> lleva ${DIAS_EXPIRACION} días publicado.
-            </p>
-            <p style="color: #555; font-size: 16px;">¿Qué pasó?</p>
-            <div style="display: flex; gap: 12px; margin: 24px 0; flex-direction: column;">
-              <a href="https://www.mivecindog.com.ar/publicaciones/${post.id}?accion=encontrado"
-                 style="background: #22c55e; color: white; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px; text-align: center; display: block;">
-                ✅ ¡Lo encontré! Marcar como resuelto
-              </a>
-              <a href="https://www.mivecindog.com.ar/publicaciones/${post.id}?accion=renovar"
-                 style="background: #EE5A3B; color: white; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px; text-align: center; display: block;">
-                🔄 Lo sigo buscando — Renovar 5 días más
-              </a>
-            </div>
-            <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
-              Si no tomás ninguna acción, el aviso se mantendrá visible pero sin renovar.<br/>
-              <a href="https://www.mivecindog.com.ar/publicaciones/${post.id}" style="color: #EE5A3B;">Ver aviso</a>
-            </p>
-          </div>
-        `,
-      }),
-    });
-
-    if (res.ok) enviados++;
+    const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, false);
+    if (ok) notif1++;
   }
 
-  return NextResponse.json({ ok: true, procesados: posts.length, enviados });
+  // ── ETAPA 2: Segundo y último aviso (día 6) ───────────────────────
+  const { data: postsDia6 } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', ['perdido', 'encontrado'])
+    .eq('estado', 'activo')
+    .eq('notified_expiration', true)
+    .lte('created_at', dia6.toISOString())
+    .gte('created_at', dia7.toISOString()); // solo exactamente día 6, no los de día 7+
+
+  for (const post of postsDia6 ?? []) {
+    if (!post.user_id) continue;
+    const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
+    const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
+
+    const { data: userData } = await admin.auth.admin.getUserById(post.user_id);
+    const email = userData?.user?.email;
+    if (!email) continue;
+
+    const { data: profile } = await admin.from('profiles').select('nombre').eq('id', post.user_id).single();
+    const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
+
+    const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, true);
+    if (ok) notif2++;
+  }
+
+  // ── ETAPA 3: Borrado automático (día 7+) ─────────────────────────
+  const { data: postsBorrar } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', ['perdido', 'encontrado'])
+    .eq('estado', 'activo')
+    .eq('notified_expiration', true)
+    .lt('created_at', dia7.toISOString());
+
+  if (postsBorrar?.length) {
+    // Marcar como resueltos (quedan en historial pero desaparecen del listing)
+    const ids = postsBorrar.map((p: { id: string }) => p.id);
+    await admin.from('posts').update({ estado: 'resuelto' }).in('id', ids);
+
+    // Notificación in-app de cierre automático
+    for (const post of postsBorrar) {
+      if (!post.user_id) continue;
+      const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
+      const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
+      await admin.from('notifications').insert({
+        user_id: post.user_id, post_id: post.id,
+        tipo: 'expiracion',
+        mensaje: `🗑️ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} fue cerrado automáticamente por inactividad.`,
+        leida: false,
+      });
+    }
+
+    borrados = postsBorrar.length;
+  }
+
+  return NextResponse.json({
+    ok:      true,
+    notif1,   // primer aviso (día 5)
+    notif2,   // segundo aviso (día 6)
+    borrados, // cerrados automáticamente (día 7+)
+  });
 }

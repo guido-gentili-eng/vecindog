@@ -1,89 +1,102 @@
 /**
  * Logo Vecindog — SVG inline.
  *
- * Inspiración: pin coral con silueta de perro tipo Labrador y correa colgando.
+ * Rediseñado para coincidir con el logo oficial:
+ *   - Pin coral con borde redondeado
+ *   - Círculo interior blanco/crema
+ *   - Silueta de perro (perfil izquierdo) con oreja floppy a la derecha,
+ *     cuerpo/pecho visible y correa colgando hacia abajo
+ *
  * Variantes:
- *   - <LogoMark />     pin solo (cuadrado, para iconos)
+ *   - <LogoMark />     pin solo (para favicon e iconos)
  *   - <Wordmark />     texto "Vecindog"
  *   - <BrandBadge />   pin + wordmark (default)
- *
- * Todos los SVG son inline para que tomen el color/tamaño desde CSS.
  */
 
 type Tone = 'color' | 'mono';
 
 interface LogoProps {
   className?: string;
-  tone?: Tone;        // 'color' (coral) | 'mono' (charcoal)
+  tone?: Tone;
 }
 
-/* ------------------------------ LogoMark (pin) ------------------------------ */
+/* ─────────────────── LogoMark (pin con perro) ─────────────────── */
 
 export function LogoMark({ className = 'h-10 w-10', tone = 'color' }: LogoProps) {
-  // Coral principal de marca (= var --brand-coral). Hardcodeado porque es un SVG fill.
-  const pinFill = tone === 'color' ? '#B85C4A' : '#1A1A1A';
+  const pinFill = tone === 'color' ? '#EE5A3B' : '#1A1A1A';
   const dogFill = '#1A1A1A';
-  const eyeFill = '#F5EFE6';
+  const innerBg = '#F5EFE6';
 
   return (
     <svg
-      viewBox="0 0 100 120"
+      viewBox="0 0 100 122"
       className={className}
       xmlns="http://www.w3.org/2000/svg"
       aria-label="Logo Vecindog"
       role="img"
     >
-      {/* Pin (teardrop) */}
+      {/* Pin shape — redondeado arriba, punta abajo */}
       <path
-        d="M50 4
-           C72 4 90 22 90 44
-           C90 66 50 116 50 116
-           C50 116 10 66 10 44
-           C10 22 28 4 50 4 Z"
+        d="M50 3
+           C25 3 8 20 8 42
+           C8 64 50 119 50 119
+           C50 119 92 64 92 42
+           C92 20 75 3 50 3 Z"
         fill={pinFill}
       />
-      {/* Inner cream circle (negative space) */}
-      <circle cx="50" cy="44" r="30" fill="#F5EFE6" />
 
-      {/* Dog head silhouette (side profile, snout a la derecha) */}
-      <g transform="translate(50 44)" fill={dogFill}>
-        {/* Ear (floppy, top-left) */}
-        <ellipse cx="-13" cy="-8" rx="7" ry="13" transform="rotate(-22 -13 -8)" />
-        {/* Head main shape */}
-        <ellipse cx="-2" cy="0" rx="18" ry="14" />
-        {/* Snout extension (a la derecha) */}
-        <ellipse cx="14" cy="3" rx="10" ry="7.5" />
-        {/* Nose tip */}
-        <ellipse cx="22" cy="2" rx="2.5" ry="2" />
+      {/* Círculo interior blanco */}
+      <circle cx="50" cy="42" r="32" fill={innerBg} />
+
+      {/* ── Silueta del perro (perfil izquierdo, snout → izquierda) ── */}
+      <g fill={dogFill}>
+        {/* Cabeza principal */}
+        <ellipse cx="50" cy="37" rx="17" ry="14" />
+
+        {/* Hocico (snout) apuntando a la izquierda */}
+        <ellipse cx="35" cy="41" rx="11" ry="8" />
+
+        {/* Nariz */}
+        <ellipse cx="26" cy="40" rx="3" ry="2.5" />
+
+        {/* Oreja floppy — cae hacia la derecha/abajo */}
+        <ellipse cx="63" cy="34" rx="7" ry="13"
+          transform="rotate(15 63 34)" />
+
+        {/* Cuerpo/pecho — visible en la parte baja del círculo */}
+        <ellipse cx="52" cy="57" rx="16" ry="10" />
+
+        {/* Cuello que une cabeza con cuerpo */}
+        <rect x="44" y="47" width="14" height="12" rx="4" />
       </g>
 
-      {/* Eye (white dot sobre la cabeza) */}
-      <circle cx="46" cy="40" r="1.8" fill={eyeFill} />
+      {/* Ojo — punto blanco */}
+      <circle cx="52" cy="33" r="2.2" fill={innerBg} />
 
-      {/* Leash colgando de la boca */}
+      {/* Correa — cuelga desde el cuello hacia abajo */}
       <path
-        d="M72 49
-           Q78 55 78 62
-           Q78 68 74 68
-           Q70 68 70 62
-           Q70 56 72 52"
+        d="M56 64 Q58 72 56 80 Q54 86 58 88"
         fill="none"
         stroke={dogFill}
-        strokeWidth="3"
+        strokeWidth="3.5"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
+      {/* Argolla de la correa */}
+      <circle cx="56" cy="64" r="3" fill="none"
+        stroke={dogFill} strokeWidth="2.5" />
     </svg>
   );
 }
 
-/* ------------------------------ Wordmark ------------------------------ */
+/* ─────────────────── Wordmark ─────────────────── */
 
 export function Wordmark({
   className = 'text-2xl',
-  highlight = false
+  highlight = false,
 }: {
   className?: string;
-  highlight?: boolean;   // pinta "dog" en coral
+  highlight?: boolean;
 }) {
   return (
     <span className={`font-display font-extrabold tracking-tight text-ink ${className}`}>
@@ -93,21 +106,21 @@ export function Wordmark({
   );
 }
 
-/* ------------------------------ BrandBadge (logo completo) ------------------------------ */
+/* ─────────────────── BrandBadge (pin + wordmark) ─────────────────── */
 
 export function BrandBadge({
   className = '',
   size = 'md',
-  highlight = false
+  highlight = false,
 }: {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   highlight?: boolean;
 }) {
   const sizes = {
-    sm: { mark: 'h-7 w-7',  word: 'text-lg'  },
-    md: { mark: 'h-9 w-9',  word: 'text-xl'  },
-    lg: { mark: 'h-14 w-14', word: 'text-3xl' }
+    sm: { mark: 'h-7 w-7',   word: 'text-lg'  },
+    md: { mark: 'h-9 w-9',   word: 'text-xl'  },
+    lg: { mark: 'h-14 w-14', word: 'text-3xl' },
   };
   const s = sizes[size];
   return (

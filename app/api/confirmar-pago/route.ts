@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
-import { activarAds } from '@/app/api/webhooks/mercadopago/route';
+import { activarAds } from '@/lib/ads';
 
 export async function POST(req: NextRequest) {
   try {

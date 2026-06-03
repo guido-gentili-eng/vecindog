@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
 export type AdVariant = 'leaderboard' | 'card' | 'sidebar';
@@ -56,6 +57,27 @@ export async function actualizarAd(id: string, input: Partial<AdInput>): Promise
 export async function eliminarAd(id: string): Promise<void> {
   const { error } = await supabase.from('ads').delete().eq('id', id);
   if (error) throw error;
+}
+
+/** Activa ads en Supabase (requiere service role — solo server-side). */
+export async function activarAds(adIds: string[]): Promise<void> {
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const hoy = new Date().toISOString().slice(0, 10);
+  const fin = new Date();
+  fin.setMonth(fin.getMonth() + 1);
+  const finStr = fin.toISOString().slice(0, 10);
+  await Promise.all(
+    adIds.map((id) =>
+      admin.from('ads').update({
+        activo:       true,
+        fecha_inicio: hoy,
+        fecha_fin:    finStr,
+      }).eq('id', id)
+    )
+  );
 }
 
 export async function subirImagenAd(file: File): Promise<string> {

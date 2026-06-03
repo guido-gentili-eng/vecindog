@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
-import { createClient } from '@supabase/supabase-js';
+import { activarAds } from '@/lib/ads';
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,27 +46,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function activarAds(adIds: string[]) {
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const hoy = new Date().toISOString().slice(0, 10);
-  const fin = new Date();
-  fin.setMonth(fin.getMonth() + 1);
-  const finStr = fin.toISOString().slice(0, 10);
-
-  await Promise.all(
-    adIds.map((id) =>
-      admin.from('ads').update({
-        activo:      true,
-        fecha_inicio: hoy,
-        fecha_fin:    finStr,
-      }).eq('id', id)
-    )
-  );
-}
 
 async function notificarAdmin({
   negocio, plan, email, paymentId,

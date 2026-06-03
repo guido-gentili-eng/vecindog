@@ -121,6 +121,11 @@ export default function PublicarPage() {
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
   const [ubicacion,         setUbicacion]         = useState<'casa' | 'otro' | null>(null);
 
+  /* Scroll al tope cuando el aviso se publicó exitosamente */
+  useEffect(() => {
+    if (enviado) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [enviado]);
+
   const urlsRef = useRef<string[]>([]);
   useEffect(() => {
     return () => { urlsRef.current.forEach((u) => URL.revokeObjectURL(u)); };
@@ -207,6 +212,7 @@ export default function PublicarPage() {
     const digitos = form.contacto.replace(/\D/g, '');
     if (digitos.length < 8) {
       setSubmitError('El WhatsApp debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210');
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
       return;
     }
     setLoading(true);
@@ -303,7 +309,6 @@ export default function PublicarPage() {
       }
 
       setEnviado(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: unknown) {
       const msg =
         err instanceof Error

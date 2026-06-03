@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, Clock, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -11,7 +11,7 @@ const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
 interface Usuario {
   id:         string;
   email:      string;
-  created_at: string;
+  created_at: string;  // ISO string
   nombre:     string;
   apellido:   string;
   telefono:   string;
@@ -55,6 +55,7 @@ export default function AdminPage() {
   const [perrosMap,  setPerrosMap]  = useState<Record<string, Perro[]>>({});
   const [expandido,  setExpandido]  = useState<string | null>(null);
   const [loadingDog, setLoadingDog] = useState<string | null>(null);
+  const [orden,      setOrden]      = useState<'az' | 'recientes'>('az');
 
   useEffect(() => {
     if (loading) return;
@@ -144,15 +145,40 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* Últimos registrados */}
+      {/* Lista de usuarios */}
       <div className="card overflow-hidden">
-        <div className="border-b border-black/8 px-5 py-4">
+        <div className="border-b border-black/8 px-5 py-4 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
             <Users className="h-4 w-4 text-brand-primary" /> Usuarios ({stats.ultimosUsuarios.length})
           </h2>
+          {/* Toggle orden */}
+          <div className="flex rounded-xl border border-black/10 overflow-hidden text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setOrden('az')}
+              className={`flex items-center gap-1 px-3 py-1.5 transition ${orden === 'az' ? 'bg-brand-primary text-white' : 'text-ink-muted hover:bg-brand-cream'}`}
+            >
+              <ArrowDownAZ className="h-3.5 w-3.5" /> A-Z
+            </button>
+            <button
+              type="button"
+              onClick={() => setOrden('recientes')}
+              className={`flex items-center gap-1 px-3 py-1.5 transition ${orden === 'recientes' ? 'bg-brand-primary text-white' : 'text-ink-muted hover:bg-brand-cream'}`}
+            >
+              <Clock className="h-3.5 w-3.5" /> Recientes
+            </button>
+          </div>
         </div>
-        <ul className="divide-y divide-black/5">
-          {stats.ultimosUsuarios.map((u) => {
+        {/* Contenedor scrollable */}
+        <ul className="divide-y divide-black/5 max-h-[600px] overflow-y-auto">
+          {[...stats.ultimosUsuarios].sort((a, b) => {
+            if (orden === 'recientes') {
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            }
+            const na = `${a.nombre} ${a.apellido}`.toLowerCase().trim();
+            const nb = `${b.nombre} ${b.apellido}`.toLowerCase().trim();
+            return na.localeCompare(nb, 'es');
+          }).map((u) => {
             const nombreCompleto = [u.nombre, u.apellido].filter(Boolean).join(' ') || '(sin nombre)';
             const ubicacion      = [u.ciudad, u.provincia].filter(Boolean).join(', ');
             return (

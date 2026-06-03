@@ -49,16 +49,19 @@ export async function GET(req: NextRequest) {
     profileMap[p.id] = p;
   }
 
-  // Todos los usuarios, ordenados alfabéticamente por nombre y apellido
-  const emailMap: Record<string, string> = {};
+  // Mapas de email y created_at desde auth.users
+  const emailMap:     Record<string, string> = {};
+  const createdAtMap: Record<string, string> = {};
   for (const u of authUsers?.users ?? []) {
-    if (u.email) emailMap[u.id] = u.email;
+    if (u.email)      emailMap[u.id]     = u.email;
+    if (u.created_at) createdAtMap[u.id] = u.created_at;
   }
 
   const todosUsuarios = (profiles ?? [])
     .map((p) => ({
       id:         p.id,
-      email:      emailMap[p.id] ?? '',
+      email:      emailMap[p.id]     ?? '',
+      created_at: createdAtMap[p.id] ?? '',
       nombre:     p.nombre    ?? '',
       apellido:   p.apellido  ?? '',
       telefono:   p.telefono  ?? '',
@@ -67,6 +70,7 @@ export async function GET(req: NextRequest) {
       direccion:  p.direccion ?? '',
       plan:       p.plan      ?? 'free',
     }))
+    // Por defecto: orden A-Z (el cliente puede reordenar por fecha)
     .sort((a, b) => {
       const na = `${a.nombre} ${a.apellido}`.toLowerCase().trim();
       const nb = `${b.nombre} ${b.apellido}`.toLowerCase().trim();

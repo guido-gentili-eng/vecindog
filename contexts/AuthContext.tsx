@@ -10,16 +10,18 @@ const GUEST_KEY  = 'vecindog_guest';
 const CITY_KEY   = 'vecindog_ciudad';
 
 export interface Profile {
-  id:        string;
-  nombre:    string;
-  apellido:  string;
-  telefono:  string;
-  ciudad:    string;
-  provincia: string;
-  pais:      string;
-  direccion: string;
-  instagram?: string | null;
-  facebook?:  string | null;
+  id:                string;
+  nombre:            string;
+  apellido:          string;
+  telefono:          string;
+  ciudad:            string;
+  provincia:         string;
+  pais:              string;
+  direccion:         string;
+  instagram?:        string | null;
+  facebook?:         string | null;
+  plan?:             'free' | 'pro';
+  plan_vencimiento?: string | null;
 }
 
 interface AuthCtx {
@@ -30,6 +32,7 @@ interface AuthCtx {
   isAuthenticated: boolean;
   hasChosen:       boolean;
   hasProfile:      boolean;
+  isPro:           boolean;
   ciudad:          string | null;
   hasCity:         boolean;
   setCiudad:       (c: string) => void;
@@ -41,6 +44,7 @@ interface AuthCtx {
   resendConfirm:   (email: string) => Promise<void>;
   resetPassword:   (email: string) => Promise<string | null>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
+  refreshProfile:  () => Promise<void>;
   signOut:         () => Promise<void>;
   enterAsGuest:    () => void;
 }
@@ -144,6 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error?.message ?? null;
   };
 
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
+  };
+
   const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
     if (!user) return 'No hay sesión activa.';
 
@@ -193,11 +201,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
+      isPro:           profile?.plan === 'pro',
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,
       clearCiudad,
-      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, saveProfile, signOut, enterAsGuest,
+      signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, saveProfile, refreshProfile, signOut, enterAsGuest,
     }}>
       {children}
     </AuthContext.Provider>

@@ -9,6 +9,8 @@ import {
 import { listarPosts, type Post } from '@/lib/posts';
 import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
+import ProGate from '@/components/ProGate';
+import { useAuth } from '@/contexts/AuthContext';
 
 /* ─────────────── Tipos del formulario ─────────────── */
 
@@ -201,10 +203,12 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
 
   /* ── HORARIO (±3 hs, no excluye) ── */
   if (f.horario && post.horario && !excluir) {
-    max += 5;
     const [hB, mB] = f.horario.split(':').map(Number);
     const [hP, mP] = post.horario.split(':').map(Number);
-    if (Math.abs((hB * 60 + mB) - (hP * 60 + mP)) <= 180) score += 5;
+    if (!Number.isNaN(hB) && !Number.isNaN(mB) && !Number.isNaN(hP) && !Number.isNaN(mP)) {
+      max += 5;
+      if (Math.abs((hB * 60 + mB) - (hP * 60 + mP)) <= 180) score += 5;
+    }
   }
 
   return { score, max, excluir };
@@ -213,6 +217,7 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
 /* ─────────────── Página ─────────────── */
 
 export default function BuscarPage() {
+  const { isPro } = useAuth();
   const [form,      setForm]      = useState<BuscarForm>(FORM_INICIAL);
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
   const [cargando,  setCargando]  = useState(false);
@@ -289,7 +294,8 @@ export default function BuscarPage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* ── Características ── */}
+        {/* ── Características (Pro) ── */}
+        <ProGate feature="Búsqueda avanzada por características">
         <div className="card p-5 sm:p-6">
           <h2 className="mb-4 flex items-center gap-2 font-display text-base font-extrabold text-ink">
             <Dog className="h-4 w-4 text-brand-primary" /> Características del perro
@@ -386,6 +392,7 @@ export default function BuscarPage() {
             </div>
           </div>
         </div>
+        </ProGate>
 
         {/* ── Dónde / cuándo ── */}
         <div className="card p-5 sm:p-6">

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X, Instagram, Facebook, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { useEffect, useCallback } from 'react';
@@ -13,7 +13,7 @@ import { CIUDADES } from '@/lib/ciudades';
 import QRCode from 'qrcode';
 
 export default function MiPerfilPage() {
-  const { user, profile, isAuthenticated, loading: authLoading, saveProfile, resetPassword } = useAuth();
+  const { user, profile, isAuthenticated, isPro, loading: authLoading, saveProfile, resetPassword } = useAuth();
   const [pwSent,   setPwSent]   = useState(false);
   const [qrOpen,   setQrOpen]   = useState(false);
 
@@ -38,6 +38,8 @@ export default function MiPerfilPage() {
   const [provincia,    setProvincia]    = useState('');
   const [pais,         setPais]         = useState('Argentina');
   const [direccion,    setDireccion]    = useState('');
+  const [instagram,    setInstagram]    = useState('');
+  const [facebook,     setFacebook]     = useState('');
 
   useEffect(() => {
     if (profile) {
@@ -48,6 +50,8 @@ export default function MiPerfilPage() {
       setCiudadPerfil(profile.ciudad ?? '');
       setProvincia(profile.provincia ?? '');
       setPais(profile.pais ?? 'Argentina');
+      setInstagram(profile.instagram ?? '');
+      setFacebook(profile.facebook ?? '');
     }
   }, [profile]);
 
@@ -68,7 +72,7 @@ export default function MiPerfilPage() {
   async function handleGuardar(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setSuccess(''); setSubmitting(true);
-    const err = await saveProfile({ nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion });
+    const err = await saveProfile({ nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion, instagram: instagram || null, facebook: facebook || null });
     setSubmitting(false);
     if (err) { setError(err); return; }
     setSuccess('Perfil actualizado correctamente.');
@@ -196,6 +200,43 @@ export default function MiPerfilPage() {
               ciudad={ciudadPerfil}
               required
             />
+
+            {/* Instagram y Facebook — solo Pro */}
+            {isPro ? (
+              <>
+                <div className="relative">
+                  <Instagram className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                  <input
+                    type="text"
+                    placeholder="Instagram (ej: @usuario)"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    className="field pl-9"
+                  />
+                </div>
+                <div className="relative">
+                  <Facebook className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                  <input
+                    type="text"
+                    placeholder="Facebook (ej: facebook.com/usuario)"
+                    value={facebook}
+                    onChange={(e) => setFacebook(e.target.value)}
+                    className="field pl-9"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-black/10 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-ink-muted">
+                  <Instagram className="h-4 w-4" />
+                  <span>Instagram y Facebook</span>
+                </div>
+                <Link href="/planes" className="flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline">
+                  <Sparkles className="h-3.5 w-3.5" /> Pro
+                </Link>
+              </div>
+            )}
+
             {error && (
               <p className="flex items-center gap-1.5 rounded-xl bg-bad/10 p-3 text-sm font-semibold text-bad">
                 <AlertCircle className="h-4 w-4 shrink-0" />{error}
@@ -225,6 +266,41 @@ export default function MiPerfilPage() {
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Provincia" value={profile?.provincia ?? '—'} />
             <InfoRow icon={<Globe className="h-4 w-4 text-brand-primary" />} label="País" value={profile?.pais ?? '—'} />
             <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Dirección" value={profile?.direccion ?? '—'} />
+
+            {/* Instagram y Facebook — solo Pro, modo vista */}
+            {isPro && (
+              <>
+                {profile?.instagram && (
+                  <InfoRow
+                    icon={<Instagram className="h-4 w-4 text-brand-primary" />}
+                    label="Instagram"
+                    value={profile.instagram}
+                  />
+                )}
+                {profile?.facebook && (
+                  <InfoRow
+                    icon={<Facebook className="h-4 w-4 text-brand-primary" />}
+                    label="Facebook"
+                    value={profile.facebook}
+                  />
+                )}
+                {!profile?.instagram && !profile?.facebook && (
+                  <div className="flex items-center justify-between py-2 border-b border-black/5">
+                    <div className="flex items-center gap-3">
+                      <Instagram className="h-4 w-4 text-brand-primary shrink-0" />
+                      <span className="text-xs text-ink-muted">Redes sociales</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditando(true)}
+                      className="text-xs font-bold text-brand-primary hover:underline"
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Fila contraseña */}
             <div className="flex items-center gap-3 py-2">

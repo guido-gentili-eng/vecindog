@@ -72,7 +72,7 @@ export async function activarAds(adIds: string[]): Promise<void> {
   const fin = new Date();
   fin.setMonth(fin.getMonth() + 1);
   const finStr = fin.toISOString().slice(0, 10);
-  await Promise.all(
+  const results = await Promise.all(
     adIds.map((id) =>
       admin.from('ads').update({
         activo:       true,
@@ -81,6 +81,8 @@ export async function activarAds(adIds: string[]): Promise<void> {
       }).eq('id', id)
     )
   );
+  const failed = results.filter((r) => r.error);
+  if (failed.length > 0) throw new Error(`activarAds: ${failed.length} ad(s) no se pudieron activar`);
 }
 
 export async function subirLogoAd(file: File): Promise<string> {

@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Dog, ImagePlus, X, Plus, Trash2, Syringe, Loader2,
-  AlertCircle, ChevronLeft, CheckCircle2,
+  AlertCircle, ChevronLeft, CheckCircle2, Lock, Sparkles,
 } from 'lucide-react';
+import { listarMisPerros } from '@/lib/perros';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   crearPerro, subirFotoPerro, VACUNAS_COMUNES, VACUNA_VACIA,
@@ -27,7 +29,7 @@ const ACCEPT    = 'image/jpeg,image/png,image/webp';
 
 export default function NuevoPerroPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isPro } = useAuth();
 
   const [form,       setForm]       = useState<PerroInput>(FORM_INICIAL);
   const [fotos,      setFotos]      = useState<FotoPreview[]>([]);
@@ -35,6 +37,14 @@ export default function NuevoPerroPage() {
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
   const [errorFoto,  setErrorFoto]  = useState('');
+  const [bloqueado,  setBloqueado]  = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || isPro) return;
+    listarMisPerros().then((lista) => {
+      if (lista.length >= 1) setBloqueado(true);
+    }).catch(() => {});
+  }, [isAuthenticated, isPro]);
   const fileRef   = useRef<HTMLInputElement>(null);
   const previewsRef = useRef<string[]>([]);
 
@@ -114,6 +124,32 @@ export default function NuevoPerroPage() {
     return (
       <div className="py-12 text-center">
         <p className="text-ink-muted">Iniciá sesión para registrar tu perro.</p>
+      </div>
+    );
+  }
+
+  if (bloqueado) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <div className="w-full max-w-sm rounded-[28px] bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
+            <Lock className="h-8 w-8 text-brand-primary" />
+          </div>
+          <h2 className="mt-5 font-display text-xl font-black text-ink">Límite del plan Gratis</h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            Con el plan Gratis podés registrar <strong>1 perro</strong>. Pasate a VecindogPro para perros ilimitados.
+          </p>
+          <div className="mt-6 space-y-2">
+            <Link href="/planes"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
+              <Sparkles className="h-4 w-4" /> Ver plan Pro
+            </Link>
+            <Link href="/mis-perros"
+              className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
+              Volver a Mis perros
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

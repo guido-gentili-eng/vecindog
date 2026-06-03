@@ -105,10 +105,11 @@ export async function POST(req: NextRequest) {
     // ── Obtener emails en batch ──────────────────────────────────────
     const ids = cercanos.map((p: { id: string }) => p.id);
     const emailsMap: Record<string, string> = {};
-    // Usar listUsers para evitar N+1 queries
-    const { data: { users: authUsers } } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    for (const u of authUsers) {
-      if (ids.includes(u.id) && u.email) emailsMap[u.id] = u.email;
+    const { data: listData, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    if (!listError && listData) {
+      for (const u of listData.users) {
+        if (ids.includes(u.id) && u.email) emailsMap[u.id] = u.email;
+      }
     }
 
     const categoriaLabel =
@@ -127,7 +128,8 @@ export async function POST(req: NextRequest) {
       leida:   false,
     }));
     if (notifRows.length > 0) {
-      await admin.from('notifications').insert(notifRows);
+      const { error: insertErr } = await admin.from('notifications').insert(notifRows);
+      if (insertErr) console.error('[notificar-vecinos] insert notifications error:', insertErr.message);
     }
 
     // ── Enviar emails ────────────────────────────────────────────────

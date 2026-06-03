@@ -90,6 +90,18 @@ export async function resolverPost(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Cuenta los avisos activos (no resueltos) del usuario autenticado. */
+export async function contarPostsActivosDelUsuario(): Promise<number> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return 0;
+  const { count } = await supabase
+    .from('posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', session.user.id)
+    .neq('estado', 'resuelto');
+  return count ?? 0;
+}
+
 /** Sube el aviso al tope de la lista actualizando created_at. */
 export async function renovarPost(id: string): Promise<void> {
   const { error } = await supabase

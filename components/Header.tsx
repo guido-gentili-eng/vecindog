@@ -27,7 +27,7 @@ export default function Header() {
   const [profileOpen, setProfileOpen] = useState(false);
   const langRef    = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const { user, profile, isGuest, isAuthenticated, signOut, loading, ciudad, clearCiudad } = useAuth();
+  const { user, profile, isGuest, isAuthenticated, isPro, signOut, loading, ciudad, clearCiudad } = useAuth();
   const { lang, setLang } = useLanguage();
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function Header() {
                 )}
               </div>
 
-              <NotificationsBell />
+              {isPro && <NotificationsBell />}
 
               {isAuthenticated ? (
                 /* Dropdown Mi perfil */
@@ -127,7 +127,7 @@ export default function Header() {
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {profileOpen && (
-                    <div className="absolute right-0 top-full mt-1 z-50 w-48 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/10">
+                    <div className="absolute right-0 top-full mt-1 z-50 w-52 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/10">
                       <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
                         <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
@@ -135,6 +135,11 @@ export default function Header() {
                       <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
                         <Dog className="h-4 w-4 text-brand-primary" /> Cambiar de perfil
+                      </Link>
+                      <Link href="/planes" onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
+                        <Megaphone className="h-4 w-4 text-brand-primary" />
+                        {isPro ? 'Mi plan Pro' : 'Planes'}
                       </Link>
                       <div className="my-1 border-t border-black/5" />
                       <button type="button" onClick={() => { signOut(); setProfileOpen(false); }}

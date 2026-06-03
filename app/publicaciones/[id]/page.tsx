@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
@@ -48,11 +48,13 @@ const LABEL_RENOVAR: Record<string, string> = {
 export default function DetalleAvisoPage() {
   const { id }    = useParams<{ id: string }>();
   const router    = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated }  = useAuth();
 
   const [post,        setPost]        = useState<Post | null>(null);
   const [cargando,    setCargando]    = useState(true);
   const [panelAbierto, setPanelAbierto] = useState(false);
+  const accionEjecutada = useRef(false);
   const [adoptarOpen,  setAdoptarOpen]  = useState(false);
 
   /* estados de acción */
@@ -91,6 +93,24 @@ export default function DetalleAvisoPage() {
       }).catch(() => {});
     });
   }, [post, isAuthenticated, user]);
+
+  // Procesa ?accion=renovar|encontrado proveniente del email de vencimiento
+  useEffect(() => {
+    const accion = searchParams.get('accion');
+    if (!accion || !post || !user || accionEjecutada.current) return;
+    const esOwner = post.user_id === user.id;
+    if (!esOwner || post.estado === 'resuelto') return;
+
+    accionEjecutada.current = true;
+    setPanelAbierto(true);
+
+    if (accion === 'renovar') {
+      handleRenovar();
+    } else if (accion === 'encontrado') {
+      setConfirmResuelto(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, user, searchParams]);
 
   if (cargando) {
     return (

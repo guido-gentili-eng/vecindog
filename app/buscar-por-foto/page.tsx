@@ -5,10 +5,11 @@ import Link from 'next/link';
 import {
   Camera, ImagePlus, X, AlertCircle, Sparkles, ArrowLeft,
   ScanSearch, RotateCw, MapPin, Calendar, ArrowRight, ImageIcon,
-  ChevronDown, Check, Loader2,
+  ChevronDown, Check, Loader2, Lock,
 } from 'lucide-react';
 import { TIPOS_IMAGEN_PERMITIDOS, ACCEPT_IMAGEN, ETIQUETA_CATEGORIA, COLORES_PERRO } from '@/lib/mockData';
 import { listarPosts, type Post } from '@/lib/posts';
+import { useAuth } from '@/contexts/AuthContext';
 
 /* ─────────────── Tipos ─────────────── */
 
@@ -161,6 +162,7 @@ async function calcularScore(
 /* ─────────────── Página ─────────────── */
 
 export default function BuscarPorFotoPage() {
+  const { isPro, isAuthenticated, loading: authLoading } = useAuth();
   const [foto,          setFoto]          = useState<FotoPreview | null>(null);
   const [analizando,    setAnalizando]    = useState(false);
   const [analisisIA,    setAnalisisIA]    = useState<AnalisisIA | null>(null);
@@ -180,6 +182,32 @@ export default function BuscarPorFotoPage() {
   const urlRef          = useRef<string | null>(null);
 
   useEffect(() => () => { if (urlRef.current) URL.revokeObjectURL(urlRef.current); }, []);
+
+  if (!authLoading && (!isAuthenticated || !isPro)) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
+        <div className="w-full max-w-sm rounded-[28px] bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
+            <Camera className="h-8 w-8 text-brand-primary" />
+          </div>
+          <h2 className="mt-5 font-display text-xl font-black text-ink">Búsqueda por foto</h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            Subí una foto y encontramos al perro usando IA. Función exclusiva de <strong>VecindogPro</strong>.
+          </p>
+          <div className="mt-6 space-y-2">
+            <Link href="/planes"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
+              <Sparkles className="h-4 w-4" /> Ver plan Pro
+            </Link>
+            <Link href="/publicaciones"
+              className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
+              Ver avisos
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   async function handleAgregar(files: FileList | null) {
     setError('');

@@ -18,7 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
-import { listarPosts, actualizarZonaPost, type Post } from '@/lib/posts';
+import { listarPosts, actualizarZonaPost, contarPostsActivosDelUsuario, type Post } from '@/lib/posts';
 import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
@@ -106,7 +106,7 @@ export default function PublicarPage() {
   const searchParams = useSearchParams();
   const catParam  = searchParams.get('cat');
   const perroId   = searchParams.get('perro');
-  const { ciudad, user, isGuest, profile } = useAuth();
+  const { ciudad, user, isGuest, profile, isPro } = useAuth();
   const efectivaCiudad = profile?.ciudad || ciudad;
   const cityLabel = efectivaCiudad ? nombreCorto(efectivaCiudad) : 'tu ciudad';
 
@@ -243,6 +243,17 @@ export default function PublicarPage() {
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
       return;
     }
+
+    // Límite de 5 publicaciones activas para usuarios Free
+    if (!isPro && user && ['perdido', 'encontrado'].includes(form.categoria)) {
+      const count = await contarPostsActivosDelUsuario();
+      if (count >= 5) {
+        setSubmitError('Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.');
+        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const uploadedUrls: string[] = [];
@@ -283,13 +294,14 @@ export default function PublicarPage() {
       if (insErr) throw insErr;
 
       // Obtener el post recién creado para tener el ID
-      const { data: postData } = await supabase
+      const { data: postData, error: postFetchErr } = await supabase
         .from('posts')
         .select('id, lat, lng')
         .eq('user_id', user?.id ?? '')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
+      if (postFetchErr) console.error('[publicar] error recuperando post:', postFetchErr.message);
 
       // Notificar vecinos cercanos (fire & forget)
       if (postData) {

@@ -23,6 +23,7 @@ import {
 } from '@/lib/estudios';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
+import ProGate from '@/components/ProGate';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -30,7 +31,7 @@ export default function PerroDetallePage() {
   const { id }        = useParams<{ id: string }>();
   const searchParams  = useSearchParams();
   const esNuevo       = searchParams.get('nuevo') === '1';
-  const { ciudad, profile } = useAuth();
+  const { ciudad, profile, isPro } = useAuth();
 
   const [perro,             setPerro]             = useState<Perro | null>(null);
   const [postActivo,        setPostActivo]        = useState<Post | null | undefined>(undefined);
@@ -229,7 +230,8 @@ export default function PerroDetallePage() {
             </div>
           </div>
 
-          {/* Identificación */}
+          {/* Identificación, Vacunas y Estudios — Pro only */}
+          <ProGate feature="Perfil completo del perro">
           <div className="card mb-5 p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
@@ -414,6 +416,7 @@ export default function PerroDetallePage() {
             ciudad={ciudad ?? null}
             edad={edad}
           />
+          </ProGate>
 
           {/* CTA: aviso activo o publicar */}
           {postActivo !== undefined && (

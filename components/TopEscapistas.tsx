@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, MapPin } from 'lucide-react';
+import { AlertTriangle, MapPin, Lock, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,7 +29,7 @@ function ciudadMatchZona(ciudad: string, zona: string): boolean {
 }
 
 export default function TopEscapistas() {
-  const { ciudad } = useAuth();
+  const { ciudad, isPro, isAuthenticated } = useAuth();
   const [lista,    setLista]    = useState<Escapista[]>([]);
   const [cargando, setCargando] = useState(true);
 
@@ -124,9 +124,50 @@ export default function TopEscapistas() {
     return () => { cancelled = true; };
   }, [ciudad]);
 
-  if (!cargando && lista.length === 0) return null;
+  if (!cargando && lista.length === 0 && isPro) return null;
 
   const tituloLugar = ciudad ?? 'la comunidad';
+
+  // Gate: mostrar teaser para usuarios free
+  if (!isPro && isAuthenticated) {
+    return (
+      <section aria-label="Top escapistas">
+        <div className="mb-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-warn/15 px-3 py-1 text-xs font-bold text-[#8a5a00]">
+            <AlertTriangle className="h-3.5 w-3.5" /> Ranking
+          </span>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-tight text-ink md:text-3xl">
+            Los más escapistas 🏃
+          </h2>
+        </div>
+        <div className="relative overflow-hidden rounded-[20px]">
+          <div className="pointer-events-none select-none space-y-2 opacity-25 blur-sm" aria-hidden>
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-cream text-sm font-black text-ink-muted">{i}</span>
+                <div className="h-12 w-12 shrink-0 rounded-xl bg-brand-cream" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 w-24 rounded bg-black/10" />
+                  <div className="h-2.5 w-32 rounded bg-black/6" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-white/80 p-6 text-center backdrop-blur-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary/10">
+              <Lock className="h-6 w-6 text-brand-primary" />
+            </div>
+            <p className="font-display text-base font-extrabold text-ink">Los más escapistas</p>
+            <p className="text-xs text-ink-muted">Función exclusiva de VecindogPro</p>
+            <Link href="/planes"
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-5 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90">
+              <Sparkles className="h-4 w-4" /> Ver planes
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section aria-label="Top escapistas">

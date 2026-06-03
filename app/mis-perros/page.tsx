@@ -4,14 +4,14 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users } from 'lucide-react';
+import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles } from 'lucide-react';
 import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
 import { useSearchParams } from 'next/navigation';
 
 export default function MisPerrosPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, isPro } = useAuth();
   const searchParams = useSearchParams();
   const vieneDeResuelto = searchParams.get('resuelto') === '1';
   const [perros,       setPerros]       = useState<Perro[]>([]);
@@ -70,19 +70,36 @@ export default function MisPerrosPage() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setAmigosOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-primary hover:bg-brand-primary/5"
-          >
-            <Users className="h-4 w-4" /> Amigos
-          </button>
-          <Link
-            href="/mis-perros/nuevo"
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" /> Agregar perro
-          </Link>
+          {isPro ? (
+            <button
+              type="button"
+              onClick={() => setAmigosOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-primary hover:bg-brand-primary/5"
+            >
+              <Users className="h-4 w-4" /> Amigos
+            </button>
+          ) : (
+            <Link href="/planes"
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-brand-primary/30 hover:text-brand-primary"
+              title="Función Pro"
+            >
+              <Lock className="h-3.5 w-3.5" /> Amigos
+            </Link>
+          )}
+          {(!isPro && perros.length >= 1) ? (
+            <Link href="/planes"
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-black/5 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+            >
+              <Lock className="h-4 w-4" /> Agregar perro
+            </Link>
+          ) : (
+            <Link
+              href="/mis-perros/nuevo"
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" /> Agregar perro
+            </Link>
+          )}
         </div>
       </div>
 
@@ -130,14 +147,27 @@ export default function MisPerrosPage() {
           {perros.map((p) => (
             <PerroCard key={p.id} perro={p} onEliminar={handleEliminar} />
           ))}
-          {/* Add card */}
-          <Link
-            href="/mis-perros/nuevo"
-            className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-black/10 p-6 text-center text-ink-muted transition hover:border-brand-primary hover:text-brand-primary"
-          >
-            <Plus className="h-7 w-7" />
-            <span className="text-sm font-bold">Agregar otro perro</span>
-          </Link>
+          {/* Add card — oculto para Free con 1+ perro */}
+          {(isPro || perros.length === 0) ? (
+            <Link
+              href="/mis-perros/nuevo"
+              className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-black/10 p-6 text-center text-ink-muted transition hover:border-brand-primary hover:text-brand-primary"
+            >
+              <Plus className="h-7 w-7" />
+              <span className="text-sm font-bold">Agregar otro perro</span>
+            </Link>
+          ) : (
+            <Link
+              href="/planes"
+              className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-black/10 p-6 text-center text-ink-muted transition hover:border-brand-primary/30"
+            >
+              <Lock className="h-7 w-7" />
+              <span className="text-sm font-bold">Más perros con Pro</span>
+              <span className="flex items-center gap-1 text-xs text-brand-primary font-bold">
+                <Sparkles className="h-3.5 w-3.5" /> Ver planes
+              </span>
+            </Link>
+          )}
         </div>
       )}
     </div>

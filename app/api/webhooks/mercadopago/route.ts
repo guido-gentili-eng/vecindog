@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
+import { createClient } from '@supabase/supabase-js';
 import { activarAds } from '@/lib/ads';
 
 export async function POST(req: NextRequest) {
@@ -23,8 +24,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, reason: `status: ${payment.status}` });
     }
 
-    // Extraer IDs de los ads del metadata
-    const adIds = (payment.metadata as { ad_ids?: string[] } | null)?.ad_ids;
+    const meta = payment.metadata as Record<string, unknown> | null;
+
+    // ── Pago de suscripción Pro ──────────────────────────────────────
+    if (meta?.tipo === 'pro' && meta?.user_id) {
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const vencimiento = new Date();
+      vencimiento.setDate(vencimiento.getDate() + 30);
+      await admin
+        .from('profiles')
+        .update({ plan: 'pro', plan_vencimiento: vencimiento.toISOString().slice(0, 10) })
+        .eq('id', String(meta.user_id));
+      return NextResponse.json({ ok: true, tipo: 'pro' });
+    }
+
+    // ── Pago de publicidad ───────────────────────────────────────────
+    const adIds = (meta as { ad_ids?: string[] } | null)?.ad_ids;
     if (!adIds?.length) {
       return NextResponse.json({ ok: true, reason: 'sin ad_ids en metadata' });
     }
@@ -33,9 +51,9 @@ export async function POST(req: NextRequest) {
 
     // Email al admin
     await notificarAdmin({
-      negocio: (payment.metadata as Record<string, string> | null)?.negocio ?? '',
-      plan:    (payment.metadata as Record<string, string> | null)?.plan ?? '',
-      email:   (payment.metadata as Record<string, string> | null)?.email ?? '',
+      negocio: (meta as Record<string, string> | null)?.negocio ?? '',
+      plan:    (meta as Record<string, string> | null)?.plan ?? '',
+      email:   (meta as Record<string, string> | null)?.email ?? '',
       paymentId: String(paymentId),
     });
 

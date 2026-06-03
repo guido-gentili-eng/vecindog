@@ -534,47 +534,47 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
 
         <form onSubmit={handlePagar} className="p-6 space-y-5">
 
-          {/* Logo + Nombre — primera sección, siempre visible */}
-          <div className="flex items-start gap-4">
-            {/* Logo compacto */}
-            <div className="shrink-0">
-              <p className="label mb-1.5">Logo</p>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/30 bg-brand-cream transition hover:border-brand-primary"
-              >
-                {preview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={preview} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <ImagePlus className="h-6 w-6 text-brand-primary/50" />
-                    <span className="text-[10px] font-bold text-brand-primary/50">Subir</span>
-                  </div>
-                )}
-                {preview && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition">
-                    <ImagePlus className="h-5 w-5 text-white" />
-                  </div>
-                )}
-              </button>
-              <p className="mt-1 text-[10px] text-ink-muted/60 text-center w-20">PNG/JPG</p>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
-            </div>
+            {/* Logo / foto del negocio */}
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+              Logo o foto del negocio
+            </label>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream"
+            >
+              {preview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+                  <ImagePlus className="h-7 w-7 text-brand-primary/60" />
+                </div>
+              )}
+              <div className="text-left">
+                <p className="font-bold text-ink">{preview ? 'Cambiar imagen' : 'Subir logo o foto'}</p>
+                <p className="text-xs text-ink-muted">PNG, JPG · Máx. 5 MB</p>
+              </div>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
+          </div>
 
-            {/* Nombre y tagline */}
-            <div className="flex-1 space-y-3">
-              <div>
-                <label className="label">Nombre del negocio <span className="text-bad">*</span></label>
-                <input className="field w-full" placeholder="Veterinaria Central"
-                  value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
-              </div>
-              <div>
-                <label className="label">Descripción corta</label>
-                <input className="field w-full" placeholder="Vacunas · Bahía Blanca"
-                  value={tagline} onChange={(e) => setTagline(e.target.value)} />
-              </div>
+          {/* Nombre y tagline */}
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                Nombre del negocio <span className="text-bad">*</span>
+              </label>
+              <input className="field w-full" placeholder="Veterinaria Central"
+                value={negocio} onChange={(e) => setNegocio(e.target.value)} required />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                Descripción corta (tagline)
+              </label>
+              <input className="field w-full" placeholder="Vacunas · Bahía Blanca"
+                value={tagline} onChange={(e) => setTagline(e.target.value)} />
             </div>
           </div>
 

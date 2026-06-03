@@ -26,12 +26,13 @@ interface Suggestion {
 }
 
 interface Props {
-  value:        string;
-  onChange:     (value: string) => void;
-  placeholder?: string;
-  className?:   string;
-  required?:    boolean;
-  ciudad?:      string | null;
+  value:             string;
+  onChange:          (value: string) => void;
+  onSelectCoords?:   (lat: number, lng: number) => void;
+  placeholder?:      string;
+  className?:        string;
+  required?:         boolean;
+  ciudad?:           string | null;
 }
 
 /** Extrae calle + número de la respuesta Nominatim, usando el número del query si Nominatim no lo devuelve */
@@ -57,6 +58,7 @@ function extractLocation(a: NominatimAddress): string {
 export default function AddressAutocomplete({
   value,
   onChange,
+  onSelectCoords,
   placeholder = 'Calle y número',
   className = '',
   required,
@@ -112,6 +114,9 @@ export default function AddressAutocomplete({
   function handleSelect(s: Suggestion) {
     const calle = extractStreet(s.address, extractTypedNumber(value));
     onChange(calle || value);
+    if (onSelectCoords && s.lat && s.lon) {
+      onSelectCoords(parseFloat(s.lat), parseFloat(s.lon));
+    }
     setSuggestions([]);
     setOpen(false);
   }

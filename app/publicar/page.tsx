@@ -623,6 +623,7 @@ export default function PublicarPage() {
                 <AddressAutocomplete
                   value={form.zona}
                   onChange={(v) => handleChange('zona', v)}
+                  onSelectCoords={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
                   placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
                   ciudad={efectivaCiudad}
                   required

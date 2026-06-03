@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   for (const post of posts) {
     if (!post.user_id) continue;
 
-    const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro encontrado';
+    const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
     const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
     const mensaje = `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} venció. ¿Lo encontraste o seguís buscando?`;
 

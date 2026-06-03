@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const zonaLabel   = post.zona ?? '';
     const catLabel    =
       post.categoria === 'perdido'    ? 'perdido' :
-      post.categoria === 'encontrado' ? 'encontrado' : 'en adopción';
+      post.categoria === 'encontrado' ? 'visto' : 'en adopción';
 
     const quien  = visitorProfile?.nombre ?? 'Alguien';
     const mensaje = `${quien} vio ${nombrePerro} (${catLabel}${zonaLabel ? ` en ${zonaLabel}` : ''})`;

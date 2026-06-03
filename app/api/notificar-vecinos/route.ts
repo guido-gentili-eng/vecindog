@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
 
     const categoriaLabel =
       categoria === 'perdido'    ? 'perro perdido' :
-      categoria === 'encontrado' ? 'perro encontrado' :
+      categoria === 'encontrado' ? 'perro visto' :
       'perro en adopción';
 
     const zonaLabel = [zonaS, ciudadS].filter(Boolean).join(', ');

@@ -109,25 +109,45 @@ export default function MiPerfilPage() {
             <h1 className="font-display text-3xl font-black tracking-tight text-ink">
               {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
             </h1>
-            {/* Botón QR */}
-            <button
-              type="button"
-              onClick={() => setQrOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
-            >
-              <QrCode className="h-4 w-4" /> QR
-            </button>
+            {/* Botón QR — solo Pro */}
+            {isPro ? (
+              <button
+                type="button"
+                onClick={() => setQrOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
+              >
+                <QrCode className="h-4 w-4" /> QR
+              </button>
+            ) : (
+              <Link href="/planes"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-black/5 px-3 py-2 text-sm font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+                title="Función Pro"
+              >
+                <QrCode className="h-4 w-4" /> QR
+              </Link>
+            )}
           </div>
         </div>
-        <a
-          href="/plan-obediencia-canina.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90"
-        >
-          <BookOpen className="h-4 w-4" />
-          Plan de Obediencia
-        </a>
+        {/* Plan de Obediencia — solo Pro */}
+        {isPro ? (
+          <a
+            href="/plan-obediencia-canina.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90"
+          >
+            <BookOpen className="h-4 w-4" />
+            Plan de Obediencia
+          </a>
+        ) : (
+          <Link href="/planes"
+            className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-brand-primary/30 hover:text-brand-primary"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span>Plan de Obediencia</span>
+            <Sparkles className="h-3.5 w-3.5 text-brand-primary" />
+          </Link>
+        )}
       </div>
 
       {/* Modal QR */}

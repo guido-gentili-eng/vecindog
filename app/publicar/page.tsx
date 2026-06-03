@@ -409,8 +409,9 @@ export default function PublicarPage() {
 
   /* ── Pantalla de éxito ── */
   if (enviado) {
+    const esBusqueda = form.categoria === 'perdido' || form.categoria === 'encontrado';
     return (
-      <div className="mx-auto max-w-md py-12">
+      <div className="mx-auto max-w-md py-12 space-y-4">
         <div className="card p-8 text-center">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-good/15 text-good">
             <CheckCircle2 className="h-8 w-8" />
@@ -439,6 +440,56 @@ export default function PublicarPage() {
             </button>
           </div>
         </div>
+
+        {/* Opciones de búsqueda para perdido/encontrado */}
+        {esBusqueda && (
+          <div className="card p-6">
+            <p className="mb-4 text-center text-sm font-bold text-ink">
+              {form.categoria === 'perdido'
+                ? '¿Querés buscar al perro con más precisión?'
+                : '¿Querés encontrar al dueño más rápido?'}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Búsqueda por foto */}
+              {isPro ? (
+                <Link href="/buscar-por-foto"
+                  className="flex flex-col items-center gap-2 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 text-center transition hover:bg-brand-primary/10">
+                  <Camera className="h-7 w-7 text-brand-primary" />
+                  <span className="text-xs font-bold text-ink">Buscar por foto</span>
+                  <span className="text-[10px] text-ink-muted leading-tight">Subí una foto y usamos IA</span>
+                </Link>
+              ) : (
+                <Link href="/planes"
+                  className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 p-4 text-center transition hover:border-brand-primary/30">
+                  <Camera className="h-7 w-7 text-ink-muted/40" />
+                  <span className="text-xs font-bold text-ink-muted">Buscar por foto</span>
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
+                    <Sparkles className="h-3 w-3" /> Solo Pro
+                  </span>
+                </Link>
+              )}
+
+              {/* Búsqueda por características */}
+              {isPro ? (
+                <Link href="/buscar"
+                  className="flex flex-col items-center gap-2 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 text-center transition hover:bg-brand-primary/10">
+                  <ScanSearch className="h-7 w-7 text-brand-primary" />
+                  <span className="text-xs font-bold text-ink">Buscar por características</span>
+                  <span className="text-[10px] text-ink-muted leading-tight">Raza, color, tamaño</span>
+                </Link>
+              ) : (
+                <Link href="/planes"
+                  className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 p-4 text-center transition hover:border-brand-primary/30">
+                  <ScanSearch className="h-7 w-7 text-ink-muted/40" />
+                  <span className="text-xs font-bold text-ink-muted">Por características</span>
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
+                    <Sparkles className="h-3 w-3" /> Solo Pro
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

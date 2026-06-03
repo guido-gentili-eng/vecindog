@@ -115,13 +115,14 @@ export const RAZAS_COMUNES: string[] = [
 export const COLORES_PERRO: string[] = [
   'Negro',
   'Blanco',
-  'Marron',
+  'Marrón',
   'Caramelo',
   'Dorado',
   'Gris',
   'Atigrado',
   'Tricolor',
-  'Manchado'
+  'Manchado',
+  'Canela',
 ];
 
 export const ZONAS_BB: string[] = [

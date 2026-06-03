@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import {
   type Categoria, type Especie,
-  MAX_FOTOS, MAX_PESO_MB, TIPOS_IMAGEN_PERMITIDOS, ACCEPT_IMAGEN
+  MAX_FOTOS, MAX_PESO_MB, TIPOS_IMAGEN_PERMITIDOS, ACCEPT_IMAGEN, COLORES_PERRO
 } from '@/lib/mockData';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,11 +55,6 @@ interface FotoPreview {
 }
 
 const CATEGORIAS_VALIDAS: Categoria[] = ['perdido', 'encontrado', 'adopcion', 'transito'];
-
-const COLORES_PERRO = [
-  'Negro', 'Blanco', 'Marrón', 'Caramelo', 'Dorado',
-  'Gris', 'Atigrado', 'Tricolor', 'Manchado', 'Canela',
-];
 
 function estadoInicial(catParam: string | null): FormState {
   const cat: Categoria =

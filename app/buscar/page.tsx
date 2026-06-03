@@ -7,7 +7,7 @@ import {
   CheckCircle2, XCircle, HelpCircle, Loader2, ArrowRight, ImageIcon,
 } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
-import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
+import { ETIQUETA_CATEGORIA, COLORES_PERRO } from '@/lib/mockData';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import ProGate from '@/components/ProGate';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,10 +43,6 @@ const FORM_INICIAL: BuscarForm = {
   zona: '', fecha: '', horario: '',
 };
 
-const COLORES = [
-  'Negro', 'Blanco', 'Marrón', 'Caramelo', 'Dorado', 'Gris',
-  'Atigrado', 'Tricolor', 'Manchado', 'Canela',
-];
 
 const COLOR_CATEGORIA: Record<string, string> = {
   perdido:    'bg-lost text-white',
@@ -319,7 +315,7 @@ export default function BuscarPage() {
                   onChange={(e) => campo('color', e.target.value)}
                 >
                   <option value="">No sé / no recuerdo</option>
-                  {COLORES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {COLORES_PERRO.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>

@@ -13,6 +13,7 @@ import {
   crearPerro, subirFotoPerro, VACUNAS_COMUNES, VACUNA_VACIA,
   type PerroInput, type VacunaInput,
 } from '@/lib/perros';
+import { COLORES_PERRO } from '@/lib/mockData';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 
 /* ─── Tipos internos ─── */
@@ -201,12 +202,16 @@ export default function NuevoPerroPage() {
             {/* Color */}
             <div>
               <label className="label">Color principal</label>
-              <input
+              <select
                 className="field w-full"
-                placeholder="Ej: negro, marrón y blanco"
                 value={form.color}
                 onChange={(e) => campo('color', e.target.value)}
-              />
+              >
+                <option value="">Seleccioná un color</option>
+                {COLORES_PERRO.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
           </div>
 

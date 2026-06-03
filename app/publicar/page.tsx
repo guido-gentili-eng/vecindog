@@ -696,9 +696,19 @@ export default function PublicarPage() {
               )}
 
               {form.situacion_transito === 'calle' && (
-                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                  ⚠️ Este aviso aparecerá en el mapa en color violeta para que los vecinos cercanos puedan ayudar.
-                </div>
+                <>
+                  <Field label="¿A qué hora lo viste?">
+                    <input
+                      type="time"
+                      className="field w-40"
+                      value={form.horario}
+                      onChange={(e) => handleChange('horario', e.target.value)}
+                    />
+                  </Field>
+                  <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                    ⚠️ Este aviso aparecerá en el mapa en color violeta para que los vecinos cercanos puedan ayudar.
+                  </div>
+                </>
               )}
             </div>
           </StepCard>

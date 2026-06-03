@@ -450,9 +450,16 @@ const PLAN_INFO: Record<string, { label: string; precio: string; slots: string[]
   premium:  { label: 'Plan Premium',   precio: '$45.000/mes', slots: ['Banner en inicio', 'Card en grilla', 'Sidebar en detalle'] },
 };
 
+const FOTO_RECOMENDADA: Record<string, { ratio: string; medida: string; consejo: string }> = {
+  basico:   { ratio: '1:1',  medida: '400×400 px',  consejo: 'Logo cuadrado — se muestra chico al costado del texto.' },
+  estandar: { ratio: '4:3',  medida: '800×600 px',  consejo: 'Foto horizontal — se usa como banner en la card de avisos y también recortada como logo.' },
+  premium:  { ratio: '4:3',  medida: '800×600 px',  consejo: 'Foto horizontal — se usa como banner en la card, en el inicio y recortada como logo.' },
+};
+
 function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const planKey  = plan === 'estándar' ? 'estandar' : plan;
   const info     = PLAN_INFO[planKey] ?? PLAN_INFO.basico;
+  const fotoRec  = FOTO_RECOMENDADA[planKey] ?? FOTO_RECOMENDADA.basico;
   const fileRef  = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -558,9 +565,14 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
               )}
               <div className="text-left">
                 <p className="font-bold text-ink">{preview ? 'Cambiar imagen' : 'Subir logo o foto'}</p>
-                <p className="text-xs text-ink-muted">PNG, JPG · Máx. 5 MB</p>
+                <p className="text-xs text-ink-muted">
+                  PNG, JPG · Máx. 5 MB · Ratio {fotoRec.ratio} · {fotoRec.medida}
+                </p>
               </div>
             </button>
+            <p className="mt-1.5 text-[11px] text-ink-muted leading-relaxed">
+              💡 {fotoRec.consejo}
+            </p>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
           </div>
 

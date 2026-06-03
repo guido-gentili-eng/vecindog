@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Dog, Eye, X, CheckCheck, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react';
+import { Bell, Dog, Eye, X, CheckCheck, RefreshCw, CheckCircle2, Loader2, Users, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { resolverPost, renovarPost } from '@/lib/posts';
+import { aceptarSolicitud, rechazarEliminarAmistad } from '@/lib/amistades';
 import FoundModal from '@/components/FoundModal';
 
 interface Notification {
@@ -15,6 +16,7 @@ interface Notification {
   mensaje:    string;
   leida:      boolean;
   created_at: string;
+  meta?:      string | null;  // JSON con datos extra (ej: amistad_id)
 }
 
 export default function NotificationsBell() {
@@ -86,6 +88,41 @@ export default function NotificationsBell() {
       const match = notif.mensaje.match(/\(([^)]+)\)/);
       setFoundModal({ nombre: match?.[1] ?? null });
       setOpen(false);
+    } finally { setAccioning(null); }
+  }
+
+  async function handleAceptarAmistad(notif: Notification) {
+    const meta = notif.meta ? JSON.parse(notif.meta) : {};
+    if (!meta.amistad_id) return;
+    setAccioning(notif.id);
+    try {
+      await aceptarSolicitud(meta.amistad_id);
+      // Notificar al solicitante
+      if (meta.solicitante_id) {
+        await supabase.from('notifications').insert({
+          user_id: meta.solicitante_id,
+          post_id: null,
+          tipo:    'amistad_aceptada',
+          mensaje: `¡Tu solicitud de amistad fue aceptada! 🐾`,
+          leida:   false,
+        });
+      }
+      await marcarLeida(notif.id);
+      // Actualizar mensaje local
+      setNotifs(prev => prev.map(n =>
+        n.id === notif.id ? { ...n, leida: true, tipo: 'amistad_aceptada' } : n
+      ));
+    } finally { setAccioning(null); }
+  }
+
+  async function handleRechazarAmistad(notif: Notification) {
+    const meta = notif.meta ? JSON.parse(notif.meta) : {};
+    if (!meta.amistad_id) return;
+    setAccioning(notif.id + '_rec');
+    try {
+      await rechazarEliminarAmistad(meta.amistad_id);
+      await marcarLeida(notif.id);
+      setNotifs(prev => prev.filter(n => n.id !== notif.id));
     } finally { setAccioning(null); }
   }
 
@@ -161,8 +198,10 @@ export default function NotificationsBell() {
                       n.tipo === 'visita'     ? 'bg-blue-50 text-blue-500' :
                       !n.leida ? 'bg-brand-primary text-white' : 'bg-brand-cream text-brand-primary'
                     }`}>
-                      {n.tipo === 'expiracion' ? '⏰' :
-                       n.tipo === 'visita'     ? <Eye className="h-4 w-4" /> :
+                      {n.tipo === 'expiracion'        ? '⏰' :
+                       n.tipo === 'visita'            ? <Eye className="h-4 w-4" /> :
+                       n.tipo === 'solicitud_amistad' ? <UserPlus className="h-4 w-4" /> :
+                       n.tipo === 'amistad_aceptada'  ? <Users className="h-4 w-4" /> :
                        <Dog className="h-4 w-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -183,6 +222,25 @@ export default function NotificationsBell() {
                       </button>
                     )}
                   </div>
+                  {/* Botones para solicitud de amistad pendiente */}
+                  {n.tipo === 'solicitud_amistad' && !n.leida && (
+                    <div className="mt-2 flex gap-2 ml-11">
+                      <button type="button"
+                        onClick={() => handleAceptarAmistad(n)}
+                        disabled={!!accioning}
+                        className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-good/15 px-2 py-2 text-xs font-bold text-good hover:bg-good/25 transition disabled:opacity-60">
+                        {accioning === n.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+                        Aceptar
+                      </button>
+                      <button type="button"
+                        onClick={() => handleRechazarAmistad(n)}
+                        disabled={!!accioning}
+                        className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-black/8 px-2 py-2 text-xs font-bold text-ink-muted hover:bg-black/15 transition disabled:opacity-60">
+                        Rechazar
+                      </button>
+                    </div>
+                  )}
+
                   {/* Botones de acción para expiración */}
                   {n.tipo === 'expiracion' && n.post_id && (
                     <div className="mt-2 flex gap-2 ml-11">

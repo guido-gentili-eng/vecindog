@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
 import { listarPosts, actualizarZonaPost, type Post } from '@/lib/posts';
+import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 
@@ -333,6 +334,16 @@ export default function PublicarPage() {
             }).catch(() => {});
           });
         }
+      }
+
+      /* ── Notificar a amigos cuando se publica un perro perdido ── */
+      if (form.categoria === 'perdido' && user && postData?.id) {
+        notificarAmigosPerroPerdido({
+          ownerId:     user.id,
+          postId:      postData.id,
+          nombrePerro: form.nombre || null,
+          zona:        appendCiudad(form.zona, efectivaCiudad),
+        }).catch(() => {});
       }
 
       /* ── Si hay match confirmado en otra zona, actualizar el aviso perdido ── */

@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart } from 'lucide-react';
+import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users } from 'lucide-react';
+import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
 import { useSearchParams } from 'next/navigation';
@@ -13,9 +14,10 @@ export default function MisPerrosPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const vieneDeResuelto = searchParams.get('resuelto') === '1';
-  const [perros,   setPerros]   = useState<Perro[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error,    setError]    = useState('');
+  const [perros,       setPerros]       = useState<Perro[]>([]);
+  const [cargando,     setCargando]     = useState(true);
+  const [error,        setError]        = useState('');
+  const [amigosOpen,   setAmigosOpen]   = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -52,6 +54,8 @@ export default function MisPerrosPage() {
 
   return (
     <div className="py-8 md:py-10">
+      {amigosOpen && <AmigosPanel onClose={() => setAmigosOpen(false)} />}
+
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
@@ -65,12 +69,21 @@ export default function MisPerrosPage() {
             Guardá los datos de tus perros. Si alguno se pierde, ya tenés todo listo.
           </p>
         </div>
-        <Link
-          href="/mis-perros/nuevo"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" /> Agregar perro
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAmigosOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-primary hover:bg-brand-primary/5"
+          >
+            <Users className="h-4 w-4" /> Amigos
+          </button>
+          <Link
+            href="/mis-perros/nuevo"
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" /> Agregar perro
+          </Link>
+        </div>
       </div>
 
       {/* Banner: aviso resuelto, perfil intacto */}

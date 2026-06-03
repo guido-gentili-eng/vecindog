@@ -92,7 +92,7 @@ export default function NotificationsBell() {
   }
 
   async function handleAceptarAmistad(notif: Notification) {
-    const meta = notif.meta ? JSON.parse(notif.meta) : {};
+    const meta = notif.meta ? (() => { try { return JSON.parse(notif.meta!); } catch { return {}; } })() : {};
     if (!meta.amistad_id) return;
     setAccioning(notif.id);
     try {
@@ -116,7 +116,7 @@ export default function NotificationsBell() {
   }
 
   async function handleRechazarAmistad(notif: Notification) {
-    const meta = notif.meta ? JSON.parse(notif.meta) : {};
+    const meta = notif.meta ? (() => { try { return JSON.parse(notif.meta!); } catch { return {}; } })() : {};
     if (!meta.amistad_id) return;
     setAccioning(notif.id + '_rec');
     try {

@@ -12,7 +12,9 @@ const COLOR_CATEGORIA: Record<Animal['categoria'], string> = {
 };
 
 function diasRestantes(fecha: string): number {
-  return Math.ceil((new Date(fecha).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const ms = new Date(fecha).getTime();
+  if (isNaN(ms)) return 0;
+  return Math.ceil((ms - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
 export default function AnimalCard({ animal }: { animal: Animal }) {

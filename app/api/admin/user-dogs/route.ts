@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
   }
 
   const uid = req.nextUrl.searchParams.get('uid');
-  if (!uid) return NextResponse.json({ error: 'uid requerido' }, { status: 400 });
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uid || !UUID_RE.test(uid)) return NextResponse.json({ error: 'uid inválido' }, { status: 400 });
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

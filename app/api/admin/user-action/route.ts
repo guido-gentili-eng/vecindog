@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (accion === 'pausar') {
-    await admin.from('profiles').update({ suspendido: true }).eq('id', uid);
+    const { error: pauseErr } = await admin.from('profiles').update({ suspendido: true }).eq('id', uid);
+    if (pauseErr) return NextResponse.json({ error: pauseErr.message }, { status: 500 });
 
     // Email de notificación al usuario
     const { data: profileData } = await admin.from('profiles').select('nombre').eq('id', uid).single();
@@ -87,7 +88,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (accion === 'reactivar') {
-    await admin.from('profiles').update({ suspendido: false }).eq('id', uid);
+    const { error: reactErr } = await admin.from('profiles').update({ suspendido: false }).eq('id', uid);
+    if (reactErr) return NextResponse.json({ error: reactErr.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 

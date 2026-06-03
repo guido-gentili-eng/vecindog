@@ -4,19 +4,22 @@ import { supabase } from './supabase';
 export type AdVariant = 'leaderboard' | 'card' | 'sidebar';
 
 export interface Ad {
-  id:          string;
-  variant:     AdVariant;
-  titulo:      string;
-  subtitulo:   string | null;
-  imagen_url:  string | null;
-  href:        string;
-  cta:         string | null;
-  anunciante:  string | null;
-  plan:        'basico' | 'estandar' | 'premium';
-  activo:      boolean;
-  fecha_inicio: string | null;
-  fecha_fin:   string | null;
-  created_at:  string;
+  id:             string;
+  variant:        AdVariant;
+  titulo:         string;
+  subtitulo:      string | null;
+  /** Imagen principal: horizontal 4:3 para Card. */
+  imagen_url:     string | null;
+  /** Logo cuadrado 1:1 para Sidebar y Leaderboard (si no hay, usa imagen_url). */
+  imagen_logo_url?: string | null;
+  href:           string;
+  cta:            string | null;
+  anunciante:     string | null;
+  plan:           'basico' | 'estandar' | 'premium';
+  activo:         boolean;
+  fecha_inicio:   string | null;
+  fecha_fin:      string | null;
+  created_at:     string;
 }
 
 export type AdInput = Omit<Ad, 'id' | 'created_at'>;
@@ -78,6 +81,15 @@ export async function activarAds(adIds: string[]): Promise<void> {
       }).eq('id', id)
     )
   );
+}
+
+export async function subirLogoAd(file: File): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg';
+  const path = `ads/logo-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage.from('posts').upload(path, file, { upsert: false });
+  if (error) throw error;
+  const { data } = supabase.storage.from('posts').getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function subirImagenAd(file: File): Promise<string> {

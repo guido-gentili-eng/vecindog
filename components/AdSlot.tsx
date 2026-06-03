@@ -43,9 +43,9 @@ function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) 
       <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
         className={`group relative flex items-center gap-4 overflow-hidden rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card sm:p-5 ${className}`}>
         <AdBadge className="absolute right-3 top-2" />
-        {ad.imagen_url ? (
+        {(ad.imagen_logo_url ?? ad.imagen_url) ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={ad.imagen_url} alt={ad.titulo} className="h-14 w-14 rounded-xl object-cover" />
+          <img src={(ad.imagen_logo_url ?? ad.imagen_url)!} alt={ad.titulo} className="h-14 w-14 rounded-xl object-cover" />
         ) : (
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-brand-primary/10 text-brand-primary">
             <Star className="h-7 w-7" />
@@ -138,9 +138,9 @@ function SidebarAd({ ad, className }: { ad: Ad | null; className: string }) {
       <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
         className={`group card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-card ${className}`}>
         <AdBadge className="sr-only" />
-        {ad.imagen_url ? (
+        {(ad.imagen_logo_url ?? ad.imagen_url) ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={ad.imagen_url} alt={ad.titulo} className="h-12 w-12 rounded-xl object-cover" />
+          <img src={(ad.imagen_logo_url ?? ad.imagen_url)!} alt={ad.titulo} className="h-12 w-12 rounded-xl object-cover" />
         ) : (
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-primary/10">
             <Star className="h-6 w-6 text-brand-primary" />

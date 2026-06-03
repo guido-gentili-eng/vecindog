@@ -23,7 +23,7 @@ const PLAN_SLOTS: Record<string, Array<'leaderboard' | 'card' | 'sidebar'>> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { plan, negocio, tagline, link, cta, email, telefono, imagen_url } = await req.json();
+    const { plan, negocio, tagline, link, cta, email, telefono, imagen_url, imagen_logo_url } = await req.json();
 
     if (!plan || !PRECIOS[plan]) {
       return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
@@ -56,18 +56,21 @@ export async function POST(req: NextRequest) {
     const adIds: string[] = [];
 
     for (const variant of slots) {
+      // Card usa imagen_url (horizontal). Sidebar/leaderboard usan imagen_logo_url si existe.
+      const esCard = variant === 'card';
       const { data } = await admin.from('ads').insert({
         variant,
-        titulo:      negocio,
-        subtitulo:   tagline   || null,
-        imagen_url:  imagen_url || null,
-        href:        link,
-        cta:         cta       || null,
-        anunciante:  email     || null,
+        titulo:          negocio,
+        subtitulo:       tagline        || null,
+        imagen_url:      imagen_url     || null,
+        imagen_logo_url: (!esCard && imagen_logo_url) ? imagen_logo_url : null,
+        href:            link,
+        cta:             cta            || null,
+        anunciante:      email          || null,
         plan,
-        activo:      false,  // se activa al confirmar pago
-        fecha_inicio: null,
-        fecha_fin:    null,
+        activo:          false,
+        fecha_inicio:    null,
+        fecha_fin:       null,
       }).select('id').single();
       if (data?.id) adIds.push(data.id);
     }

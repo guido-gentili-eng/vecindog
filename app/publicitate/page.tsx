@@ -463,14 +463,20 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const fileRef  = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [negocio,   setNegocio]   = useState('');
-  const [tagline,   setTagline]   = useState('');
-  const [link,      setLink]      = useState('');
-  const [cta,       setCta]       = useState('');
-  const [email,     setEmail]     = useState('');
-  const [telefono,  setTelefono]  = useState('');
-  const [fotoFile,  setFotoFile]  = useState<File | null>(null);
-  const [preview,   setPreview]   = useState('');
+  const [negocio,       setNegocio]       = useState('');
+  const [tagline,       setTagline]       = useState('');
+  const [link,          setLink]          = useState('');
+  const [cta,           setCta]           = useState('');
+  const [email,         setEmail]         = useState('');
+  const [telefono,      setTelefono]      = useState('');
+  /** Foto horizontal 4:3 — para Card */
+  const [fotoFile,      setFotoFile]      = useState<File | null>(null);
+  const [preview,       setPreview]       = useState('');
+  /** Logo cuadrado 1:1 — para Sidebar y Leaderboard (solo Estándar/Premium) */
+  const [logoFile,      setLogoFile]      = useState<File | null>(null);
+  const [previewLogo,   setPreviewLogo]   = useState('');
+  const logoRef = useRef<HTMLInputElement>(null);
+  const necesitaLogo = planKey === 'estandar' || planKey === 'premium';
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
 
@@ -485,6 +491,14 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     if (file.size > 5 * 1024 * 1024) { setError('La imagen debe pesar menos de 5 MB.'); return; }
     setFotoFile(file);
     setPreview(URL.createObjectURL(file));
+  }
+
+  function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError('El logo debe pesar menos de 5 MB.'); return; }
+    setLogoFile(file);
+    setPreviewLogo(URL.createObjectURL(file));
   }
 
   async function handlePagar(e: React.FormEvent) {
@@ -509,16 +523,22 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
 
     try {
       let imagen_url = '';
+      let imagen_logo_url = '';
       if (fotoFile) {
         const { subirImagenAd } = await import('@/lib/ads');
         imagen_url = await subirImagenAd(fotoFile);
+      }
+      if (logoFile && necesitaLogo) {
+        const { subirLogoAd } = await import('@/lib/ads');
+        imagen_logo_url = await subirLogoAd(logoFile);
       }
 
       const res = await fetch('/api/pago/publicidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan: planKey, negocio, tagline, link, cta, email, telefono, imagen_url,
+          plan: planKey, negocio, tagline, link, cta, email, telefono,
+          imagen_url, imagen_logo_url,
         }),
       });
       const data = await res.json();
@@ -584,6 +604,38 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             </p>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
           </div>
+
+          {/* Logo cuadrado — solo Estándar y Premium */}
+          {necesitaLogo && (
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                Logo cuadrado <span className="text-bad">*</span>
+                <span className="ml-1 font-normal normal-case text-ink-muted/60">— para sidebar y leaderboard</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => logoRef.current?.click()}
+                className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream"
+              >
+                {previewLogo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={previewLogo} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+                    <ImagePlus className="h-7 w-7 text-brand-primary/60" />
+                  </div>
+                )}
+                <div className="text-left">
+                  <p className="font-bold text-ink">{previewLogo ? 'Cambiar logo' : 'Subir logo cuadrado'}</p>
+                  <p className="text-xs text-ink-muted">PNG, JPG · Ratio 1:1 · 400×400 px mín.</p>
+                </div>
+              </button>
+              <p className="mt-1.5 text-[11px] text-ink-muted">
+                💡 Logo de tu negocio — se muestra como icono al costado del nombre en sidebar y banner.
+              </p>
+              <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={onLogo} />
+            </div>
+          )}
 
           {/* Nombre y tagline */}
           <div className="space-y-3">

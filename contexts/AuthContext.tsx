@@ -19,6 +19,7 @@ export interface Profile {
   pais:      string;
   direccion: string;
   instagram?: string | null;
+  facebook?:  string | null;
 }
 
 interface AuthCtx {

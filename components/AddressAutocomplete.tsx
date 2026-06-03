@@ -4,18 +4,29 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 
 interface NominatimAddress {
-  road?: string;
-  pedestrian?: string;
+  road?:         string;
+  pedestrian?:   string;
+  path?:         string;
+  footway?:      string;
+  cycleway?:     string;
+  track?:        string;
+  residential?:  string;
   house_number?: string;
-  suburb?: string;
-  neighbourhood?: string;
-  quarter?: string;
-  city?: string;
-  town?: string;
-  village?: string;
+  suburb?:       string;
+  neighbourhood?:string;
+  quarter?:      string;
+  city?:         string;
+  town?:         string;
+  village?:      string;
   municipality?: string;
-  state?: string;
-  county?: string;
+  state?:        string;
+  county?:       string;
+}
+
+/** Devuelve el nombre de la calle independientemente del tipo en OSM */
+function extractRoadName(a: NominatimAddress): string {
+  return a.road ?? a.pedestrian ?? a.path ?? a.footway ??
+         a.cycleway ?? a.track ?? a.residential ?? '';
 }
 
 interface Suggestion {
@@ -38,7 +49,7 @@ interface Props {
 
 /** Extrae calle + número de la respuesta Nominatim, usando el número del query si Nominatim no lo devuelve */
 function extractStreet(a: NominatimAddress, fallbackNum?: string): string {
-  const road = a.road ?? a.pedestrian ?? '';
+  const road = extractRoadName(a);
   const num  = a.house_number ?? fallbackNum ?? '';
   return [road, num].filter(Boolean).join(' ');
 }
@@ -105,8 +116,15 @@ export default function AddressAutocomplete({
           { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
         );
         const data: Suggestion[] = await res.json();
-        // Filtrar resultados que tengan al menos calle
-        let resultados = data.filter((s) => s.address?.road || s.address?.pedestrian);
+        // Aceptar cualquier resultado con nombre de calle O con barrio/ciudad
+        let resultados = data.filter((s) =>
+          extractRoadName(s.address) ||
+          s.address?.suburb ||
+          s.address?.neighbourhood ||
+          s.address?.quarter ||
+          s.address?.city ||
+          s.address?.town
+        );
 
         // Si hay ciudad configurada, priorizar resultados de esa ciudad al tope
         if (ciudad) {
@@ -132,7 +150,8 @@ export default function AddressAutocomplete({
 
   function handleSelect(s: Suggestion) {
     const calle = extractStreet(s.address, extractTypedNumber(value));
-    onChange(calle || value);
+    const calleLabel = calle || s.display_name.split(',')[0].trim();
+    onChange(calleLabel || value);
     if (onSelectCoords && s.lat && s.lon) {
       onSelectCoords(parseFloat(s.lat), parseFloat(s.lon));
       const location = extractLocation(s.address);
@@ -183,8 +202,10 @@ export default function AddressAutocomplete({
       {open && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
           {suggestions.map((s, i) => {
-            const calle    = extractStreet(s.address, extractTypedNumber(value));
-            const location = extractLocation(s.address);
+            const calleExtraida = extractStreet(s.address, extractTypedNumber(value));
+            const location      = extractLocation(s.address);
+            // Si los campos de address no tienen calle, usar la primera parte del display_name
+            const calleLabel = calleExtraida || s.display_name.split(',')[0].trim();
             return (
               <li key={i} className="border-b border-black/5 last:border-0">
                 <button
@@ -194,7 +215,7 @@ export default function AddressAutocomplete({
                 >
                   <MapPin className="h-4 w-4 shrink-0 text-ink-muted/50" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-ink truncate">{calle || value}</p>
+                    <p className="text-sm font-bold text-ink truncate">{calleLabel}</p>
                     {location && (
                       <p className="text-xs text-ink-muted truncate">{location}</p>
                     )}

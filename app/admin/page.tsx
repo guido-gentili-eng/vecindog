@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -20,6 +20,16 @@ interface Usuario {
   direccion:   string;
   plan:        string;
   suspendido?: boolean;
+}
+
+interface PostAdmin {
+  id:        string;
+  categoria: string;
+  nombre:    string | null;
+  zona:      string;
+  fecha:     string;
+  estado:    string;
+  images:    string[];
 }
 
 interface Perro {
@@ -54,8 +64,9 @@ export default function AdminPage() {
   const [cargando,   setCargando]   = useState(true);
   const [error,      setError]      = useState('');
   const [perrosMap,  setPerrosMap]  = useState<Record<string, Perro[]>>({});
-  const [expandido,  setExpandido]  = useState<string | null>(null);
-  const [loadingDog, setLoadingDog] = useState<string | null>(null);
+  const [postsMap,   setPostsMap]   = useState<Record<string, PostAdmin[]>>({});
+  const [expandido,  setExpandido]  = useState<{ uid: string; tipo: 'perros' | 'avisos' } | null>(null);
+  const [loadingExp, setLoadingExp] = useState<string | null>(null);
   const [orden,       setOrden]       = useState<'az' | 'recientes'>('az');
   const [accionando,  setAccionando]  = useState<string | null>(null);
   const [confirmar,   setConfirmar]   = useState<{ uid: string; accion: 'pausar' | 'eliminar' } | null>(null);
@@ -108,19 +119,20 @@ export default function AdminPage() {
     }
   }
 
-  async function togglePerros(uid: string, token: string) {
-    if (expandido === uid) { setExpandido(null); return; }
-    setExpandido(uid);
-    if (perrosMap[uid]) return; // ya cargados
-    setLoadingDog(uid);
+  async function toggleSeccion(uid: string, tipo: 'perros' | 'avisos') {
+    if (expandido?.uid === uid && expandido?.tipo === tipo) { setExpandido(null); return; }
+    setExpandido({ uid, tipo });
+    const yaCache = tipo === 'perros' ? perrosMap[uid] : postsMap[uid];
+    if (yaCache !== undefined) return;
+    setLoadingExp(uid + tipo);
     try {
-      const res  = await fetch(`/api/admin/user-dogs?uid=${uid}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const endpoint = tipo === 'perros' ? `/api/admin/user-dogs?uid=${uid}` : `/api/admin/user-posts?uid=${uid}`;
+      const res  = await fetch(endpoint, { headers: { Authorization: `Bearer ${tokenRef.current}` } });
       const data = await res.json();
-      setPerrosMap((prev) => ({ ...prev, [uid]: data.perros ?? [] }));
+      if (tipo === 'perros') setPerrosMap((prev) => ({ ...prev, [uid]: data.perros ?? [] }));
+      else                   setPostsMap ((prev) => ({ ...prev, [uid]: data.posts  ?? [] }));
     } finally {
-      setLoadingDog(null);
+      setLoadingExp(null);
     }
   }
 
@@ -257,14 +269,15 @@ export default function AdminPage() {
 
                   {/* Botones */}
                   <div className="shrink-0 flex flex-col gap-1.5">
-                    <a href={`/publicaciones?uid=${u.id}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-xl border border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
-                      <ExternalLink className="h-3 w-3" /> Avisos
-                    </a>
-                    <button type="button" onClick={() => togglePerros(u.id, tokenRef.current)}
-                      className="inline-flex items-center gap-1 rounded-xl border border-black/15 px-3 py-1.5 text-xs font-bold text-ink-muted hover:border-brand-primary/30 hover:text-brand-primary transition">
+                    <button type="button" onClick={() => toggleSeccion(u.id, 'avisos')}
+                      className={`inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-bold transition ${expandido?.uid === u.id && expandido?.tipo === 'avisos' ? 'border-brand-primary bg-brand-primary/10 text-brand-primary' : 'border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10'}`}>
+                      <FileText className="h-3 w-3" /> Avisos
+                      {expandido?.uid === u.id && expandido?.tipo === 'avisos' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </button>
+                    <button type="button" onClick={() => toggleSeccion(u.id, 'perros')}
+                      className={`inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-bold transition ${expandido?.uid === u.id && expandido?.tipo === 'perros' ? 'border-black/30 bg-black/8 text-ink' : 'border-black/15 text-ink-muted hover:border-brand-primary/30 hover:text-brand-primary'}`}>
                       <Dog className="h-3 w-3" /> Perros
-                      {expandido === u.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      {expandido?.uid === u.id && expandido?.tipo === 'perros' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </button>
                     {u.suspendido ? (
                       <button type="button" disabled={accionando === u.id}
@@ -287,36 +300,77 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Panel de perros expandible */}
-                {expandido === u.id && (
-                  <div className="mt-3 ml-0 rounded-2xl border border-black/8 bg-brand-cream/50 p-3">
-                    {loadingDog === u.id ? (
+                {/* Panel expandible — Perros o Avisos */}
+                {expandido?.uid === u.id && (
+                  <div className="mt-3 rounded-2xl border border-black/8 bg-brand-cream/50 p-3">
+                    {loadingExp === u.id + expandido.tipo ? (
                       <div className="flex items-center gap-2 text-xs text-ink-muted">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Cargando perros…
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Cargando {expandido.tipo}…
                       </div>
-                    ) : !perrosMap[u.id] || perrosMap[u.id].length === 0 ? (
-                      <p className="text-xs text-ink-muted">Sin perros registrados.</p>
+
+                    ) : expandido.tipo === 'perros' ? (
+                      !perrosMap[u.id] || perrosMap[u.id].length === 0 ? (
+                        <p className="text-xs text-ink-muted">Sin perros registrados.</p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {perrosMap[u.id].map((p) => (
+                            <li key={p.id} className="flex items-center gap-2 text-xs">
+                              <Dog className="h-3.5 w-3.5 shrink-0 text-brand-primary" />
+                              <span className="font-bold text-ink">{p.nombre}</span>
+                              {[p.raza, p.color, p.tamano].filter(Boolean).length > 0 && (
+                                <span className="text-ink-muted">· {[p.raza, p.color, p.tamano].filter(Boolean).join(', ')}</span>
+                              )}
+                              {p.tieneVacunas ? (
+                                <span className="ml-auto inline-flex items-center gap-0.5 rounded-full bg-good/15 px-2 py-0.5 font-bold text-good">
+                                  <Syringe className="h-2.5 w-2.5" /> {p.cantVacunas} vacuna{p.cantVacunas !== 1 ? 's' : ''}
+                                </span>
+                              ) : (
+                                <span className="ml-auto inline-flex items-center rounded-full bg-black/8 px-2 py-0.5 font-bold text-ink-muted">
+                                  Sin vacunas
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+
                     ) : (
-                      <ul className="space-y-1.5">
-                        {perrosMap[u.id].map((p) => (
-                          <li key={p.id} className="flex items-center gap-2 text-xs">
-                            <Dog className="h-3.5 w-3.5 shrink-0 text-brand-primary" />
-                            <span className="font-bold text-ink">{p.nombre}</span>
-                            {[p.raza, p.color, p.tamano].filter(Boolean).length > 0 && (
-                              <span className="text-ink-muted">· {[p.raza, p.color, p.tamano].filter(Boolean).join(', ')}</span>
-                            )}
-                            {p.tieneVacunas ? (
-                              <span className="ml-auto inline-flex items-center gap-0.5 rounded-full bg-good/15 px-2 py-0.5 font-bold text-good">
-                                <Syringe className="h-2.5 w-2.5" /> {p.cantVacunas} vacuna{p.cantVacunas !== 1 ? 's' : ''}
-                              </span>
-                            ) : (
-                              <span className="ml-auto inline-flex items-center rounded-full bg-black/8 px-2 py-0.5 font-bold text-ink-muted">
-                                Sin vacunas
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                      !postsMap[u.id] || postsMap[u.id].length === 0 ? (
+                        <p className="text-xs text-ink-muted">Sin avisos publicados.</p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {postsMap[u.id].map((p) => {
+                            const catColor: Record<string, string> = {
+                              perdido: 'text-lost', encontrado: 'text-found',
+                              adopcion: 'text-[#7a4f00]', transito: 'text-[#7c3aed]',
+                            };
+                            const catLabel: Record<string, string> = {
+                              perdido: 'Perdido', encontrado: 'Visto',
+                              adopcion: 'Adopción', transito: 'Tránsito',
+                            };
+                            return (
+                              <li key={p.id} className="flex items-center gap-2 text-xs">
+                                <FileText className={`h-3.5 w-3.5 shrink-0 ${catColor[p.categoria] ?? 'text-ink-muted'}`} />
+                                <span className="font-bold text-ink">{p.nombre ?? 'Sin nombre'}</span>
+                                <span className="text-ink-muted">· {p.zona} · {p.fecha}</span>
+                                <span className={`ml-auto shrink-0 font-bold ${catColor[p.categoria] ?? ''}`}>
+                                  {catLabel[p.categoria] ?? p.categoria}
+                                </span>
+                                {p.estado === 'resuelto' ? (
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-good shrink-0" />
+                                ) : (
+                                  <span className="h-2 w-2 rounded-full bg-good shrink-0" />
+                                )}
+                                <a href={`/publicaciones/${p.id}`} target="_blank" rel="noopener noreferrer"
+                                  className="shrink-0 text-brand-primary hover:underline">
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )
                     )}
                   </div>
                 )}

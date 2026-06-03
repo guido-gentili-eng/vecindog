@@ -12,7 +12,8 @@ const LINKS = {
   comunidad: [
     { href: '/publicaciones?cat=perdido',    label: 'Perdidos' },
     { href: '/publicaciones?cat=encontrado', label: 'Vistos' },
-    { href: '/publicaciones?cat=adopcion',   label: 'En adopción' }
+    { href: '/publicaciones?cat=adopcion',   label: 'En adopción' },
+    { href: '/publicaciones?cat=transito',   label: 'En tránsito' },
   ],
   negocios: [
     { href: '/publicitate', label: 'Publicitate' },

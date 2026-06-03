@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. Buscar ads que vencen en exactamente DIAS_AVISO días (para no enviar el mail más de una vez)
+  // Agrupar por (anunciante + plan + fecha_fin) para enviar un solo email por campaña
   const { data: proximos } = await admin
     .from('ads')
     .select('id, titulo, subtitulo, plan, anunciante, fecha_fin')
@@ -55,12 +56,22 @@ export async function GET(req: NextRequest) {
     premium:  'Plan Premium',
   };
 
+  // Agrupar ads por (anunciante + plan) para enviar un email por campaña
+  const grupos = new Map<string, typeof proximos>();
+  for (const ad of proximos) {
+    const key = `${ad.anunciante}|${ad.plan}`;
+    if (!grupos.has(key)) grupos.set(key, []);
+    grupos.get(key)!.push(ad);
+  }
+
   let enviados = 0;
 
-  for (const ad of proximos) {
+  for (const [, adsGrupo] of grupos) {
+    const ad    = adsGrupo[0];
     const email = ad.anunciante;
     if (!email || !email.includes('@')) continue;
 
+    const allIds   = adsGrupo.map((a: { id: string }) => a.id).join(',');
     const planLabel = PLAN_LABEL[ad.plan] ?? ad.plan;
     const fechaFin  = new Date(ad.fecha_fin + 'T00:00:00').toLocaleDateString('es-AR', {
       day: 'numeric', month: 'long', year: 'numeric',
@@ -99,9 +110,9 @@ export async function GET(req: NextRequest) {
             </p>
 
             <div style="text-align:center;margin-top:28px">
-              <a href="https://www.mivecindog.com.ar/publicitate"
+              <a href="https://www.mivecindog.com.ar/publicitate/renovar?ads=${allIds}"
                  style="background:#B85C4A;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block">
-                Renovar publicidad →
+                Renovar ahora (sin reingresar datos) →
               </a>
             </div>
 

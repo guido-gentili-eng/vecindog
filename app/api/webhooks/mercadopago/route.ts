@@ -41,12 +41,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, tipo: 'pro' });
     }
 
-    // ── Pago de publicidad ───────────────────────────────────────────
     const adIds = (meta as { ad_ids?: string[] } | null)?.ad_ids;
     if (!adIds?.length) {
       return NextResponse.json({ ok: true, reason: 'sin ad_ids en metadata' });
     }
 
+    // ── Renovación de publicidad ─────────────────────────────────────
+    if ((meta as Record<string, unknown>)?.tipo === 'renovacion') {
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const nuevaFin = new Date();
+      nuevaFin.setDate(nuevaFin.getDate() + 30);
+      await admin
+        .from('ads')
+        .update({ activo: true, fecha_inicio: new Date().toISOString().slice(0, 10), fecha_fin: nuevaFin.toISOString().slice(0, 10) })
+        .in('id', adIds);
+
+      await notificarAdmin({
+        negocio:   (meta as Record<string, string>)?.negocio ?? '',
+        plan:      (meta as Record<string, string>)?.plan ?? '',
+        email:     (meta as Record<string, string>)?.email ?? '',
+        paymentId: String(paymentId),
+        renovacion: true,
+      });
+      return NextResponse.json({ ok: true, tipo: 'renovacion' });
+    }
+
+    // ── Nueva publicidad ─────────────────────────────────────────────
     await activarAds(adIds);
 
     // Email al admin
@@ -66,8 +89,8 @@ export async function POST(req: NextRequest) {
 
 
 async function notificarAdmin({
-  negocio, plan, email, paymentId,
-}: { negocio: string; plan: string; email: string; paymentId: string }) {
+  negocio, plan, email, paymentId, renovacion = false,
+}: { negocio: string; plan: string; email: string; paymentId: string; renovacion?: boolean }) {
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -78,7 +101,7 @@ async function notificarAdmin({
       body: JSON.stringify({
         from: 'Vecindog <noreply@mivecindog.com.ar>',
         to: ['guido-gentili@live.com.ar'],
-        subject: `💰 Nuevo anunciante: ${negocio} (${plan})`,
+        subject: renovacion ? `🔄 Renovación publicidad: ${negocio} (${plan})` : `💰 Nuevo anunciante: ${negocio} (${plan})`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <h2>Nuevo pago confirmado en Vecindog</h2>

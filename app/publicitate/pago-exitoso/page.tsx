@@ -18,11 +18,12 @@ const PLAN_SLOTS_LABEL: Record<string, string[]> = {
 };
 
 export default function PagoExitosoPage() {
-  const params     = useSearchParams();
-  const plan       = params.get('plan') ?? 'estandar';
-  const adsParam   = params.get('ads') ?? '';
-  const pending    = params.get('pending') === '1';
-  const paymentId  = params.get('payment_id') ?? params.get('collection_id') ?? '';
+  const params      = useSearchParams();
+  const plan        = params.get('plan') ?? 'estandar';
+  const adsParam    = params.get('ads') ?? '';
+  const pending     = params.get('pending') === '1';
+  const renovacion  = params.get('renovacion') === '1';
+  const paymentId   = params.get('payment_id') ?? params.get('collection_id') ?? '';
 
   const [activado, setActivado] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -83,6 +84,7 @@ export default function PagoExitosoPage() {
         <h1 className="mt-5 font-display text-2xl font-black text-ink md:text-3xl">
           {error   ? 'Hubo un problema'         :
            pending  ? '¡Pago en proceso!'        :
+           activado && renovacion ? '¡Publicidad renovada!' :
            activado ? '¡Tu anuncio está activo!' :
            '¡Pago recibido!'}
         </h1>
@@ -92,6 +94,8 @@ export default function PagoExitosoPage() {
             ? 'Escribinos a hola@mivecindog.com.ar y lo resolvemos rápido.'
             : pending
             ? 'Tu pago está siendo procesado. Tu anuncio se activa automáticamente al confirmarse.'
+            : activado && renovacion
+            ? 'Tu publicidad fue renovada por 30 días más. No tuviste que reingresar ningún dato.'
             : activado
             ? 'Tu publicidad en Vecindog quedó activada para los próximos 30 días.'
             : 'Recibirás una confirmación por email cuando tu anuncio esté activo.'}

@@ -19,37 +19,84 @@ export interface AmigoConPerfil {
   ciudad:      string | null;
 }
 
-/** Busca perros por nombre (parcial) + el perfil de su dueño, para enviar solicitudes */
-export async function buscarPerrosPorNombre(nombre: string): Promise<Array<{
-  perro_id:  string;
-  nombre:    string;
-  raza:      string | null;
-  foto_url:  string | null;
-  owner_id:  string;
+export interface ResultadoBusquedaPerro {
+  perro_id:       string;
+  nombre:         string;
+  raza:           string | null;
+  foto_url:       string | null;
+  owner_id:       string;
   owner_nombre:   string | null;
   owner_apellido: string | null;
   owner_ciudad:   string | null;
-}>> {
-  if (!nombre.trim()) return [];
-  const { data } = await supabase
-    .from('perros')
-    .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
-    .ilike('nombre', `%${nombre}%`)
-    .limit(10);
+}
 
-  return (data ?? []).map((d: Record<string, unknown>) => {
+/**
+ * Busca perros por nombre en AMBAS fuentes:
+ * 1. Tabla `perros` (perfiles registrados)
+ * 2. Tabla `posts` (avisos publicados — perdido / encontrado / adopción)
+ * Devuelve resultados únicos por owner_id + nombre, sin duplicados.
+ */
+export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBusquedaPerro[]> {
+  if (!nombre.trim()) return [];
+
+  // Buscar en paralelo en perros y posts
+  const [perrosRes, postsRes] = await Promise.all([
+    supabase
+      .from('perros')
+      .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
+      .ilike('nombre', `%${nombre}%`)
+      .limit(10),
+    supabase
+      .from('posts')
+      .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
+      .ilike('nombre', `%${nombre}%`)
+      .not('user_id', 'is', null)
+      .neq('estado', 'resuelto')
+      .limit(10),
+  ]);
+
+  const resultados: ResultadoBusquedaPerro[] = [];
+  const vistos = new Set<string>(); // key: owner_id|nombre_lower
+
+  // De la tabla perros
+  for (const d of (perrosRes.data ?? []) as Record<string, unknown>[]) {
     const profile = (d.profiles as Record<string, unknown> | null) ?? {};
-    return {
+    const key = `${d.user_id}|${(d.nombre as string).toLowerCase()}`;
+    if (vistos.has(key)) continue;
+    vistos.add(key);
+    resultados.push({
       perro_id:       d.id as string,
       nombre:         d.nombre as string,
-      raza:           d.raza as string | null,
-      foto_url:       d.foto_url as string | null,
+      raza:           (d.raza as string | null) ?? null,
+      foto_url:       (d.foto_url as string | null) ?? null,
       owner_id:       d.user_id as string,
       owner_nombre:   (profile.nombre as string | null) ?? null,
       owner_apellido: (profile.apellido as string | null) ?? null,
       owner_ciudad:   (profile.ciudad as string | null) ?? null,
-    };
-  });
+    });
+  }
+
+  // De la tabla posts (avisos)
+  for (const d of (postsRes.data ?? []) as Record<string, unknown>[]) {
+    if (!d.nombre) continue;
+    const profile = (d.profiles as Record<string, unknown> | null) ?? {};
+    const key = `${d.user_id}|${(d.nombre as string).toLowerCase()}`;
+    if (vistos.has(key)) continue;
+    vistos.add(key);
+    const images = (d.images as string[] | null) ?? [];
+    resultados.push({
+      perro_id:       d.id as string,
+      nombre:         d.nombre as string,
+      raza:           (d.raza as string | null) ?? null,
+      foto_url:       images[0] ?? null,
+      owner_id:       d.user_id as string,
+      owner_nombre:   (profile.nombre as string | null) ?? null,
+      owner_apellido: (profile.apellido as string | null) ?? null,
+      owner_ciudad:   (profile.ciudad as string | null) ?? null,
+    });
+  }
+
+  return resultados;
 }
 
 /** Devuelve todas las amistades del usuario actual (aceptadas, pendientes enviadas y recibidas) */

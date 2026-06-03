@@ -76,6 +76,28 @@ export default function AdminPublicidadPage() {
       {ok && <p className="mb-4 flex items-center gap-2 rounded-2xl bg-good/10 p-3 text-sm font-bold text-good"><CheckCircle2 className="h-4 w-4" />{ok}</p>}
       {error && <p className="mb-4 flex items-center gap-2 rounded-2xl bg-bad/10 p-3 text-sm font-bold text-bad"><AlertCircle className="h-4 w-4" />{error}</p>}
 
+      {/* Stats de negocios */}
+      {ads.length > 0 && (() => {
+        const negocios  = new Set(ads.map((a) => a.anunciante).filter(Boolean)).size;
+        const activos   = ads.filter((a) => a.activo).length;
+        const negActivos = new Set(ads.filter((a) => a.activo).map((a) => a.anunciante).filter(Boolean)).size;
+        return (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: 'Negocios total',   val: negocios,   color: 'text-ink' },
+              { label: 'Negocios activos', val: negActivos, color: 'text-good' },
+              { label: 'Anuncios total',   val: ads.length, color: 'text-ink' },
+              { label: 'Anuncios activos', val: activos,    color: 'text-good' },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="card p-4 text-center">
+                <p className={`font-display text-2xl font-black ${color}`}>{val}</p>
+                <p className="mt-0.5 text-xs text-ink-muted">{label}</p>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {ads.length === 0 ? (
         <div className="card p-10 text-center text-ink-muted">No hay anuncios. Creá el primero.</div>
       ) : (

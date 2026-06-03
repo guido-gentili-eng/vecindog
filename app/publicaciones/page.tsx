@@ -43,7 +43,7 @@ export default function PublicacionesPage() {
   const searchParams = useSearchParams();
   const catParam  = searchParams.get('cat');
   const zonaParam = searchParams.get('zona') ?? '';
-  const { ciudad } = useAuth();
+  const { ciudad, user, isAuthenticated } = useAuth();
 
   const catInicial: FiltroCategoria =
     catParam && (CAT_VALIDAS as string[]).includes(catParam)
@@ -80,6 +80,9 @@ export default function PublicacionesPage() {
     const zona = filtros.zona.trim().toLowerCase();
 
     return posts.filter((p) => {
+      if (filtros.soloMios && user?.id) {
+        if (p.user_id !== user.id) return false;
+      }
       if (cat === 'buscar') {
         if (p.categoria !== 'perdido' && p.categoria !== 'encontrado') return false;
       } else if (cat !== 'todas' && p.categoria !== cat) return false;
@@ -87,7 +90,7 @@ export default function PublicacionesPage() {
       if (zona && !p.zona.toLowerCase().includes(zona)) return false;
       return true;
     });
-  }, [posts, filtros]);
+  }, [posts, filtros, user]);
 
   return (
     <div className="py-8 md:py-10">
@@ -96,7 +99,7 @@ export default function PublicacionesPage() {
           <Dog className="h-3.5 w-3.5" /> Perros{ciudad ? ` · ${nombreCorto(ciudad)}` : ''}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-          {TITULO_CATEGORIA[filtros.categoria]}
+          {filtros.soloMios ? 'Mis publicaciones' : TITULO_CATEGORIA[filtros.categoria]}
         </h1>
         <p className="mt-1 text-ink-muted">
           {SUBTITULO_CATEGORIA[filtros.categoria]}{' '}
@@ -145,7 +148,7 @@ export default function PublicacionesPage() {
         </Link>
       </div>
 
-      <Filters value={filtros} onChange={setFiltros} />
+      <Filters value={filtros} onChange={setFiltros} isAuthenticated={isAuthenticated} />
 
       <section className="mt-6">
         {cargando ? (

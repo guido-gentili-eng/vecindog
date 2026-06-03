@@ -1,18 +1,20 @@
 'use client';
 
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { Search, X, SlidersHorizontal, User } from 'lucide-react';
 import type { Especie, FiltroCategoria } from '@/lib/mockData';
 
 export interface FiltrosState {
   categoria: FiltroCategoria;
   especie:   Especie | 'todas';
   zona:      string;
+  soloMios:  boolean;
 }
 
 export const FILTROS_INICIALES: FiltrosState = {
   categoria: 'todas',
   especie:   'todas',
-  zona:      ''
+  zona:      '',
+  soloMios:  false,
 };
 
 /**
@@ -21,13 +23,15 @@ export const FILTROS_INICIALES: FiltrosState = {
  */
 export default function Filters({
   value,
-  onChange
+  onChange,
+  isAuthenticated = false,
 }: {
   value: FiltrosState;
   onChange: (next: FiltrosState) => void;
+  isAuthenticated?: boolean;
 }) {
   const hayFiltros =
-    value.categoria !== 'todas' || value.zona !== '';
+    value.categoria !== 'todas' || value.zona !== '' || value.soloMios;
 
   return (
     <div className="card p-4 md:p-5">
@@ -48,6 +52,24 @@ export default function Filters({
           </button>
         )}
       </div>
+
+      {/* Toggle Mis publicaciones — solo si está logueado */}
+      {isAuthenticated && (
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={() => onChange({ ...value, soloMios: !value.soloMios })}
+            className={`inline-flex items-center gap-2 rounded-2xl border-2 px-4 py-2 text-sm font-bold transition ${
+              value.soloMios
+                ? 'border-brand-primary bg-brand-primary text-white'
+                : 'border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5'
+            }`}
+          >
+            <User className="h-4 w-4" />
+            Mis publicaciones
+          </button>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">

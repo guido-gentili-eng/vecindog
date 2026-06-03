@@ -27,11 +27,7 @@ function FbIcon({ size = 16 }: { size?: number }) {
 
 /* ── Helpers ── */
 function limpiarHandle(raw: string) {
-  return raw
-    .replace(/^@/, '')
-    .replace(/^https?:\/\/(www\.)?(instagram|facebook)\.com\//, '')
-    .replace(/\/$/, '')
-    .trim();
+  return raw.trim().toLowerCase();
 }
 
 type Red = 'instagram' | 'facebook';
@@ -164,7 +160,7 @@ export default function HistoriaPage() {
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/10 p-4">
         <div>
           <p className="font-bold text-white text-sm">Conectar {label}</p>
-          <p className="text-xs text-white/60">Tu usuario aparecerá en la historia.</p>
+          <p className="text-xs text-white/60">Tu email aparecerá en la historia.</p>
         </div>
         <button type="button" onClick={() => setEditando(red, true)}
           className="rounded-xl px-3 py-2 text-xs font-bold text-white transition hover:opacity-90"
@@ -175,9 +171,9 @@ export default function HistoriaPage() {
     );
     if (r.editando) return (
       <div className="rounded-2xl bg-white/10 p-4 space-y-3">
-        <p className="font-bold text-white text-sm flex items-center gap-2">{icon} Tu usuario de {label}</p>
+        <p className="font-bold text-white text-sm flex items-center gap-2">{icon} Email de {label}</p>
         <div className="flex gap-2">
-          <input autoFocus type="text" placeholder="@tuusuario"
+          <input autoFocus type="email" placeholder="tucorreo@ejemplo.com"
             value={r.handle} onChange={(e) => setHandle(red, e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && guardarHandle(red)}
             className="field flex-1" />
@@ -193,7 +189,7 @@ export default function HistoriaPage() {
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/10 p-3">
         <div className="flex items-center gap-2">
           <span style={{ color }}>{icon}</span>
-          <span className="font-bold text-white text-sm">@{limpiarHandle(r.handle)}</span>
+          <span className="font-bold text-white text-sm">{limpiarHandle(r.handle)}</span>
         </div>
         <button type="button" onClick={() => setEditando(red, true)}
           className="text-xs font-bold text-white/50 hover:text-white transition">
@@ -322,7 +318,7 @@ export default function HistoriaPage() {
             <div style={{ margin: '10px 14px 0', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {igFinal && (
                 <p style={{ margin: 0, fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  📸 @{igFinal}
+                  📸 {igFinal}
                 </p>
               )}
               {fbFinal && (

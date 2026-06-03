@@ -8,7 +8,7 @@ import {
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
   RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
   Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
-  Globe, ChevronDown,
+  Globe, ChevronDown, Instagram,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
@@ -153,6 +153,13 @@ export default function PerroDetallePage() {
                 <FileText className="h-3.5 w-3.5" /> Generar cartel
               </Link>
             )}
+            <Link
+              href={`/mis-perros/${id}/historia`}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
+              style={{ borderColor: '#e6683c', color: '#e6683c' }}
+            >
+              <Instagram className="h-3.5 w-3.5" /> Publicar en Instagram
+            </Link>
             <button
               type="button"
               onClick={() => setEditando(true)}

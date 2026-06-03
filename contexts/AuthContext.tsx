@@ -18,6 +18,7 @@ export interface Profile {
   provincia: string;
   pais:      string;
   direccion: string;
+  instagram?: string | null;
 }
 
 interface AuthCtx {

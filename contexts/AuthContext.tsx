@@ -30,6 +30,7 @@ interface AuthCtx {
   profile:         Profile | null;
   isGuest:         boolean;
   loading:         boolean;
+  profileLoading:  boolean;
   isAuthenticated: boolean;
   hasChosen:       boolean;
   hasProfile:      boolean;
@@ -53,19 +54,22 @@ interface AuthCtx {
 const AuthContext = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user,    setUser]    = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [ciudad,  setCiudadState] = useState<string | null>(null);
+  const [user,           setUser]           = useState<User | null>(null);
+  const [profile,        setProfile]        = useState<Profile | null>(null);
+  const [isGuest,        setIsGuest]        = useState(false);
+  const [loading,        setLoading]        = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [ciudad,         setCiudadState]    = useState<string | null>(null);
 
   async function fetchProfile(userId: string) {
+    setProfileLoading(true);
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
     setProfile(data ?? null);
+    setProfileLoading(false);
   }
 
   useEffect(() => {
@@ -198,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, isGuest, loading,
+      user, profile, isGuest, loading, profileLoading,
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,

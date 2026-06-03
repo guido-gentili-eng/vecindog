@@ -8,7 +8,7 @@ import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
 
 export default function ProfileModal() {
-  const { user, isAuthenticated, hasProfile, loading, saveProfile } = useAuth();
+  const { user, isAuthenticated, hasProfile, loading, profileLoading, saveProfile } = useAuth();
   const { t } = useLanguage();
 
   const [nombre,       setNombre]       = useState('');
@@ -21,7 +21,7 @@ export default function ProfileModal() {
   const [error,        setError]        = useState('');
   const [submitting,   setSubmitting]   = useState(false);
 
-  if (loading || !isAuthenticated || hasProfile) return null;
+  if (loading || profileLoading || !isAuthenticated || hasProfile) return null;
 
   function handleCiudadChange(nombre: string) {
     setCiudadPerfil(nombre);

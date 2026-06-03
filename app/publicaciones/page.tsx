@@ -43,6 +43,7 @@ export default function PublicacionesPage() {
   const searchParams = useSearchParams();
   const catParam  = searchParams.get('cat');
   const zonaParam = searchParams.get('zona') ?? '';
+  const uidParam  = searchParams.get('uid') ?? '';   // para filtro admin
   const { ciudad, user, isAuthenticated } = useAuth();
 
   const catInicial: FiltroCategoria =
@@ -80,6 +81,8 @@ export default function PublicacionesPage() {
     const zona = filtros.zona.trim().toLowerCase();
 
     return posts.filter((p) => {
+      // Filtro admin por uid en URL (solo lectura, no interactivo)
+      if (uidParam && p.user_id !== uidParam) return false;
       if (filtros.soloMios && user?.id) {
         if (p.user_id !== user.id) return false;
       }
@@ -90,7 +93,7 @@ export default function PublicacionesPage() {
       if (zona && !p.zona.toLowerCase().includes(zona)) return false;
       return true;
     });
-  }, [posts, filtros, user]);
+  }, [posts, filtros, user, uidParam]);
 
   return (
     <div className="py-8 md:py-10">

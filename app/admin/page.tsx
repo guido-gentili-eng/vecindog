@@ -2,11 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, Clock } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, Clock, MapPin, Phone, Mail, ExternalLink, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+
+interface Usuario {
+  id:         string;
+  email:      string;
+  created_at: string;
+  nombre:     string;
+  apellido:   string;
+  telefono:   string;
+  ciudad:     string;
+  provincia:  string;
+  direccion:  string;
+  plan:       string;
+}
 
 interface Stats {
   cuentas: {
@@ -19,7 +32,7 @@ interface Stats {
     total:   number;
     activos: number;
   };
-  ultimosUsuarios: { email: string; created_at: string }[];
+  ultimosUsuarios: Usuario[];
 }
 
 export default function AdminPage() {
@@ -107,17 +120,67 @@ export default function AdminPage() {
             <Clock className="h-4 w-4 text-brand-primary" /> Últimos registrados
           </h2>
         </div>
-        <ul>
-          {stats.ultimosUsuarios.map((u, i) => (
-            <li key={i} className="flex items-center justify-between border-b border-black/5 px-5 py-3 last:border-0">
-              <a href={`mailto:${u.email}`} className="text-sm font-semibold text-ink hover:text-brand-primary hover:underline transition">
-                {u.email}
-              </a>
-              <span className="text-xs text-ink-muted">
-                {new Date(u.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </span>
-            </li>
-          ))}
+        <ul className="divide-y divide-black/5">
+          {stats.ultimosUsuarios.map((u) => {
+            const nombreCompleto = [u.nombre, u.apellido].filter(Boolean).join(' ') || '(sin nombre)';
+            const ubicacion      = [u.ciudad, u.provincia].filter(Boolean).join(', ');
+            return (
+              <li key={u.id} className="px-5 py-4 hover:bg-brand-cream/40 transition">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    {/* Nombre + badge plan */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-ink">{nombreCompleto}</p>
+                      {u.plan === 'pro' && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-[#7c3aed]/10 px-2 py-0.5 text-[10px] font-bold text-[#7c3aed]">
+                          <Crown className="h-2.5 w-2.5" /> Pro
+                        </span>
+                      )}
+                      <span className="text-xs text-ink-muted">
+                        · {new Date(u.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                      <Mail className="h-3 w-3 shrink-0" />
+                      <a href={`mailto:${u.email}`} className="hover:text-brand-primary hover:underline transition truncate">
+                        {u.email}
+                      </a>
+                    </div>
+
+                    {/* Teléfono */}
+                    {u.telefono && (
+                      <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <a href={`tel:${u.telefono}`} className="hover:text-brand-primary transition">
+                          {u.telefono}
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Dirección */}
+                    {(u.direccion || ubicacion) && (
+                      <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span>{[u.direccion, ubicacion].filter(Boolean).join(' — ')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Botón ver publicaciones */}
+                  <a
+                    href={`/publicaciones?soloMios=1&uid=${u.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 inline-flex items-center gap-1 rounded-xl border border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition"
+                  >
+                    <ExternalLink className="h-3 w-3" /> Ver avisos
+                  </a>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

@@ -28,11 +28,13 @@ export async function GET(req: NextRequest) {
     { count: usuariosPro },
     { data: ads },
     { data: authUsers },
+    { data: profiles },
   ] = await Promise.all([
     admin.from('profiles').select('id', { count: 'exact', head: true }),
     admin.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
     admin.from('ads').select('id, titulo, anunciante, plan, activo, fecha_fin'),
     admin.auth.admin.listUsers({ perPage: 1000 }),
+    admin.from('profiles').select('id, nombre, apellido, telefono, ciudad, provincia, direccion, plan'),
   ]);
 
   const hoy         = new Date().toISOString().slice(0, 10);
@@ -41,11 +43,31 @@ export async function GET(req: NextRequest) {
   const proVencidos = await admin.from('profiles').select('id', { count: 'exact', head: true })
     .eq('plan', 'pro').lt('plan_vencimiento', hoy);
 
-  // Últimos 5 usuarios registrados
+  // Mapa de id → perfil
+  const profileMap: Record<string, { nombre: string; apellido: string; telefono: string; ciudad: string; provincia: string; direccion: string; plan: string }> = {};
+  for (const p of profiles ?? []) {
+    profileMap[p.id] = p;
+  }
+
+  // Últimos 10 usuarios registrados con datos completos
   const ultimosUsuarios = (authUsers?.users ?? [])
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
-    .map((u) => ({ email: u.email, created_at: u.created_at }));
+    .slice(0, 10)
+    .map((u) => {
+      const p = profileMap[u.id];
+      return {
+        id:         u.id,
+        email:      u.email ?? '',
+        created_at: u.created_at,
+        nombre:     p?.nombre    ?? '',
+        apellido:   p?.apellido  ?? '',
+        telefono:   p?.telefono  ?? '',
+        ciudad:     p?.ciudad    ?? '',
+        provincia:  p?.provincia ?? '',
+        direccion:  p?.direccion ?? '',
+        plan:       p?.plan      ?? 'free',
+      };
+    });
 
   return NextResponse.json({
     cuentas: {

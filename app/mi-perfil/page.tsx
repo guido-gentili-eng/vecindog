@@ -109,7 +109,7 @@ export default function MiPerfilPage() {
             <h1 className="font-display text-3xl font-black tracking-tight text-ink">
               {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
             </h1>
-            {/* Botón QR — solo Pro */}
+            {/* Botón QR — visible siempre; Free va a /planes */}
             {isPro ? (
               <button
                 type="button"
@@ -120,15 +120,14 @@ export default function MiPerfilPage() {
               </button>
             ) : (
               <Link href="/planes"
-                className="inline-flex items-center gap-1.5 rounded-2xl bg-black/5 px-3 py-2 text-sm font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
-                title="Función Pro"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
               >
                 <QrCode className="h-4 w-4" /> QR
               </Link>
             )}
           </div>
         </div>
-        {/* Plan de Obediencia — solo Pro */}
+        {/* Plan de Obediencia — visible siempre; Free va a /planes */}
         {isPro ? (
           <a
             href="/plan-obediencia-canina.pdf"
@@ -140,12 +139,12 @@ export default function MiPerfilPage() {
             Plan de Obediencia
           </a>
         ) : (
-          <Link href="/planes"
-            className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-brand-primary/30 hover:text-brand-primary"
+          <Link
+            href="/planes"
+            className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90"
           >
             <BookOpen className="h-4 w-4" />
-            <span>Plan de Obediencia</span>
-            <Sparkles className="h-3.5 w-3.5 text-brand-primary" />
+            Plan de Obediencia
           </Link>
         )}
       </div>

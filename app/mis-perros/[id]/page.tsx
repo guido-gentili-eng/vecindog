@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
   RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
   Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
-  Globe, ChevronDown, Share2,
+  Globe, ChevronDown, Share2, Lock, Sparkles,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, subirFotoPerro,
@@ -29,6 +29,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function PerroDetallePage() {
   const { id }        = useParams<{ id: string }>();
+  const router        = useRouter();
   const searchParams  = useSearchParams();
   const esNuevo       = searchParams.get('nuevo') === '1';
   const { ciudad, profile, isPro } = useAuth();
@@ -62,6 +63,12 @@ export default function PerroDetallePage() {
       })
       .finally(() => setCargando(false));
   }, [id]);
+
+  function proSubir(tipo: TipoEstudio): (f: File) => Promise<void> {
+    return isPro
+      ? (f: File) => handleSubirEstudio(tipo, f)
+      : async (_f: File) => { router.push('/planes'); };
+  }
 
   async function handleSubirEstudio(tipo: TipoEstudio, file: File) {
     if (!perro) return;
@@ -230,20 +237,43 @@ export default function PerroDetallePage() {
             </div>
           </div>
 
-          {/* Identificación, Vacunas y Estudios — Pro only */}
-          <ProGate feature="Perfil completo del perro">
+          {/* Banner Pro para usuarios Free */}
+          {!isPro && (
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 shrink-0 text-brand-primary" />
+                <p className="text-xs font-bold text-ink">
+                  Identificación, vacunas y estudios son funciones de <span className="text-brand-primary">VecindogPro</span>
+                </p>
+              </div>
+              <Link href="/planes"
+                className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:opacity-90">
+                <Sparkles className="h-3 w-3" /> Ver Pro
+              </Link>
+            </div>
+          )}
+
+          {/* Identificación */}
           <div className="card mb-5 p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
                 <Cpu className="h-4 w-4 text-brand-primary" /> Identificación
               </h2>
-              <Link
-                href={`/mis-perros/${id}/cartel`}
-                target="_blank"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
-              >
-                <Download className="h-3.5 w-3.5" /> Guardar / Enviar PDF
-              </Link>
+              {isPro ? (
+                <Link
+                  href={`/mis-perros/${id}/cartel`}
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+                >
+                  <Download className="h-3.5 w-3.5" /> Guardar / Enviar PDF
+                </Link>
+              ) : (
+                <Link href="/planes"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+                >
+                  <Lock className="h-3.5 w-3.5" /> Guardar / Enviar PDF
+                </Link>
+              )}
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
               <DataItem label="Microchip"      value={perro.chip      || '—'} mono />
@@ -265,13 +295,21 @@ export default function PerroDetallePage() {
                   </span>
                 )}
               </h2>
-              <button
-                type="button"
-                onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
-                className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
-              >
-                + Agregar
-              </button>
+              {isPro ? (
+                <button
+                  type="button"
+                  onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
+                  className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+                >
+                  + Agregar
+                </button>
+              ) : (
+                <Link href="/planes"
+                  className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+                >
+                  <Lock className="h-3 w-3" /> Agregar
+                </Link>
+              )}
             </div>
 
             {agregandoVacuna && (
@@ -314,7 +352,7 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'laboratorio')}
             subiendo={subiendoTipo === 'laboratorio'}
-            onSubir={(f) => handleSubirEstudio('laboratorio', f)}
+            onSubir={proSubir('laboratorio')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -327,7 +365,7 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'radiografia')}
             subiendo={subiendoTipo === 'radiografia'}
-            onSubir={(f) => handleSubirEstudio('radiografia', f)}
+            onSubir={proSubir('radiografia')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -340,7 +378,7 @@ export default function PerroDetallePage() {
             accept="image/*,video/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'ecografia')}
             subiendo={subiendoTipo === 'ecografia'}
-            onSubir={(f) => handleSubirEstudio('ecografia', f)}
+            onSubir={proSubir('ecografia')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -350,7 +388,7 @@ export default function PerroDetallePage() {
             perro={perro}
             estudios={estudios.filter((e) => e.tipo === 'certificado_chip')}
             subiendo={subiendoTipo === 'certificado_chip'}
-            onSubir={(f) => handleSubirEstudio('certificado_chip', f)}
+            onSubir={proSubir('certificado_chip')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
             onChipUpdate={(chip) => setPerro((p) => p ? { ...p, chip } : p)}
@@ -360,7 +398,7 @@ export default function PerroDetallePage() {
           <CVISection
             estudios={estudios.filter((e) => e.tipo === 'certificado_cvi')}
             subiendo={subiendoTipo === 'certificado_cvi'}
-            onSubir={(f) => handleSubirEstudio('certificado_cvi', f)}
+            onSubir={proSubir('certificado_cvi')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -373,7 +411,7 @@ export default function PerroDetallePage() {
             accept="image/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'certificado_antiparasitario')}
             subiendo={subiendoTipo === 'certificado_antiparasitario'}
-            onSubir={(f) => handleSubirEstudio('certificado_antiparasitario', f)}
+            onSubir={proSubir('certificado_antiparasitario')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -386,7 +424,7 @@ export default function PerroDetallePage() {
             accept="image/*,.pdf"
             estudios={estudios.filter((e) => e.tipo === 'vacuna_antirrabica')}
             subiendo={subiendoTipo === 'vacuna_antirrabica'}
-            onSubir={(f) => handleSubirEstudio('vacuna_antirrabica', f)}
+            onSubir={proSubir('vacuna_antirrabica')}
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
           />
@@ -395,8 +433,8 @@ export default function PerroDetallePage() {
           <AirTagSection
             perroId={perro.id}
             airtags={estudios.filter((e) => e.tipo === 'airtag')}
-            onAdd={(e) => setEstudios((prev) => [e, ...prev])}
-            onDelete={(id) => setEstudios((prev) => prev.filter((e) => e.id !== id))}
+            onAdd={isPro ? (e) => setEstudios((prev) => [e, ...prev]) : () => router.push('/planes')}
+            onDelete={handleEliminarEstudio}
           />
 
           {/* Modal enviar estudio */}
@@ -416,7 +454,6 @@ export default function PerroDetallePage() {
             ciudad={ciudad ?? null}
             edad={edad}
           />
-          </ProGate>
 
           {/* CTA: aviso activo o publicar */}
           {postActivo !== undefined && (

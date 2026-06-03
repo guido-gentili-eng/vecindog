@@ -4,9 +4,10 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X, Instagram, Facebook, Sparkles } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle, CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X, Instagram, Facebook, Sparkles, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, type Perro } from '@/lib/perros';
+import { contarPostsActivosDelUsuario } from '@/lib/posts';
 import { useEffect, useCallback } from 'react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
@@ -24,6 +25,7 @@ export default function MiPerfilPage() {
   }
 
   const [perros,       setPerros]       = useState<Perro[]>([]);
+  const [postCount,    setPostCount]    = useState(0);
   const [cargando,     setCargando]     = useState(true);
   const [editando,     setEditando]     = useState(false);
   const [submitting,   setSubmitting]   = useState(false);
@@ -63,8 +65,11 @@ export default function MiPerfilPage() {
 
   useEffect(() => {
     if (authLoading || !isAuthenticated) { setCargando(false); return; }
-    listarMisPerros()
-      .then(setPerros)
+    Promise.all([
+      listarMisPerros(),
+      contarPostsActivosDelUsuario(),
+    ])
+      .then(([p, count]) => { setPerros(p); setPostCount(count); })
       .catch(() => {})
       .finally(() => setCargando(false));
   }, [isAuthenticated, authLoading]);
@@ -340,6 +345,56 @@ export default function MiPerfilPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Mis avisos — contador de uso */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base font-extrabold text-ink flex items-center gap-2">
+            <FileText className="h-4 w-4 text-brand-primary" /> Mis avisos activos
+          </h2>
+          <Link href="/publicaciones?cat=todas"
+            onClick={() => {/* prefiltrar a soloMios desde URL no es soportado aún */}}
+            className="text-xs font-bold text-brand-primary hover:underline transition">
+            Ver avisos →
+          </Link>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          {isPro ? (
+            /* Pro: solo muestra el número sin límite */
+            <div className="flex items-center gap-2">
+              <span className="font-display text-3xl font-black text-ink">{postCount}</span>
+              <span className="text-sm text-ink-muted">avisos publicados</span>
+              <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#7c3aed]/10 px-2.5 py-1 text-xs font-bold text-[#7c3aed]">
+                <Sparkles className="h-3 w-3" /> Sin límite
+              </span>
+            </div>
+          ) : (
+            /* Free: muestra X/5 con barra de progreso */
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm font-bold text-ink">
+                  <span className={postCount >= 5 ? 'text-bad' : 'text-ink'}>{postCount}</span>
+                  <span className="text-ink-muted"> / 5 avisos</span>
+                </span>
+                {postCount >= 5 ? (
+                  <Link href="/planes" className="text-xs font-bold text-brand-primary hover:underline">
+                    <Sparkles className="h-3 w-3 inline mr-0.5" /> Pasate a Pro
+                  </Link>
+                ) : (
+                  <span className="text-xs text-ink-muted">{5 - postCount} disponible{5 - postCount !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+              <div className="h-2 w-full rounded-full bg-black/8 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${postCount >= 5 ? 'bg-bad' : postCount >= 4 ? 'bg-warn' : 'bg-good'}`}
+                  style={{ width: `${Math.min((postCount / 5) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mis perros */}

@@ -16,11 +16,13 @@ const CAT_COLOR: Record<string, string> = {
   perdido:    '#ef4444',
   encontrado: '#22c55e',
   adopcion:   '#f97316',
+  transito:   '#7c3aed',
 };
 const CAT_LABEL: Record<string, string> = {
   perdido:    'Perdido',
   encontrado: 'Visto',
   adopcion:   'Adopción',
+  transito:   'En la calle',
 };
 
 /* ──────────────────── Íconos ──────────────────── */

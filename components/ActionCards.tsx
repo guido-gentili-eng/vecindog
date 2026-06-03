@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, MapPin, Heart, Home, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Heart, Home, ArrowRight, Footprints } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -60,7 +60,18 @@ const ACCIONES: Accion[] = [
     text:   'text-white',
     iconBg: 'bg-white/22',
     accent: 'bg-brand-coral-dark'
-  }
+  },
+  {
+    href: '/publicar?cat=transito',
+    icon: Footprints,
+    titulo: 'Perro en tránsito',
+    texto: 'Lo tenés temporalmente o lo viste en la calle. La comunidad puede ayudar.',
+    chip: 'VecindogPro',
+    bg:     'bg-[#5b21b6]',
+    text:   'text-white',
+    iconBg: 'bg-white/22',
+    accent: 'bg-[#4c1d95]'
+  },
 ];
 
 /**
@@ -75,19 +86,19 @@ export default function ActionCards() {
   return (
     <section aria-label="Acciones principales">
       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-        {ACCIONES.map((a, i) => (
-          <Card key={a.href} {...a} last={i === ACCIONES.length - 1 && ACCIONES.length % 2 !== 0} />
+        {ACCIONES.map((a) => (
+          <Card key={a.href} {...a} />
         ))}
       </div>
     </section>
   );
 }
 
-function Card({ href, icon: Icon, titulo, texto, chip, bg, text, iconBg, accent, last }: Accion & { last?: boolean }) {
+function Card({ href, icon: Icon, titulo, texto, chip, bg, text, iconBg, accent }: Accion) {
   return (
     <Link
       href={href}
-      className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] ${bg} ${text} ${last ? 'sm:col-span-2 sm:mx-auto sm:w-1/2' : ''}`}
+      className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] ${bg} ${text}`}
     >
       {/* Strip lateral de color (accent) */}
       <div className={`w-1.5 shrink-0 ${accent}`} />

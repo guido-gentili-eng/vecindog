@@ -11,7 +11,7 @@ export interface Post {
   created_at:  string;
   user_id:     string | null;
   perro_id:    string | null;
-  categoria:   'perdido' | 'encontrado' | 'adopcion';
+  categoria:   'perdido' | 'encontrado' | 'adopcion' | 'transito';
   especie:     string;
   nombre:      string | null;
   raza:        string | null;
@@ -28,6 +28,8 @@ export interface Post {
   estado:      'activo' | 'resuelto';
   lat:         number | null;
   lng:         number | null;
+  situacion_transito?:    'tengo' | 'calle' | null;
+  fecha_limite_transito?: string | null;
 }
 
 /* ─────────────────── Adapter ─────────────────── */
@@ -47,6 +49,8 @@ export function postToAnimal(p: Post): Animal {
     contacto:    p.contacto,
     estado:      'vivo',
     recompensa:  null,
+    situacion_transito:    p.situacion_transito ?? null,
+    fecha_limite_transito: p.fecha_limite_transito ?? null,
   };
 }
 

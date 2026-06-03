@@ -66,6 +66,7 @@ export default function Filters({
             <option value="perdido">Perdidos</option>
             <option value="encontrado">Vistos</option>
             <option value="adopcion">En adopción</option>
+            <option value="transito">En tránsito</option>
           </select>
         </label>
 

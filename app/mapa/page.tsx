@@ -79,16 +79,19 @@ export default function MapaPage() {
           <span className="flex items-center gap-1.5 text-adopt">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-adopt" /> Adopción
           </span>
+          <span className="flex items-center gap-1.5" style={{ color: '#7c3aed' }}>
+            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#7c3aed' }} /> En la calle
+          </span>
           <span className="flex items-center gap-1.5" style={{ color: '#0d9488' }}>
             <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: '#0d9488' }} /> Veterinaria
           </span>
         </div>
       </div>
 
-      {/* Mapa */}
+      {/* Mapa — tránsito: solo los que están en la calle */}
       <MapView
         center={center}
-        posts={posts}
+        posts={posts.filter(p => p.categoria !== 'transito' || p.situacion_transito === 'calle')}
         userLoc={null}
         cargando={cargando}
         ciudad={ciudad ?? undefined}

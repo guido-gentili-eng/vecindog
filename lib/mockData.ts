@@ -6,7 +6,7 @@
 //   - imagenes -> columna `images text[]` o tabla `post_images`.
 //   - El primer elemento de imagenes[] es la imagen principal.
 
-export type Categoria = 'perdido' | 'encontrado' | 'adopcion';
+export type Categoria = 'perdido' | 'encontrado' | 'adopcion' | 'transito';
 export type Especie = 'perro' | 'gato' | 'otro';
 export type EstadoVida = 'vivo' | 'fallecido' | 'desconocido';
 export type Tamanio = 'chico' | 'mediano' | 'grande';
@@ -35,6 +35,9 @@ export interface Animal {
   collar?: boolean | null;        // true = si, false = no, null = desconocido
   colorCollar?: string | null;
   chapita?: boolean | null;
+  // Campos específicos de tránsito
+  situacion_transito?:    'tengo' | 'calle' | null;
+  fecha_limite_transito?: string | null;
 }
 
 export const ANIMALES: Animal[] = [];
@@ -43,7 +46,7 @@ export function obtenerAnimal(id: string): Animal | undefined {
   return ANIMALES.find((a) => a.id === id);
 }
 
-// 'buscar' = perdidos + encontrados (excluye adopcion).
+// 'buscar' = perdidos + encontrados (excluye adopcion y transito).
 export type FiltroCategoria = Categoria | 'todas' | 'buscar';
 
 export function listarAnimales(filtros?: {
@@ -66,9 +69,10 @@ export function listarAnimales(filtros?: {
 }
 
 export const ETIQUETA_CATEGORIA: Record<Categoria, string> = {
-  perdido: 'Perdido',
-  encontrado: 'Visto',
-  adopcion: 'En adopcion'
+  perdido:   'Perdido',
+  encontrado:'Visto',
+  adopcion:  'En adopción',
+  transito:  'En tránsito',
 };
 
 export const ETIQUETA_ESPECIE: Record<Especie, string> = {

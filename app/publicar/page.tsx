@@ -29,21 +29,23 @@ type Tamano  = 'pequeño' | 'mediano' | 'grande';
 type Ternario = boolean | null;   // true=sí, false=no, null=no sé
 
 interface FormState {
-  categoria:   Categoria;
-  especie:     Especie;
-  nombre:      string;
-  raza:        string;
-  color:       string;
-  tamano:      Tamano | '';
-  collar:      Ternario;
-  chapita:     Ternario;
-  descripcion: string;
-  zona:        string;
-  fecha:       string;
-  horario:     string;
-  contacto:    string;
-  lat:         number | null;
-  lng:         number | null;
+  categoria:             Categoria;
+  especie:               Especie;
+  nombre:                string;
+  raza:                  string;
+  color:                 string;
+  tamano:                Tamano | '';
+  collar:                Ternario;
+  chapita:               Ternario;
+  descripcion:           string;
+  zona:                  string;
+  fecha:                 string;
+  horario:               string;
+  contacto:              string;
+  lat:                   number | null;
+  lng:                   number | null;
+  situacion_transito:    'tengo' | 'calle' | '';
+  fecha_limite_transito: string;
 }
 
 interface FotoPreview {
@@ -52,7 +54,7 @@ interface FotoPreview {
   pesoMb: number;
 }
 
-const CATEGORIAS_VALIDAS: Categoria[] = ['perdido', 'encontrado', 'adopcion'];
+const CATEGORIAS_VALIDAS: Categoria[] = ['perdido', 'encontrado', 'adopcion', 'transito'];
 
 const COLORES_PERRO = [
   'Negro', 'Blanco', 'Marrón', 'Caramelo', 'Dorado',
@@ -80,6 +82,8 @@ function estadoInicial(catParam: string | null): FormState {
     contacto:    '',
     lat:         null,
     lng:         null,
+    situacion_transito:    '',
+    fecha_limite_transito: '',
   };
 }
 
@@ -290,6 +294,11 @@ export default function PublicarPage() {
         images:      uploadedUrls,
         // Solo incluir lat/lng si el usuario capturó GPS (evita error si la columna aún no existe)
         ...(form.lat != null && form.lng != null ? { lat: form.lat, lng: form.lng } : {}),
+        // Campos tránsito
+        ...(form.categoria === 'transito' ? {
+          situacion_transito:    form.situacion_transito || null,
+          fecha_limite_transito: (form.situacion_transito === 'tengo' && form.fecha_limite_transito) ? form.fecha_limite_transito : null,
+        } : {}),
       });
       if (insErr) throw insErr;
 
@@ -381,6 +390,33 @@ export default function PublicarPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  /* ── Bloqueo tránsito para Free ── */
+  if (form.categoria === 'transito' && !isPro) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <div className="w-full max-w-sm rounded-[28px] bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7c3aed]/10">
+            <span className="text-3xl">🐾</span>
+          </div>
+          <h2 className="mt-5 font-display text-xl font-black text-ink">Perros en tránsito</h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            Publicar animales en tránsito es una función exclusiva de <strong>VecindogPro</strong>.
+          </p>
+          <div className="mt-6 space-y-2">
+            <Link href="/planes"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
+              <Sparkles className="h-4 w-4" /> Ver plan Pro
+            </Link>
+            <Link href="/"
+              className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
+              Volver al inicio
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   /* ── Bloqueo invitados ── */
@@ -506,21 +542,25 @@ export default function PublicarPage() {
         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
           form.categoria === 'perdido'    ? 'bg-lost/15 text-lost' :
           form.categoria === 'encontrado' ? 'bg-found/15 text-found' :
+          form.categoria === 'transito'   ? 'bg-[#7c3aed]/10 text-[#7c3aed]' :
                                            'bg-adopt/30 text-[#7a4f00]'
         }`}>
           <Dog className="h-3.5 w-3.5" />
           {form.categoria === 'perdido'    ? 'Perro perdido' :
            form.categoria === 'encontrado' ? 'Vi un perro perdido' :
+           form.categoria === 'transito'   ? 'Perro en tránsito' :
                                             'Doy en adopción'}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
           {form.categoria === 'perdido'    ? 'Perdí a mi perro' :
            form.categoria === 'encontrado' ? 'Vi un perro perdido' :
+           form.categoria === 'transito'   ? 'Perro en tránsito' :
                                             'Doy en adopción'}
         </h1>
         <p className="mt-1 text-ink-muted">
           {form.categoria === 'perdido'    ? 'Completá los datos y los vecinos te van a ayudar a encontrarlo.' :
            form.categoria === 'encontrado' ? 'Cargá los datos del perro que viste para que su familia lo encuentre.' :
+           form.categoria === 'transito'   ? 'Indicá si lo tenés vos o si lo viste en la calle, y la comunidad puede ayudar.' :
                                             'Completá la información para encontrarle una familia responsable.'}
         </p>
       </header>
@@ -617,11 +657,59 @@ export default function PublicarPage() {
           )}
         </StepCard>
 
+        {/* ── PASO 2 especial: sub-tipo tránsito ── */}
+        {form.categoria === 'transito' && (
+          <StepCard n={2} titulo="Situación del animal" subtitulo="Contanos cómo encontraste o cómo estás con el perro.">
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {([
+                  { val: 'tengo', label: '🏠 Lo tengo yo temporalmente', desc: 'Lo encontraste y lo cuidás hasta encontrarle dueño' },
+                  { val: 'calle', label: '🚨 Lo vi en la calle', desc: 'Necesita ayuda pero no pudiste llevártelo' },
+                ] as const).map(({ val, label, desc }) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => handleChange('situacion_transito', val)}
+                    className={`rounded-2xl border-2 p-4 text-left transition ${
+                      form.situacion_transito === val
+                        ? 'border-[#7c3aed] bg-[#7c3aed]/5'
+                        : 'border-black/10 hover:border-[#7c3aed]/40'
+                    }`}
+                  >
+                    <p className="font-bold text-sm text-ink">{label}</p>
+                    <p className="mt-1 text-xs text-ink-muted">{desc}</p>
+                  </button>
+                ))}
+              </div>
+
+              {form.situacion_transito === 'tengo' && (
+                <Field label="¿Hasta cuándo lo podés tener? (fecha límite)">
+                  <input
+                    type="date"
+                    className="field"
+                    min={new Date().toISOString().slice(0, 10)}
+                    value={form.fecha_limite_transito}
+                    onChange={(e) => handleChange('fecha_limite_transito', e.target.value)}
+                  />
+                  <p className="mt-1 text-xs text-ink-muted">Aparecerá como cuenta regresiva en tu aviso. Genera urgencia para que alguien lo adopte.</p>
+                </Field>
+              )}
+
+              {form.situacion_transito === 'calle' && (
+                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                  ⚠️ Este aviso aparecerá en el mapa en color violeta para que los vecinos cercanos puedan ayudar.
+                </div>
+              )}
+            </div>
+          </StepCard>
+        )}
+
         {/* ── PASO 2: datos del perro ── */}
-        <StepCard n={2} titulo="Datos del perro"
+        <StepCard n={form.categoria === 'transito' ? 3 : 2} titulo="Datos del perro"
           subtitulo={
             form.categoria === 'perdido'    ? 'Completá lo que sepas. Más datos = más chances de encontrarlo.' :
             form.categoria === 'encontrado' ? 'Describí el perro que viste para que su familia lo reconozca.' :
+            form.categoria === 'transito'   ? 'Describí el animal para que alguien lo reconozca o decida ayudar.' :
                                              'Contanos cómo es el perro que das en adopción.'
           }>
           <div className="space-y-4">
@@ -818,11 +906,12 @@ export default function PublicarPage() {
           </div>
         )}
 
-        {/* ── PASO 3: dónde y cuándo ── */}
-        <StepCard n={3}
+        {/* ── PASO 3/4: dónde y cuándo ── */}
+        <StepCard n={form.categoria === 'transito' ? 4 : 3}
           titulo={
             form.categoria === 'perdido'    ? '¿Dónde y cuándo se perdió?' :
             form.categoria === 'encontrado' ? '¿Dónde y cuándo lo viste?' :
+            form.categoria === 'transito'   ? '¿Dónde está o dónde lo viste?' :
                                              '¿Dónde está el perro?'
           }>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -920,8 +1009,8 @@ export default function PublicarPage() {
           </div>
         </StepCard>
 
-        {/* ── PASO 4: contacto ── */}
-        <StepCard n={4} titulo="¿Cómo te contactan?">
+        {/* ── PASO 4/5: contacto ── */}
+        <StepCard n={form.categoria === 'transito' ? 5 : 4} titulo="¿Cómo te contactan?">
           <Field label="WhatsApp de contacto">
             <input type="tel" className="field" placeholder="+54 9 291 ..."
               value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} required />

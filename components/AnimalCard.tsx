@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Calendar, ArrowRight, ImageIcon, Images, Heart } from 'lucide-react';
+import { MapPin, Calendar, ArrowRight, ImageIcon, Images, Heart, Clock } from 'lucide-react';
 import type { Animal } from '@/lib/mockData';
 import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
 
@@ -7,8 +7,13 @@ import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
 const COLOR_CATEGORIA: Record<Animal['categoria'], string> = {
   perdido:    'bg-lost text-white',
   encontrado: 'bg-found text-white',
-  adopcion:   'bg-adopt text-[#5b3a0e]'
+  adopcion:   'bg-adopt text-[#5b3a0e]',
+  transito:   'bg-[#7c3aed] text-white',
 };
+
+function diasRestantes(fecha: string): number {
+  return Math.ceil((new Date(fecha).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
 
 export default function AnimalCard({ animal }: { animal: Animal }) {
   const principal = animal.imagenes?.[0];
@@ -74,12 +79,31 @@ export default function AnimalCard({ animal }: { animal: Animal }) {
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5 text-brand-primary" />
             <span className="font-bold text-ink">{animal.zona}</span>
-            <span className="text-ink-muted">· {animal.ciudad}</span>
+            {animal.ciudad && <span className="text-ink-muted">· {animal.ciudad}</span>}
           </span>
           <span className="inline-flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" /> {animal.fecha}
           </span>
         </div>
+
+        {/* Badge fecha límite para tránsito "tengo" */}
+        {animal.categoria === 'transito' && animal.situacion_transito === 'tengo' && animal.fecha_limite_transito && (() => {
+          const dias = diasRestantes(animal.fecha_limite_transito);
+          const color = dias <= 2 ? 'bg-bad/10 text-bad' : dias <= 6 ? 'bg-warn/15 text-[#7a4f00]' : 'bg-good/10 text-good';
+          const label = dias < 0 ? 'Plazo vencido' : dias === 0 ? 'Último día' : dias === 1 ? 'Queda 1 día' : `Quedan ${dias} días`;
+          return (
+            <span className={`mt-2 inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${color}`}>
+              <Clock className="h-3 w-3" /> {label}
+            </span>
+          );
+        })()}
+
+        {/* Badge "En la calle" para tránsito calle */}
+        {animal.categoria === 'transito' && animal.situacion_transito === 'calle' && (
+          <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-[#7c3aed]/10 px-2.5 py-1 text-xs font-bold text-[#7c3aed]">
+            📍 Visto en la calle — necesita ayuda
+          </span>
+        )}
 
         {animal.recompensa ? (
           <p className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-brand-primary/10 px-2.5 py-1 text-xs font-bold text-brand-primary">

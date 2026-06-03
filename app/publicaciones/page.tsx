@@ -18,7 +18,7 @@ import { nombreCorto } from '@/lib/ciudades';
 const AD_INTERVAL = 4;
 
 const CAT_VALIDAS: FiltroCategoria[] = [
-  'todas', 'buscar', 'perdido', 'encontrado', 'adopcion'
+  'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito'
 ];
 
 const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
@@ -26,7 +26,8 @@ const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
   buscar:     'Perdidos y vistos',
   perdido:    'Perros perdidos',
   encontrado: 'Perros vistos',
-  adopcion:   'Perros en adopción'
+  adopcion:   'Perros en adopción',
+  transito:   'Perros en tránsito',
 };
 
 const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
@@ -34,7 +35,8 @@ const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
   buscar:     'Perros perdidos y vistos cerca tuyo.',
   perdido:    'Familias buscando a su perro. ¿Lo viste?',
   encontrado: 'Perros vistos en la calle que buscan a su familia.',
-  adopcion:   'Perros que buscan una familia responsable.'
+  adopcion:   'Perros que buscan una familia responsable.',
+  transito:   'Perros que alguien tiene temporalmente o vio en la calle.',
 };
 
 export default function PublicacionesPage() {

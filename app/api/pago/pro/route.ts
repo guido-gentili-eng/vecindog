@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-const PRECIO_PRO = 2000;
+const PRECIO_PRO = 1000;
 
 export async function POST(req: NextRequest) {
   try {

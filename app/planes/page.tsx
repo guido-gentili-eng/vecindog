@@ -144,7 +144,7 @@ export default function PlanesPage() {
           <div className="mb-1 text-xs font-bold uppercase tracking-widest text-white/60">Plan</div>
           <div className="font-display text-3xl font-black">VecindogPro</div>
           <div className="mt-1">
-            <span className="text-3xl font-extrabold">$2.000</span>
+            <span className="text-3xl font-extrabold">$1.000</span>
             <span className="ml-1 text-sm text-white/70">/ mes</span>
           </div>
           <p className="mt-2 text-sm text-white/80">La experiencia completa para encontrar y cuidar a tu perro.</p>

@@ -42,103 +42,106 @@ export default function CuidadoPage() {
         </p>
       </div>
 
-      {/* Sección: Busco cuidador + su listado */}
-      <section className="mb-12">
-        <Link
-          href="/cuidado/busco-cuidador"
-          className="group mb-5 flex overflow-hidden rounded-3xl bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
-        >
-          <div className="flex flex-1 items-start gap-4 p-6">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
-              <Search className="h-6 w-6" />
+      {/* Grid 2 columnas: izquierda = busco cuidador, derecha = quiero cuidar */}
+      <div className="grid gap-6 md:grid-cols-2 md:items-start">
+
+        {/* ── Columna izquierda: Busco cuidador ── */}
+        <div>
+          <Link
+            href="/cuidado/busco-cuidador"
+            className="group mb-4 flex overflow-hidden rounded-3xl bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
+          >
+            <div className="flex flex-1 items-start gap-4 p-6">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
+                <Search className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-extrabold leading-tight">Busco cuidador</h2>
+                <p className="mt-1 text-sm text-white/80">
+                  Publicá un aviso con los datos de tu perro y encontrá a alguien que lo cuide.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
+                  Publicar pedido <ChevronRight className="h-3.5 w-3.5" />
+                </span>
+              </div>
             </div>
-            <div>
-              <h2 className="font-display text-xl font-extrabold leading-tight">Busco cuidador</h2>
-              <p className="mt-1 text-sm text-white/80">
-                Publicá un aviso con los datos de tu perro y encontrá a alguien que lo cuide.
-              </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
-                Publicar pedido <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+
+          <h3 className="mb-3 font-display text-base font-black text-ink flex items-center gap-2">
+            <Search className="h-4 w-4 text-teal-600" /> Buscan cuidador
+            {buscadores.length > 0 && (
+              <span className="ml-1 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-700">
+                {buscadores.length}
               </span>
+            )}
+          </h3>
+          {cargando ? (
+            <div className="space-y-3">
+              {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
             </div>
-          </div>
-        </Link>
-
-        {/* Listado buscan cuidador */}
-        <h3 className="mb-3 font-display text-lg font-black text-ink flex items-center gap-2">
-          <Search className="h-4 w-4 text-teal-600" /> Buscan cuidador
-          {buscadores.length > 0 && (
-            <span className="ml-1 rounded-full bg-teal-100 px-2.5 py-0.5 text-sm font-bold text-teal-700">
-              {buscadores.length}
-            </span>
+          ) : buscadores.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-5 py-6 text-center text-sm text-teal-600">
+              Todavía no hay avisos.{' '}
+              <Link href="/cuidado/busco-cuidador" className="font-bold underline">¡Publicá el primero!</Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {buscadores.map((p) => (
+                <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'busco_cuidador')} />
+              ))}
+            </div>
           )}
-        </h3>
-        {cargando ? (
-          <div className="space-y-3">
-            {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
-          </div>
-        ) : buscadores.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-6 py-5 text-center text-sm text-teal-600">
-            Todavía no hay avisos de personas buscando cuidador.{' '}
-            <Link href="/cuidado/busco-cuidador" className="font-bold underline">¡Publicá el primero!</Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {buscadores.map((p) => (
-              <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'busco_cuidador')} />
-            ))}
-          </div>
-        )}
-      </section>
+        </div>
 
-      {/* Sección: Quiero cuidar + su listado */}
-      <section>
-        <Link
-          href="/cuidado/quiero-cuidar"
-          className="group mb-5 flex overflow-hidden rounded-3xl bg-teal-800 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
-        >
-          <div className="flex flex-1 items-start gap-4 p-6">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
-              <HandHeart className="h-6 w-6" />
+        {/* ── Columna derecha: Quiero cuidar ── */}
+        <div>
+          <Link
+            href="/cuidado/quiero-cuidar"
+            className="group mb-4 flex overflow-hidden rounded-3xl bg-teal-800 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
+          >
+            <div className="flex flex-1 items-start gap-4 p-6">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
+                <HandHeart className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-extrabold leading-tight">Quiero cuidar perros</h2>
+                <p className="mt-1 text-sm text-white/80">
+                  Anotate como cuidador disponible para ayudar a vecinos que lo necesiten.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
+                  Registrarme <ChevronRight className="h-3.5 w-3.5" />
+                </span>
+              </div>
             </div>
-            <div>
-              <h2 className="font-display text-xl font-extrabold leading-tight">Quiero cuidar perros</h2>
-              <p className="mt-1 text-sm text-white/80">
-                Anotate como cuidador disponible para ayudar a vecinos que lo necesiten.
-              </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
-                Registrarme <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+
+          <h3 className="mb-3 font-display text-base font-black text-ink flex items-center gap-2">
+            <HandHeart className="h-4 w-4 text-teal-700" /> Cuidadores disponibles
+            {cuidadores.length > 0 && (
+              <span className="ml-1 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-700">
+                {cuidadores.length}
               </span>
+            )}
+          </h3>
+          {cargando ? (
+            <div className="space-y-3">
+              {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
             </div>
-          </div>
-        </Link>
-
-        {/* Listado cuidadores disponibles */}
-        <h3 className="mb-3 font-display text-lg font-black text-ink flex items-center gap-2">
-          <HandHeart className="h-4 w-4 text-teal-700" /> Cuidadores disponibles
-          {cuidadores.length > 0 && (
-            <span className="ml-1 rounded-full bg-teal-100 px-2.5 py-0.5 text-sm font-bold text-teal-700">
-              {cuidadores.length}
-            </span>
+          ) : cuidadores.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-5 py-6 text-center text-sm text-teal-600">
+              Todavía no hay cuidadores.{' '}
+              <Link href="/cuidado/quiero-cuidar" className="font-bold underline">¡Sé el primero!</Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {cuidadores.map((p) => (
+                <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'cuidador_disponible')} />
+              ))}
+            </div>
           )}
-        </h3>
-        {cargando ? (
-          <div className="space-y-3">
-            {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
-          </div>
-        ) : cuidadores.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-6 py-5 text-center text-sm text-teal-600">
-            Todavía no hay cuidadores registrados.{' '}
-            <Link href="/cuidado/quiero-cuidar" className="font-bold underline">¡Sé el primero!</Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {cuidadores.map((p) => (
-              <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'cuidador_disponible')} />
-            ))}
-          </div>
-        )}
-      </section>
+        </div>
+
+      </div>
     </div>
   );
 }

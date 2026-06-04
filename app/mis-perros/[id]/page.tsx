@@ -649,8 +649,12 @@ function EditForm({
               onChange={(e) => campo('fecha_nac', e.target.value)} />
           </div>
           <div>
-            <label className="label">Microchip</label>
-            <input className="field w-full font-mono" value={form.chip} placeholder="Nº de chip"
+            <label className="label flex items-center gap-1.5">
+              Microchip
+              {!isPro && <Link href="/planes" className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-primary/60 hover:text-brand-primary"><Lock className="h-2.5 w-2.5" /> Pro</Link>}
+            </label>
+            <input className="field w-full font-mono disabled:opacity-50 disabled:cursor-not-allowed" value={form.chip} placeholder="Nº de chip"
+              disabled={!isPro}
               onChange={(e) => campo('chip', e.target.value)} />
           </div>
         </div>

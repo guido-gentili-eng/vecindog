@@ -524,6 +524,7 @@ function EditForm({
   onSave: (updated: Perro) => void;
   onCancel: () => void;
 }) {
+  const { isPro } = useAuth();
   const [form, setForm] = useState<PerroInput>({
     nombre:       perro.nombre,
     raza:         perro.raza         ?? '',

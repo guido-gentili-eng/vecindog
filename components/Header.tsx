@@ -74,12 +74,6 @@ export default function Header() {
           >
             <Store className="h-3.5 w-3.5" /> Red Vecindog
           </Link>
-          <Link
-            href="/descargas"
-            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
-          >
-            <Download className="h-3.5 w-3.5" /> Descargas
-          </Link>
         </nav>
 
         {/* Acciones */}
@@ -121,6 +115,14 @@ export default function Header() {
                   </div>
                 )}
               </div>
+
+              <Link
+                href="/descargas"
+                title="Descargar app"
+                className="grid h-8 w-8 place-items-center rounded-2xl bg-brand-cream text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+              >
+                <Download className="h-3.5 w-3.5" />
+              </Link>
 
               {isPro && <NotificationsBell />}
 

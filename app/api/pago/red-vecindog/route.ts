@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-const PRECIO_COMERCIO = 2500;
+const PRECIO_COMERCIO = 7990; // Tarifa promocional primeros 20 comercios (regular: 12900)
 
 export async function POST(req: NextRequest) {
   try {

@@ -108,6 +108,37 @@ export default function RedVecindogPage() {
         </div>
       </section>
 
+      {/* ── BANNER PROMOCIONAL ───────────────────────────────────── */}
+      <section className="mb-8">
+        <div className="overflow-hidden rounded-3xl border-2 border-amber-400 bg-amber-50 p-6 md:p-8">
+          <div className="flex items-start gap-4">
+            <span className="text-3xl shrink-0">🎉</span>
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-widest text-amber-600 mb-1">
+                Oferta de lanzamiento · Cupos limitados
+              </p>
+              <h3 className="font-display text-xl font-black text-ink md:text-2xl">
+                Los primeros 20 comercios adheridos acceden a una tarifa especial
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                En el marco del lanzamiento de la Red Vecindog, los primeros <strong>20 comercios</strong> en
+                registrarse contarán con una <strong>tarifa promocional de $7.990 ARS/mes durante los primeros
+                6 meses</strong>, con acceso completo a todos los beneficios de la plataforma. Transcurrido
+                dicho período, la tarifa estándar de $12.900 ARS/mes será aplicada de forma automática.
+                Esta promoción estará vigente hasta completar los cupos disponibles.
+              </p>
+              <p className="mt-3 flex items-baseline gap-2">
+                <span className="font-display text-3xl font-black text-amber-600">$7.990</span>
+                <span className="text-sm font-semibold text-ink-muted">/mes los primeros 6 meses</span>
+                <span className="ml-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                  Luego $12.900/mes
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── PRECIO + BENEFICIOS ──────────────────────────────────── */}
       <section className="mb-16 md:mb-20">
         <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 p-8 text-white md:p-12">
@@ -119,9 +150,12 @@ export default function RedVecindogPage() {
               <h2 className="mt-4 font-display text-3xl font-black md:text-4xl">
                 Una sola tarifa, sin sorpresas
               </h2>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="font-display text-5xl font-black">$2.500</span>
-                <span className="text-white/70">ARS / mes</span>
+              <div className="mt-4 flex items-baseline gap-3">
+                <span className="font-display text-5xl font-black">$7.990</span>
+                <div>
+                  <span className="block text-white/70 text-sm">ARS / mes · primeros 6 meses</span>
+                  <span className="block text-white/50 text-xs line-through">$12.900/mes tarifa regular</span>
+                </div>
               </div>
               <p className="mt-3 text-white/70 leading-relaxed">
                 Mes a mes. Podés cancelar cuando quieras.

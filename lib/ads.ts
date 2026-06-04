@@ -1,25 +1,34 @@
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
-export type AdVariant = 'leaderboard' | 'card' | 'sidebar';
+export type AdVariant = 'leaderboard' | 'card' | 'sidebar' | 'comercio';
 
 export interface Ad {
-  id:             string;
-  variant:        AdVariant;
-  titulo:         string;
-  subtitulo:      string | null;
+  id:                string;
+  variant:           AdVariant;
+  titulo:            string;
+  subtitulo:         string | null;
   /** Imagen principal: horizontal 4:3 para Card. */
-  imagen_url:     string | null;
+  imagen_url:        string | null;
   /** Logo cuadrado 1:1 para Sidebar y Leaderboard (si no hay, usa imagen_url). */
-  imagen_logo_url?: string | null;
-  href:           string;
-  cta:            string | null;
-  anunciante:     string | null;
-  plan:           'basico' | 'estandar' | 'premium';
-  activo:         boolean;
-  fecha_inicio:   string | null;
-  fecha_fin:      string | null;
-  created_at:     string;
+  imagen_logo_url?:  string | null;
+  href:              string;
+  cta:               string | null;
+  anunciante:        string | null;
+  plan:              'basico' | 'estandar' | 'premium' | 'comercio';
+  activo:            boolean;
+  fecha_inicio:      string | null;
+  fecha_fin:         string | null;
+  created_at:        string;
+  // Campos exclusivos de comercios adheridos
+  lat?:                 number | null;
+  lng?:                 number | null;
+  telefono_comercio?:   string | null;
+  horario_apertura?:    string | null;
+  horario_cierre?:      string | null;
+  dias_atencion?:       string | null;
+  direccion_comercio?:  string | null;
+  categoria_local?:     string | null;
 }
 
 export type AdInput = Omit<Ad, 'id' | 'created_at'>;

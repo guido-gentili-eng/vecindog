@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown, Download, LayoutDashboard } from 'lucide-react';
+import { Plus, Menu, X, LogOut, User, Megaphone, MapPin, Dog, Map, ChevronDown, Download, LayoutDashboard, Store } from 'lucide-react';
 import { BrandBadge } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
@@ -67,6 +67,12 @@ export default function Header() {
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
           >
             <Megaphone className="h-3.5 w-3.5" /> Publicitate
+          </Link>
+          <Link
+            href="/red-vecindog"
+            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-amber-600 transition hover:bg-amber-50"
+          >
+            <Store className="h-3.5 w-3.5" /> Red Vecindog
           </Link>
           <Link
             href="/descargas"
@@ -216,6 +222,13 @@ export default function Header() {
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-primary hover:bg-brand-primary/10"
             >
               <Megaphone className="h-4 w-4" /> Publicitate
+            </Link>
+            <Link
+              href="/red-vecindog"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-amber-600 hover:bg-amber-50"
+            >
+              <Store className="h-4 w-4" /> Red Vecindog
             </Link>
             <Link
               href="/descargas"

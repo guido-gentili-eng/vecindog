@@ -11,7 +11,7 @@ import {
   Globe, ChevronDown, Share2, Lock, Sparkles,
 } from 'lucide-react';
 import {
-  obtenerPerro, actualizarPerro, subirFotoPerro,
+  obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
   agregarVacuna, actualizarVacuna, eliminarVacuna,
   VACUNAS_COMUNES,
   type Perro, type Vacuna, type VacunaInput, type PerroInput,
@@ -96,6 +96,12 @@ export default function PerroDetallePage() {
     } finally {
       setRenovando(false);
     }
+  }
+
+  async function handleDeletePerro() {
+    if (!perro) return;
+    await eliminarPerro(perro.id);
+    router.push('/mis-perros');
   }
 
   const sortVacunas = (list: Vacuna[]) =>
@@ -190,6 +196,7 @@ export default function PerroDetallePage() {
           perro={perro}
           onSave={(updated) => { setPerro(updated); setEditando(false); }}
           onCancel={() => setEditando(false)}
+          onDelete={handleDeletePerro}
         />
       ) : (
         <>
@@ -245,6 +252,43 @@ export default function PerroDetallePage() {
               </Link>
             </div>
           )}
+
+          {/* Banner alertas de vacunas vencidas / próximas a vencer */}
+          {(() => {
+            const hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
+            const en30 = new Date(hoy); en30.setDate(hoy.getDate() + 30);
+            const vencidas = vacunas.filter((v) => v.proxima && new Date(v.proxima) < hoy);
+            const proximas  = vacunas.filter((v) => {
+              if (!v.proxima) return false;
+              const d = new Date(v.proxima);
+              return d >= hoy && d <= en30;
+            });
+            if (vencidas.length === 0 && proximas.length === 0) return null;
+            return (
+              <div className={`mb-5 rounded-2xl border p-4 space-y-1.5 ${vencidas.length > 0 ? 'border-bad/25 bg-bad/6' : 'border-warn/30 bg-warn/8'}`}>
+                {vencidas.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-bad shrink-0 mt-0.5" />
+                    <p className="text-sm font-bold text-bad">
+                      {vencidas.length === 1
+                        ? <>Vacuna vencida: <span className="font-extrabold">{vencidas[0].nombre}</span></>
+                        : <>{vencidas.length} vacunas están vencidas: {vencidas.map((v) => v.nombre).join(', ')}</>}
+                    </p>
+                  </div>
+                )}
+                {proximas.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <CalendarDays className="h-4 w-4 text-[#7a4f00] shrink-0 mt-0.5" />
+                    <p className="text-sm font-bold text-[#7a4f00]">
+                      {proximas.length === 1
+                        ? <><span className="font-extrabold">{proximas[0].nombre}</span> vence en los próximos 30 días</>
+                        : <>{proximas.length} vacunas vencen en los próximos 30 días</>}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Identificación */}
           <div className="card mb-5 p-5">
@@ -519,10 +563,12 @@ function EditForm({
   perro,
   onSave,
   onCancel,
+  onDelete,
 }: {
-  perro: Perro;
-  onSave: (updated: Perro) => void;
+  perro:    Perro;
+  onSave:   (updated: Perro) => void;
   onCancel: () => void;
+  onDelete: () => Promise<void>;
 }) {
   const { isPro } = useAuth();
   const [form, setForm] = useState<PerroInput>({
@@ -538,11 +584,23 @@ function EditForm({
     direccion:    perro.direccion    ?? '',
     foto_url:     perro.foto_url     ?? '',
   });
-  const [fotoFile,  setFotoFile]  = useState<File | null>(null);
-  const [fotoPreview, setFotoPreview] = useState<string>(perro.foto_url ?? '');
-  const [saving,    setSaving]    = useState(false);
-  const [error,     setError]     = useState('');
+  const [fotoFile,        setFotoFile]        = useState<File | null>(null);
+  const [fotoPreview,     setFotoPreview]     = useState<string>(perro.foto_url ?? '');
+  const [saving,          setSaving]          = useState(false);
+  const [error,           setError]           = useState('');
+  const [confirmEliminar, setConfirmEliminar] = useState(false);
+  const [eliminando,      setEliminando]      = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleEliminar() {
+    setEliminando(true);
+    try {
+      await onDelete();
+    } catch {
+      setError('No se pudo eliminar el perfil. Intentá de nuevo.');
+      setEliminando(false);
+    }
+  }
 
   function campo<K extends keyof PerroInput>(k: K, v: PerroInput[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -691,6 +749,42 @@ function EditForm({
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Guardar cambios</>}
         </button>
       </div>
+
+      {/* Zona peligrosa — eliminar perro */}
+      {!confirmEliminar ? (
+        <button
+          type="button"
+          onClick={() => setConfirmEliminar(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-bad/20 py-2.5 text-sm font-bold text-bad/50 transition hover:border-bad/40 hover:text-bad"
+        >
+          <Trash2 className="h-4 w-4" /> Eliminar perfil de {perro.nombre}
+        </button>
+      ) : (
+        <div className="rounded-2xl border border-bad/25 bg-bad/5 p-4 space-y-3">
+          <p className="text-sm font-extrabold text-bad">¿Eliminar a {perro.nombre}?</p>
+          <p className="text-xs text-ink-muted leading-relaxed">
+            Esta acción es irreversible. Se borrará el perfil, las vacunas y todos los archivos de {perro.nombre}.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={eliminando}
+              onClick={handleEliminar}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-bad py-2.5 text-sm font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
+            >
+              {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> Sí, eliminar</>}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmEliminar(false)}
+              disabled={eliminando}
+              className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

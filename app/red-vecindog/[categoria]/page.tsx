@@ -159,13 +159,20 @@ function ProGate({
         </p>
 
         <div className="mt-6 rounded-2xl bg-brand-cream p-4 text-left">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">Con VecindogPro también tenés</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">Con VecindogPro tenés</p>
           <ul className="space-y-1.5">
             {[
-              'Acceso a los 6 rubros de la Red Vecindog',
-              'Alerta instantánea cuando se publica un perro perdido',
-              'Historial médico completo de tus perros',
-              'Análisis de foto para identificar razas',
+              'Todo lo del plan Gratis',
+              'Perros ilimitados',
+              'Publicaciones ilimitadas',
+              'Perfil completo (chip, vacunas, estudios médicos, historial)',
+              'Los más escapistas 🏃',
+              'Búsqueda por foto con IA 📷',
+              'Búsqueda avanzada por características',
+              'Panel de Amigos',
+              'Notificaciones en tiempo real 🔔',
+              'Instagram y Facebook en el perfil',
+              'Acceso a Mi red Vecindog 🐾',
             ].map((item) => (
               <li key={item} className="flex items-center gap-2 text-sm text-ink">
                 <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#5b21b6]" />

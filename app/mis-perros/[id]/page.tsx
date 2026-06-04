@@ -1372,7 +1372,8 @@ function CVISection({
           }} />
       </div>
 
-      {/* Selector de país */}
+      {/* Selector de país — solo Pro */}
+      {!locked && (
       <button
         type="button"
         onClick={() => setRequisitosOpen((o) => !o)}
@@ -1384,8 +1385,9 @@ function CVISection({
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${requisitosOpen ? 'rotate-180' : ''}`} />
       </button>
+      )}
 
-      {requisitosOpen && (
+      {!locked && requisitosOpen && (
         <div className="mb-4">
           <input
             type="text"

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { HandHeart, Search, Phone, MapPin, Calendar, ChevronRight, User } from 'lucide-react';
+import { HandHeart, Search, Phone, MapPin, Calendar, ChevronRight, User, Star } from 'lucide-react';
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -194,6 +194,16 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.horario}</span>
           )}
         </div>
+
+        {/* Ver perfil (solo cuidadores) */}
+        {esCuidador && (
+          <Link
+            href={`/cuidado/cuidador/${p.id}`}
+            className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:underline"
+          >
+            <Star className="h-3 w-3" /> Ver perfil y calificaciones
+          </Link>
+        )}
       </div>
 
       {p.contacto && (

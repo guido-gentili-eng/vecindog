@@ -25,7 +25,7 @@ const DISPONIBILIDAD_OPTS = [
 
 export default function QuieroCuidarPage() {
   const router  = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isPro } = useAuth();
 
   const [nombre,        setNombre]        = useState('');
   const [experiencias,  setExperiencias]  = useState<string[]>([]);
@@ -96,6 +96,28 @@ export default function QuieroCuidarPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
         <p className="text-ink-muted">Iniciá sesión para registrarte como cuidador.</p>
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <div className="card p-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100">
+            <HandHeart className="h-7 w-7 text-teal-600" />
+          </div>
+          <h2 className="font-display text-2xl font-black text-ink">Función exclusiva VecindogPro</h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            Para registrarte como cuidador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.
+          </p>
+          <Link
+            href="/planes"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 font-bold text-white transition hover:bg-teal-700"
+          >
+            Ver planes
+          </Link>
+        </div>
       </div>
     );
   }

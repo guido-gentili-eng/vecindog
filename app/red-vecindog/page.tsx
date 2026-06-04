@@ -1,21 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import {
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
   MapPin, Clock, Phone, CheckCircle2, X, Loader2, AlertCircle,
-  ImagePlus, Star, ChevronRight, Building2, Map, Users,
+  ImagePlus, Star, ChevronRight, Building2, Map, Users, ArrowRight,
 } from 'lucide-react';
 
 /* ── Datos ─────────────────────────────────────────────────────── */
 
-const CATEGORIAS = [
-  { slug: 'Veterinaria',        label: 'Veterinaria',        icon: Stethoscope, bg: 'bg-blue-50',   text: 'text-blue-600',   desc: 'Atención médica, vacunas y urgencias' },
-  { slug: 'Pet Shop',           label: 'Pet Shop',           icon: ShoppingBag, bg: 'bg-green-50',  text: 'text-green-600',  desc: 'Alimentos, accesorios y juguetes' },
-  { slug: 'Peluquería Canina',  label: 'Peluquería Canina',  icon: Scissors,    bg: 'bg-pink-50',   text: 'text-pink-600',   desc: 'Baño, corte y estética canina' },
-  { slug: 'Adiestrador',        label: 'Adiestrador',        icon: Award,       bg: 'bg-purple-50', text: 'text-purple-600', desc: 'Educación, obediencia y conducta' },
-  { slug: 'Paseador',           label: 'Paseador',           icon: Footprints,  bg: 'bg-orange-50', text: 'text-orange-500', desc: 'Paseos diarios y actividad física' },
-  { slug: 'Guardería / Hotel',  label: 'Guardería / Hotel',  icon: Home,        bg: 'bg-amber-50',  text: 'text-amber-600',  desc: 'Cuidado diurno y hospedaje canino' },
+export const CATEGORIAS = [
+  { url: 'veterinaria',       slug: 'Veterinaria',       label: 'Veterinaria',       icon: Stethoscope, bg: 'bg-blue-50',   text: 'text-blue-600',   desc: 'Atención médica, vacunas y urgencias' },
+  { url: 'pet-shop',          slug: 'Pet Shop',          label: 'Pet Shop',          icon: ShoppingBag, bg: 'bg-green-50',  text: 'text-green-600',  desc: 'Alimentos, accesorios y juguetes' },
+  { url: 'peluqueria-canina', slug: 'Peluquería Canina', label: 'Peluquería Canina', icon: Scissors,    bg: 'bg-pink-50',   text: 'text-pink-600',   desc: 'Baño, corte y estética canina' },
+  { url: 'adiestrador',       slug: 'Adiestrador',       label: 'Adiestrador',       icon: Award,       bg: 'bg-purple-50', text: 'text-purple-600', desc: 'Educación, obediencia y conducta' },
+  { url: 'paseador',          slug: 'Paseador',          label: 'Paseador',          icon: Footprints,  bg: 'bg-orange-50', text: 'text-orange-500', desc: 'Paseos diarios y actividad física' },
+  { url: 'guarderia-hotel',   slug: 'Guardería / Hotel', label: 'Guardería / Hotel', icon: Home,        bg: 'bg-amber-50',  text: 'text-amber-600',  desc: 'Cuidado diurno y hospedaje canino' },
 ];
 
 const BENEFICIOS = [
@@ -86,16 +87,23 @@ export default function RedVecindogPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CATEGORIAS.map(({ label, icon: Icon, bg, text, desc }) => (
-            <div key={label} className="card flex items-start gap-4 p-5 transition hover:shadow-card">
+          {CATEGORIAS.map(({ url, label, icon: Icon, bg, text, desc }) => (
+            <Link
+              key={url}
+              href={`/red-vecindog/${url}`}
+              className="card group flex items-start gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-card"
+            >
               <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${bg}`}>
                 <Icon className={`h-6 w-6 ${text}`} />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-display font-black text-ink">{label}</h3>
                 <p className="mt-0.5 text-sm text-ink-muted">{desc}</p>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-amber-600 opacity-0 transition group-hover:opacity-100">
+                  Ver inscriptos <ArrowRight className="h-3 w-3" />
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

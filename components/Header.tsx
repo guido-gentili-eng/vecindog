@@ -130,9 +130,9 @@ export default function Header() {
                 /* Dropdown Mi perfil */
                 <div ref={profileRef} className="relative">
                   <button type="button" onClick={() => setProfileOpen((o) => !o)}
-                    className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
+                    className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-3 py-1.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
                     <User className="h-4 w-4" /> Mi perfil
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3 w-3 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {profileOpen && (
                     <div className="absolute right-0 top-full mt-1 z-50 w-52 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/10">

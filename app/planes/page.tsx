@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Check, X, Sparkles, Dog, Lock, AlertCircle, Loader2,
+  Check, X, Sparkles, Dog, Lock, AlertCircle,
   Bell, Users, Camera, ScanSearch, Trophy,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import PagoModal from '@/components/PagoModal';
 
-/* ── Definición de planes ── */
+/* ── Features ── */
 
 const FEATURES_FREE = [
   { icon: Dog,       label: '1 perro registrado' },
@@ -32,7 +33,7 @@ const FEATURES_PRO = [
   { label: 'Todo lo del plan Gratis' },
   { label: 'Perros ilimitados' },
   { label: 'Publicaciones ilimitadas' },
-  { label: 'Perfil completo (chip, vacunas, estudios médicos, historial)' },
+  { label: 'Perfil completo (chip, vacunas, estudios, historial de peso, alergias…)' },
   { label: 'Los más escapistas 🏃' },
   { label: 'Búsqueda por foto con IA 📷' },
   { label: 'Búsqueda avanzada por características' },
@@ -42,38 +43,49 @@ const FEATURES_PRO = [
   { label: 'Acceso a Mi red Vecindog 🐾' },
 ];
 
+/* ── Página ── */
+
 export default function PlanesPage() {
   const { user, profile, isPro, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
 
-  async function handleSuscribirse() {
-    if (!isAuthenticated) { router.push('/'); return; }
-    setLoading(true); setError('');
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) { setError('Iniciá sesión primero.'); return; }
-      const res = await fetch('/api/pago/pro', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.url) { setError(data.error ?? 'No se pudo iniciar el pago.'); return; }
-      window.location.href = data.url;
-    } catch {
-      setError('Error inesperado. Intentá de nuevo.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [modalOpen, setModalOpen] = useState(false);
+  const [error,     setError]     = useState('');
 
   const vencimiento = profile?.plan_vencimiento
-    ? new Date(profile.plan_vencimiento).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(profile.plan_vencimiento).toLocaleDateString('es-AR', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      })
     : null;
 
+  /* Redirige al Checkout Pro de Mercado Pago */
+  async function handleMercadoPago() {
+    if (!isAuthenticated) { router.push('/'); return; }
+    setError('');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) { setError('Iniciá sesión primero.'); return; }
+
+    const res  = await fetch('/api/pago/pro', {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.url) {
+      setError(data.error ?? 'No se pudo iniciar el pago.');
+      throw new Error(data.error);   // le avisa al modal para que deje de cargar
+    }
+    window.location.href = data.url;
+  }
+
+  function handleSuscribirse() {
+    if (!isAuthenticated) { router.push('/'); return; }
+    setError('');
+    setModalOpen(true);
+  }
+
   return (
-    <div className="mx-auto max-w-4xl py-10 md:py-14 px-4">
+    <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
 
       {/* Header */}
       <div className="mb-10 text-center">
@@ -91,6 +103,11 @@ export default function PlanesPage() {
             <Check className="h-4 w-4" /> Plan activo hasta el {vencimiento}
           </div>
         )}
+        {error && (
+          <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-bad/10 px-4 py-2 text-sm font-bold text-bad ring-1 ring-bad/20">
+            <AlertCircle className="h-4 w-4 shrink-0" /> {error}
+          </div>
+        )}
       </div>
 
       {/* Cards */}
@@ -105,7 +122,7 @@ export default function PlanesPage() {
 
           <div className="my-6 border-t border-black/6" />
 
-          <ul className="space-y-2.5 flex-1">
+          <ul className="flex-1 space-y-2.5">
             {FEATURES_FREE.map(({ label }) => (
               <li key={label} className="flex items-start gap-2.5 text-sm text-ink">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-good" />
@@ -126,7 +143,8 @@ export default function PlanesPage() {
                 Plan actual
               </div>
             ) : (
-              <Link href="/" className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted hover:border-black/20 transition">
+              <Link href="/"
+                className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
                 Volver al inicio
               </Link>
             )}
@@ -152,7 +170,7 @@ export default function PlanesPage() {
 
           <div className="my-6 border-t border-white/20" />
 
-          <ul className="space-y-2.5 flex-1">
+          <ul className="flex-1 space-y-2.5">
             {FEATURES_PRO.map(({ label }) => (
               <li key={label} className="flex items-start gap-2.5 text-sm text-white">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-white/80" />
@@ -161,46 +179,40 @@ export default function PlanesPage() {
             ))}
           </ul>
 
-          {error && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 p-3 text-xs font-bold text-white">
-              <AlertCircle className="h-4 w-4 shrink-0" /> {error}
-            </div>
-          )}
-
           <div className="mt-8">
             {isPro ? (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
                 <Check className="h-4 w-4" /> Plan activo
               </div>
             ) : !isAuthenticated ? (
-              <Link
-                href="/"
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90"
-              >
+              <Link href="/"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">
                 <Sparkles className="h-4 w-4" /> Iniciá sesión para suscribirte
               </Link>
             ) : (
-              <button
-                type="button"
-                onClick={handleSuscribirse}
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90 disabled:opacity-70"
-              >
-                {loading
-                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Cargando...</>
-                  : <><Sparkles className="h-4 w-4" /> Suscribirme con Mercado Pago</>
-                }
+              <button type="button" onClick={handleSuscribirse}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">
+                <Sparkles className="h-4 w-4" /> Suscribirme
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Footer info */}
+      {/* Footer */}
       <p className="mt-8 text-center text-xs text-ink-muted">
-        Podés pagar con tarjeta de débito, crédito o desde tu cuenta de Mercado Pago.
+        Podés pagar con Mercado Pago (saldo, efectivo), tarjeta de débito o crédito.
         La suscripción no se renueva automáticamente — vence a los 30 días.
       </p>
+
+      {/* Modal de pago */}
+      <PagoModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onMercadoPago={handleMercadoPago}
+        precio={1000}
+        descripcion="VecindogPro — Suscripción mensual · 30 días de acceso completo"
+      />
     </div>
   );
 }

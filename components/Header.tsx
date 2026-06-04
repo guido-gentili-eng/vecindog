@@ -52,7 +52,7 @@ export default function Header() {
         </Link>
 
         {/* Nav desktop */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {navConPerros.map((item) => (
             <Link key={item.href} href={item.href} className="btn-ghost">
               {item.href === '/mis-perros'
@@ -84,7 +84,7 @@ export default function Header() {
               type="button"
               onClick={clearCiudad}
               title="Cambiar ciudad"
-              className="hidden items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary lg:inline-flex"
             >
               <MapPin className="h-3.5 w-3.5 text-brand-primary" />
               {nombreCorto(ciudad)}
@@ -93,7 +93,7 @@ export default function Header() {
 
           {/* Desktop: idioma + campanita + perfil/publicar */}
           {!loading && (
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 lg:flex">
 
               {/* Selector de idioma — dropdown */}
               <div ref={langRef} className="relative">
@@ -182,7 +182,7 @@ export default function Header() {
                 </div>
               ) : (
                 <Link href="/publicar"
-                  className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
+                  className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-3 py-1.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
                   <Plus className="h-4 w-4" /> Publicar
                 </Link>
               )}
@@ -195,7 +195,7 @@ export default function Header() {
             aria-label="Abrir menú"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="grid h-10 w-10 place-items-center rounded-2xl text-ink hover:bg-brand-cream md:hidden"
+            className="grid h-10 w-10 place-items-center rounded-2xl text-ink hover:bg-brand-cream lg:hidden"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -204,7 +204,7 @@ export default function Header() {
 
       {/* Drawer mobile */}
       {open && (
-        <div className="border-t border-black/5 bg-white md:hidden">
+        <div className="border-t border-black/5 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             {navConPerros.map((item) => (
               <Link

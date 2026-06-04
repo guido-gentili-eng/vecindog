@@ -69,16 +69,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, tipo: 'renovacion' });
     }
 
-    // ── Nueva publicidad ─────────────────────────────────────────────
+    // ── Nueva publicidad / comercio ──────────────────────────────────
     await activarAds(adIds);
+
+    const metaMap = (meta ?? {}) as Record<string, string>;
 
     // Email al admin
     await notificarAdmin({
-      negocio: (meta as Record<string, string> | null)?.negocio ?? '',
-      plan:    (meta as Record<string, string> | null)?.plan ?? '',
-      email:   (meta as Record<string, string> | null)?.email ?? '',
+      negocio:   metaMap.negocio   ?? '',
+      plan:      metaMap.plan      ?? '',
+      email:     metaMap.email     ?? '',
       paymentId: String(paymentId),
     });
+
+    // Si es un comercio de Red Vecindog → notificar a todos los usuarios
+    if (metaMap.tipo === 'comercio') {
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      // Traer datos del comercio para la notificación
+      const { data: adData } = await admin
+        .from('ads')
+        .select('titulo, categoria_local')
+        .eq('id', adIds[0])
+        .single();
+
+      const nombre    = adData?.titulo        ?? metaMap.negocio ?? 'Un nuevo negocio';
+      const categoria = adData?.categoria_local ? ` (${adData.categoria_local})` : '';
+      const mensaje   = `🏪 ${nombre}${categoria} se incorporó a la Red Vecindog. Encontrá sus datos y contacto en la sección Red Vecindog de la app.`;
+
+      // Traer todos los perfiles registrados
+      const { data: perfiles } = await admin.from('profiles').select('id');
+      if (perfiles?.length) {
+        const rows = perfiles.map((p: { id: string }) => ({
+          user_id: p.id,
+          post_id: null,
+          tipo:    'nuevo_comercio',
+          mensaje,
+          leida:   false,
+        }));
+        await admin.from('notifications').insert(rows);
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

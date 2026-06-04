@@ -74,10 +74,10 @@ function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) 
           <p className="mt-0.5 text-sm text-white/70">Llegá a vecinos que ya están buscando productos y servicios para sus mascotas.</p>
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
-          <a href={`mailto:${CONTACT_EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`}
+          <Link href="/publicitate"
             className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-coral-dark">
             <Megaphone className="h-4 w-4" /> Publicitate aquí
-          </a>
+          </Link>
           <span className="flex items-center gap-1 text-xs text-white/50"><Phone className="h-3 w-3" /> {CONTACT_PHONE}</span>
         </div>
       </div>
@@ -123,10 +123,10 @@ function CardAd({ ad, className }: { ad: Ad | null; className: string }) {
         <p className="font-display text-base font-black text-ink">Tu negocio aquí</p>
         <p className="mt-1 text-xs text-ink-muted">Veterinarias, petshops, peluquerías caninas y más.</p>
       </div>
-      <a href={`mailto:${CONTACT_EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`}
+      <Link href="/publicitate"
         className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-primary px-4 py-1.5 text-xs font-bold text-white transition hover:bg-brand-coral-dark">
         Consultanos
-      </a>
+      </Link>
     </div>
   );
 }
@@ -165,10 +165,10 @@ function SidebarAd({ ad, className }: { ad: Ad | null; className: string }) {
       <div className="p-5 text-center">
         <p className="font-display text-base font-black text-ink">Tu negocio aquí</p>
         <p className="mt-1 text-xs text-ink-muted leading-relaxed">Mostrá tu veterinaria, petshop o servicio a quienes ya están buscando ayuda para sus mascotas.</p>
-        <a href={`mailto:${CONTACT_EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`}
+        <Link href="/publicitate"
           className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-coral-dark">
           <Megaphone className="h-4 w-4" /> Publicitate
-        </a>
+        </Link>
         <p className="mt-2 text-[10px] text-ink-muted">{CONTACT_EMAIL}</p>
       </div>
     </div>

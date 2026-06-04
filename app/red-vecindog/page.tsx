@@ -28,8 +28,26 @@ const BENEFICIOS = [
 
 /* ── Página ─────────────────────────────────────────────────────── */
 
+interface PrecioInfo {
+  esPromo: boolean;
+  cuposRestantes: number;
+  precioActual: number;
+  precioRegular: number;
+  precioPromo: number;
+}
+
 export default function RedVecindogPage() {
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [precioInfo, setPrecioInfo] = useState<PrecioInfo>({
+    esPromo: true, cuposRestantes: 20, precioActual: 7990, precioRegular: 12900, precioPromo: 7990,
+  });
+
+  useEffect(() => {
+    fetch('/api/pago/red-vecindog')
+      .then((r) => r.json())
+      .then((d) => setPrecioInfo(d))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="py-10 md:py-14">
@@ -37,7 +55,10 @@ export default function RedVecindogPage() {
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section className="mb-16 text-center md:mb-20">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-          <Star className="h-3.5 w-3.5" /> Red de comercios adheridos · $2.500 ARS / mes
+          <Star className="h-3.5 w-3.5" />
+          {precioInfo.esPromo
+            ? `Oferta de lanzamiento · $${precioInfo.precioActual.toLocaleString('es-AR')} ARS / mes`
+            : `Red de comercios adheridos · $${precioInfo.precioActual.toLocaleString('es-AR')} ARS / mes`}
         </span>
 
         <h1 className="mt-4 font-display text-4xl font-black tracking-tight text-ink md:text-5xl lg:text-6xl">
@@ -109,35 +130,44 @@ export default function RedVecindogPage() {
       </section>
 
       {/* ── BANNER PROMOCIONAL ───────────────────────────────────── */}
-      <section className="mb-8">
-        <div className="overflow-hidden rounded-3xl border-2 border-amber-400 bg-amber-50 p-6 md:p-8">
-          <div className="flex items-start gap-4">
-            <span className="text-3xl shrink-0">🎉</span>
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-widest text-amber-600 mb-1">
-                Oferta de lanzamiento · Cupos limitados
-              </p>
-              <h3 className="font-display text-xl font-black text-ink md:text-2xl">
-                Los primeros 20 comercios adheridos acceden a una tarifa especial
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-                En el marco del lanzamiento de la Red Vecindog, los primeros <strong>20 comercios</strong> en
-                registrarse contarán con una <strong>tarifa promocional de $7.990 ARS/mes durante los primeros
-                6 meses</strong>, con acceso completo a todos los beneficios de la plataforma. Transcurrido
-                dicho período, la tarifa estándar de $12.900 ARS/mes será aplicada de forma automática.
-                Esta promoción estará vigente hasta completar los cupos disponibles.
-              </p>
-              <p className="mt-3 flex items-baseline gap-2">
-                <span className="font-display text-3xl font-black text-amber-600">$7.990</span>
-                <span className="text-sm font-semibold text-ink-muted">/mes los primeros 6 meses</span>
-                <span className="ml-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
-                  Luego $12.900/mes
-                </span>
-              </p>
+      {precioInfo.esPromo && (
+        <section className="mb-8">
+          <div className="overflow-hidden rounded-3xl border-2 border-amber-400 bg-amber-50 p-6 md:p-8">
+            <div className="flex items-start gap-4">
+              <span className="text-3xl shrink-0">🎉</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1 flex-wrap">
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-amber-600">
+                    Oferta de lanzamiento · Cupos limitados
+                  </p>
+                  <span className="rounded-full bg-amber-500 px-3 py-0.5 text-xs font-extrabold text-white">
+                    {precioInfo.cuposRestantes} cupo{precioInfo.cuposRestantes !== 1 ? 's' : ''} disponible{precioInfo.cuposRestantes !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <h3 className="font-display text-xl font-black text-ink md:text-2xl">
+                  Los primeros 20 comercios adheridos acceden a una tarifa especial
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                  En el marco del lanzamiento de la Red Vecindog, los primeros <strong>20 comercios</strong> en
+                  registrarse contarán con una <strong>tarifa promocional de ${precioInfo.precioPromo.toLocaleString('es-AR')} ARS/mes durante los primeros
+                  6 meses</strong>, con acceso completo a todos los beneficios de la plataforma. Transcurrido
+                  dicho período, la tarifa estándar de ${precioInfo.precioRegular.toLocaleString('es-AR')} ARS/mes será aplicada de forma automática.
+                  Esta promoción estará vigente hasta completar los cupos disponibles.
+                </p>
+                <p className="mt-3 flex items-baseline gap-2 flex-wrap">
+                  <span className="font-display text-3xl font-black text-amber-600">
+                    ${precioInfo.precioPromo.toLocaleString('es-AR')}
+                  </span>
+                  <span className="text-sm font-semibold text-ink-muted">/mes los primeros 6 meses</span>
+                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                    Luego ${precioInfo.precioRegular.toLocaleString('es-AR')}/mes
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── PRECIO + BENEFICIOS ──────────────────────────────────── */}
       <section className="mb-16 md:mb-20">
@@ -151,10 +181,20 @@ export default function RedVecindogPage() {
                 Una sola tarifa, sin sorpresas
               </h2>
               <div className="mt-4 flex items-baseline gap-3">
-                <span className="font-display text-5xl font-black">$7.990</span>
+                <span className="font-display text-5xl font-black">
+                  ${precioInfo.precioActual.toLocaleString('es-AR')}
+                </span>
                 <div>
-                  <span className="block text-white/70 text-sm">ARS / mes · primeros 6 meses</span>
-                  <span className="block text-white/50 text-xs line-through">$12.900/mes tarifa regular</span>
+                  {precioInfo.esPromo ? (
+                    <>
+                      <span className="block text-white/70 text-sm">ARS / mes · primeros 6 meses</span>
+                      <span className="block text-white/50 text-xs line-through">
+                        ${precioInfo.precioRegular.toLocaleString('es-AR')}/mes tarifa regular
+                      </span>
+                    </>
+                  ) : (
+                    <span className="block text-white/70 text-sm">ARS / mes</span>
+                  )}
                 </div>
               </div>
               <p className="mt-3 text-white/70 leading-relaxed">

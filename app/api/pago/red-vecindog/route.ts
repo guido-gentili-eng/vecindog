@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-const PRECIO_COMERCIO = 7990; // Tarifa promocional primeros 20 comercios (regular: 12900)
+const PRECIO_PROMO   = 7990;   // Primeros 20 comercios — primeros 6 meses
+const PRECIO_REGULAR = 12900;  // Tarifa estándar
+const CUPOS_PROMO    = 20;
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,6 +75,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Error al guardar el registro' }, { status: 500 });
     }
 
+    // Determinar precio según cupos promocionales disponibles
+    const { count: totalActivos } = await admin
+      .from('ads')
+      .select('*', { count: 'exact', head: true })
+      .eq('variant', 'comercio')
+      .eq('activo', true);
+    const esPromo      = (totalActivos ?? 0) < CUPOS_PROMO;
+    const precioFinal  = esPromo ? PRECIO_PROMO : PRECIO_REGULAR;
+    const tituloItem   = esPromo
+      ? 'Red Vecindog — Tarifa promocional (primeros 6 meses)'
+      : 'Red Vecindog — Membresía mensual';
+
     const mp        = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
     const pref      = new Preference(mp);
     const origin    = req.headers.get('origin') ?? 'https://www.mivecindog.com.ar';
@@ -81,10 +95,10 @@ export async function POST(req: NextRequest) {
       body: {
         items: [{
           id:          'comercio',
-          title:       'Red Vecindog — Membresía mensual',
+          title:       tituloItem,
           description: `${nombre} · ${categoria}`,
           quantity:    1,
-          unit_price:  PRECIO_COMERCIO,
+          unit_price:  precioFinal,
           currency_id: 'ARS',
         }],
         payer: { email: email.trim() },
@@ -109,9 +123,39 @@ export async function POST(req: NextRequest) {
     if (!result.init_point) {
       return NextResponse.json({ error: 'Mercado Pago no devolvió URL de pago' }, { status: 502 });
     }
-    return NextResponse.json({ url: result.init_point });
+    return NextResponse.json({ url: result.init_point, esPromo, precioFinal });
   } catch (err) {
     console.error('[red-vecindog pago]', err);
     return NextResponse.json({ error: 'Error al procesar el pago' }, { status: 500 });
+  }
+}
+
+/** GET /api/pago/red-vecindog — devuelve cupos y precio actual */
+export async function GET() {
+  try {
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { count } = await admin
+      .from('ads')
+      .select('*', { count: 'exact', head: true })
+      .eq('variant', 'comercio')
+      .eq('activo', true);
+
+    const activos  = count ?? 0;
+    const esPromo  = activos < CUPOS_PROMO;
+    const cuposRestantes = Math.max(0, CUPOS_PROMO - activos);
+
+    return NextResponse.json({
+      esPromo,
+      cuposRestantes,
+      precioActual:  esPromo ? PRECIO_PROMO : PRECIO_REGULAR,
+      precioRegular: PRECIO_REGULAR,
+      precioPromo:   PRECIO_PROMO,
+      totalActivos:  activos,
+    });
+  } catch {
+    return NextResponse.json({ esPromo: true, cuposRestantes: 20, precioActual: PRECIO_PROMO, precioRegular: PRECIO_REGULAR, precioPromo: PRECIO_PROMO, totalActivos: 0 });
   }
 }

@@ -70,6 +70,10 @@ export default function AdminPage() {
   const [orden,       setOrden]       = useState<'az' | 'recientes'>('az');
   const [accionando,  setAccionando]  = useState<string | null>(null);
   const [confirmar,   setConfirmar]   = useState<{ uid: string; accion: 'pausar' | 'eliminar' } | null>(null);
+  const [planModal,     setPlanModal]     = useState<{ uid: string; nombre: string; plan: string } | null>(null);
+  const [nuevoPlan,     setNuevoPlan]     = useState<'free' | 'pro'>('free');
+  const [planVenc,      setPlanVenc]      = useState('');
+  const [guardandoPlan, setGuardandoPlan] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -116,6 +120,38 @@ export default function AdminPage() {
       }
     } finally {
       setAccionando(null);
+    }
+  }
+
+  async function cambiarPlan() {
+    if (!planModal) return;
+    setGuardandoPlan(true);
+    try {
+      await fetch('/api/admin/user-plan', {
+        method:  'POST',
+        headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ uid: planModal.uid, plan: nuevoPlan, plan_vencimiento: nuevoPlan === 'pro' && planVenc ? planVenc : null }),
+      });
+      setStats((prev) => {
+        if (!prev) return prev;
+        const oldPlan    = planModal.plan;
+        const proDelta   = (nuevoPlan === 'pro'  ? 1 : 0) - (oldPlan === 'pro'  ? 1 : 0);
+        const gratisDelta = (nuevoPlan === 'free' ? 1 : 0) - (oldPlan === 'free' ? 1 : 0);
+        return {
+          ...prev,
+          ultimosUsuarios: prev.ultimosUsuarios.map((u) =>
+            u.id === planModal.uid ? { ...u, plan: nuevoPlan } : u
+          ),
+          cuentas: {
+            ...prev.cuentas,
+            pro:    prev.cuentas.pro    + proDelta,
+            gratis: prev.cuentas.gratis + gratisDelta,
+          },
+        };
+      });
+      setPlanModal(null);
+    } finally {
+      setGuardandoPlan(false);
     }
   }
 
@@ -279,6 +315,11 @@ export default function AdminPage() {
                       <Dog className="h-3 w-3" /> Perros
                       {expandido?.uid === u.id && expandido?.tipo === 'perros' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </button>
+                    <button type="button"
+                      onClick={() => { setPlanModal({ uid: u.id, nombre: nombreCompleto, plan: u.plan }); setNuevoPlan(u.plan === 'pro' ? 'pro' : 'free'); setPlanVenc(''); }}
+                      className="inline-flex items-center gap-1 rounded-xl border border-[#7c3aed]/30 bg-[#7c3aed]/5 px-3 py-1.5 text-xs font-bold text-[#7c3aed] hover:bg-[#7c3aed]/10 transition">
+                      <Crown className="h-3 w-3" /> Plan
+                    </button>
                     {u.suspendido ? (
                       <button type="button" disabled={accionando === u.id}
                         onClick={() => ejecutarAccion(u.id, 'reactivar')}
@@ -379,6 +420,59 @@ export default function AdminPage() {
           })}
         </ul>
       </div>
+
+      {/* Modal cambio de plan */}
+      {planModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[28px] bg-white p-7 shadow-2xl">
+            <h3 className="font-display text-lg font-black text-ink">Plan de {planModal.nombre}</h3>
+            <p className="mt-1 mb-5 text-xs text-ink-muted">
+              Plan actual:{' '}
+              {planModal.plan === 'pro'
+                ? <span className="inline-flex items-center gap-0.5 rounded-full bg-[#7c3aed]/10 px-2 py-0.5 font-bold text-[#7c3aed]"><Crown className="h-2.5 w-2.5" /> Pro</span>
+                : <span className="font-bold">Gratis</span>
+              }
+            </p>
+
+            <div className="space-y-2 mb-5">
+              {(['free', 'pro'] as const).map((p) => (
+                <button key={p} type="button" onClick={() => setNuevoPlan(p)}
+                  className={`w-full flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-sm font-bold transition ${
+                    nuevoPlan === p
+                      ? p === 'pro' ? 'border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]' : 'border-brand-primary bg-brand-primary/5 text-ink'
+                      : 'border-black/10 text-ink-muted hover:border-black/20'
+                  }`}>
+                  <div className={`h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center ${nuevoPlan === p ? (p === 'pro' ? 'border-[#7c3aed]' : 'border-brand-primary') : 'border-black/20'}`}>
+                    {nuevoPlan === p && <div className={`h-2 w-2 rounded-full ${p === 'pro' ? 'bg-[#7c3aed]' : 'bg-brand-primary'}`} />}
+                  </div>
+                  {p === 'pro' ? <><Crown className="h-3.5 w-3.5" /> VecindogPro</> : 'Gratis'}
+                </button>
+              ))}
+            </div>
+
+            {nuevoPlan === 'pro' && (
+              <div className="mb-5">
+                <label className="text-xs font-bold text-ink-muted mb-1.5 block">
+                  Vencimiento <span className="font-normal">(opcional — vacío = sin vencimiento)</span>
+                </label>
+                <input type="date" value={planVenc} onChange={(e) => setPlanVenc(e.target.value)}
+                  className="w-full rounded-xl border border-black/15 px-3 py-2 text-sm text-ink focus:border-[#7c3aed] focus:outline-none transition" />
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button type="button" onClick={cambiarPlan} disabled={guardandoPlan}
+                className="flex-1 rounded-2xl py-2.5 text-sm font-extrabold text-white bg-[#7c3aed] hover:opacity-90 transition disabled:opacity-60">
+                {guardandoPlan ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Guardar'}
+              </button>
+              <button type="button" onClick={() => setPlanModal(null)}
+                className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación */}
       {confirmar && (

@@ -140,10 +140,6 @@ export default function Header() {
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
                         <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
                       </Link>
-                      <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
-                        <Dog className="h-4 w-4 text-brand-primary" /> Cambiar de perfil
-                      </Link>
                       <Link href="/planes" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
                         <Megaphone className="h-4 w-4 text-brand-primary" />
@@ -266,10 +262,6 @@ export default function Header() {
                     <Link href="/mi-perfil" onClick={() => setOpen(false)}
                       className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
                       <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
-                    </Link>
-                    <Link href="/mi-perfil" onClick={() => setOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <Dog className="h-4 w-4 text-brand-primary" /> Cambiar de perfil
                     </Link>
                     <button type="button" onClick={() => { signOut(); setOpen(false); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">

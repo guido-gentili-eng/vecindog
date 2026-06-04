@@ -95,15 +95,28 @@ function validarExpiry(val: string): boolean {
 }
 
 async function cargarSDK(): Promise<void> {
+  // Fix #1: si ya está disponible, salir inmediatamente
   if (window.MercadoPago) return;
+
   return new Promise((resolve, reject) => {
-    const prev = document.querySelector('script[src*="sdk.mercadopago.com/js/v2"]');
-    if (prev) { prev.addEventListener('load', () => resolve()); return; }
+    const prev = document.querySelector('script[src*="sdk.mercadopago.com/js/v2"]') as HTMLScriptElement | null;
+
+    if (prev) {
+      // Script ya en el DOM — puede estar cargado o cargando
+      // Usar polling corto en lugar de listener (evita el caso donde 'load' ya disparó)
+      let attempts = 0;
+      const check = setInterval(() => {
+        if (window.MercadoPago) { clearInterval(check); resolve(); return; }
+        if (++attempts > 50) { clearInterval(check); reject(new Error('El SDK de Mercado Pago tardó demasiado en cargar.')); }
+      }, 100);
+      return;
+    }
+
     const s = document.createElement('script');
-    s.src     = 'https://sdk.mercadopago.com/js/v2';
-    s.async   = true;
-    s.onload  = () => resolve();
-    s.onerror = () => reject(new Error('No se pudo cargar el SDK de Mercado Pago.'));
+    s.src    = 'https://sdk.mercadopago.com/js/v2';
+    s.async  = true;
+    s.onload = () => resolve();
+    s.onerror= () => reject(new Error('No se pudo cargar el SDK de Mercado Pago.'));
     document.head.appendChild(s);
   });
 }
@@ -123,7 +136,7 @@ const FORM_VACIO: CardForm = {
   numero: '', nombre: '', vencimiento: '', cvv: '', dni: '', cuotas: 1,
 };
 
-type Step = 'metodo' | 'tarjeta' | 'procesando' | 'exito' | 'error';
+type Step = 'metodo' | 'tarjeta' | 'procesando' | 'pendiente' | 'exito' | 'error';
 
 /* ─────────────────────────── Componente ─────────────────────────── */
 
@@ -157,14 +170,25 @@ export default function PagoModal({
   }
 
   function handleNumero(val: string) {
-    // recalc esAmex from new value before formatting
-    const rawTipo = detectarTipo(val.replace(/\s/g, ''));
-    const amex    = rawTipo === 'amex';
-    setForm((f) => ({ ...f, numero: formatNumero(val, amex), cvv: '' }));
-    setErrors((e) => ({ ...e, numero: '', cvv: '' }));
+    const rawTipo  = detectarTipo(val.replace(/\s/g, ''));
+    const amex     = rawTipo === 'amex';
+    const prevAmex = tipo === 'amex';
+    setForm((f) => ({
+      ...f,
+      numero: formatNumero(val, amex),
+      // Fix #2: solo borrar CVV si cambia el tipo (Amex ↔ otro), no en cada tecla
+      cvv: amex !== prevAmex ? '' : f.cvv,
+    }));
+    setErrors((e) => ({ ...e, numero: '', ...(amex !== prevAmex ? { cvv: '' } : {}) }));
   }
 
   function handleExpiry(val: string) {
+    const prev = form.vencimiento;
+    // Fix #3: si el usuario borró la '/', borrar también el segundo dígito del mes
+    if (prev.endsWith('/') && val === prev.slice(0, -1)) {
+      campo('vencimiento', val.slice(0, -1));
+      return;
+    }
     const d = val.replace(/\D/g, '').slice(0, 4);
     const f = d.length >= 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
     campo('vencimiento', f);
@@ -280,6 +304,12 @@ export default function PagoModal({
         return;
       }
 
+      // Fix #6: pago en revisión → pantalla específica, no "rechazado"
+      if (data.pending) {
+        setStep('pendiente');
+        return;
+      }
+
       throw new Error(
         data.reason ?? data.error ?? 'El pago fue rechazado. Verificá los datos e intentá de nuevo.'
       );
@@ -307,7 +337,7 @@ export default function PagoModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) { reset(); onClose(); } }}
+      onClick={(e) => { if (e.target === e.currentTarget && step !== 'procesando') { reset(); onClose(); } }}
     >
       <div className="w-full max-w-md overflow-hidden rounded-t-[32px] bg-white shadow-2xl sm:rounded-[32px]">
 
@@ -319,14 +349,18 @@ export default function PagoModal({
               {step === 'metodo'     && 'Elegí cómo pagar'}
               {step === 'tarjeta'    && 'Datos de la tarjeta'}
               {step === 'procesando' && 'Procesando pago…'}
+              {step === 'pendiente'  && 'Pago en revisión'}
               {step === 'exito'      && '¡Pago exitoso!'}
               {step === 'error'      && 'Pago rechazado'}
             </h2>
           </div>
-          <button type="button" onClick={() => { reset(); onClose(); }}
-            className="rounded-xl p-2 text-ink-muted transition hover:bg-brand-cream hover:text-ink">
-            <X className="h-5 w-5" />
-          </button>
+          {/* Fix #4: no cerrar mientras procesa — el cobro ya puede estar en curso */}
+          {step !== 'procesando' && (
+            <button type="button" onClick={() => { reset(); onClose(); }}
+              className="rounded-xl p-2 text-ink-muted transition hover:bg-brand-cream hover:text-ink">
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto px-6 py-6">
@@ -474,7 +508,7 @@ export default function PagoModal({
                 )}
               </div>
 
-              {/* Cuotas */}
+              {/* Fix #5: montos por cuota calculados correctamente */}
               <div>
                 <label className="label">Cuotas</label>
                 <select
@@ -483,9 +517,9 @@ export default function PagoModal({
                   onChange={(e) => campo('cuotas', parseInt(e.target.value, 10))}
                 >
                   <option value={1}>1 cuota de ${precio.toLocaleString('es-AR')}</option>
-                  <option value={3}>3 cuotas de ${Math.ceil(precio * 1.0 / 3).toLocaleString('es-AR')} (sin interés)</option>
-                  <option value={6}>6 cuotas de ${Math.ceil(precio * 1.15 / 6).toLocaleString('es-AR')} (con interés)</option>
-                  <option value={12}>12 cuotas de ${Math.ceil(precio * 1.35 / 12).toLocaleString('es-AR')} (con interés)</option>
+                  <option value={3}>3 cuotas de ${Math.ceil(precio / 3).toLocaleString('es-AR')} (sin interés)</option>
+                  <option value={6}>6 cuotas de ${Math.ceil(precio * 1.15 / 6).toLocaleString('es-AR')} (con interés · total ${Math.ceil(precio * 1.15).toLocaleString('es-AR')})</option>
+                  <option value={12}>12 cuotas de ${Math.ceil(precio * 1.35 / 12).toLocaleString('es-AR')} (con interés · total ${Math.ceil(precio * 1.35).toLocaleString('es-AR')})</option>
                 </select>
               </div>
 
@@ -537,6 +571,26 @@ export default function PagoModal({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* ══ STEP: Pendiente (en revisión por MP) ══ */}
+          {step === 'pendiente' && (
+            <div className="flex flex-col items-center gap-5 py-6 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warn/10">
+                <Loader2 className="h-10 w-10 text-warn" />
+              </div>
+              <div>
+                <h3 className="font-display text-xl font-black text-ink">Pago en revisión</h3>
+                <p className="mt-2 text-sm text-ink-muted leading-relaxed">
+                  Tu pago está siendo procesado por Mercado Pago. Cuando se confirme, tu plan Pro se activa automáticamente y te avisamos por email.
+                </p>
+              </div>
+              <button type="button"
+                onClick={() => { reset(); onClose(); }}
+                className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
+                Cerrar
+              </button>
             </div>
           )}
 

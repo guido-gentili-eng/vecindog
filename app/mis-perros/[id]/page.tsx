@@ -1074,12 +1074,17 @@ function ChipCertificadoSection({
       {/* Número de chip */}
       <div className="mb-4 rounded-2xl bg-brand-cream p-3.5">
         {locked ? (
-          /* Sin Pro: solo lectura */
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
-            <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
-              {perro.chip || 'Sin registrar'}
-            </p>
+          /* Sin Pro: solo lectura con candado */
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
+              <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
+                {perro.chip || 'Sin registrar'}
+              </p>
+            </div>
+            <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-2.5 py-1.5 text-xs font-bold text-brand-primary/60 shrink-0 transition hover:bg-brand-primary/20 hover:text-brand-primary">
+              <Lock className="h-3 w-3" /> Editar
+            </Link>
           </div>
         ) : editandoChip ? (
           /* Pro + editando */
@@ -1381,7 +1386,15 @@ function CVISection({
       </div>
 
       {/* Selector de país — solo Pro */}
-      {!locked && <>
+      {locked ? (
+        <Link href="/planes" className="mb-4 flex w-full items-center justify-between rounded-2xl border border-black/10 bg-black/5 px-4 py-3 text-sm font-bold text-ink-muted/50 transition hover:bg-brand-primary/5 hover:text-brand-primary/70">
+          <span className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Consultá los requisitos por país
+          </span>
+          <Lock className="h-4 w-4" />
+        </Link>
+      ) : <>
       <button
         type="button"
         onClick={() => setRequisitosOpen((o) => !o)}

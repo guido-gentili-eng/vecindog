@@ -297,9 +297,9 @@ export default function PerroDetallePage() {
                   + Agregar
                 </button>
               ) : (
-                <span className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+                <Link href="/planes" className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
                   <Sparkles className="h-3 w-3" /> VecindogPro
-                </span>
+                </Link>
               )}
             </div>
 
@@ -890,9 +890,9 @@ function AirTagSection({
           )}
         </h2>
         {locked ? (
-          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+          <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             <Sparkles className="h-3 w-3" /> VecindogPro
-          </span>
+          </Link>
         ) : !agregando && (
           <button type="button" onClick={() => setAgregando(true)}
             className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
@@ -1045,9 +1045,9 @@ function ChipCertificadoSection({
           )}
         </h2>
         {locked ? (
-          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+          <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             <Sparkles className="h-3 w-3" /> VecindogPro
-          </span>
+          </Link>
         ) : !pendingFile && (
           <button
             type="button"
@@ -1073,7 +1073,7 @@ function ChipCertificadoSection({
 
       {/* Número de chip */}
       <div className="mb-4 rounded-2xl bg-brand-cream p-3.5">
-        {editandoChip ? (
+        {!locked && editandoChip ? (
           <form onSubmit={handleSaveChip} className="flex items-center gap-2">
             <input
               className="field flex-1 font-mono text-sm"
@@ -1099,10 +1099,12 @@ function ChipCertificadoSection({
                 {perro.chip || 'Sin registrar'}
               </p>
             </div>
-            <button type="button" onClick={() => setEditandoChip(true)}
-              className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
-              <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
-            </button>
+            {!locked && (
+              <button type="button" onClick={() => setEditandoChip(true)}
+                className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
+                <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
+              </button>
+            )}
           </div>
         )}
         {chipError && (
@@ -1351,9 +1353,9 @@ function CVISection({
           )}
         </h2>
         {locked ? (
-          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+          <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             <Sparkles className="h-3 w-3" /> VecindogPro
-          </span>
+          </Link>
         ) : !pendingFile && (
           <button type="button"
             onClick={() => { setUploadError(''); fileRef.current?.click(); }}
@@ -1524,9 +1526,9 @@ function EstudiosSection({
           )}
         </h2>
         {locked ? (
-          <span className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+          <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             <Sparkles className="h-3 w-3" /> VecindogPro
-          </span>
+          </Link>
         ) : !pendingFile && (
           <button
             type="button"

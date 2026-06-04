@@ -29,7 +29,7 @@ export default function CuidadoPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10">
 
       {/* Hero */}
       <div className="mb-10 text-center">

@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Phone, MapPin, Clock, ExternalLink, Building2, Loader2,
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
+  Lock, Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Ad } from '@/lib/ads';
 
 /* ── Mapa de categorías ──────────────────────────────────────────── */
@@ -27,16 +29,21 @@ const CATEGORIAS: Record<string, {
   'guarderia-hotel':   { label: 'Guardería / Hotel',  slug: 'Guardería / Hotel', icon: Home,        bg: 'bg-amber-50',  text: 'text-amber-600' },
 };
 
+/* ── Página ──────────────────────────────────────────────────────── */
+
 export default function CategoriaPage() {
-  const params      = useParams();
-  const catKey      = params?.categoria as string;
-  const cat         = CATEGORIAS[catKey];
+  const params  = useParams();
+  const router  = useRouter();
+  const catKey  = params?.categoria as string;
+  const cat     = CATEGORIAS[catKey];
+
+  const { isPro, loading: authLoading } = useAuth();
 
   const [comercios, setComercior] = useState<Ad[]>([]);
-  const [cargando,  setCargando]  = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!cat) { setCargando(false); return; }
+    if (!cat) { setDataLoading(false); return; }
 
     const hoy = new Date().toISOString().slice(0, 10);
     supabase
@@ -49,7 +56,7 @@ export default function CategoriaPage() {
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setComercior((data as Ad[]) ?? []);
-        setCargando(false);
+        setDataLoading(false);
       });
   }, [catKey, cat]);
 
@@ -64,7 +71,8 @@ export default function CategoriaPage() {
     );
   }
 
-  const Icon = cat.icon;
+  const Icon    = cat.icon;
+  const cargando = authLoading || dataLoading;
 
   return (
     <div className="py-10 md:py-14">
@@ -84,7 +92,7 @@ export default function CategoriaPage() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-black text-ink md:text-4xl">{cat.label}</h1>
-            {!cargando && (
+            {!cargando && isPro && (
               <p className="mt-1 text-sm text-ink-muted">
                 {comercios.length === 0
                   ? 'Sin inscriptos todavía'
@@ -100,6 +108,13 @@ export default function CategoriaPage() {
         <div className="flex justify-center py-20">
           <Loader2 className="h-7 w-7 animate-spin text-amber-500" />
         </div>
+      ) : !isPro ? (
+        /* Gate para usuarios sin Pro */
+        <ProGate
+          categoria={cat.label}
+          count={comercios.length}
+          onVerPro={() => router.push('/planes')}
+        />
       ) : comercios.length === 0 ? (
         <EmptyState categoria={cat.label} />
       ) : (
@@ -114,6 +129,71 @@ export default function CategoriaPage() {
   );
 }
 
+/* ── Gate Pro ────────────────────────────────────────────────────── */
+
+function ProGate({
+  categoria,
+  count,
+  onVerPro,
+}: {
+  categoria: string;
+  count: number;
+  onVerPro: () => void;
+}) {
+  return (
+    <div className="mx-auto max-w-md py-8 text-center">
+      <div className="card p-8 md:p-10">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#5b21b6]/10">
+          <Lock className="h-8 w-8 text-[#5b21b6]" />
+        </div>
+
+        <h2 className="mt-5 font-display text-2xl font-black text-ink">
+          Exclusivo VecindogPro
+        </h2>
+
+        <p className="mt-2 text-ink-muted">
+          {count > 0
+            ? `Hay ${count} ${categoria.toLowerCase()}${count !== 1 ? 's' : ''} adherido${count !== 1 ? 's' : ''} esperándote.`
+            : `Los ${categoria.toLowerCase()}s de la red aparecen acá.`}
+          {' '}Activá el plan Pro para ver sus datos.
+        </p>
+
+        <div className="mt-6 rounded-2xl bg-brand-cream p-4 text-left">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">Con VecindogPro también tenés</p>
+          <ul className="space-y-1.5">
+            {[
+              'Acceso a los 6 rubros de la Red Vecindog',
+              'Alerta instantánea cuando se publica un perro perdido',
+              'Historial médico completo de tus perros',
+              'Análisis de foto para identificar razas',
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2 text-sm text-ink">
+                <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#5b21b6]" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <button
+          type="button"
+          onClick={onVerPro}
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-[#5b21b6] to-[#4c1d95] px-5 py-3.5 font-bold text-white shadow-soft transition hover:opacity-90"
+        >
+          <Sparkles className="h-4 w-4" /> Ver Pro
+        </button>
+
+        <Link
+          href="/red-vecindog"
+          className="mt-3 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
+        >
+          Volver a Red Vecindog
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* ── Card de comercio ────────────────────────────────────────────── */
 
 function ComercioCard({ comercio: c }: { comercio: Ad }) {
@@ -121,26 +201,18 @@ function ComercioCard({ comercio: c }: { comercio: Ad }) {
 
   return (
     <div className="card overflow-hidden p-0">
-      {/* Foto */}
       {c.imagen_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={c.imagen_url}
-          alt={c.titulo}
-          className="h-44 w-full object-cover"
-        />
+        <img src={c.imagen_url} alt={c.titulo} className="h-44 w-full object-cover" />
       ) : (
         <div className="flex h-44 items-center justify-center bg-brand-cream">
           <Building2 className="h-10 w-10 text-ink-muted/30" />
         </div>
       )}
 
-      {/* Info */}
       <div className="p-5">
         <h2 className="font-display text-lg font-black text-ink leading-tight">{c.titulo}</h2>
-        {c.subtitulo && (
-          <p className="mt-0.5 text-sm text-ink-muted">{c.subtitulo}</p>
-        )}
+        {c.subtitulo && <p className="mt-0.5 text-sm text-ink-muted">{c.subtitulo}</p>}
 
         <div className="mt-4 space-y-2">
           {c.telefono_comercio && (

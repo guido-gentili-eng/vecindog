@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, MapPin, Heart, Home, ArrowRight, Footprints } from 'lucide-react';
+import { Search, MapPin, Heart, Home, ArrowRight, Footprints, HandHeart } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -75,12 +75,10 @@ const ACCIONES: Accion[] = [
 ];
 
 /**
- * Bloque central de la home: 4 cards grandes para que la persona elija qué
- * hacer apenas entra. Las cards son el verdadero CTA, no botones secundarios.
- *
+ * Bloque central de la home: 4 cards grandes + 1 card ancha de cuidado.
  * Layout:
- *   - Mobile: 1 columna (cards apiladas, fáciles de tocar).
- *   - Desktop (sm+): 2x2.
+ *   - Mobile: 1 columna.
+ *   - Desktop (sm+): 2x2 + 1 full-width.
  */
 export default function ActionCards() {
   return (
@@ -89,6 +87,20 @@ export default function ActionCards() {
         {ACCIONES.map((a) => (
           <Card key={a.href} {...a} />
         ))}
+      </div>
+      {/* Card de cuidado — span completo */}
+      <div className="mt-3 sm:mt-4">
+        <Card
+          href="/cuidado"
+          icon={HandHeart}
+          titulo="Cuidado de perros"
+          texto="Buscá un cuidador para tu perro o anotate para cuidar perros de otros vecinos."
+          chip="Nuevo"
+          bg="bg-teal-600"
+          text="text-white"
+          iconBg="bg-white/22"
+          accent="bg-teal-800"
+        />
       </div>
     </section>
   );

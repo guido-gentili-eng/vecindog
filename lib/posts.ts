@@ -11,7 +11,7 @@ export interface Post {
   created_at:  string;
   user_id:     string | null;
   perro_id:    string | null;
-  categoria:   'perdido' | 'encontrado' | 'adopcion' | 'transito';
+  categoria:   'perdido' | 'encontrado' | 'adopcion' | 'transito' | 'busco_cuidador' | 'cuidador_disponible';
   especie:     string;
   nombre:      string | null;
   raza:        string | null;
@@ -170,4 +170,16 @@ export async function eliminarPost(id: string, images: string[]): Promise<void> 
   }
   const { error } = await supabase.from('posts').delete().eq('id', id);
   if (error) throw error;
+}
+
+/** Lista los posts de una categoría de cuidado específica. */
+export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible'): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('categoria', categoria)
+    .neq('estado', 'resuelto')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Post[];
 }

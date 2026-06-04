@@ -18,25 +18,29 @@ import { nombreCorto } from '@/lib/ciudades';
 const AD_INTERVAL = 4;
 
 const CAT_VALIDAS: FiltroCategoria[] = [
-  'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito'
+  'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito', 'busco_cuidador', 'cuidador_disponible'
 ];
 
 const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
-  todas:      'Todos los avisos',
-  buscar:     'Perdidos y vistos',
-  perdido:    'Perros perdidos',
-  encontrado: 'Perros vistos',
-  adopcion:   'Perros en adopción',
-  transito:   'Perros en tránsito',
+  todas:                'Todos los avisos',
+  buscar:               'Perdidos y vistos',
+  perdido:              'Perros perdidos',
+  encontrado:           'Perros vistos',
+  adopcion:             'Perros en adopción',
+  transito:             'Perros en tránsito',
+  busco_cuidador:       'Buscan cuidador',
+  cuidador_disponible:  'Cuidadores disponibles',
 };
 
 const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
-  todas:      'Los perros publicados por los vecinos de tu ciudad.',
-  buscar:     'Perros perdidos y vistos cerca tuyo.',
-  perdido:    'Familias buscando a su perro. ¿Lo viste?',
-  encontrado: 'Perros vistos en la calle que buscan a su familia.',
-  adopcion:   'Perros que buscan una familia responsable.',
-  transito:   'Perros que alguien tiene temporalmente o vio en la calle.',
+  todas:                'Los perros publicados por los vecinos de tu ciudad.',
+  buscar:               'Perros perdidos y vistos cerca tuyo.',
+  perdido:              'Familias buscando a su perro. ¿Lo viste?',
+  encontrado:           'Perros vistos en la calle que buscan a su familia.',
+  adopcion:             'Perros que buscan una familia responsable.',
+  transito:             'Perros que alguien tiene temporalmente o vio en la calle.',
+  busco_cuidador:       'Dueños que buscan alguien de confianza para cuidar a su perro.',
+  cuidador_disponible:  'Vecinos disponibles para cuidar perros de la comunidad.',
 };
 
 export default function PublicacionesPage() {

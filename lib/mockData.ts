@@ -6,7 +6,7 @@
 //   - imagenes -> columna `images text[]` o tabla `post_images`.
 //   - El primer elemento de imagenes[] es la imagen principal.
 
-export type Categoria = 'perdido' | 'encontrado' | 'adopcion' | 'transito';
+export type Categoria = 'perdido' | 'encontrado' | 'adopcion' | 'transito' | 'busco_cuidador' | 'cuidador_disponible';
 export type Especie = 'perro' | 'gato' | 'otro';
 export type EstadoVida = 'vivo' | 'fallecido' | 'desconocido';
 export type Tamanio = 'chico' | 'mediano' | 'grande';
@@ -69,10 +69,12 @@ export function listarAnimales(filtros?: {
 }
 
 export const ETIQUETA_CATEGORIA: Record<Categoria, string> = {
-  perdido:   'Perdido',
-  encontrado:'Visto',
-  adopcion:  'En adopción',
-  transito:  'En tránsito',
+  perdido:              'Perdido',
+  encontrado:           'Visto',
+  adopcion:             'En adopción',
+  transito:             'En tránsito',
+  busco_cuidador:       'Busca cuidador',
+  cuidador_disponible:  'Cuidador disponible',
 };
 
 export const ETIQUETA_ESPECIE: Record<Especie, string> = {

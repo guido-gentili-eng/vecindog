@@ -5,10 +5,12 @@ import { ETIQUETA_CATEGORIA } from '@/lib/mockData';
 
 // Badge sólido por categoría — colores semánticos.
 const COLOR_CATEGORIA: Record<Animal['categoria'], string> = {
-  perdido:    'bg-lost text-white',
-  encontrado: 'bg-found text-white',
-  adopcion:   'bg-adopt text-[#5b3a0e]',
-  transito:   'bg-[#7c3aed] text-white',
+  perdido:             'bg-lost text-white',
+  encontrado:          'bg-found text-white',
+  adopcion:            'bg-adopt text-[#5b3a0e]',
+  transito:            'bg-[#7c3aed] text-white',
+  busco_cuidador:      'bg-teal-600 text-white',
+  cuidador_disponible: 'bg-teal-800 text-white',
 };
 
 function diasRestantes(fecha: string): number {

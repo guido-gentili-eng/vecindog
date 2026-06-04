@@ -42,11 +42,11 @@ export default function CuidadoPage() {
         </p>
       </div>
 
-      {/* Opciones */}
-      <div className="mb-12 grid gap-4 sm:grid-cols-2">
+      {/* Sección: Busco cuidador + su listado */}
+      <section className="mb-12">
         <Link
           href="/cuidado/busco-cuidador"
-          className="group flex flex-col overflow-hidden rounded-3xl bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
+          className="group mb-5 flex overflow-hidden rounded-3xl bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
         >
           <div className="flex flex-1 items-start gap-4 p-6">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
@@ -64,9 +64,38 @@ export default function CuidadoPage() {
           </div>
         </Link>
 
+        {/* Listado buscan cuidador */}
+        <h3 className="mb-3 font-display text-lg font-black text-ink flex items-center gap-2">
+          <Search className="h-4 w-4 text-teal-600" /> Buscan cuidador
+          {buscadores.length > 0 && (
+            <span className="ml-1 rounded-full bg-teal-100 px-2.5 py-0.5 text-sm font-bold text-teal-700">
+              {buscadores.length}
+            </span>
+          )}
+        </h3>
+        {cargando ? (
+          <div className="space-y-3">
+            {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
+          </div>
+        ) : buscadores.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-6 py-5 text-center text-sm text-teal-600">
+            Todavía no hay avisos de personas buscando cuidador.{' '}
+            <Link href="/cuidado/busco-cuidador" className="font-bold underline">¡Publicá el primero!</Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {buscadores.map((p) => (
+              <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'busco_cuidador')} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Sección: Quiero cuidar + su listado */}
+      <section>
         <Link
           href="/cuidado/quiero-cuidar"
-          className="group flex flex-col overflow-hidden rounded-3xl bg-teal-800 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
+          className="group mb-5 flex overflow-hidden rounded-3xl bg-teal-800 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
         >
           <div className="flex flex-1 items-start gap-4 p-6">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20">
@@ -83,54 +112,22 @@ export default function CuidadoPage() {
             </div>
           </div>
         </Link>
-      </div>
 
-      {/* Listado: Buscan cuidador */}
-      <section className="mb-12">
-        <h2 className="mb-4 font-display text-2xl font-black text-ink flex items-center gap-2">
-          <Search className="h-5 w-5 text-teal-600" /> Buscan cuidador
-          {buscadores.length > 0 && (
-            <span className="ml-1 rounded-full bg-teal-100 px-2.5 py-0.5 text-sm font-bold text-teal-700">
-              {buscadores.length}
-            </span>
-          )}
-        </h2>
-
-        {cargando ? (
-          <div className="space-y-3">
-            {[1,2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-brand-cream" />)}
-          </div>
-        ) : buscadores.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 p-8 text-center text-sm text-teal-600">
-            Todavía no hay avisos de personas buscando cuidador.{' '}
-            <Link href="/cuidado/busco-cuidador" className="font-bold underline">¡Publicá el primero!</Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {buscadores.map((p) => (
-              <PostCuidadoCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id, 'busco_cuidador')} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Listado: Cuidadores disponibles */}
-      <section>
-        <h2 className="mb-4 font-display text-2xl font-black text-ink flex items-center gap-2">
-          <HandHeart className="h-5 w-5 text-teal-700" /> Cuidadores disponibles
+        {/* Listado cuidadores disponibles */}
+        <h3 className="mb-3 font-display text-lg font-black text-ink flex items-center gap-2">
+          <HandHeart className="h-4 w-4 text-teal-700" /> Cuidadores disponibles
           {cuidadores.length > 0 && (
             <span className="ml-1 rounded-full bg-teal-100 px-2.5 py-0.5 text-sm font-bold text-teal-700">
               {cuidadores.length}
             </span>
           )}
-        </h2>
-
+        </h3>
         {cargando ? (
           <div className="space-y-3">
-            {[1,2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-brand-cream" />)}
+            {[1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-brand-cream" />)}
           </div>
         ) : cuidadores.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 p-8 text-center text-sm text-teal-600">
+          <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-6 py-5 text-center text-sm text-teal-600">
             Todavía no hay cuidadores registrados.{' '}
             <Link href="/cuidado/quiero-cuidar" className="font-bold underline">¡Sé el primero!</Link>
           </div>

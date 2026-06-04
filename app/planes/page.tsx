@@ -39,6 +39,7 @@ const FEATURES_PRO = [
   { label: 'Panel de Amigos' },
   { label: 'Notificaciones en tiempo real 🔔' },
   { label: 'Instagram y Facebook en el perfil' },
+  { label: 'Acceso a Mi red Vecindog 🐾' },
 ];
 
 export default function PlanesPage() {

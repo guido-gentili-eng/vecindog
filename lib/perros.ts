@@ -36,17 +36,23 @@ export interface PerroInput {
   chip:         string;
   esterilizado: boolean;
   descripcion:  string;
+  alergias:     string;  // Alergias o condiciones especiales
+  vet_nombre:   string;  // Veterinario habitual — nombre o clínica
+  vet_telefono: string;  // Veterinario habitual — teléfono
   direccion:    string;  // Dirección del hogar (para avisos de pérdida)
   foto_url:     string;
 }
 
-export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo'> {
-  id:         string;
-  user_id:    string;
-  tamano:     Tamano | null;
-  sexo:       Sexo   | null;
-  created_at: string;
-  vacunas?:   Vacuna[];
+export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' | 'vet_nombre' | 'vet_telefono'> {
+  id:           string;
+  user_id:      string;
+  tamano:       Tamano | null;
+  sexo:         Sexo   | null;
+  alergias:     string | null;
+  vet_nombre:   string | null;
+  vet_telefono: string | null;
+  created_at:   string;
+  vacunas?:     Vacuna[];
 }
 
 /* ─────────────────── Consultas ─────────────────── */
@@ -82,16 +88,19 @@ export async function crearPerro(
     .insert({
       user_id:      user.id,
       nombre:       input.nombre,
-      raza:         input.raza        || null,
-      color:        input.color       || null,
-      tamano:       input.tamano      || null,
-      sexo:         input.sexo        || null,
-      fecha_nac:    input.fecha_nac   || null,
-      chip:         input.chip        || null,
+      raza:         input.raza         || null,
+      color:        input.color        || null,
+      tamano:       input.tamano       || null,
+      sexo:         input.sexo         || null,
+      fecha_nac:    input.fecha_nac    || null,
+      chip:         input.chip         || null,
       esterilizado: input.esterilizado,
-      descripcion:  input.descripcion || null,
-      direccion:    input.direccion   || null,
-      foto_url:     input.foto_url    || null,
+      descripcion:  input.descripcion  || null,
+      alergias:     input.alergias     || null,
+      vet_nombre:   input.vet_nombre   || null,
+      vet_telefono: input.vet_telefono || null,
+      direccion:    input.direccion    || null,
+      foto_url:     input.foto_url     || null,
     })
     .select('id')
     .single();
@@ -133,6 +142,9 @@ export async function actualizarPerro(
   if (input.chip         !== undefined) patch.chip         = input.chip         || null;
   if (input.esterilizado !== undefined) patch.esterilizado = input.esterilizado;
   if (input.descripcion  !== undefined) patch.descripcion  = input.descripcion  || null;
+  if (input.alergias     !== undefined) patch.alergias     = input.alergias     || null;
+  if (input.vet_nombre   !== undefined) patch.vet_nombre   = input.vet_nombre   || null;
+  if (input.vet_telefono !== undefined) patch.vet_telefono = input.vet_telefono || null;
   if (input.direccion    !== undefined) patch.direccion    = input.direccion    || null;
   if (input.foto_url     !== undefined) patch.foto_url     = input.foto_url     || null;
 

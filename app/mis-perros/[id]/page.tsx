@@ -8,7 +8,7 @@ import {
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
   RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
   Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
-  Globe, ChevronDown, Share2, Lock, Sparkles,
+  Globe, ChevronDown, Share2, Lock, Sparkles, Bug, Scale, Stethoscope, Phone,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
@@ -21,6 +21,15 @@ import {
   listarEstudios, subirArchivoEstudio, agregarEstudio, eliminarEstudio,
   type Estudio, type TipoEstudio,
 } from '@/lib/estudios';
+import {
+  listarDesparasitaciones, agregarDesparasitacion, actualizarDesparasitacion, eliminarDesparasitacion,
+  PRODUCTOS_COMUNES,
+  type Desparasitacion, type DesparasitacionInput,
+} from '@/lib/desparasitaciones';
+import {
+  listarPesos, agregarPeso, eliminarPeso,
+  type Peso, type PesoInput,
+} from '@/lib/pesos';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
 import { nombreCorto } from '@/lib/ciudades';
@@ -45,6 +54,11 @@ export default function PerroDetallePage() {
   const [estudioEnviar,     setEstudioEnviar]     = useState<Estudio | null>(null);
   const [editandoVacunaId,  setEditandoVacunaId]  = useState<string | null>(null);
   const [agregandoVacuna,   setAgregandoVacuna]   = useState(false);
+  const [desparasitaciones, setDesparasitaciones] = useState<Desparasitacion[]>([]);
+  const [pesos,              setPesos]             = useState<Peso[]>([]);
+  const [editandoDesparaId,  setEditandoDesparaId] = useState<string | null>(null);
+  const [agregandoDesparas,  setAgregandoDesparas] = useState(false);
+  const [agregandoPeso,      setAgregandoPeso]     = useState(false);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -57,6 +71,8 @@ export default function PerroDetallePage() {
           setVacunas(sorted);
           buscarPostActivoDePerro(p.id).then(setPostActivo);
           listarEstudios(p.id).then(setEstudios);
+          listarDesparasitaciones(p.id).then(setDesparasitaciones);
+          listarPesos(p.id).then(setPesos);
         }
         return null;
       })
@@ -102,6 +118,43 @@ export default function PerroDetallePage() {
     if (!perro) return;
     await eliminarPerro(perro.id);
     router.push('/mis-perros');
+  }
+
+  const sortDesparas = (list: Desparasitacion[]) =>
+    [...list].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+  async function handleAgregarDesparasitacion(input: DesparasitacionInput) {
+    if (!perro) return;
+    const nueva = await agregarDesparasitacion(perro.id, input);
+    setDesparasitaciones((prev) => sortDesparas([nueva, ...prev]));
+    setAgregandoDesparas(false);
+  }
+
+  async function handleActualizarDesparasitacion(despId: string, input: DesparasitacionInput) {
+    await actualizarDesparasitacion(despId, input);
+    setDesparasitaciones((prev) =>
+      sortDesparas(prev.map((d) => d.id === despId ? { ...d, ...input } : d))
+    );
+    setEditandoDesparaId(null);
+  }
+
+  async function handleEliminarDesparasitacion(despId: string) {
+    await eliminarDesparasitacion(despId);
+    setDesparasitaciones((prev) => prev.filter((d) => d.id !== despId));
+  }
+
+  async function handleAgregarPeso(input: PesoInput) {
+    if (!perro) return;
+    const nuevo = await agregarPeso(perro.id, input);
+    setPesos((prev) =>
+      [nuevo, ...prev].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+    );
+    setAgregandoPeso(false);
+  }
+
+  async function handleEliminarPeso(pesoId: string) {
+    await eliminarPeso(pesoId);
+    setPesos((prev) => prev.filter((p) => p.id !== pesoId));
   }
 
   const sortVacunas = (list: Vacuna[]) =>
@@ -253,16 +306,18 @@ export default function PerroDetallePage() {
             </div>
           )}
 
-          {/* Banner alertas de vacunas vencidas / próximas a vencer */}
+          {/* Banner alertas: vacunas y desparasitaciones vencidas / próximas */}
           {(() => {
             const hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
             const en30 = new Date(hoy); en30.setDate(hoy.getDate() + 30);
-            const vencidas = vacunas.filter((v) => v.proxima && new Date(v.proxima) < hoy);
-            const proximas  = vacunas.filter((v) => {
-              if (!v.proxima) return false;
-              const d = new Date(v.proxima);
-              return d >= hoy && d <= en30;
-            });
+            const vencidas = [
+              ...vacunas.filter((v) => v.proxima && new Date(v.proxima) < hoy).map((v) => v.nombre),
+              ...desparasitaciones.filter((d) => d.proxima && new Date(d.proxima) < hoy).map((d) => d.producto),
+            ];
+            const proximas = [
+              ...vacunas.filter((v) => { if (!v.proxima) return false; const d = new Date(v.proxima); return d >= hoy && d <= en30; }).map((v) => v.nombre),
+              ...desparasitaciones.filter((d) => { if (!d.proxima) return false; const dt = new Date(d.proxima); return dt >= hoy && dt <= en30; }).map((d) => d.producto),
+            ];
             if (vencidas.length === 0 && proximas.length === 0) return null;
             return (
               <div className={`mb-5 rounded-2xl border p-4 space-y-1.5 ${vencidas.length > 0 ? 'border-bad/25 bg-bad/6' : 'border-warn/30 bg-warn/8'}`}>
@@ -271,8 +326,8 @@ export default function PerroDetallePage() {
                     <AlertCircle className="h-4 w-4 text-bad shrink-0 mt-0.5" />
                     <p className="text-sm font-bold text-bad">
                       {vencidas.length === 1
-                        ? <>Vacuna vencida: <span className="font-extrabold">{vencidas[0].nombre}</span></>
-                        : <>{vencidas.length} vacunas están vencidas: {vencidas.map((v) => v.nombre).join(', ')}</>}
+                        ? <>Vencido/a: <span className="font-extrabold">{vencidas[0]}</span></>
+                        : <>{vencidas.length} vencidos/as: {vencidas.join(', ')}</>}
                     </p>
                   </div>
                 )}
@@ -281,8 +336,8 @@ export default function PerroDetallePage() {
                     <CalendarDays className="h-4 w-4 text-[#7a4f00] shrink-0 mt-0.5" />
                     <p className="text-sm font-bold text-[#7a4f00]">
                       {proximas.length === 1
-                        ? <><span className="font-extrabold">{proximas[0].nombre}</span> vence en los próximos 30 días</>
-                        : <>{proximas.length} vacunas vencen en los próximos 30 días</>}
+                        ? <><span className="font-extrabold">{proximas[0]}</span> vence en los próximos 30 días</>
+                        : <>{proximas.length} vencen en los próximos 30 días: {proximas.join(', ')}</>}
                     </p>
                   </div>
                 )}
@@ -319,7 +374,45 @@ export default function PerroDetallePage() {
               <DataItem label="Ciudad"         value={ciudad ? nombreCorto(ciudad) : '—'} />
               <DataItem label="Esterilizado/a" value={perro.esterilizado ? 'Sí' : 'No'} />
             </dl>
+            {perro.alergias && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-bad/25 bg-bad/6 px-3 py-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-bad mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-bad">Alergias / condiciones</p>
+                  <p className="text-sm font-semibold text-ink">{perro.alergias}</p>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Veterinario habitual */}
+          {(perro.vet_nombre || perro.vet_telefono) && (
+            <div className="card mb-5 p-5">
+              <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink mb-3">
+                <Stethoscope className="h-4 w-4 text-brand-primary" /> Veterinario habitual
+              </h2>
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-cream p-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+                    <Stethoscope className="h-5 w-5 text-brand-primary" />
+                  </div>
+                  <div>
+                    {perro.vet_nombre    && <p className="font-bold text-ink">{perro.vet_nombre}</p>}
+                    {perro.vet_telefono  && <p className="text-sm text-ink-muted">{perro.vet_telefono}</p>}
+                  </div>
+                </div>
+                {perro.vet_telefono && (
+                  <a
+                    href={`https://wa.me/${perro.vet_telefono.replace(/\D/g, '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 shrink-0"
+                  >
+                    <Phone className="h-3.5 w-3.5" /> WhatsApp
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Vacunas */}
           <div className="card p-5 mb-5">
@@ -378,6 +471,30 @@ export default function PerroDetallePage() {
               </div>
             )}
           </div>
+
+          {/* Desparasitaciones */}
+          <DesparasitacionesSection
+            perroId={perro.id}
+            desparasitaciones={desparasitaciones}
+            agregando={agregandoDesparas}
+            editandoId={editandoDesparaId}
+            onAgregar={handleAgregarDesparasitacion}
+            onActualizar={handleActualizarDesparasitacion}
+            onEliminar={handleEliminarDesparasitacion}
+            onSetAgregando={(v) => { setAgregandoDesparas(v); setEditandoDesparaId(null); }}
+            onSetEditandoId={(id) => { setEditandoDesparaId(id); setAgregandoDesparas(false); }}
+            locked={!isPro}
+          />
+
+          {/* Historial de peso */}
+          <PesoSection
+            pesos={pesos}
+            agregando={agregandoPeso}
+            onAgregar={handleAgregarPeso}
+            onEliminar={handleEliminarPeso}
+            onSetAgregando={setAgregandoPeso}
+            locked={!isPro}
+          />
 
           {/* Análisis de Laboratorio */}
           <EstudiosSection
@@ -494,6 +611,8 @@ export default function PerroDetallePage() {
             perro={perro}
             vacunas={vacunas}
             estudios={estudios}
+            desparasitaciones={desparasitaciones}
+            pesos={pesos}
             ciudad={ciudad ?? null}
             edad={edad}
           />
@@ -581,6 +700,9 @@ function EditForm({
     chip:         perro.chip         ?? '',
     esterilizado: perro.esterilizado ?? false,
     descripcion:  perro.descripcion  ?? '',
+    alergias:     perro.alergias     ?? '',
+    vet_nombre:   perro.vet_nombre   ?? '',
+    vet_telefono: perro.vet_telefono ?? '',
     direccion:    perro.direccion    ?? '',
     foto_url:     perro.foto_url     ?? '',
   });
@@ -730,6 +852,36 @@ function EditForm({
           <textarea className="field w-full" rows={3} value={form.descripcion}
             placeholder="Marcas especiales, comportamiento…"
             onChange={(e) => campo('descripcion', e.target.value)} />
+        </div>
+
+        <div>
+          <label className="label flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 text-bad/70" /> Alergias / condiciones especiales
+          </label>
+          <textarea className="field w-full" rows={2} value={form.alergias}
+            placeholder="Alérgico a X, condición crónica, dieta especial…"
+            onChange={(e) => campo('alergias', e.target.value)} />
+        </div>
+      </div>
+
+      {/* Veterinario */}
+      <div className="card space-y-4 p-5">
+        <h3 className="flex items-center gap-2 font-display text-sm font-extrabold text-ink">
+          <Stethoscope className="h-4 w-4 text-brand-primary" /> Veterinario habitual
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="label">Nombre / clínica</label>
+            <input className="field w-full" value={form.vet_nombre}
+              placeholder="Dr. García / Clínica Mascotas"
+              onChange={(e) => campo('vet_nombre', e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Teléfono</label>
+            <input className="field w-full" value={form.vet_telefono}
+              placeholder="+54 11 XXXX-XXXX"
+              onChange={(e) => campo('vet_telefono', e.target.value)} />
+          </div>
         </div>
       </div>
 
@@ -1841,13 +1993,15 @@ function EnviarEstudioModal({
 
 /* ── Historia Clínica completa ── */
 function HistoriaClinica({
-  perro, vacunas, estudios, ciudad, edad,
+  perro, vacunas, estudios, desparasitaciones, pesos, ciudad, edad,
 }: {
-  perro:    Perro;
-  vacunas:  Vacuna[];
-  estudios: Estudio[];
-  ciudad:   string | null;
-  edad:     string | null;
+  perro:              Perro;
+  vacunas:            Vacuna[];
+  estudios:           Estudio[];
+  desparasitaciones:  Desparasitacion[];
+  pesos:              Peso[];
+  ciudad:             string | null;
+  edad:               string | null;
 }) {
   const labs   = estudios.filter((e) => e.tipo === 'laboratorio');
   const radios = estudios.filter((e) => e.tipo === 'radiografia');
@@ -1956,6 +2110,37 @@ function HistoriaClinica({
         <HCSection titulo="Ecografías" lleno={ecos.length > 0}>
           {ecos.length > 0 ? (
             <EstudiosList estudios={ecos} />
+          ) : null}
+        </HCSection>
+
+        {/* ── Desparasitaciones ── */}
+        <HCSection titulo="Desparasitaciones" lleno={desparasitaciones.length > 0}>
+          {desparasitaciones.length > 0 ? (
+            <div className="space-y-1.5">
+              {desparasitaciones.map((d) => (
+                <div key={d.id} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-ink">{d.producto}</span>
+                  <span className="text-xs text-ink-muted">{formatFecha(d.fecha)}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </HCSection>
+
+        {/* ── Peso ── */}
+        <HCSection titulo="Historial de Peso" lleno={pesos.length > 0}>
+          {pesos.length > 0 ? (
+            <div className="space-y-1.5">
+              {pesos.slice(0, 5).map((p) => (
+                <div key={p.id} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-ink">{p.valor_kg} kg</span>
+                  <span className="text-xs text-ink-muted">{formatFecha(p.fecha)}</span>
+                </div>
+              ))}
+              {pesos.length > 5 && (
+                <p className="text-xs text-ink-muted">+ {pesos.length - 5} registros anteriores</p>
+              )}
+            </div>
           ) : null}
         </HCSection>
 
@@ -2091,6 +2276,363 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
           Cancelar
         </button>
       </div>
+    </div>
+  );
+}
+
+/* ── Desparasitaciones ── */
+function DesparasitacionesSection({
+  perroId, desparasitaciones, agregando, editandoId,
+  onAgregar, onActualizar, onEliminar, onSetAgregando, onSetEditandoId, locked,
+}: {
+  perroId:           string;
+  desparasitaciones: Desparasitacion[];
+  agregando:         boolean;
+  editandoId:        string | null;
+  onAgregar:         (input: DesparasitacionInput) => Promise<void>;
+  onActualizar:      (id: string, input: DesparasitacionInput) => Promise<void>;
+  onEliminar:        (id: string) => Promise<void>;
+  onSetAgregando:    (v: boolean) => void;
+  onSetEditandoId:   (id: string | null) => void;
+  locked?:           boolean;
+}) {
+  const TIPO_LABEL: Record<string, string> = { interna: 'Interna', externa: 'Externa', ambas: 'Int + Ext' };
+  const TIPO_COLOR: Record<string, string> = {
+    interna: 'bg-[#7c3aed]/10 text-[#7c3aed]',
+    externa: 'bg-good/10 text-good',
+    ambas:   'bg-brand-primary/10 text-brand-primary',
+  };
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Bug className="h-4 w-4 text-brand-primary" /> Desparasitaciones
+          {desparasitaciones.length > 0 && (
+            <span className="rounded-full bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
+              {desparasitaciones.length} registrada{desparasitaciones.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </h2>
+        {locked ? (
+          <Link href="/planes" className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </Link>
+        ) : (
+          <button type="button" onClick={() => onSetAgregando(true)}
+            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            + Agregar
+          </button>
+        )}
+      </div>
+
+      {agregando && (
+        <DesparasitacionForm onSave={onAgregar} onCancel={() => onSetAgregando(false)} />
+      )}
+
+      {desparasitaciones.length === 0 && !agregando ? (
+        <p className="text-sm text-ink-muted">No hay desparasitaciones registradas.</p>
+      ) : (
+        <div className="space-y-3">
+          {desparasitaciones.map((d) =>
+            editandoId === d.id ? (
+              <DesparasitacionForm
+                key={d.id}
+                inicial={d}
+                onSave={(input) => onActualizar(d.id, input)}
+                onCancel={() => onSetEditandoId(null)}
+              />
+            ) : (
+              <div key={d.id} className="rounded-2xl bg-brand-cream p-3.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-ink">{d.producto}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${TIPO_COLOR[d.tipo] ?? ''}`}>
+                      {TIPO_LABEL[d.tipo] ?? d.tipo}
+                    </span>
+                    {d.proxima && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${new Date(d.proxima) < new Date() ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
+                        {new Date(d.proxima) < new Date() ? 'Vencida' : 'Vigente'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button type="button" onClick={() => onSetEditandoId(d.id)}
+                      className="rounded-lg p-1 text-ink-muted/50 transition hover:bg-black/5 hover:text-brand-primary">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button type="button" onClick={() => onEliminar(d.id)}
+                      className="rounded-lg p-1 text-ink-muted/50 transition hover:bg-bad/10 hover:text-bad">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
+                  <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {formatFecha(d.fecha)}</span>
+                  {d.veterinario && <span>{d.veterinario}</span>}
+                  {d.proxima && (
+                    <span className={new Date(d.proxima) < new Date() ? 'font-bold text-bad' : ''}>
+                      Próxima: {formatFecha(d.proxima)}
+                    </span>
+                  )}
+                </div>
+                {d.notas && <p className="mt-1 text-[11px] text-ink-muted/70 italic">{d.notas}</p>}
+              </div>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DesparasitacionForm({ inicial, onSave, onCancel }: {
+  inicial?:  Desparasitacion;
+  onSave:    (input: DesparasitacionInput) => Promise<void>;
+  onCancel:  () => void;
+}) {
+  const [form, setForm] = useState<DesparasitacionInput>({
+    producto:    inicial?.producto    ?? '',
+    tipo:        inicial?.tipo        ?? 'ambas',
+    fecha:       inicial?.fecha       ?? new Date().toISOString().slice(0, 10),
+    proxima:     inicial?.proxima     ?? '',
+    veterinario: inicial?.veterinario ?? '',
+    notas:       inicial?.notas       ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+
+  function campo<K extends keyof DesparasitacionInput>(k: K, v: DesparasitacionInput[K]) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.producto || !form.fecha) { setError('Producto y fecha son obligatorios.'); return; }
+    setSaving(true); setError('');
+    try { await onSave(form); }
+    catch { setError('No se pudo guardar. Intentá de nuevo.'); setSaving(false); }
+  }
+
+  const TIPOS: { v: DesparasitacionInput['tipo']; l: string }[] = [
+    { v: 'interna', l: 'Interna' },
+    { v: 'externa', l: 'Externa' },
+    { v: 'ambas',   l: 'Int + Ext' },
+  ];
+
+  return (
+    <form onSubmit={handleSave} className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3 mb-3">
+      <div>
+        <label className="label text-xs">Producto <span className="text-bad">*</span></label>
+        <input list="productos-comunes" className="field w-full text-sm"
+          placeholder="NexGard, Frontline…" value={form.producto}
+          onChange={(e) => campo('producto', e.target.value)} required />
+        <datalist id="productos-comunes">
+          {PRODUCTOS_COMUNES.map((p) => <option key={p} value={p} />)}
+        </datalist>
+      </div>
+      <div>
+        <label className="label text-xs">Tipo</label>
+        <div className="flex gap-2">
+          {TIPOS.map(({ v, l }) => (
+            <button key={v} type="button" onClick={() => campo('tipo', v)}
+              className={`flex-1 rounded-2xl border-2 py-2 text-xs font-bold transition ${form.tipo === v ? 'border-brand-primary bg-brand-primary/10 text-brand-primary' : 'border-black/10 text-ink-muted hover:border-brand-primary/40'}`}>
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+          <input type="date" className="field w-full text-sm" value={form.fecha}
+            onChange={(e) => campo('fecha', e.target.value)} required />
+        </div>
+        <div>
+          <label className="label text-xs">Próxima aplicación</label>
+          <input type="date" className="field w-full text-sm" value={form.proxima}
+            onChange={(e) => campo('proxima', e.target.value)} />
+        </div>
+      </div>
+      <div>
+        <label className="label text-xs">Veterinario</label>
+        <input className="field w-full text-sm" placeholder="Dr. García…" value={form.veterinario}
+          onChange={(e) => campo('veterinario', e.target.value)} />
+      </div>
+      <div>
+        <label className="label text-xs">Notas</label>
+        <input className="field w-full text-sm" placeholder="Observaciones…" value={form.notas}
+          onChange={(e) => campo('notas', e.target.value)} />
+      </div>
+      {error && (
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? 'Guardar cambios' : 'Agregar'}</>}
+        </button>
+        <button type="button" onClick={onCancel} disabled={saving}
+          className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* ── Historial de peso ── */
+function PesoSection({
+  pesos, agregando, onAgregar, onEliminar, onSetAgregando, locked,
+}: {
+  pesos:          Peso[];
+  agregando:      boolean;
+  onAgregar:      (input: PesoInput) => Promise<void>;
+  onEliminar:     (id: string) => Promise<void>;
+  onSetAgregando: (v: boolean) => void;
+  locked?:        boolean;
+}) {
+  const [form,   setForm]   = useState<{ fecha: string; valor_kg: string; notas: string }>({
+    fecha: new Date().toISOString().slice(0, 10), valor_kg: '', notas: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+
+  const ultimo = pesos[0] ?? null;
+  const maxKg  = Math.max(...pesos.map((p) => p.valor_kg), 0.1);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    const kg = parseFloat(form.valor_kg.replace(',', '.'));
+    if (!form.fecha || isNaN(kg) || kg <= 0) { setError('Ingresá una fecha y un peso válido.'); return; }
+    setSaving(true); setError('');
+    try {
+      await onAgregar({ fecha: form.fecha, valor_kg: kg, notas: form.notas });
+      setForm({ fecha: new Date().toISOString().slice(0, 10), valor_kg: '', notas: '' });
+    } catch {
+      setError('No se pudo guardar. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Scale className="h-4 w-4 text-brand-primary" /> Historial de peso
+          {pesos.length > 0 && (
+            <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {pesos.length} registro{pesos.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </h2>
+        {locked ? (
+          <Link href="/planes" className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </Link>
+        ) : (
+          <button type="button" onClick={() => onSetAgregando(!agregando)}
+            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            {agregando ? <X className="h-3 w-3" /> : <>+ Registrar</>}
+          </button>
+        )}
+      </div>
+
+      {/* Último peso destacado */}
+      {ultimo && !agregando && (
+        <div className="mb-4 flex items-center gap-4 rounded-2xl bg-brand-cream p-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Último peso</p>
+            <p className="mt-0.5 font-display text-3xl font-black text-ink">
+              {ultimo.valor_kg} <span className="text-base font-bold text-ink-muted">kg</span>
+            </p>
+            <p className="text-xs text-ink-muted">{formatFecha(ultimo.fecha)}</p>
+          </div>
+          {pesos.length >= 2 && (() => {
+            const diff = ultimo.valor_kg - pesos[1].valor_kg;
+            const color = diff > 0 ? 'text-bad' : diff < 0 ? 'text-good' : 'text-ink-muted';
+            return (
+              <div className={`ml-auto text-right ${color}`}>
+                <p className="text-xs font-bold">vs anterior</p>
+                <p className="font-bold">{diff > 0 ? '+' : ''}{diff.toFixed(2)} kg</p>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Formulario agregar */}
+      {agregando && (
+        <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+              <input type="date" className="field w-full text-sm" value={form.fecha}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => setForm((f) => ({ ...f, fecha: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="label text-xs">Peso (kg) <span className="text-bad">*</span></label>
+              <input className="field w-full text-sm" placeholder="Ej: 12.5" value={form.valor_kg}
+                inputMode="decimal"
+                onChange={(e) => setForm((f) => ({ ...f, valor_kg: e.target.value }))} required />
+            </div>
+          </div>
+          <div>
+            <label className="label text-xs">Notas</label>
+            <input className="field w-full text-sm" placeholder="Ej: control de rutina" value={form.notas}
+              onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))} />
+          </div>
+          {error && (
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+            </button>
+            <button type="button" onClick={() => { onSetAgregando(false); setError(''); }}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Historial visual */}
+      {pesos.length === 0 && !agregando ? (
+        <p className="text-sm text-ink-muted">No hay registros de peso.</p>
+      ) : pesos.length > 0 ? (
+        <div className="space-y-2">
+          {pesos.map((p) => (
+            <div key={p.id} className="flex items-center gap-3">
+              {/* Barra proporcional */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs text-ink-muted">{formatFecha(p.fecha)}</span>
+                  <span className="text-sm font-bold text-ink">{p.valor_kg} kg</span>
+                </div>
+                <div className="h-2 rounded-full bg-black/8 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-brand-primary/60 transition-all"
+                    style={{ width: `${Math.round((p.valor_kg / maxKg) * 100)}%` }}
+                  />
+                </div>
+                {p.notas && <p className="mt-0.5 text-[11px] text-ink-muted italic">{p.notas}</p>}
+              </div>
+              <button type="button" onClick={() => onEliminar(p.id)}
+                className="shrink-0 rounded-lg p-1 text-ink-muted/40 transition hover:bg-bad/10 hover:text-bad">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

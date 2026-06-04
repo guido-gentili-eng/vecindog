@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Dog, ImagePlus, X, Plus, Trash2, Syringe, Loader2,
-  AlertCircle, ChevronLeft, CheckCircle2, Lock, Sparkles,
+  AlertCircle, ChevronLeft, CheckCircle2, Lock, Sparkles, Stethoscope,
 } from 'lucide-react';
 import { listarMisPerros } from '@/lib/perros';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,7 +21,8 @@ interface FotoPreview { file: File; preview: string; }
 
 const FORM_INICIAL: PerroInput = {
   nombre: '', raza: '', color: '', tamano: '', sexo: '',
-  fecha_nac: '', chip: '', esterilizado: false, descripcion: '', direccion: '', foto_url: '',
+  fecha_nac: '', chip: '', esterilizado: false, descripcion: '',
+  alergias: '', vet_nombre: '', vet_telefono: '', direccion: '', foto_url: '',
 };
 
 /* ─── Constantes ─── */
@@ -308,6 +309,19 @@ export default function NuevoPerroPage() {
             />
           </div>
 
+          {/* Alergias */}
+          <div>
+            <label className="label">Alergias / condiciones especiales</label>
+            <textarea
+              className="field w-full resize-none"
+              rows={2}
+              placeholder="Alérgico a X antibiótico, condición crónica, dieta especial…"
+              value={form.alergias}
+              onChange={(e) => campo('alergias', e.target.value)}
+            />
+            <p className="mt-1 text-xs text-ink-muted">Se mostrará en la identificación del perro.</p>
+          </div>
+
           {/* Dirección */}
           <div>
             <label className="label">Dirección de tu casa</label>
@@ -385,7 +399,32 @@ export default function NuevoPerroPage() {
           />
         </Section>
 
-        {/* ── Sección 3: Vacunas ── */}
+        {/* ── Sección 3: Veterinario ── */}
+        <Section titulo="Veterinario habitual">
+          <p className="text-xs text-ink-muted -mt-2">Opcional. Útil si el perro se pierde y alguien lo encuentra.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Nombre / clínica</label>
+              <input
+                className="field w-full"
+                placeholder="Dr. García / Clínica Mascotas"
+                value={form.vet_nombre}
+                onChange={(e) => campo('vet_nombre', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Teléfono</label>
+              <input
+                className="field w-full"
+                placeholder="+54 11 XXXX-XXXX"
+                value={form.vet_telefono}
+                onChange={(e) => campo('vet_telefono', e.target.value)}
+              />
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Sección 4: Vacunas ── */}
         <Section
           titulo="Carnet de vacunas"
           descripcion="Agregá todas las vacunas que tenga registradas."
@@ -452,9 +491,10 @@ function Section({
   return (
     <div className="card p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-2">
-        {titulo === 'Carnet de vacunas' && <Syringe className="h-4 w-4 text-brand-primary" />}
-        {titulo === 'Fotos'             && <ImagePlus className="h-4 w-4 text-brand-primary" />}
-        {titulo === 'Datos básicos'     && <Dog className="h-4 w-4 text-brand-primary" />}
+        {titulo === 'Carnet de vacunas'   && <Syringe      className="h-4 w-4 text-brand-primary" />}
+        {titulo === 'Fotos'             && <ImagePlus    className="h-4 w-4 text-brand-primary" />}
+        {titulo === 'Datos básicos'     && <Dog          className="h-4 w-4 text-brand-primary" />}
+        {titulo === 'Veterinario habitual' && <Stethoscope className="h-4 w-4 text-brand-primary" />}
         <h2 className="font-display text-base font-extrabold text-ink">{titulo}</h2>
       </div>
       {descripcion && (

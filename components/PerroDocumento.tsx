@@ -143,6 +143,18 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
                     <td style={{ padding: '2px 0', color: '#1a1a1a', fontWeight: 700, textTransform: 'capitalize', fontSize: sz.tableFont }}>{value}</td>
                   </tr>
                 ))}
+                {perro.alergias && (
+                  <tr>
+                    <td style={{ padding: '4px 6px 2px 0', color: '#dc2626', fontWeight: 700, fontSize: sz.labelFont }}>⚠ Alergias</td>
+                    <td style={{ padding: '4px 0 2px', color: '#dc2626', fontWeight: 700, fontSize: sz.tableFont }}>{perro.alergias}</td>
+                  </tr>
+                )}
+                {perro.vet_nombre && (
+                  <tr>
+                    <td style={{ padding: '4px 6px 2px 0', color: '#666', fontWeight: 600, fontSize: sz.labelFont }}>Vet.</td>
+                    <td style={{ padding: '4px 0 2px', color: '#1a1a1a', fontWeight: 700, fontSize: sz.tableFont }}>{perro.vet_nombre}{perro.vet_telefono ? ` · ${perro.vet_telefono}` : ''}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import type { Post } from '@/lib/posts';
-import type { Vet } from '@/lib/vetRatings';
+import type { Ad } from '@/lib/ads';
 
 /* ──────────────────── Tipos ──────────────────── */
 
@@ -78,59 +78,6 @@ const userIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-/* ──────────────────── Overpass (veterinarias) ──────────────────── */
-
-// Cache en memoria para no re-pedir la misma zona
-const vetCache = new Map<string, Vet[]>();
-
-function areaKey(lat: number, lng: number) {
-  return `${lat.toFixed(2)},${lng.toFixed(2)}`;
-}
-
-async function fetchVets(lat: number, lng: number, radiusM = 10000): Promise<Vet[]> {
-  const key = areaKey(lat, lng);
-  if (vetCache.has(key)) return vetCache.get(key)!;
-
-  const query = `[out:json][timeout:25];(node["amenity"="veterinary"](around:${radiusM},${lat},${lng});way["amenity"="veterinary"](around:${radiusM},${lat},${lng});relation["amenity"="veterinary"](around:${radiusM},${lat},${lng}););out center;`;
-
-  try {
-    const res = await fetch(
-      `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`
-    );
-    const data = await res.json();
-
-    const vets: Vet[] = (data.elements ?? [])
-      .map((el: Record<string, unknown>) => {
-        const tags = (el.tags ?? {}) as Record<string, string>;
-        const center = el.center as { lat: number; lon: number } | undefined;
-        const elLat = (el.lat as number | undefined) ?? center?.lat;
-        const elLon = (el.lon as number | undefined) ?? center?.lon;
-        if (elLat == null || elLon == null) return null;
-
-        const calle  = tags['addr:street']      ?? '';
-        const numero = tags['addr:housenumber'] ?? '';
-        const dir    = [calle, numero].filter(Boolean).join(' ');
-
-        return {
-          id:       el.id as number,
-          lat:      elLat,
-          lng:      elLon,
-          nombre:   tags.name ?? 'Veterinaria',
-          telefono: tags.phone ?? tags['contact:phone'],
-          direccion: dir || undefined,
-          website:  tags.website ?? tags['contact:website'],
-          horario:  tags.opening_hours,
-        } satisfies Vet;
-      })
-      .filter(Boolean) as Vet[];
-
-    vetCache.set(key, vets);
-    return vets;
-  } catch {
-    return [];
-  }
-}
-
 /* ──────────────────── Nominatim geocoding ──────────────────── */
 
 const SESSION_KEY = 'geo_cache_v3';
@@ -195,23 +142,22 @@ function sanitizarZona(zona: string): string {
 /* ──────────────────── Props ──────────────────── */
 
 interface MapViewProps {
-  center:       LatLng;
-  posts:        Post[];
-  userLoc:      LatLng | null;
-  cargando:     boolean;
-  ciudad?:      string;
-  onVetClick?:  (vet: Vet) => void;
+  center:     LatLng;
+  posts:      Post[];
+  comercios?: Ad[];
+  userLoc:    LatLng | null;
+  cargando:   boolean;
+  ciudad?:    string;
 }
 
 /* ──────────────────── Componente ──────────────────── */
 
-export default function MapView({ center, posts, userLoc, cargando, ciudad, onVetClick }: MapViewProps) {
+export default function MapView({ center, posts, comercios = [], userLoc, cargando, ciudad }: MapViewProps) {
   const containerRef      = useRef<HTMLDivElement>(null);
   const mapRef            = useRef<L.Map | null>(null);
   const userMarkerRef     = useRef<L.Marker | null>(null);
   const postMarkersRef    = useRef<L.Marker[]>([]);
-  const vetIdsRef         = useRef<Set<number>>(new Set());
-  const lastVetCenter     = useRef<LatLng | null>(null);
+  const comercioMarkersRef = useRef<L.Marker[]>([]);
   const [, setGeocodificando] = useState(false);
   const [, setColocados]      = useState(0);
 
@@ -297,40 +243,18 @@ export default function MapView({ center, posts, userLoc, cargando, ciudad, onVe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts, cargando, ciudad]);
 
-  /* ── 5. Veterinarias (Overpass API) ── */
+  /* ── 5. Comercios registrados en Red Vecindog ── */
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || comercios.length === 0) return;
     const map = mapRef.current;
-    let cancelled = false;
-
-    async function cargarVets(lat: number, lng: number) {
-      lastVetCenter.current = { lat, lng };
-      const vets = await fetchVets(lat, lng);
-      if (cancelled || !map.getContainer()) return;
-      vets.forEach((vet) => {
-        if (vetIdsRef.current.has(vet.id)) return;
-        vetIdsRef.current.add(vet.id);
-        agregarMarcadorVet(map, vet, onVetClick);
-      });
-    }
-
-    cargarVets(center.lat, center.lng);
-
-    // Re-cargar cuando el usuario mueve > 5 km
-    function onMoveEnd() {
-      const c = map.getCenter();
-      if (!lastVetCenter.current) { cargarVets(c.lat, c.lng); return; }
-      const dist = map.distance(
-        [c.lat, c.lng],
-        [lastVetCenter.current.lat, lastVetCenter.current.lng]
-      );
-      if (dist > 5000) cargarVets(c.lat, c.lng);
-    }
-
-    map.on('moveend', onMoveEnd);
-    return () => { cancelled = true; map.off('moveend', onMoveEnd); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center]);
+    comercioMarkersRef.current.forEach((m) => m.remove());
+    comercioMarkersRef.current = [];
+    comercios.forEach((c) => {
+      if (c.lat == null || c.lng == null) return;
+      const m = agregarMarcadorComercio(map, c);
+      comercioMarkersRef.current.push(m);
+    });
+  }, [comercios]);
 
   return (
     <div className="relative h-full w-full">
@@ -418,38 +342,29 @@ function formatHorario(oh: string): string {
     .join('<br>');
 }
 
-function agregarMarcadorVet(map: L.Map, vet: Vet, onVetClick?: (v: Vet) => void) {
-  let estadoBadge = '';
-  let horarioLineas = '';
-
-  if (vet.horario) {
-    const abierto = estaAbierto(vet.horario);
-    estadoBadge = `<span style="display:inline-block;margin-top:4px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:800;background:${abierto ? '#dcfce7' : '#fee2e2'};color:${abierto ? '#15803d' : '#b91c1c'}">${abierto ? '✓ Abierto ahora' : '✗ Cerrado ahora'}</span>`;
-    horarioLineas = `<div style="margin-top:5px;font-size:11px;color:#4b5563;line-height:1.5">🕐 ${formatHorario(vet.horario)}</div>`;
-  }
-
-  const dirRow = vet.direccion
-    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📍 ${vet.direccion}</div>`
+function agregarMarcadorComercio(map: L.Map, comercio: Ad): L.Marker {
+  const telefono  = comercio.telefono_comercio
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📞 ${comercio.telefono_comercio}</div>`
+    : '';
+  const direccion = comercio.direccion_comercio
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📍 ${comercio.direccion_comercio}</div>`
+    : '';
+  const horario   = (comercio.horario_apertura && comercio.horario_cierre)
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">🕐 ${comercio.horario_apertura} – ${comercio.horario_cierre}</div>`
+    : '';
+  const categoria = comercio.categoria_local
+    ? `<span style="display:inline-block;background:#0d9488;color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${comercio.categoria_local}</span>`
     : '';
 
   const tooltipHtml = `
     <div style="min-width:170px;max-width:230px;padding:3px 0">
-      <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${vet.nombre}</div>
-      ${estadoBadge}
-      ${horarioLineas}
-      ${dirRow}
-      ${!vet.horario && !dirRow ? '<div style="font-size:11px;color:#9ca3af;margin-top:3px">Hacé click para más info</div>' : ''}
+      ${categoria}
+      <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${comercio.titulo}</div>
+      ${direccion}${telefono}${horario}
+      <a href="/red-vecindog/${encodeURIComponent(comercio.categoria_local ?? '')}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver en Red Vecindog →</a>
     </div>`;
 
-  const marker = L.marker([vet.lat, vet.lng], { icon: vetIcon })
-    .bindTooltip(tooltipHtml, {
-      direction: 'top',
-      offset: [0, -44],
-      opacity: 1,
-    })
+  return L.marker([comercio.lat!, comercio.lng!], { icon: vetIcon })
+    .bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -44], opacity: 1 })
     .addTo(map);
-
-  if (onVetClick) {
-    marker.on('click', () => onVetClick(vet));
-  }
 }

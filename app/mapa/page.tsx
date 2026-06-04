@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
-import type { Vet } from '@/lib/vetRatings';
-import VetPanel from '@/components/VetPanel';
+import { listarComerciosConUbicacion, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 
 const MapView = dynamic(() => import('@/components/MapView'), {
@@ -21,13 +20,14 @@ interface LatLng { lat: number; lng: number }
 
 export default function MapaPage() {
   const { ciudad } = useAuth();
-  const [posts,       setPosts]       = useState<Post[]>([]);
-  const [cargando,    setCargando]    = useState(true);
-  const [center,      setCenter]      = useState<LatLng>({ lat: -34.6, lng: -58.44 });
-  const [vetSeleccionada, setVetSeleccionada] = useState<Vet | null>(null);
+  const [posts,     setPosts]     = useState<Post[]>([]);
+  const [comercios, setComercio]  = useState<Ad[]>([]);
+  const [cargando,  setCargando]  = useState(true);
+  const [center,    setCenter]    = useState<LatLng>({ lat: -34.6, lng: -58.44 });
 
   useEffect(() => {
     listarPosts().then(setPosts).finally(() => setCargando(false));
+    listarComerciosConUbicacion().then(setComercio);
 
     // 1. Intentar geolocalización del navegador (más precisa)
     if (navigator.geolocation) {
@@ -82,26 +82,21 @@ export default function MapaPage() {
           <span className="flex items-center gap-1.5" style={{ color: '#7c3aed' }}>
             <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#7c3aed' }} /> En la calle
           </span>
-          <span className="flex items-center gap-1.5" style={{ color: '#0d9488' }}>
-            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: '#0d9488' }} /> Veterinaria
-          </span>
+          {comercios.length > 0 && (
+            <span className="flex items-center gap-1.5" style={{ color: '#0d9488' }}>
+              <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: '#0d9488' }} /> Red Vecindog
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Mapa — tránsito: solo los que están en la calle */}
       <MapView
         center={center}
         posts={posts.filter(p => p.categoria !== 'transito' || p.situacion_transito === 'calle')}
+        comercios={comercios}
         userLoc={null}
         cargando={cargando}
         ciudad={ciudad ?? undefined}
-        onVetClick={setVetSeleccionada}
-      />
-
-      {/* Panel de veterinaria */}
-      <VetPanel
-        vet={vetSeleccionada}
-        onClose={() => setVetSeleccionada(null)}
       />
     </div>
   );

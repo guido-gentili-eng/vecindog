@@ -47,6 +47,20 @@ export async function getAdForSlot(variant: AdVariant): Promise<Ad | null> {
   return data ?? null;
 }
 
+/** Devuelve comercios adheridos activos que tienen coordenadas (para el mapa). */
+export async function listarComerciosConUbicacion(): Promise<Ad[]> {
+  const hoy = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from('ads')
+    .select('*')
+    .eq('variant', 'comercio')
+    .eq('activo', true)
+    .not('lat', 'is', null)
+    .not('lng', 'is', null)
+    .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`);
+  return data ?? [];
+}
+
 export async function listarAds(): Promise<Ad[]> {
   const { data, error } = await supabase
     .from('ads')

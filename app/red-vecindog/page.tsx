@@ -10,7 +10,7 @@ import {
 
 /* ── Datos ─────────────────────────────────────────────────────── */
 
-export const CATEGORIAS = [
+const CATEGORIAS = [
   { url: 'veterinaria',       slug: 'Veterinaria',       label: 'Veterinaria',       icon: Stethoscope, bg: 'bg-blue-50',   text: 'text-blue-600',   desc: 'Atención médica, vacunas y urgencias' },
   { url: 'pet-shop',          slug: 'Pet Shop',          label: 'Pet Shop',          icon: ShoppingBag, bg: 'bg-green-50',  text: 'text-green-600',  desc: 'Alimentos, accesorios y juguetes' },
   { url: 'peluqueria-canina', slug: 'Peluquería Canina', label: 'Peluquería Canina', icon: Scissors,    bg: 'bg-pink-50',   text: 'text-pink-600',   desc: 'Baño, corte y estética canina' },

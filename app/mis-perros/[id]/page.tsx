@@ -1073,7 +1073,16 @@ function ChipCertificadoSection({
 
       {/* Número de chip */}
       <div className="mb-4 rounded-2xl bg-brand-cream p-3.5">
-        {!locked && editandoChip ? (
+        {locked ? (
+          /* Sin Pro: solo lectura */
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
+            <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
+              {perro.chip || 'Sin registrar'}
+            </p>
+          </div>
+        ) : editandoChip ? (
+          /* Pro + editando */
           <form onSubmit={handleSaveChip} className="flex items-center gap-2">
             <input
               className="field flex-1 font-mono text-sm"
@@ -1092,6 +1101,7 @@ function ChipCertificadoSection({
             </button>
           </form>
         ) : (
+          /* Pro + display */
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
@@ -1099,12 +1109,10 @@ function ChipCertificadoSection({
                 {perro.chip || 'Sin registrar'}
               </p>
             </div>
-            {!locked && (
-              <button type="button" onClick={() => setEditandoChip(true)}
-                className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
-                <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
-              </button>
-            )}
+            <button type="button" onClick={() => setEditandoChip(true)}
+              className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
+              <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
+            </button>
           </div>
         )}
         {chipError && (
@@ -1373,7 +1381,7 @@ function CVISection({
       </div>
 
       {/* Selector de país — solo Pro */}
-      {!locked && (
+      {!locked && <>
       <button
         type="button"
         onClick={() => setRequisitosOpen((o) => !o)}
@@ -1385,9 +1393,8 @@ function CVISection({
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${requisitosOpen ? 'rotate-180' : ''}`} />
       </button>
-      )}
 
-      {!locked && requisitosOpen && (
+      {requisitosOpen && (
         <div className="mb-4">
           <input
             type="text"
@@ -1427,6 +1434,7 @@ function CVISection({
           </p>
         </div>
       )}
+      </>}
 
       {/* Confirmación de subida */}
       {pendingFile && (

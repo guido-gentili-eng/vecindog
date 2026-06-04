@@ -16,13 +16,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { uid, plan, plan_vencimiento } = await req.json() as {
-    uid: string;
-    plan: 'free' | 'pro';
-    plan_vencimiento?: string | null;
-  };
-
-  if (!uid || !['free', 'pro'].includes(plan)) {
+  let uid: string, plan: 'free' | 'pro', plan_vencimiento: string | null | undefined;
+  try {
+    ({ uid, plan, plan_vencimiento } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uid || !UUID_RE.test(uid) || !['free', 'pro'].includes(plan)) {
     return NextResponse.json({ error: 'Parámetros inválidos' }, { status: 400 });
   }
 

@@ -79,6 +79,24 @@ export default function AdminPage() {
   const [guardandoPlan, setGuardandoPlan] = useState(false);
   const [carnetModal,   setCarnetModal]   = useState<{ perro: PerroCompleto; profile: Profile | null } | null>(null);
   const [loadingCarnet, setLoadingCarnet] = useState<string | null>(null);
+  const [toast,         setToast]         = useState('');
+
+  function showError(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 5000);
+  }
+
+  // Cerrar modales con Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      if (carnetModal) { setCarnetModal(null); return; }
+      if (planModal)   { setPlanModal(null);   return; }
+      if (confirmar)   { setConfirmar(null);   return; }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [carnetModal, planModal, confirmar]);
 
   useEffect(() => {
     if (loading) return;
@@ -104,17 +122,31 @@ export default function AdminPage() {
   async function ejecutarAccion(uid: string, accion: 'pausar' | 'reactivar' | 'eliminar') {
     setAccionando(uid); setConfirmar(null);
     try {
-      await fetch('/api/admin/user-action', {
+      const res = await fetch('/api/admin/user-action', {
         method:  'POST',
         headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ uid, accion }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showError((data as { error?: string }).error ?? 'Error al ejecutar la acción.');
+        return;
+      }
       if (accion === 'eliminar') {
-        setStats((prev) => prev ? {
-          ...prev,
-          ultimosUsuarios: prev.ultimosUsuarios.filter((u) => u.id !== uid),
-          cuentas: { ...prev.cuentas, total: prev.cuentas.total - 1 },
-        } : prev);
+        setStats((prev) => {
+          if (!prev) return prev;
+          const deleted = prev.ultimosUsuarios.find((u) => u.id === uid);
+          return {
+            ...prev,
+            ultimosUsuarios: prev.ultimosUsuarios.filter((u) => u.id !== uid),
+            cuentas: {
+              ...prev.cuentas,
+              total:  prev.cuentas.total  - 1,
+              pro:    prev.cuentas.pro    - (deleted?.plan === 'pro'  ? 1 : 0),
+              gratis: prev.cuentas.gratis - (deleted?.plan !== 'pro'  ? 1 : 0),
+            },
+          };
+        });
       } else {
         setStats((prev) => prev ? {
           ...prev,
@@ -123,6 +155,8 @@ export default function AdminPage() {
           ),
         } : prev);
       }
+    } catch {
+      showError('Error de conexión. Revisá tu conexión e intentá de nuevo.');
     } finally {
       setAccionando(null);
     }
@@ -135,7 +169,13 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
       const data = await res.json();
-      if (data.perro) setCarnetModal({ perro: data.perro as PerroCompleto, profile: data.profile as Profile | null });
+      if (data.perro) {
+        setCarnetModal({ perro: data.perro as PerroCompleto, profile: data.profile as Profile | null });
+      } else {
+        showError((data as { error?: string }).error ?? 'No se pudo cargar el carnet.');
+      }
+    } catch {
+      showError('Error de conexión al cargar el carnet.');
     } finally {
       setLoadingCarnet(null);
     }
@@ -145,15 +185,20 @@ export default function AdminPage() {
     if (!planModal) return;
     setGuardandoPlan(true);
     try {
-      await fetch('/api/admin/user-plan', {
+      const res = await fetch('/api/admin/user-plan', {
         method:  'POST',
         headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ uid: planModal.uid, plan: nuevoPlan, plan_vencimiento: nuevoPlan === 'pro' && planVenc ? planVenc : null }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showError((data as { error?: string }).error ?? 'Error al cambiar el plan.');
+        return;
+      }
       setStats((prev) => {
         if (!prev) return prev;
-        const oldPlan    = planModal.plan;
-        const proDelta   = (nuevoPlan === 'pro'  ? 1 : 0) - (oldPlan === 'pro'  ? 1 : 0);
+        const oldPlan     = planModal.plan;
+        const proDelta    = (nuevoPlan === 'pro'  ? 1 : 0) - (oldPlan === 'pro'  ? 1 : 0);
         const gratisDelta = (nuevoPlan === 'free' ? 1 : 0) - (oldPlan === 'free' ? 1 : 0);
         return {
           ...prev,
@@ -168,6 +213,8 @@ export default function AdminPage() {
         };
       });
       setPlanModal(null);
+    } catch {
+      showError('Error de conexión al cambiar el plan.');
     } finally {
       setGuardandoPlan(false);
     }
@@ -281,14 +328,21 @@ export default function AdminPage() {
               <li key={u.id} className="px-5 py-4 hover:bg-brand-cream/40 transition">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-1">
-                    {/* Nombre + badge plan */}
+                    {/* Nombre + badge plan clickeable */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-ink">{nombreCompleto}</p>
-                      {u.plan === 'pro' && (
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-[#7c3aed]/10 px-2 py-0.5 text-[10px] font-bold text-[#7c3aed]">
-                          <Crown className="h-2.5 w-2.5" /> Pro
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        title="Cambiar plan"
+                        onClick={() => { setPlanModal({ uid: u.id, nombre: nombreCompleto, plan: u.plan }); setNuevoPlan(u.plan === 'pro' ? 'pro' : 'free'); setPlanVenc(''); }}
+                        className={`inline-flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] font-bold transition hover:opacity-80 ${
+                          u.plan === 'pro'
+                            ? 'border-[#7c3aed]/30 bg-[#7c3aed]/10 text-[#7c3aed]'
+                            : 'border-black/10 bg-black/5 text-ink-muted'
+                        }`}
+                      >
+                        {u.plan === 'pro' ? <><Crown className="h-2.5 w-2.5" /> Pro</> : 'Gratis'}
+                      </button>
                       <span className="text-xs text-ink-muted">
                         · {new Date(u.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
@@ -332,11 +386,6 @@ export default function AdminPage() {
                       className={`inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-bold transition ${expandido?.uid === u.id && expandido?.tipo === 'perros' ? 'border-black/30 bg-black/8 text-ink' : 'border-black/15 text-ink-muted hover:border-brand-primary/30 hover:text-brand-primary'}`}>
                       <Dog className="h-3 w-3" /> Perros
                       {expandido?.uid === u.id && expandido?.tipo === 'perros' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    </button>
-                    <button type="button"
-                      onClick={() => { setPlanModal({ uid: u.id, nombre: nombreCompleto, plan: u.plan }); setNuevoPlan(u.plan === 'pro' ? 'pro' : 'free'); setPlanVenc(''); }}
-                      className="inline-flex items-center gap-1 rounded-xl border border-[#7c3aed]/30 bg-[#7c3aed]/5 px-3 py-1.5 text-xs font-bold text-[#7c3aed] hover:bg-[#7c3aed]/10 transition">
-                      <Crown className="h-3 w-3" /> Plan
                     </button>
                     {u.suspendido ? (
                       <button type="button" disabled={accionando === u.id}
@@ -522,6 +571,14 @@ export default function AdminPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast de error */}
+      {toast && (
+        <div className="fixed bottom-5 left-1/2 z-[70] -translate-x-1/2 flex items-center gap-2 rounded-2xl bg-bad px-5 py-3 text-sm font-bold text-white shadow-2xl">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          {toast}
         </div>
       )}
 

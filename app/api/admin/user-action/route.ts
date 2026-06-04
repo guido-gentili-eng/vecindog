@@ -46,8 +46,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { uid, accion } = await req.json() as { uid: string; accion: 'pausar' | 'reactivar' | 'eliminar' };
-  if (!uid || !['pausar', 'reactivar', 'eliminar'].includes(accion)) {
+  let uid: string, accion: 'pausar' | 'reactivar' | 'eliminar';
+  try {
+    ({ uid, accion } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uid || !UUID_RE.test(uid) || !['pausar', 'reactivar', 'eliminar'].includes(accion)) {
     return NextResponse.json({ error: 'Parámetros inválidos' }, { status: 400 });
   }
 

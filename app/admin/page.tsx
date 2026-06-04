@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { type Profile } from '@/contexts/AuthContext';
+import { type Perro } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
+import PerroDocumento from '@/components/PerroDocumento';
 
 const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
 
@@ -74,6 +77,8 @@ export default function AdminPage() {
   const [nuevoPlan,     setNuevoPlan]     = useState<'free' | 'pro'>('free');
   const [planVenc,      setPlanVenc]      = useState('');
   const [guardandoPlan, setGuardandoPlan] = useState(false);
+  const [carnetModal,   setCarnetModal]   = useState<{ perro: Perro; profile: Profile | null } | null>(null);
+  const [loadingCarnet, setLoadingCarnet] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -120,6 +125,19 @@ export default function AdminPage() {
       }
     } finally {
       setAccionando(null);
+    }
+  }
+
+  async function verCarnet(perroId: string) {
+    setLoadingCarnet(perroId);
+    try {
+      const res  = await fetch(`/api/admin/perro-carnet?perroId=${perroId}`, {
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
+      });
+      const data = await res.json();
+      if (data.perro) setCarnetModal({ perro: data.perro as Perro, profile: data.profile as Profile | null });
+    } finally {
+      setLoadingCarnet(null);
     }
   }
 
@@ -358,7 +376,17 @@ export default function AdminPage() {
                           {perrosMap[u.id].map((p) => (
                             <li key={p.id} className="flex items-center gap-2 text-xs">
                               <Dog className="h-3.5 w-3.5 shrink-0 text-brand-primary" />
-                              <span className="font-bold text-ink">{p.nombre}</span>
+                              <button
+                                type="button"
+                                onClick={() => verCarnet(p.id)}
+                                disabled={loadingCarnet === p.id}
+                                className="font-bold text-ink hover:text-brand-primary hover:underline transition disabled:opacity-60 flex items-center gap-1"
+                              >
+                                {loadingCarnet === p.id
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <><CreditCard className="h-3 w-3 opacity-50" /> {p.nombre}</>
+                                }
+                              </button>
                               {[p.raza, p.color, p.tamano].filter(Boolean).length > 0 && (
                                 <span className="text-ink-muted">· {[p.raza, p.color, p.tamano].filter(Boolean).join(', ')}</span>
                               )}
@@ -420,6 +448,29 @@ export default function AdminPage() {
           })}
         </ul>
       </div>
+
+      {/* Modal carnet de mascota */}
+      {carnetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md">
+            {/* Botón cerrar */}
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setCarnetModal(null)}
+                className="flex items-center gap-1.5 rounded-2xl bg-white/90 px-4 py-2 text-sm font-bold text-ink shadow-lg hover:bg-white transition"
+              >
+                <X className="h-4 w-4" /> Cerrar
+              </button>
+            </div>
+            <PerroDocumento
+              perro={carnetModal.perro}
+              profile={carnetModal.profile}
+              perdido={false}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Modal cambio de plan */}
       {planModal && (

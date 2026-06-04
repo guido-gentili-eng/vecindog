@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
-import { type Perro } from '@/lib/perros';
+import { type Perro as PerroCompleto } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
 import PerroDocumento from '@/components/PerroDocumento';
 
@@ -35,7 +35,7 @@ interface PostAdmin {
   images:    string[];
 }
 
-interface Perro {
+interface PerroRow {
   id:           string;
   nombre:       string;
   raza:         string;
@@ -66,7 +66,7 @@ export default function AdminPage() {
   const [stats,      setStats]      = useState<Stats | null>(null);
   const [cargando,   setCargando]   = useState(true);
   const [error,      setError]      = useState('');
-  const [perrosMap,  setPerrosMap]  = useState<Record<string, Perro[]>>({});
+  const [perrosMap,  setPerrosMap]  = useState<Record<string, PerroRow[]>>({});
   const [postsMap,   setPostsMap]   = useState<Record<string, PostAdmin[]>>({});
   const [expandido,  setExpandido]  = useState<{ uid: string; tipo: 'perros' | 'avisos' } | null>(null);
   const [loadingExp, setLoadingExp] = useState<string | null>(null);
@@ -77,7 +77,7 @@ export default function AdminPage() {
   const [nuevoPlan,     setNuevoPlan]     = useState<'free' | 'pro'>('free');
   const [planVenc,      setPlanVenc]      = useState('');
   const [guardandoPlan, setGuardandoPlan] = useState(false);
-  const [carnetModal,   setCarnetModal]   = useState<{ perro: Perro; profile: Profile | null } | null>(null);
+  const [carnetModal,   setCarnetModal]   = useState<{ perro: PerroCompleto; profile: Profile | null } | null>(null);
   const [loadingCarnet, setLoadingCarnet] = useState<string | null>(null);
 
   useEffect(() => {
@@ -135,7 +135,7 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
       const data = await res.json();
-      if (data.perro) setCarnetModal({ perro: data.perro as Perro, profile: data.profile as Profile | null });
+      if (data.perro) setCarnetModal({ perro: data.perro as PerroCompleto, profile: data.profile as Profile | null });
     } finally {
       setLoadingCarnet(null);
     }

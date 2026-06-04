@@ -1374,19 +1374,21 @@ function CVISection({
             <Sparkles className="h-3 w-3" /> VecindogPro
           </Link>
         ) : !pendingFile && (
-          <button type="button"
-            onClick={() => { setUploadError(''); fileRef.current?.click(); }}
-            disabled={subiendo}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60">
-            <Upload className="h-3.5 w-3.5" /> Subir certificado
-          </button>
+          <>
+            <button type="button"
+              onClick={() => { setUploadError(''); fileRef.current?.click(); }}
+              disabled={subiendo}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60">
+              <Upload className="h-3.5 w-3.5" /> Subir certificado
+            </button>
+            <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) { setPendingFile(f); setUploadError(''); }
+                e.target.value = '';
+              }} />
+          </>
         )}
-        <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) { setPendingFile(f); setUploadError(''); }
-            e.target.value = '';
-          }} />
       </div>
 
       {/* Selector de país — solo Pro */}
@@ -1454,7 +1456,7 @@ function CVISection({
       </>}
 
       {/* Confirmación de subida */}
-      {pendingFile && (
+      {!locked && pendingFile && (
         <div className="mb-4 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 p-4">
           <div className="flex items-start gap-3">
             <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />

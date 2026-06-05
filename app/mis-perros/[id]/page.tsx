@@ -9,6 +9,7 @@ import {
   RefreshCw, Search, FileText, FlaskConical, ScanLine, Activity,
   Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
   Globe, ChevronDown, Share2, Lock, Sparkles, Bug, Scale, Stethoscope, Phone,
+  Pill, QrCode, Printer, Store, TrendingUp, Clock, TriangleAlert,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
@@ -25,6 +26,10 @@ import {
   listarTurnos, agregarTurno, eliminarTurno,
   type Turno, type TipoTurno,
 } from '@/lib/turnos';
+import {
+  listarMedicamentos, agregarMedicamento, eliminarMedicamento,
+  type Medicamento,
+} from '@/lib/medicamentos';
 import {
   listarDesparasitaciones, agregarDesparasitacion, actualizarDesparasitacion, eliminarDesparasitacion,
   PRODUCTOS_COMUNES,
@@ -64,6 +69,8 @@ export default function PerroDetallePage() {
   const [agregandoDesparas,  setAgregandoDesparas] = useState(false);
   const [agregandoPeso,      setAgregandoPeso]     = useState(false);
   const [turnos,             setTurnos]            = useState<Turno[]>([]);
+  const [medicamentos,       setMedicamentos]      = useState<Medicamento[]>([]);
+  const [showQR,             setShowQR]            = useState(false);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -79,6 +86,7 @@ export default function PerroDetallePage() {
           listarDesparasitaciones(p.id).then(setDesparasitaciones);
           listarPesos(p.id).then(setPesos);
           listarTurnos(p.id).then(setTurnos);
+          listarMedicamentos(p.id).then(setMedicamentos);
         }
         return null;
       })
@@ -128,6 +136,16 @@ export default function PerroDetallePage() {
   async function handleEliminarTurno(id: string) {
     await eliminarTurno(id);
     setTurnos((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  async function handleAgregarMedicamento(med: Omit<Medicamento, 'id' | 'created_at'>) {
+    const nuevo = await agregarMedicamento(med);
+    setMedicamentos((prev) => [nuevo, ...prev]);
+  }
+
+  async function handleEliminarMedicamento(id: string) {
+    await eliminarMedicamento(id);
+    setMedicamentos((prev) => prev.filter((m) => m.id !== id));
   }
 
   async function handleRenovar() {
@@ -247,6 +265,13 @@ export default function PerroDetallePage() {
             >
               <Share2 className="h-3.5 w-3.5" /> Publicar en Redes Sociales
             </Link>
+            <button
+              type="button"
+              onClick={() => setShowQR(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
+            >
+              <QrCode className="h-3.5 w-3.5" /> QR Collar
+            </button>
             <button
               type="button"
               onClick={() => setEditando(true)}
@@ -513,6 +538,15 @@ export default function PerroDetallePage() {
             locked={!isPro}
           />
 
+          {/* Medicamentos */}
+          <MedicamentosSection
+            perroId={perro.id}
+            medicamentos={medicamentos}
+            onAgregar={handleAgregarMedicamento}
+            onEliminar={handleEliminarMedicamento}
+            locked={!isPro}
+          />
+
           {/* Historial de peso */}
           <PesoSection
             pesos={pesos}
@@ -624,6 +658,34 @@ export default function PerroDetallePage() {
               onClose={() => setEstudioEnviar(null)}
             />
           )}
+
+          {/* Modal QR collar */}
+          {showQR && (
+            <QRModal
+              perroId={perro.id}
+              perroNombre={perro.nombre}
+              onClose={() => setShowQR(false)}
+            />
+          )}
+
+          {/* Buscar veterinario en Red Vecindog */}
+          <div className="card mb-5 flex items-center justify-between gap-3 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50">
+                <Store className="h-5 w-5 text-teal-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-ink">Encontrá un veterinario</p>
+                <p className="text-xs text-ink-muted">Clínicas y vets en la Red Vecindog</p>
+              </div>
+            </div>
+            <Link
+              href="/red-vecindog/veterinaria"
+              className="shrink-0 rounded-2xl bg-teal-50 px-3 py-2 text-xs font-bold text-teal-700 transition hover:bg-teal-100"
+            >
+              Ver vets →
+            </Link>
+          </div>
 
           {/* Historia Clínica */}
           <HistoriaClinica
@@ -1779,6 +1841,13 @@ function CVISection({
   );
 }
 
+/* Días de validez por tipo de estudio (para alertas de vencimiento) */
+const VALIDEZ_DIAS: Partial<Record<TipoEstudio, number>> = {
+  certificado_cvi:            10,
+  certificado_antiparasitario: 90,
+  laboratorio:                180,
+};
+
 /* ── Sección de estudios ── */
 function EstudiosSection({
   tipo, titulo, icono, accept, estudios, subiendo, onSubir, onEnviar, onEliminar, locked,
@@ -1811,6 +1880,15 @@ function EstudiosSection({
 
   const [showCotizacionModal, setShowCotizacionModal] = useState(false);
 
+  // Alerta de vencimiento
+  const validezDias = VALIDEZ_DIAS[tipo];
+  const masReciente = estudios[0];
+  const diasDesde   = masReciente?.fecha
+    ? Math.floor((Date.now() - new Date(masReciente.fecha).getTime()) / 86_400_000)
+    : null;
+  const vencido    = validezDias != null && diasDesde != null && diasDesde > validezDias;
+  const porVencer  = validezDias != null && diasDesde != null && diasDesde > validezDias * 0.75 && !vencido;
+
   async function confirmarSubida() {
     if (!pendingFile) return;
     setUploadError('');
@@ -1830,6 +1908,16 @@ function EstudiosSection({
           {estudios.length > 0 && (
             <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
               {estudios.length}
+            </span>
+          )}
+          {vencido && (
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-bad/10 px-2 py-0.5 text-[10px] font-bold text-bad">
+              <TriangleAlert className="h-2.5 w-2.5" /> Vencido
+            </span>
+          )}
+          {porVencer && (
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+              <Clock className="h-2.5 w-2.5" /> Por vencer
             </span>
           )}
         </h2>
@@ -2333,6 +2421,240 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* ── Modal QR para el collar ── */
+function QRModal({ perroId, perroNombre, onClose }: { perroId: string; perroNombre: string; onClose: () => void }) {
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const url = `https://www.mivecindog.com.ar/historia/${perroId}`;
+
+  useEffect(() => {
+    import('qrcode').then(({ default: QRCode }) => {
+      QRCode.toDataURL(url, { width: 256, margin: 2, color: { dark: '#1A1A1A', light: '#FFFFFF' } })
+        .then(setQrDataUrl);
+    });
+  }, [url]);
+
+  function descargar() {
+    const a = document.createElement('a');
+    a.href = qrDataUrl;
+    a.download = `qr-${perroNombre.toLowerCase().replace(/\s+/g, '-')}.png`;
+    a.click();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+        <div className="mb-5 text-center">
+          <h2 className="font-display text-xl font-black text-ink">QR para el collar</h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Imprimilo y colgalo del collar de {perroNombre}. Si se pierde, cualquiera puede escanearlo.
+          </p>
+        </div>
+        <div className="flex justify-center mb-5">
+          {qrDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={qrDataUrl} alt="QR code" className="w-48 h-48 rounded-2xl border-4 border-brand-cream" />
+          ) : (
+            <div className="w-48 h-48 rounded-2xl bg-brand-cream flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+            </div>
+          )}
+        </div>
+        <p className="mb-4 text-center text-[11px] text-ink-muted break-all">{url}</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={descargar}
+            disabled={!qrDataUrl}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40"
+          >
+            <Download className="h-4 w-4" /> Descargar PNG
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-2xl border-2 border-black/10 px-4 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Sección de medicamentos ── */
+function MedicamentosSection({
+  perroId, medicamentos, onAgregar, onEliminar, locked,
+}: {
+  perroId:    string;
+  medicamentos: Medicamento[];
+  onAgregar:  (med: Omit<Medicamento, 'id' | 'created_at'>) => Promise<void>;
+  onEliminar: (id: string) => Promise<void>;
+  locked?:    boolean;
+}) {
+  const [agregando, setAgregando] = useState(false);
+  const [saving,    setSaving]    = useState(false);
+  const [error,     setError]     = useState('');
+  const [form, setForm] = useState({
+    nombre: '', dosis: '', frecuencia: '', fecha_inicio: new Date().toISOString().slice(0, 10),
+    fecha_fin: '', notas: '',
+  });
+
+  const activos    = medicamentos.filter((m) => m.activo);
+  const anteriores = medicamentos.filter((m) => !m.activo);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.nombre.trim() || !form.fecha_inicio) { setError('Ingresá al menos el nombre y la fecha de inicio.'); return; }
+    setSaving(true); setError('');
+    try {
+      await onAgregar({
+        perro_id:     perroId,
+        nombre:       form.nombre.trim(),
+        dosis:        form.dosis.trim(),
+        frecuencia:   form.frecuencia.trim(),
+        fecha_inicio: form.fecha_inicio,
+        fecha_fin:    form.fecha_fin || null,
+        notas:        form.notas.trim(),
+        activo:       true,
+      });
+      setForm({ nombre: '', dosis: '', frecuencia: '', fecha_inicio: new Date().toISOString().slice(0, 10), fecha_fin: '', notas: '' });
+      setAgregando(false);
+    } catch {
+      setError('No se pudo guardar. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Pill className="h-4 w-4 text-brand-primary" /> Medicamentos
+          {activos.length > 0 && (
+            <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
+              {activos.length} activo{activos.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </h2>
+        {locked ? (
+          <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            <Sparkles className="h-3 w-3" /> VecindogPro
+          </Link>
+        ) : (
+          <button type="button" onClick={() => setAgregando((v) => !v)}
+            className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            {agregando ? <X className="h-3 w-3" /> : <>+ Agregar</>}
+          </button>
+        )}
+      </div>
+
+      {/* Formulario */}
+      {agregando && (
+        <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="label text-xs">Medicamento <span className="text-bad">*</span></label>
+              <input className="field w-full text-sm" placeholder="Ej: Tramadol, Amoxicilina" value={form.nombre}
+                onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="label text-xs">Dosis</label>
+              <input className="field w-full text-sm" placeholder="Ej: 5mg" value={form.dosis}
+                onChange={(e) => setForm((f) => ({ ...f, dosis: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label text-xs">Frecuencia</label>
+              <input className="field w-full text-sm" placeholder="Ej: Cada 8hs" value={form.frecuencia}
+                onChange={(e) => setForm((f) => ({ ...f, frecuencia: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label text-xs">Inicio <span className="text-bad">*</span></label>
+              <input type="date" className="field w-full text-sm" value={form.fecha_inicio}
+                onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="label text-xs">Fin (opcional)</label>
+              <input type="date" className="field w-full text-sm" value={form.fecha_fin}
+                onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))} />
+            </div>
+            <div className="col-span-2">
+              <label className="label text-xs">Notas</label>
+              <input className="field w-full text-sm" placeholder="Ej: Dar con comida" value={form.notas}
+                onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))} />
+            </div>
+          </div>
+          {error && (
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+            </button>
+            <button type="button" onClick={() => { setAgregando(false); setError(''); }}
+              className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Lista activos */}
+      {activos.length === 0 && !agregando ? (
+        <p className="text-sm text-ink-muted">No hay medicamentos activos.</p>
+      ) : activos.length > 0 ? (
+        <div className="space-y-2">
+          {activos.map((m) => (
+            <div key={m.id} className="flex items-start gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+              <Pill className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary/60" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-ink">{m.nombre}</p>
+                {(m.dosis || m.frecuencia) && (
+                  <p className="text-xs text-ink-muted">{[m.dosis, m.frecuencia].filter(Boolean).join(' · ')}</p>
+                )}
+                <p className="text-xs text-ink-muted">
+                  Desde {formatFecha(m.fecha_inicio)}{m.fecha_fin ? ` hasta ${formatFecha(m.fecha_fin)}` : ''}
+                </p>
+                {m.notas && <p className="text-[11px] text-ink-muted italic mt-0.5">{m.notas}</p>}
+              </div>
+              <button type="button" onClick={() => onEliminar(m.id)}
+                className="shrink-0 rounded-lg p-1 text-ink-muted/40 transition hover:bg-bad/10 hover:text-bad">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Anteriores */}
+      {anteriores.length > 0 && (
+        <div className="mt-3 border-t border-black/5 pt-3">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted">Anteriores</p>
+          <div className="space-y-1.5">
+            {anteriores.map((m) => (
+              <div key={m.id} className="flex items-center gap-2 rounded-xl px-3 py-2 bg-black/3">
+                <p className="flex-1 text-xs text-ink-muted line-through">{m.nombre}</p>
+                <button type="button" onClick={() => onEliminar(m.id)}
+                  className="shrink-0 text-ink-muted/30 hover:text-bad transition">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Historia Clínica completa ── */
 function HistoriaClinica({
   perro, vacunas, estudios, desparasitaciones, pesos, ciudad, edad,
@@ -2373,13 +2695,22 @@ function HistoriaClinica({
             <p className="text-[11px] text-ink-muted">{perro.nombre} · resumen completo</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setEnviarOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0"
-        >
-          <Send className="h-3.5 w-3.5" /> Enviar
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black/10 px-3 py-2 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary shrink-0 no-print"
+          >
+            <Printer className="h-3.5 w-3.5" /> PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => setEnviarOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0"
+          >
+            <Send className="h-3.5 w-3.5" /> Enviar
+          </button>
+        </div>
       </div>
 
       {/* Modal enviar historia */}
@@ -2945,6 +3276,41 @@ function PesoSection({
           </div>
         </form>
       )}
+
+      {/* Gráfico de peso — SVG mini line chart */}
+      {pesos.length >= 2 && !agregando && (() => {
+        const sorted = [...pesos].reverse(); // ascendente por fecha
+        const vals   = sorted.map((p) => p.valor_kg);
+        const minV   = Math.min(...vals);
+        const maxV   = Math.max(...vals);
+        const range  = maxV - minV || 1;
+        const W = 100; const H = 40; const pad = 4;
+        const pts = sorted.map((p, i) => {
+          const x = pad + (i / (sorted.length - 1)) * (W - pad * 2);
+          const y = H - pad - ((p.valor_kg - minV) / range) * (H - pad * 2);
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        return (
+          <div className="mb-4 rounded-2xl bg-brand-cream p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <TrendingUp className="h-3.5 w-3.5 text-brand-primary" />
+              <span className="text-xs font-bold text-ink-muted">Evolución</span>
+            </div>
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 48 }}>
+              <polyline points={pts} fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              {sorted.map((p, i) => {
+                const x = pad + (i / (sorted.length - 1)) * (W - pad * 2);
+                const y = H - pad - ((p.valor_kg - minV) / range) * (H - pad * 2);
+                return <circle key={p.id} cx={x.toFixed(1)} cy={y.toFixed(1)} r="2.5" fill="var(--brand-primary)" />;
+              })}
+            </svg>
+            <div className="mt-1 flex justify-between text-[10px] text-ink-muted">
+              <span>{formatFecha(sorted[0].fecha)}</span>
+              <span>{formatFecha(sorted[sorted.length - 1].fecha)}</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Historial visual */}
       {pesos.length === 0 && !agregando ? (

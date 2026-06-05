@@ -4,6 +4,24 @@ import Link from 'next/link';
 
 interface Props { params: { perroId: string } }
 
+export async function generateMetadata({ params }: Props) {
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: perro } = await admin.from('perros').select('nombre, raza, foto_url').eq('id', params.perroId).single();
+  const nombre = perro?.nombre ?? 'Perro';
+  return {
+    title: `${nombre} — Historia Clínica | Vecindog`,
+    description: `Historial médico, vacunas y estudios de ${nombre}${perro?.raza ? ` (${perro.raza})` : ''}.`,
+    openGraph: {
+      title: `${nombre} — Historia Clínica`,
+      description: `Historial médico completo de ${nombre} en Vecindog`,
+      images: perro?.foto_url ? [{ url: perro.foto_url, width: 400, height: 400 }] : [],
+    },
+  };
+}
+
 function fmt(iso: string) {
   if (!iso) return '—';
   const [y, m, d] = iso.slice(0, 10).split('-');

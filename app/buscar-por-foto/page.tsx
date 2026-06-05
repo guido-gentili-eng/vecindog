@@ -106,6 +106,7 @@ async function calcularScore(
   tamano: Tamano,
   collar: boolean | null,
   chapita: boolean | null,
+  cache?: Map<string, ColorRGB | null>,
 ): Promise<PostConScore> {
   let score = 0, maxPosible = 0;
   const matches: string[] = [];
@@ -113,7 +114,14 @@ async function calcularScore(
   // 1. Similitud visual de color (20 pts)
   maxPosible += 20;
   if (colorFoto && post.images?.[0]) {
-    const colorPost = await extraerColor(post.images[0]);
+    const url = post.images[0];
+    let colorPost: ColorRGB | null;
+    if (cache?.has(url)) {
+      colorPost = cache.get(url)!;
+    } else {
+      colorPost = await extraerColor(url);
+      cache?.set(url, colorPost);
+    }
     if (colorPost) score += Math.round((similitudColor(colorFoto, colorPost) / 100) * 20);
   }
 
@@ -180,6 +188,7 @@ export default function BuscarPorFotoPage() {
   const inputGaleriaRef = useRef<HTMLInputElement>(null);
   const inputCamaraRef  = useRef<HTMLInputElement>(null);
   const urlRef          = useRef<string | null>(null);
+  const colorCache      = useRef<Map<string, ColorRGB | null>>(new Map());
 
   useEffect(() => () => { if (urlRef.current) URL.revokeObjectURL(urlRef.current); }, []);
 
@@ -273,7 +282,7 @@ export default function BuscarPorFotoPage() {
 
       setPaso('Comparando…');
       const scored = await Promise.all(
-        candidatos.map(post => calcularScore(post, colorFoto, colorElegido, raza, tamano, collar, chapita))
+        candidatos.map(post => calcularScore(post, colorFoto, colorElegido, raza, tamano, collar, chapita, colorCache.current))
       );
       setResultados(scored.sort((a, b) => b.score - a.score));
 

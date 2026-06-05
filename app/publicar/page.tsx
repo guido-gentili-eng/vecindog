@@ -373,6 +373,10 @@ export default function PublicarPage() {
         );
       }
 
+      fotos.forEach((f) => URL.revokeObjectURL(f.url));
+      urlsRef.current = [];
+      setFotos([]);
+      setForm(estadoInicial(catParam));
       setEnviado(true);
     } catch (err: unknown) {
       const msg =

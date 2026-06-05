@@ -2,10 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ScanSearch, Sparkles, ArrowRight, Dog, Loader2 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { ScanSearch, Sparkles, ArrowRight, Dog, Loader2, Search } from 'lucide-react';
 import { type FiltroCategoria } from '@/lib/mockData';
 import { listarPosts, postToAnimal, type Post } from '@/lib/posts';
 import AnimalCard from '@/components/AnimalCard';
@@ -16,6 +16,8 @@ import { nombreCorto } from '@/lib/ciudades';
 
 /** Cuántos avisos reales entre cada ad card */
 const AD_INTERVAL = 4;
+/** Cantidad inicial y de incremento para paginación */
+const PAGE_SIZE = 24;
 
 const CAT_VALIDAS: FiltroCategoria[] = [
   'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito', 'busco_cuidador', 'cuidador_disponible'
@@ -45,9 +47,11 @@ const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
 
 export default function PublicacionesPage() {
   const searchParams = useSearchParams();
-  const catParam  = searchParams.get('cat');
-  const zonaParam = searchParams.get('zona') ?? '';
-  const uidParam  = searchParams.get('uid') ?? '';   // para filtro admin
+  const router = useRouter();
+  const catParam   = searchParams.get('cat');
+  const zonaParam  = searchParams.get('zona') ?? '';
+  const soloParam  = searchParams.get('solo') === '1';
+  const uidParam   = searchParams.get('uid') ?? '';   // para filtro admin
   const { ciudad, user, isAuthenticated } = useAuth();
 
   const catInicial: FiltroCategoria =
@@ -58,16 +62,45 @@ export default function PublicacionesPage() {
   const [filtros, setFiltros] = useState<FiltrosState>({
     ...FILTROS_INICIALES,
     categoria: catInicial,
-    zona:      zonaParam
+    zona:      zonaParam,
+    soloMios:  soloParam,
   });
   const [posts,    setPosts]    = useState<Post[]>([]);
   const [cargando, setCargando] = useState(true);
   const [fetchErr, setFetchErr] = useState('');
+  const [busqueda, setBusqueda] = useState('');
+  const [visibles, setVisibles] = useState(PAGE_SIZE);
 
+  /* Sync URL → filtros cuando el usuario navega atrás/adelante */
   useEffect(() => {
-    setFiltros((f) => ({ ...f, categoria: catInicial, zona: zonaParam }));
+    setFiltros((f) => ({
+      ...f,
+      categoria: catInicial,
+      zona:      zonaParam,
+      soloMios:  soloParam,
+    }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catParam, zonaParam]);
+  }, [catParam, zonaParam, soloParam]);
+
+  /* Sync filtros → URL para bookmarking y botón atrás */
+  const handleFiltrosChange = useCallback((nuevos: FiltrosState) => {
+    setFiltros(nuevos);
+    setVisibles(PAGE_SIZE);
+
+    const params = new URLSearchParams();
+    if (nuevos.categoria !== 'todas') params.set('cat', nuevos.categoria);
+    if (nuevos.zona.trim())           params.set('zona', nuevos.zona.trim());
+    if (nuevos.soloMios)              params.set('solo', '1');
+    if (uidParam)                     params.set('uid', uidParam);
+
+    const qs = params.toString();
+    router.push(`/publicaciones${qs ? `?${qs}` : ''}`);
+  }, [router, uidParam]);
+
+  /* Reset paginación cuando cambia la búsqueda de texto */
+  useEffect(() => {
+    setVisibles(PAGE_SIZE);
+  }, [busqueda]);
 
   /* Cargar posts desde Supabase */
   useEffect(() => {
@@ -80,9 +113,10 @@ export default function PublicacionesPage() {
 
   /* Filtros client-side */
   const resultados = useMemo(() => {
-    const cat  = filtros.categoria;
-    const esp  = filtros.especie;
-    const zona = filtros.zona.trim().toLowerCase();
+    const cat    = filtros.categoria;
+    const esp    = filtros.especie;
+    const zona   = filtros.zona.trim().toLowerCase();
+    const needle = busqueda.trim().toLowerCase();
 
     return posts.filter((p) => {
       // Filtro admin por uid en URL (solo lectura, no interactivo)
@@ -95,9 +129,17 @@ export default function PublicacionesPage() {
       } else if (cat !== 'todas' && p.categoria !== cat) return false;
       if (esp !== 'todas' && p.especie !== esp) return false;
       if (zona && !p.zona.toLowerCase().includes(zona)) return false;
+      // Búsqueda de texto libre
+      if (needle) {
+        const haystack = `${p.nombre ?? ''} ${p.descripcion ?? ''} ${p.zona ?? ''}`.toLowerCase();
+        if (!haystack.includes(needle)) return false;
+      }
       return true;
     });
-  }, [posts, filtros, user, uidParam]);
+  }, [posts, filtros, user, uidParam, busqueda]);
+
+  /* Slice para paginación */
+  const visiblesSlice = resultados.slice(0, visibles);
 
   return (
     <div className="py-8 md:py-10">
@@ -137,7 +179,7 @@ export default function PublicacionesPage() {
           <ArrowRight className="hidden h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 sm:block" />
         </Link>
 
-        {/* Buscar por foto (próximamente) */}
+        {/* Buscar por foto */}
         <Link
           href="/buscar-por-foto"
           className="group flex items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-[#1A1A1A] to-[#2a1f1c] p-4 text-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
@@ -155,7 +197,19 @@ export default function PublicacionesPage() {
         </Link>
       </div>
 
-      <Filters value={filtros} onChange={setFiltros} isAuthenticated={isAuthenticated} />
+      {/* Búsqueda de texto libre */}
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          placeholder="Buscar por nombre, zona, descripción…"
+          className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder-ink-muted shadow-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+        />
+      </div>
+
+      <Filters value={filtros} onChange={handleFiltrosChange} isAuthenticated={isAuthenticated} />
 
       <section className="mt-6">
         {cargando ? (
@@ -188,16 +242,34 @@ export default function PublicacionesPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {resultados.map((p, i) => (
-              <>
-                <AnimalCard key={p.id} animal={postToAnimal(p)} />
-                {(i + 1) % AD_INTERVAL === 0 && (
-                  <AdSlot key={`ad-${i}`} variant="card" />
-                )}
-              </>
-            ))}
-          </div>
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {visiblesSlice.map((p, i) => (
+                <>
+                  <AnimalCard key={p.id} animal={postToAnimal(p)} />
+                  {(i + 1) % AD_INTERVAL === 0 && (
+                    <AdSlot key={`ad-${i}`} variant="card" />
+                  )}
+                </>
+              ))}
+            </div>
+
+            {/* Paginación + contador */}
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <p className="text-sm text-ink-muted">
+                Mostrando <span className="font-bold text-ink">{visiblesSlice.length}</span> de{' '}
+                <span className="font-bold text-ink">{resultados.length}</span> aviso{resultados.length !== 1 ? 's' : ''}
+              </p>
+              {visibles < resultados.length && (
+                <button
+                  onClick={() => setVisibles((v) => v + PAGE_SIZE)}
+                  className="btn-secondary inline-flex items-center gap-2"
+                >
+                  Cargar más avisos
+                </button>
+              )}
+            </div>
+          </>
         )}
       </section>
     </div>

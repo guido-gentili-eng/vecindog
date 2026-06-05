@@ -323,13 +323,13 @@ export default function BuscarPage() {
             {/* Tamaño */}
             <div>
               <label className="label">Tamaño</label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => campo('tamano', form.tamano === v ? '' : v)}
-                    className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
+                    className={`flex-1 rounded-2xl border-2 py-3 text-sm font-bold transition ${
                       form.tamano === v
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'

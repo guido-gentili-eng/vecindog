@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles } from 'lucide-react';
+import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles, X } from 'lucide-react';
 import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
@@ -18,6 +18,8 @@ export default function MisPerrosPage() {
   const [cargando,     setCargando]     = useState(true);
   const [error,        setError]        = useState('');
   const [amigosOpen,   setAmigosOpen]   = useState(false);
+  const [eliminarTarget, setEliminarTarget] = useState<{ id: string; nombre: string } | null>(null);
+  const [eliminando,   setEliminando]   = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -28,10 +30,16 @@ export default function MisPerrosPage() {
       .finally(() => setCargando(false));
   }, [isAuthenticated, authLoading]);
 
-  async function handleEliminar(id: string, nombre: string) {
-    if (!confirm(`¿Eliminás a ${nombre}? Esta acción no se puede deshacer.`)) return;
-    await eliminarPerro(id);
-    setPerros((prev) => prev.filter((p) => p.id !== id));
+  async function handleConfirmEliminar() {
+    if (!eliminarTarget) return;
+    setEliminando(true);
+    try {
+      await eliminarPerro(eliminarTarget.id);
+      setPerros((prev) => prev.filter((p) => p.id !== eliminarTarget.id));
+      setEliminarTarget(null);
+    } finally {
+      setEliminando(false);
+    }
   }
 
   /* ── Estados ── */
@@ -55,6 +63,29 @@ export default function MisPerrosPage() {
   return (
     <div className="py-8 md:py-10">
       {amigosOpen && <AmigosPanel onClose={() => setAmigosOpen(false)} />}
+
+      {/* Modal confirmación eliminar perro */}
+      {eliminarTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-xs rounded-[28px] bg-white p-6 shadow-2xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bad/10 mx-auto mb-4">
+              <Trash2 className="h-6 w-6 text-bad" />
+            </div>
+            <h2 className="font-display text-lg font-black text-ink text-center">¿Eliminás a {eliminarTarget.nombre}?</h2>
+            <p className="mt-1 text-sm text-ink-muted text-center">Esta acción no se puede deshacer.</p>
+            <div className="mt-5 flex gap-2">
+              <button type="button" onClick={handleConfirmEliminar} disabled={eliminando}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-bad py-3 text-sm font-bold text-white transition hover:bg-bad/90 disabled:opacity-60">
+                {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> Eliminar</>}
+              </button>
+              <button type="button" onClick={() => setEliminarTarget(null)} disabled={eliminando}
+                className="flex-1 rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -145,7 +176,7 @@ export default function MisPerrosPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {perros.map((p) => (
-            <PerroCard key={p.id} perro={p} onEliminar={handleEliminar} />
+            <PerroCard key={p.id} perro={p} onEliminar={(id, nombre) => setEliminarTarget({ id, nombre })} />
           ))}
           {/* Add card — oculto para Free con 1+ perro */}
           {(isPro || perros.length === 0) ? (

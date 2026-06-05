@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
   Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock, Heart,
+  Share2, MessageCircle,
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
@@ -188,8 +189,20 @@ export default function DetalleAvisoPage() {
     }
   }
 
+  const postUrl = `https://www.mivecindog.com.ar/publicaciones/${post.id}`;
+
+  function handleShare() {
+    if (!post) return;
+    const texto = `${post.nombre ?? 'Perro'} — ${ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} en ${post.zona}\n${postUrl}`;
+    if (navigator.share) {
+      navigator.share({ title: post.nombre ?? 'Aviso Vecindog', text: texto, url: postUrl }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(postUrl);
+    }
+  }
+
   return (
-    <article className="py-8 md:py-10">
+    <article className="py-8 md:py-10 pb-24 lg:pb-10">
       {showFoundModal && (
         <FoundModal
           nombrePerro={post?.nombre ?? null}
@@ -227,9 +240,16 @@ export default function DetalleAvisoPage() {
               </span>
             </div>
 
-            <h1 className="mt-3 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-              {post.nombre ?? 'Perro sin nombre'}
-            </h1>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h1 className="font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
+                {post.nombre ?? 'Perro sin nombre'}
+              </h1>
+              <button type="button" onClick={handleShare}
+                className="shrink-0 mt-1 grid h-9 w-9 place-items-center rounded-2xl bg-brand-cream text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+                title="Compartir aviso">
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-ink-muted">
               <span className="inline-flex items-center gap-1">
@@ -446,6 +466,26 @@ export default function DetalleAvisoPage() {
       </div>
       {adoptarOpen && post && (
         <AdoptionSheet post={post} onClose={() => setAdoptarOpen(false)} />
+      )}
+
+      {/* Barra flotante de contacto — solo mobile, solo si no está resuelto */}
+      {!resuelto && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
+          <div className="flex gap-3">
+            <a
+              href={`https://wa.me/${waNumero}?text=${waTexto}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white"
+            >
+              <MessageCircle className="h-4 w-4" /> Contactar por WhatsApp
+            </a>
+            <button type="button" onClick={handleShare}
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-cream text-ink-muted">
+              <Share2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
     </article>
   );

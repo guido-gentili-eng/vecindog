@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
 import { listarComerciosConUbicacion, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,10 +20,11 @@ interface LatLng { lat: number; lng: number }
 
 export default function MapaPage() {
   const { ciudad } = useAuth();
-  const [posts,     setPosts]     = useState<Post[]>([]);
-  const [comercios, setComercio]  = useState<Ad[]>([]);
-  const [cargando,  setCargando]  = useState(true);
-  const [center,    setCenter]    = useState<LatLng>({ lat: -34.6, lng: -58.44 });
+  const [posts,      setPosts]     = useState<Post[]>([]);
+  const [comercios,  setComercio]  = useState<Ad[]>([]);
+  const [cargando,   setCargando]  = useState(true);
+  const [center,     setCenter]    = useState<LatLng>({ lat: -34.6, lng: -58.44 });
+  const [userCenter, setUserCenter] = useState<LatLng | null>(null);
 
   useEffect(() => {
     listarPosts().then(setPosts).finally(() => setCargando(false));
@@ -32,7 +33,11 @@ export default function MapaPage() {
     // 1. Intentar geolocalización del navegador (más precisa)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setCenter(loc);
+          setUserCenter(loc);
+        },
         // 2. Si falla o el usuario rechaza → geocodificar la ciudad guardada
         () => { if (ciudad) geocodificarCiudad(ciudad); }
       );
@@ -89,6 +94,16 @@ export default function MapaPage() {
           )}
         </div>
       </div>
+
+      {userCenter && (
+        <button
+          onClick={() => setCenter(userCenter)}
+          className="absolute bottom-20 right-4 z-[1000] flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-xs font-bold text-ink shadow-md transition hover:shadow-lg hover:bg-brand-primary hover:text-white"
+          title="Volver a mi ubicación"
+        >
+          <MapPin className="h-3.5 w-3.5" /> Mi ubicación
+        </button>
+      )}
 
       <MapView
         center={center}

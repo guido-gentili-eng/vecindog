@@ -173,7 +173,7 @@ export async function eliminarPost(id: string, images: string[]): Promise<void> 
 }
 
 /** Lista los posts de una categoría de cuidado específica. */
-export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible'): Promise<Post[]> {
+export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible' | 'transportador_disponible'): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
     .select('*')

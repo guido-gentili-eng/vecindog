@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, MapPin, Heart, Home, ArrowRight, Footprints, HandHeart } from 'lucide-react';
+import { Search, MapPin, Heart, Home, ArrowRight, Footprints, HandHeart, Car } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -88,14 +88,14 @@ export default function ActionCards() {
           <Card key={a.href} {...a} />
         ))}
       </div>
-      {/* Card de cuidado — span completo, contenido centrado */}
-      <div className="mt-3 sm:mt-4">
+      {/* Cards de servicios: cuidado + transporte */}
+      <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
         <a
           href="/cuidado"
           className="group relative flex overflow-hidden rounded-[22px] bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99]"
         >
           <div className="w-1.5 shrink-0 bg-teal-800" />
-          <div className="relative flex flex-1 items-center justify-center gap-4 p-4 sm:p-5 text-center">
+          <div className="relative flex flex-1 items-start gap-4 p-4 sm:p-5">
             <PawPrintBg className="pointer-events-none absolute -bottom-3 -right-3 h-20 w-20 rotate-12 opacity-15" />
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl shadow-inner backdrop-blur-sm sm:h-14 sm:w-14">
               <span className="grid h-full w-full place-items-center rounded-2xl bg-white/22">
@@ -110,7 +110,36 @@ export default function ActionCards() {
                 Cuidado de perros
               </h3>
               <p className="mt-0.5 text-xs leading-snug opacity-90 sm:text-sm">
-                Buscá un cuidador para tu perro o anotate para cuidar perros de otros vecinos.
+                Buscá un cuidador o anotate para cuidar perros de otros vecinos.
+              </p>
+              <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
+                Empezar <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <a
+          href="/transporte"
+          className="group relative flex overflow-hidden rounded-[22px] bg-blue-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99]"
+        >
+          <div className="w-1.5 shrink-0 bg-blue-800" />
+          <div className="relative flex flex-1 items-start gap-4 p-4 sm:p-5">
+            <PawPrintBg className="pointer-events-none absolute -bottom-3 -right-3 h-20 w-20 rotate-12 opacity-15" />
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl shadow-inner backdrop-blur-sm sm:h-14 sm:w-14">
+              <span className="grid h-full w-full place-items-center rounded-2xl bg-white/22">
+                <Car className="h-6 w-6 sm:h-7 sm:w-7" />
+              </span>
+            </div>
+            <div>
+              <span className="inline-flex items-center rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold backdrop-blur-sm">
+                Nuevo
+              </span>
+              <h3 className="mt-1 font-display text-lg font-extrabold leading-tight sm:text-xl">
+                Transporte de perros
+              </h3>
+              <p className="mt-0.5 text-xs leading-snug opacity-90 sm:text-sm">
+                Encontrá quien lleve a tu perro o anotate para transportar perros de vecinos.
               </p>
               <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
                 Empezar <ArrowRight className="h-3.5 w-3.5" />

@@ -552,7 +552,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
           )}
 
           <p className="text-center text-xs text-ink-muted">
-            Serás redirigido a Mercado Pago para abonar $2.500 ARS.
+            Serás redirigido a Mercado Pago para abonar ${precioInfo.precioActual.toLocaleString('es-AR')} ARS.
             Tu negocio se activa en menos de 24 horas.
           </p>
 

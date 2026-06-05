@@ -47,6 +47,13 @@ body {
   scrollbar-width: none;
 }
 
+/* Contiene los z-indices internos de Leaflet (200–1000) dentro de su
+   propio stacking context (z-index: 0), evitando que tapen el header
+   y los modales de la aplicación. */
+.leaflet-container {
+  z-index: 0;
+}
+
 /* ── Tooltip de veterinarias en el mapa ── */
 .leaflet-tooltip {
   background: white !important;

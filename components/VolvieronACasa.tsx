@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, ArrowRight, MapPin, ImageIcon } from 'lucide-react';
+import { Heart, ArrowRight, ImageIcon } from 'lucide-react';
 import { listarPostsResueltos, type Post } from '@/lib/posts';
 
 const EMOJI_CATEGORIA: Record<string, string> = {
@@ -51,15 +51,15 @@ export default function VolvieronACasa() {
         </Link>
       </div>
 
-      {/* Grid de tarjetas */}
+      {/* Lista vertical */}
       {cargando ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-52 animate-pulse rounded-2xl bg-black/5" />
+            <div key={i} className="h-14 animate-pulse rounded-2xl bg-black/5" />
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-2">
           {posts.map((post) => (
             <HistoriaCard key={post.id} post={post} />
           ))}
@@ -83,45 +83,34 @@ export default function VolvieronACasa() {
 
 function HistoriaCard({ post }: { post: Post }) {
   return (
-    <Link
-      href={`/publicaciones/${post.id}`}
-      className="group relative overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
-    >
-      {/* Foto */}
-      <div className="relative h-36 w-full overflow-hidden bg-brand-cream">
+    <div className="flex items-center gap-3 rounded-2xl bg-white px-3 py-2 shadow-soft ring-1 ring-black/5">
+      {/* Foto miniatura */}
+      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
         {post.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={post.images[0]}
             alt={post.nombre ?? 'Perro reencontrado'}
-            className="h-full w-full object-cover transition group-hover:scale-105"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-brand-primary/20">
-            <ImageIcon className="h-10 w-10" />
+          <div className="flex h-full items-center justify-center">
+            <ImageIcon className="h-5 w-5 text-brand-primary/20" />
           </div>
         )}
-
-        {/* Badge de éxito */}
-        <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-good px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
-          <Heart className="h-3 w-3 fill-current" />
-          {EMOJI_CATEGORIA[post.categoria] ?? '🏠 Reencontrado'}
-        </span>
       </div>
 
-      {/* Info */}
-      <div className="p-3">
-        <p className="font-display text-base font-extrabold text-ink leading-tight">
+      {/* Nombre y badge */}
+      <div className="flex-1 min-w-0">
+        <p className="font-display text-sm font-extrabold text-ink truncate">
           {post.nombre ?? 'Sin nombre'}
         </p>
-        <p className="mt-1 flex items-center gap-1 text-xs text-ink-muted">
-          <MapPin className="h-3 w-3 text-brand-primary" />
-          {post.zona}
+        <p className="text-xs text-ink-muted">
+          {EMOJI_CATEGORIA[post.categoria] ?? '🏠 Reencontrado'}
         </p>
-        {post.raza && (
-          <p className="mt-1 truncate text-xs text-ink-muted">{post.raza}</p>
-        )}
       </div>
-    </Link>
+
+      <Heart className="h-4 w-4 shrink-0 fill-good text-good" />
+    </div>
   );
 }

@@ -74,12 +74,6 @@ export default function Header() {
           >
             <Store className="h-3.5 w-3.5" /> Red Vecindog
           </Link>
-          <Link
-            href="/calculadora-edad"
-            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-ink-muted transition hover:bg-brand-cream hover:text-ink"
-          >
-            <Calculator className="h-3.5 w-3.5" /> Calculadora
-          </Link>
         </nav>
 
         {/* Acciones */}
@@ -237,13 +231,6 @@ export default function Header() {
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-amber-600 hover:bg-amber-50"
             >
               <Store className="h-4 w-4" /> Red Vecindog
-            </Link>
-            <Link
-              href="/calculadora-edad"
-              onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-ink-muted hover:bg-brand-cream"
-            >
-              <Calculator className="h-4 w-4" /> Calculadora de edad
             </Link>
             <Link
               href="/descargas"

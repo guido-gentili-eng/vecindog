@@ -10,6 +10,8 @@ import {
   Upload, Trash2, Send, Mail, MessageCircle, Copy, Check, Download,
   Globe, ChevronDown, Share2, Lock, Sparkles, Bug, Scale, Stethoscope, Phone,
   Pill, QrCode, Printer, Store, TrendingUp, Clock, TriangleAlert,
+  Heart, Camera, UtensilsCrossed, Scissors, PhoneCall, UserRound,
+  Stethoscope as StethoscopeIcon, ClipboardList, ImageIcon, Plus as PlusIcon,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
@@ -30,6 +32,27 @@ import {
   listarMedicamentos, agregarMedicamento, eliminarMedicamento,
   type Medicamento,
 } from '@/lib/medicamentos';
+import {
+  listarVisitasVet, agregarVisitaVet, eliminarVisitaVet,
+  type VisitaVet, type VisitaVetInput,
+} from '@/lib/visitas-vet';
+import {
+  listarProcedimientos, agregarProcedimiento, eliminarProcedimiento,
+  TIPOS_PROCEDIMIENTO, type Procedimiento, type ProcedimientoInput,
+} from '@/lib/procedimientos';
+import {
+  listarFotos, subirFotoPerro as subirFotoGaleria, agregarFoto, eliminarFoto,
+  type FotoPerro,
+} from '@/lib/fotos-perro';
+import {
+  listarContactos, agregarContacto, eliminarContacto,
+  type ContactoEmergencia, type ContactoInput,
+} from '@/lib/contactos-emergencia';
+import {
+  obtenerGrooming, guardarGrooming,
+  type Grooming, type TipoGrooming,
+} from '@/lib/grooming';
+import { type EstadoSalud } from '@/lib/perros';
 import {
   listarDesparasitaciones, agregarDesparasitacion, actualizarDesparasitacion, eliminarDesparasitacion,
   PRODUCTOS_COMUNES,
@@ -72,6 +95,11 @@ export default function PerroDetallePage() {
   const [medicamentos,       setMedicamentos]      = useState<Medicamento[]>([]);
   const [showQR,             setShowQR]            = useState(false);
   const [showEnviarVacunas,  setShowEnviarVacunas] = useState(false);
+  const [visitasVet,         setVisitasVet]        = useState<VisitaVet[]>([]);
+  const [procedimientos,     setProcedimientos]    = useState<Procedimiento[]>([]);
+  const [fotos,              setFotos]             = useState<FotoPerro[]>([]);
+  const [contactos,          setContactos]         = useState<ContactoEmergencia[]>([]);
+  const [grooming,           setGrooming]          = useState<Grooming | null>(null);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -88,6 +116,11 @@ export default function PerroDetallePage() {
           listarPesos(p.id).then(setPesos);
           listarTurnos(p.id).then(setTurnos);
           listarMedicamentos(p.id).then(setMedicamentos);
+          listarVisitasVet(p.id).then(setVisitasVet);
+          listarProcedimientos(p.id).then(setProcedimientos);
+          listarFotos(p.id).then(setFotos);
+          listarContactos(p.id).then(setContactos);
+          obtenerGrooming(p.id).then(setGrooming);
         }
         return null;
       })
@@ -147,6 +180,59 @@ export default function PerroDetallePage() {
   async function handleEliminarMedicamento(id: string) {
     await eliminarMedicamento(id);
     setMedicamentos((prev) => prev.filter((m) => m.id !== id));
+  }
+
+  async function handleAgregarVisita(input: VisitaVetInput) {
+    if (!perro) return;
+    const nueva = await agregarVisitaVet(perro.id, input);
+    setVisitasVet((prev) => [nueva, ...prev]);
+  }
+  async function handleEliminarVisita(id: string) {
+    await eliminarVisitaVet(id);
+    setVisitasVet((prev) => prev.filter((v) => v.id !== id));
+  }
+
+  async function handleAgregarProcedimiento(input: ProcedimientoInput) {
+    if (!perro) return;
+    const nuevo = await agregarProcedimiento(perro.id, input);
+    setProcedimientos((prev) => [nuevo, ...prev]);
+  }
+  async function handleEliminarProcedimiento(id: string) {
+    await eliminarProcedimiento(id);
+    setProcedimientos((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  async function handleAgregarFoto(file: File) {
+    if (!perro) return;
+    const url = await subirFotoGaleria(file);
+    const nueva = await agregarFoto(perro.id, url);
+    setFotos((prev) => [nueva, ...prev]);
+  }
+  async function handleEliminarFoto(id: string) {
+    await eliminarFoto(id);
+    setFotos((prev) => prev.filter((f) => f.id !== id));
+  }
+
+  async function handleAgregarContacto(input: ContactoInput) {
+    if (!perro) return;
+    const nuevo = await agregarContacto(perro.id, input);
+    setContactos((prev) => [...prev, nuevo]);
+  }
+  async function handleEliminarContacto(id: string) {
+    await eliminarContacto(id);
+    setContactos((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  async function handleGuardarGrooming(data: Omit<Grooming, 'id' | 'created_at'>) {
+    if (!perro) return;
+    const g = await guardarGrooming(perro.id, data);
+    setGrooming(g);
+  }
+
+  async function handleEstadoSalud(estado: EstadoSalud | '') {
+    if (!perro) return;
+    await actualizarPerro(perro.id, { estado_salud: estado });
+    setPerro((p) => p ? { ...p, estado_salud: (estado || null) as EstadoSalud | null } : p);
   }
 
   async function handleRenovar() {
@@ -336,6 +422,19 @@ export default function PerroDetallePage() {
                 {perro.tamano       && <Chip className="capitalize">{perro.tamano}</Chip>}
                 {edad               && <Chip>{edad}</Chip>}
                 {perro.esterilizado && <Chip className="text-good">Esterilizado/a</Chip>}
+              </div>
+              {/* Estado de salud rápido */}
+              <div className="mt-2 flex gap-1.5 flex-wrap">
+                {(['saludable','en_tratamiento','en_recuperacion'] as EstadoSalud[]).map((e) => (
+                  <button key={e} type="button" onClick={() => handleEstadoSalud(perro.estado_salud === e ? '' : e)}
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition ${
+                      perro.estado_salud === e
+                        ? e === 'saludable' ? 'bg-good text-white' : e === 'en_tratamiento' ? 'bg-amber-400 text-white' : 'bg-blue-400 text-white'
+                        : 'bg-black/5 text-ink-muted hover:bg-black/10'
+                    }`}>
+                    {e === 'saludable' ? '💚 Saludable' : e === 'en_tratamiento' ? '🟡 En tratamiento' : '🔵 En recuperación'}
+                  </button>
+                ))}
               </div>
               {perro.descripcion && (
                 <p className="mt-2 text-xs text-ink-muted leading-relaxed line-clamp-2">{perro.descripcion}</p>
@@ -665,6 +764,55 @@ export default function PerroDetallePage() {
             locked={!isPro}
           />
 
+          {/* Visitas al veterinario */}
+          <VisitasVetSection
+            visitas={visitasVet}
+            onAgregar={handleAgregarVisita}
+            onEliminar={handleEliminarVisita}
+            locked={!isPro}
+          />
+
+          {/* Procedimientos / Cirugías */}
+          <ProcedimientosSection
+            procedimientos={procedimientos}
+            onAgregar={handleAgregarProcedimiento}
+            onEliminar={handleEliminarProcedimiento}
+            locked={!isPro}
+          />
+
+          {/* Dieta y alimentación */}
+          <DietaSection
+            perro={perro}
+            onGuardar={async (d) => {
+              await actualizarPerro(perro.id, d);
+              setPerro((p) => p ? { ...p, dieta_marca: d.dieta_marca||null, dieta_cantidad: d.dieta_cantidad||null, dieta_frecuencia: d.dieta_frecuencia||null, dieta_notas: d.dieta_notas||null } : p);
+            }}
+            locked={!isPro}
+          />
+
+          {/* Grooming */}
+          <GroomingSection
+            perroId={perro.id}
+            grooming={grooming}
+            onGuardar={handleGuardarGrooming}
+            locked={!isPro}
+          />
+
+          {/* Galería de fotos */}
+          <GaleriaSection
+            fotos={fotos}
+            onAgregar={handleAgregarFoto}
+            onEliminar={handleEliminarFoto}
+            locked={!isPro}
+          />
+
+          {/* Contactos de emergencia */}
+          <ContactosSection
+            contactos={contactos}
+            onAgregar={handleAgregarContacto}
+            onEliminar={handleEliminarContacto}
+          />
+
           {/* AirTag */}
           <AirTagSection
             perroId={perro.id}
@@ -796,20 +944,25 @@ function EditForm({
 }) {
   const { isPro } = useAuth();
   const [form, setForm] = useState<PerroInput>({
-    nombre:       perro.nombre,
-    raza:         perro.raza         ?? '',
-    color:        perro.color        ?? '',
-    tamano:       perro.tamano       ?? '',
-    sexo:         perro.sexo         ?? '',
-    fecha_nac:    perro.fecha_nac    ?? '',
-    chip:         perro.chip         ?? '',
-    esterilizado: perro.esterilizado ?? false,
-    descripcion:  perro.descripcion  ?? '',
-    alergias:     perro.alergias     ?? '',
-    vet_nombre:   perro.vet_nombre   ?? '',
-    vet_telefono: perro.vet_telefono ?? '',
-    direccion:    perro.direccion    ?? '',
-    foto_url:     perro.foto_url     ?? '',
+    nombre:           perro.nombre,
+    raza:             perro.raza             ?? '',
+    color:            perro.color            ?? '',
+    tamano:           perro.tamano           ?? '',
+    sexo:             perro.sexo             ?? '',
+    fecha_nac:        perro.fecha_nac        ?? '',
+    chip:             perro.chip             ?? '',
+    esterilizado:     perro.esterilizado     ?? false,
+    descripcion:      perro.descripcion      ?? '',
+    alergias:         perro.alergias         ?? '',
+    vet_nombre:       perro.vet_nombre       ?? '',
+    vet_telefono:     perro.vet_telefono     ?? '',
+    direccion:        perro.direccion        ?? '',
+    foto_url:         perro.foto_url         ?? '',
+    estado_salud:     perro.estado_salud     ?? '',
+    dieta_marca:      perro.dieta_marca      ?? '',
+    dieta_cantidad:   perro.dieta_cantidad   ?? '',
+    dieta_frecuencia: perro.dieta_frecuencia ?? '',
+    dieta_notas:      perro.dieta_notas      ?? '',
   });
   const [fotoFile,        setFotoFile]        = useState<File | null>(null);
   const [fotoPreview,     setFotoPreview]     = useState<string>(perro.foto_url ?? '');
@@ -850,7 +1003,7 @@ function EditForm({
       let fotoUrl = form.foto_url;
       if (fotoFile) fotoUrl = await subirFotoPerro(fotoFile);
       await actualizarPerro(perro.id, { ...form, foto_url: fotoUrl });
-      onSave({ ...perro, ...form, tamano: form.tamano || null, sexo: form.sexo || null, foto_url: fotoUrl });
+      onSave({ ...perro, ...form, tamano: form.tamano || null, sexo: form.sexo || null, foto_url: fotoUrl, estado_salud: form.estado_salud || null } as Perro);
     } catch {
       setError('No se pudo guardar. Intentá de nuevo.');
       setSaving(false);
@@ -3562,6 +3715,406 @@ function PesoSection({
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+/* ── Visitas al veterinario ── */
+function VisitasVetSection({ visitas, onAgregar, onEliminar, locked }: {
+  visitas:    VisitaVet[];
+  onAgregar:  (i: VisitaVetInput) => Promise<void>;
+  onEliminar: (id: string) => Promise<void>;
+  locked?:    boolean;
+}) {
+  const [agregando, setAgregando] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const empty: VisitaVetInput = { fecha: new Date().toISOString().slice(0,10), motivo:'', diagnostico:'', tratamiento:'', vet_nombre:'', notas:'' };
+  const [form, setForm] = useState<VisitaVetInput>(empty);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.fecha || !form.motivo.trim()) { setError('Fecha y motivo son obligatorios.'); return; }
+    setSaving(true); setError('');
+    try { await onAgregar(form); setForm(empty); setAgregando(false); }
+    catch { setError('No se pudo guardar.'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <ClipboardList className="h-4 w-4 text-brand-primary" /> Visitas al veterinario
+          {visitas.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{visitas.length}</span>}
+        </h2>
+        {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"><Sparkles className="h-3 w-3" /> VecindogPro</Link>
+          : <button type="button" onClick={() => setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ Registrar</>}</button>}
+      </div>
+      {agregando && (
+        <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label text-xs">Fecha *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
+            <div><label className="label text-xs">Veterinario</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
+          </div>
+          <div><label className="label text-xs">Motivo *</label><input className="field w-full text-sm" placeholder="Control de rutina, fiebre, etc." value={form.motivo} onChange={(e)=>setForm(f=>({...f,motivo:e.target.value}))} required /></div>
+          <div><label className="label text-xs">Diagnóstico</label><input className="field w-full text-sm" placeholder="Gastroenteritis, dermatitis, etc." value={form.diagnostico} onChange={(e)=>setForm(f=>({...f,diagnostico:e.target.value}))} /></div>
+          <div><label className="label text-xs">Tratamiento</label><input className="field w-full text-sm" placeholder="Antibiótico 5 días, reposo, etc." value={form.tratamiento} onChange={(e)=>setForm(f=>({...f,tratamiento:e.target.value}))} /></div>
+          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Observaciones adicionales" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving ? <Loader2 className="h-4 w-4 animate-spin"/> : <><Check className="h-4 w-4"/> Guardar</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+          </div>
+        </form>
+      )}
+      {visitas.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay visitas registradas.</p>
+        : <div className="space-y-2">{visitas.map((v) => (
+          <div key={v.id} className="rounded-2xl bg-brand-cream px-4 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-ink-muted">{formatFecha(v.fecha)}</span>
+                  {v.vet_nombre && <span className="text-xs text-ink-muted">· {v.vet_nombre}</span>}
+                </div>
+                <p className="text-sm font-bold text-ink mt-0.5">{v.motivo}</p>
+                {v.diagnostico && <p className="text-xs text-ink-muted mt-0.5">🔍 {v.diagnostico}</p>}
+                {v.tratamiento && <p className="text-xs text-ink-muted">💊 {v.tratamiento}</p>}
+                {v.notas       && <p className="text-[11px] text-ink-muted italic mt-0.5">{v.notas}</p>}
+              </div>
+              <button type="button" onClick={()=>onEliminar(v.id)} className="shrink-0 rounded-lg p-1 text-ink-muted/40 hover:bg-bad/10 hover:text-bad"><Trash2 className="h-3.5 w-3.5"/></button>
+            </div>
+          </div>
+        ))}</div>}
+    </div>
+  );
+}
+
+/* ── Procedimientos / Cirugías ── */
+function ProcedimientosSection({ procedimientos, onAgregar, onEliminar, locked }: {
+  procedimientos: Procedimiento[];
+  onAgregar:      (i: ProcedimientoInput) => Promise<void>;
+  onEliminar:     (id: string) => Promise<void>;
+  locked?:        boolean;
+}) {
+  const [agregando, setAgregando] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const empty: ProcedimientoInput = { fecha: new Date().toISOString().slice(0,10), tipo: TIPOS_PROCEDIMIENTO[0], descripcion:'', vet_nombre:'', notas:'' };
+  const [form, setForm] = useState<ProcedimientoInput>(empty);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.fecha || !form.descripcion.trim()) { setError('Fecha y descripción son obligatorias.'); return; }
+    setSaving(true); setError('');
+    try { await onAgregar(form); setForm(empty); setAgregando(false); }
+    catch { setError('No se pudo guardar.'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <StethoscopeIcon className="h-4 w-4 text-brand-primary" /> Procedimientos y cirugías
+          {procedimientos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{procedimientos.length}</span>}
+        </h2>
+        {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
+          : <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ Registrar</>}</button>}
+      </div>
+      {agregando && (
+        <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label text-xs">Fecha *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
+            <div><label className="label text-xs">Tipo</label>
+              <select className="field w-full text-sm" value={form.tipo} onChange={(e)=>setForm(f=>({...f,tipo:e.target.value}))}>
+                {TIPOS_PROCEDIMIENTO.map((t)=><option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div><label className="label text-xs">Descripción *</label><input className="field w-full text-sm" placeholder="Castración, limpieza dental, etc." value={form.descripcion} onChange={(e)=>setForm(f=>({...f,descripcion:e.target.value}))} required /></div>
+          <div><label className="label text-xs">Veterinario / Clínica</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
+          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Observaciones" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/>Guardar</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+          </div>
+        </form>
+      )}
+      {procedimientos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay procedimientos registrados.</p>
+        : <div className="space-y-2">{procedimientos.map((p) => (
+          <div key={p.id} className="flex items-start gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-[10px] font-bold text-brand-primary">{p.tipo}</span>
+                <span className="text-xs text-ink-muted">{formatFecha(p.fecha)}</span>
+                {p.vet_nombre && <span className="text-xs text-ink-muted">· {p.vet_nombre}</span>}
+              </div>
+              <p className="text-sm font-semibold text-ink mt-0.5">{p.descripcion}</p>
+              {p.notas && <p className="text-[11px] text-ink-muted italic mt-0.5">{p.notas}</p>}
+            </div>
+            <button type="button" onClick={()=>onEliminar(p.id)} className="shrink-0 rounded-lg p-1 text-ink-muted/40 hover:bg-bad/10 hover:text-bad"><Trash2 className="h-3.5 w-3.5"/></button>
+          </div>
+        ))}</div>}
+    </div>
+  );
+}
+
+/* ── Dieta y alimentación ── */
+function DietaSection({ perro, onGuardar, locked }: {
+  perro:     Perro;
+  onGuardar: (d: { dieta_marca: string; dieta_cantidad: string; dieta_frecuencia: string; dieta_notas: string }) => Promise<void>;
+  locked?:   boolean;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ dieta_marca: perro.dieta_marca??'', dieta_cantidad: perro.dieta_cantidad??'', dieta_frecuencia: perro.dieta_frecuencia??'', dieta_notas: perro.dieta_notas??'' });
+
+  const tieneDieta = perro.dieta_marca || perro.dieta_cantidad || perro.dieta_frecuencia || perro.dieta_notas;
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try { await onGuardar(form); setEditando(false); }
+    catch { /* silent */ }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <UtensilsCrossed className="h-4 w-4 text-brand-primary" /> Dieta y alimentación
+        </h2>
+        {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
+          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> Editar</>}</button>}
+      </div>
+      {editando ? (
+        <form onSubmit={handleSave} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label text-xs">Marca / alimento</label><input className="field w-full text-sm" placeholder="Royal Canin, Purina, etc." value={form.dieta_marca} onChange={(e)=>setForm(f=>({...f,dieta_marca:e.target.value}))} /></div>
+            <div><label className="label text-xs">Cantidad</label><input className="field w-full text-sm" placeholder="250g por comida" value={form.dieta_cantidad} onChange={(e)=>setForm(f=>({...f,dieta_cantidad:e.target.value}))} /></div>
+            <div><label className="label text-xs">Frecuencia</label><input className="field w-full text-sm" placeholder="2 veces al día" value={form.dieta_frecuencia} onChange={(e)=>setForm(f=>({...f,dieta_frecuencia:e.target.value}))} /></div>
+            <div><label className="label text-xs">Notas / restricciones</label><input className="field w-full text-sm" placeholder="Sin pollo, bajo en sodio..." value={form.dieta_notas} onChange={(e)=>setForm(f=>({...f,dieta_notas:e.target.value}))} /></div>
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
+            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">Cancelar</button>
+          </div>
+        </form>
+      ) : tieneDieta ? (
+        <div className="grid grid-cols-2 gap-3">
+          {perro.dieta_marca      && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Alimento</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_marca}</p></div>}
+          {perro.dieta_cantidad   && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Cantidad</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_cantidad}</p></div>}
+          {perro.dieta_frecuencia && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Frecuencia</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_frecuencia}</p></div>}
+          {perro.dieta_notas      && <div className="rounded-2xl bg-brand-cream p-3 col-span-2"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Restricciones / notas</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_notas}</p></div>}
+        </div>
+      ) : <p className="text-sm text-ink-muted">No hay información de dieta cargada.</p>}
+    </div>
+  );
+}
+
+/* ── Grooming / Baño ── */
+function GroomingSection({ perroId, grooming, onGuardar, locked }: {
+  perroId:   string;
+  grooming:  Grooming | null;
+  onGuardar: (d: Omit<Grooming,'id'|'created_at'>) => Promise<void>;
+  locked?:   boolean;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ ultima_fecha: new Date().toISOString().slice(0,10), frecuencia_dias: 30, tipo: 'ambos' as TipoGrooming, notas:'' });
+
+  useEffect(() => {
+    if (grooming) setForm({ ultima_fecha: grooming.ultima_fecha, frecuencia_dias: grooming.frecuencia_dias, tipo: grooming.tipo, notas: grooming.notas??'' });
+  }, [grooming]);
+
+  const proximaFecha = grooming ? (() => {
+    const d = new Date(grooming.ultima_fecha);
+    d.setDate(d.getDate() + grooming.frecuencia_dias);
+    return d.toISOString().slice(0,10);
+  })() : null;
+  const diasRestantes = proximaFecha ? Math.ceil((new Date(proximaFecha).getTime() - Date.now()) / 86400000) : null;
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try { await onGuardar({ perro_id: perroId, ...form }); setEditando(false); }
+    catch { /* silent */ }
+    finally { setSaving(false); }
+  }
+
+  const TIPOS: TipoGrooming[] = ['baño','peluquería','ambos'];
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Scissors className="h-4 w-4 text-brand-primary" /> Baño y peluquería
+        </h2>
+        {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
+          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> {grooming?'Editar':'Configurar'}</>}</button>}
+      </div>
+      {editando ? (
+        <form onSubmit={handleSave} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label text-xs">Último baño/peluquería</label><input type="date" className="field w-full text-sm" value={form.ultima_fecha} onChange={(e)=>setForm(f=>({...f,ultima_fecha:e.target.value}))} /></div>
+            <div><label className="label text-xs">Cada cuántos días</label><input type="number" min={1} max={365} className="field w-full text-sm" value={form.frecuencia_dias} onChange={(e)=>setForm(f=>({...f,frecuencia_dias:+e.target.value}))} /></div>
+          </div>
+          <div>
+            <label className="label text-xs">Tipo</label>
+            <div className="flex gap-2 mt-1">{TIPOS.map((t)=>(
+              <button key={t} type="button" onClick={()=>setForm(f=>({...f,tipo:t}))}
+                className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${form.tipo===t?'bg-brand-primary text-white':'bg-brand-cream text-ink-muted hover:bg-brand-primary/10'}`}>
+                {t}
+              </button>
+            ))}</div>
+          </div>
+          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Peluquería Canina Mia, corte de pelo..." value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
+            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">Cancelar</button>
+          </div>
+        </form>
+      ) : grooming ? (
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <div className="flex-1 rounded-2xl bg-brand-cream p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Último</p>
+              <p className="text-sm font-semibold text-ink mt-0.5">{formatFecha(grooming.ultima_fecha)}</p>
+            </div>
+            <div className={`flex-1 rounded-2xl p-3 ${diasRestantes !== null && diasRestantes <= 0 ? 'bg-bad/10' : diasRestantes !== null && diasRestantes <= 5 ? 'bg-amber-50' : 'bg-brand-cream'}`}>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Próximo</p>
+              <p className={`text-sm font-semibold mt-0.5 ${diasRestantes !== null && diasRestantes <= 0 ? 'text-bad' : 'text-ink'}`}>
+                {proximaFecha ? formatFecha(proximaFecha) : '—'}
+                {diasRestantes !== null && <span className="ml-1 text-xs">({diasRestantes <= 0 ? 'Vencido' : `en ${diasRestantes}d`})</span>}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-ink-muted">
+            <Scissors className="h-3.5 w-3.5 shrink-0 text-brand-primary/60" />
+            <span className="capitalize">{grooming.tipo}</span> · cada {grooming.frecuencia_dias} días
+            {grooming.notas && <span>· {grooming.notas}</span>}
+          </div>
+        </div>
+      ) : <p className="text-sm text-ink-muted">Configurá el recordatorio de baño y peluquería.</p>}
+    </div>
+  );
+}
+
+/* ── Galería de fotos ── */
+function GaleriaSection({ fotos, onAgregar, onEliminar, locked }: {
+  fotos:      FotoPerro[];
+  onAgregar:  (f: File) => Promise<void>;
+  onEliminar: (id: string) => Promise<void>;
+  locked?:    boolean;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [subiendo, setSubiendo] = useState(false);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setSubiendo(true);
+    try { await onAgregar(f); }
+    catch { /* silent */ }
+    finally { setSubiendo(false); e.target.value=''; }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <Camera className="h-4 w-4 text-brand-primary" /> Galería de fotos
+          {fotos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{fotos.length}</span>}
+        </h2>
+        {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
+          : <button type="button" onClick={()=>fileRef.current?.click()} disabled={subiendo} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20 disabled:opacity-60">{subiendo?<Loader2 className="h-3 w-3 animate-spin"/>:<><ImageIcon className="h-3 w-3"/> Agregar foto</>}</button>}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      {fotos.length === 0 ? <p className="text-sm text-ink-muted">No hay fotos en la galería.</p>
+        : <div className="grid grid-cols-3 gap-2">{fotos.map((f) => (
+          <div key={f.id} className="relative group aspect-square">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={f.url} alt="" className="w-full h-full object-cover rounded-2xl" />
+            <button type="button" onClick={()=>onEliminar(f.id)}
+              className="absolute top-1 right-1 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-full bg-bad text-white shadow">
+              <X className="h-3 w-3" />
+            </button>
+            <a href={f.url} target="_blank" rel="noopener noreferrer"
+              className="absolute bottom-1 right-1 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white">
+              <Download className="h-3 w-3" />
+            </a>
+          </div>
+        ))}</div>}
+    </div>
+  );
+}
+
+/* ── Contactos de emergencia ── */
+function ContactosSection({ contactos, onAgregar, onEliminar }: {
+  contactos:  ContactoEmergencia[];
+  onAgregar:  (i: ContactoInput) => Promise<void>;
+  onEliminar: (id: string) => Promise<void>;
+}) {
+  const [agregando, setAgregando] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const empty: ContactoInput = { nombre:'', relacion:'', telefono:'', notas:'' };
+  const [form, setForm] = useState<ContactoInput>(empty);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.nombre.trim() || !form.telefono.trim()) { setError('Nombre y teléfono son obligatorios.'); return; }
+    setSaving(true); setError('');
+    try { await onAgregar(form); setForm(empty); setAgregando(false); }
+    catch { setError('No se pudo guardar.'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="card p-5 mb-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+          <PhoneCall className="h-4 w-4 text-brand-primary" /> Contactos de emergencia
+          {contactos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{contactos.length}</span>}
+        </h2>
+        <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando?<X className="h-3 w-3"/>:<>+ Agregar</>}</button>
+      </div>
+      {agregando && (
+        <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label text-xs">Nombre *</label><input className="field w-full text-sm" placeholder="María García" value={form.nombre} onChange={(e)=>setForm(f=>({...f,nombre:e.target.value}))} required /></div>
+            <div><label className="label text-xs">Relación</label><input className="field w-full text-sm" placeholder="Paseador, familiar, etc." value={form.relacion} onChange={(e)=>setForm(f=>({...f,relacion:e.target.value}))} /></div>
+          </div>
+          <div><label className="label text-xs">Teléfono *</label><input type="tel" className="field w-full text-sm" placeholder="+54 9 11 1234-5678" value={form.telefono} onChange={(e)=>setForm(f=>({...f,telefono:e.target.value}))} required /></div>
+          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Solo para emergencias, etc." value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+          </div>
+        </form>
+      )}
+      {contactos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay contactos de emergencia cargados.</p>
+        : <div className="space-y-2">{contactos.map((c) => (
+          <div key={c.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+              <UserRound className="h-4 w-4 text-brand-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink">{c.nombre}{c.relacion && <span className="ml-1 text-xs text-ink-muted">· {c.relacion}</span>}</p>
+              <p className="text-xs text-ink-muted">{c.telefono}</p>
+              {c.notas && <p className="text-[11px] text-ink-muted italic">{c.notas}</p>}
+            </div>
+            <a href={`tel:${c.telefono.replace(/\s/g,'')}`}
+              className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-good/10 text-good hover:bg-good/20 transition">
+              <PhoneCall className="h-3.5 w-3.5" />
+            </a>
+            <button type="button" onClick={()=>onEliminar(c.id)} className="shrink-0 rounded-lg p-1 text-ink-muted/40 hover:bg-bad/10 hover:text-bad"><Trash2 className="h-3.5 w-3.5"/></button>
+          </div>
+        ))}</div>}
     </div>
   );
 }

@@ -23,6 +23,7 @@ const FORM_INICIAL: PerroInput = {
   nombre: '', raza: '', color: '', tamano: '', sexo: '',
   fecha_nac: '', chip: '', esterilizado: false, descripcion: '',
   alergias: '', vet_nombre: '', vet_telefono: '', direccion: '', foto_url: '',
+  estado_salud: '', dieta_marca: '', dieta_cantidad: '', dieta_frecuencia: '', dieta_notas: '',
 };
 
 /* ─── Constantes ─── */

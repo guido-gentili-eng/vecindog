@@ -26,33 +26,45 @@ export interface Vacuna extends VacunaInput {
   created_at: string;
 }
 
+export type EstadoSalud = 'saludable' | 'en_tratamiento' | 'en_recuperacion';
+
 export interface PerroInput {
-  nombre:       string;
-  raza:         string;
-  color:        string;
-  tamano:       Tamano | '';
-  sexo:         Sexo   | '';
-  fecha_nac:    string;  // YYYY-MM-DD
-  chip:         string;
-  esterilizado: boolean;
-  descripcion:  string;
-  alergias:     string;  // Alergias o condiciones especiales
-  vet_nombre:   string;  // Veterinario habitual — nombre o clínica
-  vet_telefono: string;  // Veterinario habitual — teléfono
-  direccion:    string;  // Dirección del hogar (para avisos de pérdida)
-  foto_url:     string;
+  nombre:           string;
+  raza:             string;
+  color:            string;
+  tamano:           Tamano | '';
+  sexo:             Sexo   | '';
+  fecha_nac:        string;  // YYYY-MM-DD
+  chip:             string;
+  esterilizado:     boolean;
+  descripcion:      string;
+  alergias:         string;
+  vet_nombre:       string;
+  vet_telefono:     string;
+  direccion:        string;
+  foto_url:         string;
+  estado_salud:     EstadoSalud | '';
+  dieta_marca:      string;
+  dieta_cantidad:   string;
+  dieta_frecuencia: string;
+  dieta_notas:      string;
 }
 
-export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' | 'vet_nombre' | 'vet_telefono'> {
-  id:           string;
-  user_id:      string;
-  tamano:       Tamano | null;
-  sexo:         Sexo   | null;
-  alergias:     string | null;
-  vet_nombre:   string | null;
-  vet_telefono: string | null;
-  created_at:   string;
-  vacunas?:     Vacuna[];
+export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' | 'vet_nombre' | 'vet_telefono' | 'estado_salud' | 'dieta_marca' | 'dieta_cantidad' | 'dieta_frecuencia' | 'dieta_notas'> {
+  id:               string;
+  user_id:          string;
+  tamano:           Tamano | null;
+  sexo:             Sexo   | null;
+  alergias:         string | null;
+  vet_nombre:       string | null;
+  vet_telefono:     string | null;
+  estado_salud:     EstadoSalud | null;
+  dieta_marca:      string | null;
+  dieta_cantidad:   string | null;
+  dieta_frecuencia: string | null;
+  dieta_notas:      string | null;
+  created_at:       string;
+  vacunas?:         Vacuna[];
 }
 
 /* ─────────────────── Consultas ─────────────────── */
@@ -143,10 +155,15 @@ export async function actualizarPerro(
   if (input.esterilizado !== undefined) patch.esterilizado = input.esterilizado;
   if (input.descripcion  !== undefined) patch.descripcion  = input.descripcion  || null;
   if (input.alergias     !== undefined) patch.alergias     = input.alergias     || null;
-  if (input.vet_nombre   !== undefined) patch.vet_nombre   = input.vet_nombre   || null;
-  if (input.vet_telefono !== undefined) patch.vet_telefono = input.vet_telefono || null;
-  if (input.direccion    !== undefined) patch.direccion    = input.direccion    || null;
-  if (input.foto_url     !== undefined) patch.foto_url     = input.foto_url     || null;
+  if (input.vet_nombre       !== undefined) patch.vet_nombre       = input.vet_nombre       || null;
+  if (input.vet_telefono     !== undefined) patch.vet_telefono     = input.vet_telefono     || null;
+  if (input.direccion        !== undefined) patch.direccion        = input.direccion        || null;
+  if (input.foto_url         !== undefined) patch.foto_url         = input.foto_url         || null;
+  if (input.estado_salud     !== undefined) patch.estado_salud     = input.estado_salud     || null;
+  if (input.dieta_marca      !== undefined) patch.dieta_marca      = input.dieta_marca      || null;
+  if (input.dieta_cantidad   !== undefined) patch.dieta_cantidad   = input.dieta_cantidad   || null;
+  if (input.dieta_frecuencia !== undefined) patch.dieta_frecuencia = input.dieta_frecuencia || null;
+  if (input.dieta_notas      !== undefined) patch.dieta_notas      = input.dieta_notas      || null;
 
   const { error } = await supabase.from('perros').update(patch).eq('id', id);
   if (error) throw error;

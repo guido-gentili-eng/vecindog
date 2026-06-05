@@ -70,7 +70,7 @@ export default function QuieroTransportarPage() {
       color:       null,
       tamano:      null,
       descripcion,
-      zona:        null,
+      zona:        '',
       fecha:       new Date().toISOString().slice(0, 10),
       horario:     disponibilidad.join(' / ') || null,
       contacto:    contacto.trim(),

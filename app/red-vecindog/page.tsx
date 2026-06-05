@@ -250,14 +250,14 @@ export default function RedVecindogPage() {
         </div>
       </section>
 
-      {modalAbierto && <RegistroModal onClose={() => setModalAbierto(false)} />}
+      {modalAbierto && <RegistroModal onClose={() => setModalAbierto(false)} precioInfo={precioInfo} />}
     </div>
   );
 }
 
 /* ── Modal de registro ──────────────────────────────────────────── */
 
-function RegistroModal({ onClose }: { onClose: () => void }) {
+function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInfo: PrecioInfo }) {
   const fileRef  = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -343,7 +343,17 @@ function RegistroModal({ onClose }: { onClose: () => void }) {
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-black/5 bg-white px-6 py-4">
           <div>
             <h2 className="font-display text-xl font-black text-ink">Registrar mi negocio</h2>
-            <p className="text-sm text-ink-muted">Red Vecindog · $2.500 ARS/mes</p>
+            <p className="text-sm text-ink-muted">
+              Red Vecindog ·{' '}
+              {precioInfo.esPromo ? (
+                <>
+                  <span className="font-bold text-amber-600">${precioInfo.precioActual.toLocaleString('es-AR')} ARS/mes</span>
+                  <span className="ml-1 line-through text-ink-muted/50">${precioInfo.precioRegular.toLocaleString('es-AR')}</span>
+                </>
+              ) : (
+                <span className="font-bold">${precioInfo.precioActual.toLocaleString('es-AR')} ARS/mes</span>
+              )}
+            </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-black/5">
             <X className="h-5 w-5 text-ink-muted" />

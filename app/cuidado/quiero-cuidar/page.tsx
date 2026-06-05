@@ -76,7 +76,7 @@ export default function QuieroCuidarPage() {
       descripcion,
       zona:        zona.trim(),
       fecha:       new Date().toISOString().slice(0, 10),
-      horario:     disponibilidad.join(' / ') || null,
+      horario:     null,
       contacto:    contacto.trim(),
       images:      [],
       estado:      'activo',

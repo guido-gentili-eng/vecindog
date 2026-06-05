@@ -4,17 +4,45 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Car, Phone, MapPin, Calendar, ChevronRight, User, Star } from 'lucide-react';
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function TransportePage() {
   const { user } = useAuth();
   const [transportadores, setTransportadores] = useState<Post[]>([]);
+  const [promedios, setPromedios] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    listarPostsCuidado('transportador_disponible')
-      .then(setTransportadores)
-      .finally(() => setCargando(false));
+    async function cargar() {
+      const posts = await listarPostsCuidado('transportador_disponible');
+      if (!posts.length) { setCargando(false); return; }
+
+      // Traer todos los ratings de estos transportadores en una sola query
+      const { data: ratings } = await supabase
+        .from('transportador_ratings')
+        .select('transportador_post_id, estrellas')
+        .in('transportador_post_id', posts.map((p) => p.id));
+
+      // Calcular promedio por post
+      const mapa: Record<string, { suma: number; total: number }> = {};
+      for (const r of ratings ?? []) {
+        if (!mapa[r.transportador_post_id]) mapa[r.transportador_post_id] = { suma: 0, total: 0 };
+        mapa[r.transportador_post_id].suma  += r.estrellas;
+        mapa[r.transportador_post_id].total += 1;
+      }
+      const promediosCalc: Record<string, number> = {};
+      for (const [id, { suma, total }] of Object.entries(mapa)) {
+        promediosCalc[id] = suma / total;
+      }
+      setPromedios(promediosCalc);
+
+      // Ordenar: primero los que tienen calificación (mayor primero), luego los sin calificación
+      posts.sort((a, b) => (promediosCalc[b.id] ?? -1) - (promediosCalc[a.id] ?? -1));
+      setTransportadores(posts);
+      setCargando(false);
+    }
+    cargar();
   }, []);
 
   async function handleResolver(id: string) {
@@ -79,7 +107,7 @@ export default function TransportePage() {
       ) : (
         <div className="space-y-3">
           {transportadores.map((p) => (
-            <TransportadorCard key={p.id} post={p} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id)} />
+            <TransportadorCard key={p.id} post={p} promedio={promedios[p.id]} mio={p.user_id === user?.id} onResolver={() => handleResolver(p.id)} />
           ))}
         </div>
       )}
@@ -87,7 +115,7 @@ export default function TransportePage() {
   );
 }
 
-function TransportadorCard({ post: p, mio, onResolver }: { post: Post; mio: boolean; onResolver: () => void }) {
+function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post; promedio?: number; mio: boolean; onResolver: () => void }) {
   const foto = p.images?.[0];
 
   return (
@@ -117,6 +145,15 @@ function TransportadorCard({ post: p, mio, onResolver }: { post: Post; mio: bool
             </button>
           )}
         </div>
+
+        {promedio != null && (
+          <div className="mt-0.5 flex items-center gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className={`h-3 w-3 ${i < Math.round(promedio) ? 'fill-amber-400 text-amber-400' : 'text-black/10'}`} />
+            ))}
+            <span className="text-xs font-bold text-ink ml-0.5">{promedio.toFixed(1)}</span>
+          </div>
+        )}
 
         {p.descripcion && (
           <p className="mt-0.5 text-sm text-ink-muted line-clamp-2">{p.descripcion}</p>

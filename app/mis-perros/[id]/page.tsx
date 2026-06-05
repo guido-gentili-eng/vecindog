@@ -71,6 +71,7 @@ export default function PerroDetallePage() {
   const [turnos,             setTurnos]            = useState<Turno[]>([]);
   const [medicamentos,       setMedicamentos]      = useState<Medicamento[]>([]);
   const [showQR,             setShowQR]            = useState(false);
+  const [showEnviarVacunas,  setShowEnviarVacunas] = useState(false);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -478,17 +479,37 @@ export default function PerroDetallePage() {
                 )}
               </h2>
               {isPro ? (
-                <button
-                  type="button"
-                  onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
-                  className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
-                >
-                  + Agregar
-                </button>
+                <div className="ml-auto flex gap-2">
+                  {vacunas.length > 0 && (
+                    <button type="button" onClick={() => setShowEnviarVacunas(true)}
+                      className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
+                      <Send className="h-3 w-3" /> Enviar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
+                    className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
+                  >
+                    + Agregar
+                  </button>
+                </div>
               ) : (
                 <Link href="/planes" className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
                   <Sparkles className="h-3 w-3" /> VecindogPro
                 </Link>
+              )}
+              {showEnviarVacunas && (
+                <EnviarTextoModal
+                  titulo="Enviar carnet de vacunas"
+                  subtitulo={`${perro.nombre} · ${vacunas.length} vacuna${vacunas.length !== 1 ? 's' : ''}`}
+                  texto={[
+                    `💉 Carnet de vacunas de ${perro.nombre} 🐾`,
+                    '',
+                    ...vacunas.map((v) => `• ${v.nombre} — ${formatFecha(v.fecha)}${v.proxima ? ` (próxima: ${formatFecha(v.proxima)})` : ''}`),
+                  ].join('\n')}
+                  onClose={() => setShowEnviarVacunas(false)}
+                />
               )}
             </div>
 
@@ -536,6 +557,7 @@ export default function PerroDetallePage() {
             onSetAgregando={(v) => { setAgregandoDesparas(v); setEditandoDesparaId(null); }}
             onSetEditandoId={(id) => { setEditandoDesparaId(id); setAgregandoDesparas(false); }}
             locked={!isPro}
+            perroNombre={perro.nombre}
           />
 
           {/* Medicamentos */}
@@ -545,6 +567,7 @@ export default function PerroDetallePage() {
             onAgregar={handleAgregarMedicamento}
             onEliminar={handleEliminarMedicamento}
             locked={!isPro}
+            perroNombre={perro.nombre}
           />
 
           {/* Historial de peso */}
@@ -2236,6 +2259,75 @@ function EnviarEstudioModal({
   );
 }
 
+/* ── Modal genérico para enviar texto por email / WhatsApp ── */
+function EnviarTextoModal({ titulo, subtitulo, texto, onClose }: {
+  titulo:    string;
+  subtitulo: string;
+  texto:     string;
+  onClose:   () => void;
+}) {
+  const [email,  setEmail]  = useState('');
+  const [copied, setCopied] = useState(false);
+
+  function enviarEmail() {
+    const s = encodeURIComponent(titulo);
+    const b = encodeURIComponent(texto);
+    window.open(`mailto:${encodeURIComponent(email.trim())}?subject=${s}&body=${b}`, '_blank');
+  }
+  function enviarWA() {
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+  }
+  async function copiar() {
+    await navigator.clipboard.writeText(texto);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+        <div className="mb-5">
+          <h2 className="font-display text-xl font-black text-ink">{titulo}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{subtitulo}</p>
+        </div>
+        <button type="button" onClick={copiar}
+          className="mb-4 flex w-full items-center justify-between gap-2 rounded-2xl bg-brand-cream px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10">
+          <span className="truncate text-xs text-ink-muted">{texto.slice(0, 55)}…</span>
+          {copied ? <Check className="h-4 w-4 shrink-0 text-good" /> : <Copy className="h-4 w-4 shrink-0 text-brand-primary" />}
+        </button>
+        <div className="mb-3">
+          <label className="label mb-1 flex items-center gap-1.5 text-xs">
+            <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+          </label>
+          <div className="flex gap-2">
+            <input type="email" placeholder="destinatario@email.com" value={email}
+              onChange={(e) => setEmail(e.target.value)} className="field flex-1 text-sm" />
+            <button type="button" onClick={enviarEmail} disabled={!email.trim()}
+              className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40">
+              Enviar
+            </button>
+          </div>
+        </div>
+        <div className="my-4 flex items-center gap-3">
+          <div className="flex-1 border-t border-black/10" />
+          <span className="text-xs text-ink-muted">o</span>
+          <div className="flex-1 border-t border-black/10" />
+        </div>
+        <button type="button" onClick={enviarWA}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
+          <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+        </button>
+        <button type="button" onClick={onClose}
+          className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Modal de cotización de laboratorio ── */
 function CotizacionLabModal({ onClose }: { onClose: () => void }) {
   const [nombreApellido, setNombreApellido] = useState('');
@@ -2489,17 +2581,19 @@ function QRModal({ perroId, perroNombre, onClose }: { perroId: string; perroNomb
 
 /* ── Sección de medicamentos ── */
 function MedicamentosSection({
-  perroId, medicamentos, onAgregar, onEliminar, locked,
+  perroId, medicamentos, onAgregar, onEliminar, locked, perroNombre,
 }: {
-  perroId:    string;
+  perroId:      string;
   medicamentos: Medicamento[];
-  onAgregar:  (med: Omit<Medicamento, 'id' | 'created_at'>) => Promise<void>;
-  onEliminar: (id: string) => Promise<void>;
-  locked?:    boolean;
+  onAgregar:    (med: Omit<Medicamento, 'id' | 'created_at'>) => Promise<void>;
+  onEliminar:   (id: string) => Promise<void>;
+  locked?:      boolean;
+  perroNombre?: string;
 }) {
-  const [agregando, setAgregando] = useState(false);
-  const [saving,    setSaving]    = useState(false);
-  const [error,     setError]     = useState('');
+  const [agregando,   setAgregando]   = useState(false);
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [showEnviar,  setShowEnviar]  = useState(false);
   const [form, setForm] = useState({
     nombre: '', dosis: '', frecuencia: '', fecha_inicio: new Date().toISOString().slice(0, 10),
     fecha_fin: '', notas: '',
@@ -2548,12 +2642,33 @@ function MedicamentosSection({
             <Sparkles className="h-3 w-3" /> VecindogPro
           </Link>
         ) : (
-          <button type="button" onClick={() => setAgregando((v) => !v)}
-            className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-            {agregando ? <X className="h-3 w-3" /> : <>+ Agregar</>}
-          </button>
+          <div className="flex gap-2">
+            {activos.length > 0 && (
+              <button type="button" onClick={() => setShowEnviar(true)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+            )}
+            <button type="button" onClick={() => setAgregando((v) => !v)}
+              className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+              {agregando ? <X className="h-3 w-3" /> : <>+ Agregar</>}
+            </button>
+          </div>
         )}
       </div>
+
+      {showEnviar && (
+        <EnviarTextoModal
+          titulo="Enviar medicamentos"
+          subtitulo={`${perroNombre ?? ''} · ${activos.length} medicamento${activos.length !== 1 ? 's' : ''} activo${activos.length !== 1 ? 's' : ''}`}
+          texto={[
+            `💊 Medicamentos activos de ${perroNombre ?? 'mi perro'} 🐾`,
+            '',
+            ...activos.map((m) => `• ${m.nombre}${m.dosis ? ` — ${m.dosis}` : ''}${m.frecuencia ? ` (${m.frecuencia})` : ''}\n  Desde ${formatFecha(m.fecha_inicio)}${m.fecha_fin ? ` hasta ${formatFecha(m.fecha_fin)}` : ''}${m.notas ? `\n  📝 ${m.notas}` : ''}`),
+          ].join('\n')}
+          onClose={() => setShowEnviar(false)}
+        />
+      )}
 
       {/* Formulario */}
       {agregando && (
@@ -2957,7 +3072,7 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
 /* ── Desparasitaciones ── */
 function DesparasitacionesSection({
   perroId, desparasitaciones, agregando, editandoId,
-  onAgregar, onActualizar, onEliminar, onSetAgregando, onSetEditandoId, locked,
+  onAgregar, onActualizar, onEliminar, onSetAgregando, onSetEditandoId, locked, perroNombre,
 }: {
   perroId:           string;
   desparasitaciones: Desparasitacion[];
@@ -2969,6 +3084,7 @@ function DesparasitacionesSection({
   onSetAgregando:    (v: boolean) => void;
   onSetEditandoId:   (id: string | null) => void;
   locked?:           boolean;
+  perroNombre?:      string;
 }) {
   const TIPO_LABEL: Record<string, string> = { interna: 'Interna', externa: 'Externa', ambas: 'Int + Ext' };
   const TIPO_COLOR: Record<string, string> = {
@@ -2976,6 +3092,7 @@ function DesparasitacionesSection({
     externa: 'bg-good/10 text-good',
     ambas:   'bg-brand-primary/10 text-brand-primary',
   };
+  const [showEnviar, setShowEnviar] = useState(false);
 
   return (
     <div className="card p-5 mb-5">
@@ -2993,12 +3110,33 @@ function DesparasitacionesSection({
             <Sparkles className="h-3 w-3" /> VecindogPro
           </Link>
         ) : (
+          <div className="ml-auto flex gap-2">
+            {desparasitaciones.length > 0 && (
+              <button type="button" onClick={() => setShowEnviar(true)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+            )}
           <button type="button" onClick={() => onSetAgregando(true)}
-            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+            className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
             + Agregar
           </button>
+          </div>
         )}
       </div>
+
+      {showEnviar && (
+        <EnviarTextoModal
+          titulo="Enviar desparasitaciones"
+          subtitulo={`${perroNombre ?? ''} · ${desparasitaciones.length} registro${desparasitaciones.length !== 1 ? 's' : ''}`}
+          texto={[
+            `🐛 Desparasitaciones de ${perroNombre ?? 'mi perro'} 🐾`,
+            '',
+            ...desparasitaciones.map((d) => `• ${d.producto} (${d.tipo}) — ${formatFecha(d.fecha)}${d.proxima ? ` | próxima: ${formatFecha(d.proxima)}` : ''}`),
+          ].join('\n')}
+          onClose={() => setShowEnviar(false)}
+        />
+      )}
 
       {agregando && (
         <DesparasitacionForm onSave={onAgregar} onCancel={() => onSetAgregando(false)} />

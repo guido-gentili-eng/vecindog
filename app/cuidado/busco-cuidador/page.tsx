@@ -47,9 +47,11 @@ export default function BuscoCuidadorPage() {
     setEnviando(true);
     setError('');
 
-    const horario = (fechaDesde && fechaHasta)
-      ? `Del ${fechaDesde} al ${fechaHasta}`
-      : fechaDesde ? `Desde el ${fechaDesde}` : null;
+    const fechaTexto = (fechaDesde && fechaHasta)
+      ? `Fechas: del ${fechaDesde} al ${fechaHasta}.`
+      : fechaDesde ? `Desde el ${fechaDesde}.` : '';
+
+    const descFinal = [descripcion.trim(), fechaTexto].filter(Boolean).join(' ') || 'Busco cuidador para mi perro.';
 
     const { error: dbErr } = await supabase.from('posts').insert({
       user_id:     user.id,
@@ -60,10 +62,10 @@ export default function BuscoCuidadorPage() {
       raza:        perroSel?.raza   || null,
       color:       perroSel?.color  || null,
       tamano:      perroSel?.tamano || null,
-      descripcion: descripcion.trim() || 'Busco cuidador para mi perro.',
+      descripcion: descFinal,
       zona:        zona.trim(),
       fecha:       new Date().toISOString().slice(0, 10),
-      horario,
+      horario:     null,
       contacto:    contacto.trim(),
       images:      perroSel?.foto_url ? [perroSel.foto_url] : [],
       estado:      'activo',

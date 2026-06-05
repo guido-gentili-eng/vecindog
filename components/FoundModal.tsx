@@ -24,16 +24,16 @@ export default function FoundModal({ nombrePerro, onClose }: Props) {
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="w-full max-w-sm rounded-[32px] bg-white px-8 py-10 shadow-2xl text-center">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="w-full max-w-sm rounded-[32px] bg-white px-6 py-8 shadow-2xl text-center my-auto">
 
-        <div className="text-6xl mb-4">🐾</div>
+        <div className="text-5xl mb-3">🐾</div>
 
-        <h1 className="font-display text-3xl font-black text-ink mb-3">
+        <h1 className="font-display text-2xl font-black text-ink mb-2">
           {nombrePerro ? `¡${nombrePerro} volvió a casa!` : '¡Lo encontraste!'}
         </h1>
 
-        <p className="text-ink-muted text-base leading-relaxed mb-6">
+        <p className="text-ink-muted text-sm leading-relaxed mb-5">
           Cada reencuentro es una historia que nos llena el corazón. Gracias a vos y a los vecinos que ayudan, más perros vuelven a sus casas. 🏠
         </p>
 

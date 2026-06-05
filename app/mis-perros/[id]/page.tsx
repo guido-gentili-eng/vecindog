@@ -22,6 +22,10 @@ import {
   type Estudio, type TipoEstudio,
 } from '@/lib/estudios';
 import {
+  listarTurnos, agregarTurno, eliminarTurno,
+  type Turno, type TipoTurno,
+} from '@/lib/turnos';
+import {
   listarDesparasitaciones, agregarDesparasitacion, actualizarDesparasitacion, eliminarDesparasitacion,
   PRODUCTOS_COMUNES,
   type Desparasitacion, type DesparasitacionInput,
@@ -59,6 +63,7 @@ export default function PerroDetallePage() {
   const [editandoDesparaId,  setEditandoDesparaId] = useState<string | null>(null);
   const [agregandoDesparas,  setAgregandoDesparas] = useState(false);
   const [agregandoPeso,      setAgregandoPeso]     = useState(false);
+  const [turnos,             setTurnos]            = useState<Turno[]>([]);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -73,6 +78,7 @@ export default function PerroDetallePage() {
           listarEstudios(p.id).then(setEstudios);
           listarDesparasitaciones(p.id).then(setDesparasitaciones);
           listarPesos(p.id).then(setPesos);
+          listarTurnos(p.id).then(setTurnos);
         }
         return null;
       })
@@ -101,6 +107,20 @@ export default function PerroDetallePage() {
   async function handleEliminarEstudio(id: string) {
     await eliminarEstudio(id);
     setEstudios((prev) => prev.filter((e) => e.id !== id));
+  }
+
+  async function handleRegistrarTurno(tipo: TipoTurno, fecha: string, nota: string) {
+    if (!perro) return;
+    // Solo un turno activo por tipo — reemplaza si ya existía
+    const existing = turnos.find((t) => t.tipo === tipo);
+    if (existing) await eliminarTurno(existing.id);
+    const nuevo = await agregarTurno({ perro_id: perro.id, tipo, fecha, nota: nota || null });
+    setTurnos((prev) => [...prev.filter((t) => t.tipo !== tipo), nuevo]);
+  }
+
+  async function handleEliminarTurno(id: string) {
+    await eliminarTurno(id);
+    setTurnos((prev) => prev.filter((t) => t.id !== id));
   }
 
   async function handleRenovar() {
@@ -522,6 +542,9 @@ export default function PerroDetallePage() {
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
             locked={!isPro}
+            turno={turnos.find((t) => t.tipo === 'radiografia') ?? null}
+            onRegistrarTurno={(fecha, nota) => handleRegistrarTurno('radiografia', fecha, nota)}
+            onEliminarTurno={(id) => handleEliminarTurno(id)}
           />
 
           {/* Ecografías */}
@@ -536,6 +559,9 @@ export default function PerroDetallePage() {
             onEnviar={setEstudioEnviar}
             onEliminar={handleEliminarEstudio}
             locked={!isPro}
+            turno={turnos.find((t) => t.tipo === 'ecografia') ?? null}
+            onRegistrarTurno={(fecha, nota) => handleRegistrarTurno('ecografia', fecha, nota)}
+            onEliminarTurno={(id) => handleEliminarTurno(id)}
           />
 
           {/* Certificado de Chip */}
@@ -1763,21 +1789,31 @@ function CVISection({
 /* ── Sección de estudios ── */
 function EstudiosSection({
   tipo, titulo, icono, accept, estudios, subiendo, onSubir, onEnviar, onEliminar, locked,
+  turno, onRegistrarTurno, onEliminarTurno,
 }: {
-  tipo:       TipoEstudio;
-  titulo:     string;
-  icono:      React.ReactNode;
-  accept:     string;
-  estudios:   Estudio[];
-  subiendo:   boolean;
-  onSubir:    (f: File) => Promise<void>;
-  onEnviar:   (e: Estudio) => void;
-  onEliminar: (id: string) => void;
-  locked?:    boolean;
+  tipo:               TipoEstudio;
+  titulo:             string;
+  icono:              React.ReactNode;
+  accept:             string;
+  estudios:           Estudio[];
+  subiendo:           boolean;
+  onSubir:            (f: File) => Promise<void>;
+  onEnviar:           (e: Estudio) => void;
+  onEliminar:         (id: string) => void;
+  locked?:            boolean;
+  turno?:             Turno | null;
+  onRegistrarTurno?:  (fecha: string, nota: string) => Promise<void>;
+  onEliminarTurno?:   (id: string) => void;
 }) {
-  const fileRef                     = useRef<HTMLInputElement>(null);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [uploadError, setUploadError] = useState('');
+  const fileRef                         = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile]   = useState<File | null>(null);
+  const [uploadError, setUploadError]   = useState('');
+  const [showTurnoForm, setShowTurnoForm] = useState(false);
+  const [turnoFecha,    setTurnoFecha]    = useState('');
+  const [turnoNota,     setTurnoNota]     = useState('');
+  const [guardandoTurno, setGuardandoTurno] = useState(false);
+
+  const esTipoConTurno = tipo === 'ecografia' || tipo === 'radiografia';
 
   async function confirmarSubida() {
     if (!pendingFile) return;
@@ -1891,6 +1927,100 @@ function EstudiosSection({
           ))}
         </div>
       ) : null}
+
+      {/* Sección de turno — solo ecografía y radiografía */}
+      {esTipoConTurno && onRegistrarTurno && !locked && (
+        <div className="mt-4 border-t border-black/5 pt-4">
+          {turno ? (
+            /* Turno ya registrado */
+            <div className="flex items-center gap-3 rounded-2xl bg-green-50 px-4 py-3">
+              <CalendarDays className="h-4 w-4 shrink-0 text-green-600" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-green-700">Turno registrado</p>
+                <p className="text-sm font-semibold text-ink">{formatFecha(turno.fecha)}</p>
+                {turno.nota && <p className="text-xs text-ink-muted">{turno.nota}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={() => onEliminarTurno?.(turno.id)}
+                title="Eliminar turno"
+                className="text-ink-muted/40 hover:text-bad transition shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : showTurnoForm ? (
+            /* Formulario para registrar turno */
+            <div className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4">
+              <p className="mb-3 text-sm font-bold text-ink">
+                Registrar turno de {tipo === 'ecografia' ? 'ecografía' : 'radiografía'}
+              </p>
+              <div className="space-y-2">
+                <input
+                  type="date"
+                  value={turnoFecha}
+                  onChange={(e) => setTurnoFecha(e.target.value)}
+                  className="w-full rounded-xl border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-ink focus:border-brand-primary focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={turnoNota}
+                  onChange={(e) => setTurnoNota(e.target.value)}
+                  placeholder="Nota opcional (ej: Dr. García, Clínica San Roque)"
+                  className="w-full rounded-xl border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-ink placeholder:text-ink-muted/50 focus:border-brand-primary focus:outline-none"
+                />
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  disabled={!turnoFecha || guardandoTurno}
+                  onClick={async () => {
+                    if (!turnoFecha) return;
+                    setGuardandoTurno(true);
+                    try {
+                      await onRegistrarTurno(turnoFecha, turnoNota);
+                      setShowTurnoForm(false);
+                      setTurnoFecha('');
+                      setTurnoNota('');
+                    } finally {
+                      setGuardandoTurno(false);
+                    }
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
+                >
+                  {guardandoTurno
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <><CalendarDays className="h-4 w-4" /> Registrar</>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowTurnoForm(false); setTurnoFecha(''); setTurnoNota(''); }}
+                  className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Banner "¿Tenés turno?" */
+            <div className="flex items-center justify-between rounded-2xl bg-brand-cream px-4 py-3">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0 text-brand-primary/60" />
+                <p className="text-sm text-ink-muted">
+                  ¿Tenés turno de {tipo === 'ecografia' ? 'ecografía' : 'radiografía'}?
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTurnoForm(true)}
+                className="ml-3 shrink-0 text-xs font-bold text-brand-primary hover:underline"
+              >
+                Registrá y te avisamos
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

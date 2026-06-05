@@ -241,8 +241,8 @@ export default function NotificationsBell() {
                     </div>
                   )}
 
-                  {/* Botones de acción para expiración */}
-                  {n.tipo === 'expiracion' && n.post_id && (
+                  {/* Botones de acción para expiración — solo si todavía no respondió */}
+                  {n.tipo === 'expiracion' && n.post_id && !n.leida && (
                     <div className="mt-2 flex gap-2 ml-11">
                       <button type="button"
                         onClick={() => handleEncontrado(n)}

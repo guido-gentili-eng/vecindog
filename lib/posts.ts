@@ -56,11 +56,14 @@ export function postToAnimal(p: Post): Animal {
 
 /* ─────────────────── Consultas ─────────────────── */
 
+const CATEGORIAS_AVISO = ['perdido', 'encontrado', 'adopcion', 'transito'];
+
 export async function listarPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
     .select('*')
-    .neq('estado', 'resuelto')   // oculta los resueltos; null (legacy) pasa igual
+    .neq('estado', 'resuelto')
+    .in('categoria', CATEGORIAS_AVISO)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as Post[];

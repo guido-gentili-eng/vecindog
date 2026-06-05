@@ -59,6 +59,8 @@ export default function AuthModal() {
           } else {
             setError(tradError(err));
           }
+        } else {
+          window.location.href = '/';
         }
       } else {
         const { error: err, needsConfirm } = await signUp(email, password);

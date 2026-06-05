@@ -563,6 +563,9 @@ export default function BuscarPorFotoPage() {
         </div>
       </form>
 
+      {/* ── Buscar en Facebook vía Google (siempre visible) ── */}
+      <BuscarEnFacebookFoto color={colorElegido} tamano={tamano} raza={raza} />
+
       {/* ── Resultados ── */}
       {resultados !== null && (
         <section id="resultados" className="mt-10 scroll-mt-24 space-y-6">
@@ -603,12 +606,6 @@ export default function BuscarPorFotoPage() {
             </div>
           )}
 
-          {/* Buscar en Facebook vía Google */}
-          <BuscarEnFacebookFoto
-            color={colorElegido}
-            tamano={tamano}
-            raza={raza}
-          />
         </section>
       )}
     </div>
@@ -740,8 +737,7 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
 function BuscarEnFacebookFoto({
   color, tamano, raza,
 }: { color: string; tamano: string; raza: string }) {
-  const palabras = ['perro', color, tamano, raza].filter(Boolean).join(' ');
-  if (!palabras.trim() || palabras.trim() === 'perro') return null;
+  const palabras = ['perro perdido', color, tamano, raza].filter(Boolean).join(' ');
 
   const query = encodeURIComponent(`${palabras} site:facebook.com`);
   const url   = `https://www.google.com/search?q=${query}`;

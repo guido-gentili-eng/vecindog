@@ -438,6 +438,11 @@ export default function BuscarPage() {
         </button>
       </form>
 
+      {/* ── Buscar en Facebook vía Google (siempre visible) ── */}
+      <BuscarEnFacebook
+        terminos={['perro perdido', form.color, form.tamano, form.raza, form.zona]}
+      />
+
       {/* ── Resultados ── */}
       {buscado && resultados !== null && (
         <div className="mt-8">
@@ -453,39 +458,20 @@ export default function BuscarPage() {
               <p className="mt-3 font-bold text-ink">
                 No encontramos avisos que coincidan
               </p>
-              <p className="mt-1 text-sm text-ink-muted">
+              <p className="mt-1 text-ink-muted text-sm">
                 Probá con menos filtros o revisá todos los avisos.
               </p>
-              <Link
-                href="/publicaciones?cat=encontrado"
-                className="btn-secondary mt-4 inline-flex"
-              >
+              <Link href="/publicaciones?cat=encontrado" className="btn-secondary mt-4 inline-flex">
                 Ver todos los vistos
               </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {resultados.map(({ post, porcentaje, max }) => (
-                <ResultadoCard
-                  key={post.id}
-                  post={post}
-                  porcentaje={porcentaje}
-                  mostrarScore={max > 0}
-                />
+                <ResultadoCard key={post.id} post={post} porcentaje={porcentaje} mostrarScore={max > 0} />
               ))}
             </div>
           )}
-
-          {/* Buscar en Facebook vía Google */}
-          <BuscarEnFacebook
-            terminos={[
-              'perro',
-              form.color,
-              form.tamano,
-              form.raza,
-              form.zona,
-            ]}
-          />
         </div>
       )}
     </div>
@@ -612,8 +598,7 @@ function ResultadoCard({
 
 /* ─────────────── Banner buscar en Facebook vía Google ─────────────── */
 function BuscarEnFacebook({ terminos }: { terminos: string[] }) {
-  const palabras = terminos.filter(Boolean).join(' ');
-  if (!palabras.trim()) return null;
+  const palabras = terminos.filter(Boolean).join(' ') || 'perro perdido';
 
   const query = encodeURIComponent(`${palabras} site:facebook.com`);
   const url   = `https://www.google.com/search?q=${query}`;

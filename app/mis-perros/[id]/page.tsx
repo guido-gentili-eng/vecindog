@@ -600,20 +600,6 @@ export default function PerroDetallePage() {
             locked={!isPro}
           />
 
-          {/* Vacuna Antirrábica */}
-          <EstudiosSection
-            tipo="vacuna_antirrabica"
-            titulo="Vacuna Antirrábica"
-            icono={<Syringe className="h-4 w-4 text-brand-primary" />}
-            accept="image/*,.pdf"
-            estudios={estudios.filter((e) => e.tipo === 'vacuna_antirrabica')}
-            subiendo={subiendoTipo === 'vacuna_antirrabica'}
-            onSubir={(f) => handleSubirEstudio('vacuna_antirrabica', f)}
-            onEnviar={setEstudioEnviar}
-            onEliminar={handleEliminarEstudio}
-            locked={!isPro}
-          />
-
           {/* AirTag */}
           <AirTagSection
             perroId={perro.id}

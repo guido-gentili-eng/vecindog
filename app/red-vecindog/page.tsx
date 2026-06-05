@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
   MapPin, Clock, Phone, CheckCircle2, X, Loader2, AlertCircle,
-  ImagePlus, Star, ChevronRight, Building2, Map, Users, ArrowRight,
+  ImagePlus, Star, ChevronRight, Building2, Map, Users, ArrowRight, Search,
 } from 'lucide-react';
+import { buscarCiudades } from '@/lib/ciudades';
 
 /* ── Datos ─────────────────────────────────────────────────────── */
 
@@ -266,6 +267,10 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
   const [telefono,        setTelefono]        = useState('');
   const [direccion,       setDireccion]       = useState('');
   const [localidad,       setLocalidad]       = useState('');
+  const [localidadQuery,  setLocalidadQuery]  = useState('');
+  const [localidadLat,    setLocalidadLat]    = useState<number | null>(null);
+  const [localidadLng,    setLocalidadLng]    = useState<number | null>(null);
+  const [showCiudades,    setShowCiudades]    = useState(false);
   const [horarioApertura, setHorarioApertura] = useState('');
   const [horarioCierre,   setHorarioCierre]   = useState('');
   const [diasAtencion,    setDiasAtencion]    = useState('');
@@ -313,6 +318,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre, categoria, telefono, direccion, localidad,
+          lat: localidadLat, lng: localidadLng,
           horario_apertura: horarioApertura,
           horario_cierre:   horarioCierre,
           dias_atencion:    diasAtencion,
@@ -449,14 +455,58 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
                 required
               />
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-muted">Localidad / Ciudad</label>
-              <input
-                className="field w-full"
-                placeholder="Bahía Blanca, Buenos Aires"
-                value={localidad}
-                onChange={(e) => setLocalidad(e.target.value)}
-              />
+            <div className="relative">
+              <label className="mb-1 block text-xs font-semibold text-ink-muted">
+                Localidad / Ciudad <span className="text-bad">*</span>
+              </label>
+              {localidad ? (
+                <div className="flex items-center gap-2 rounded-2xl border-2 border-teal-400 bg-teal-50 px-3 py-2.5">
+                  <MapPin className="h-4 w-4 shrink-0 text-teal-600" />
+                  <span className="flex-1 text-sm font-semibold text-teal-700">{localidad}</span>
+                  <button type="button" onClick={() => { setLocalidad(''); setLocalidadQuery(''); setLocalidadLat(null); setLocalidadLng(null); }}
+                    className="rounded-lg p-0.5 hover:bg-teal-100">
+                    <X className="h-3.5 w-3.5 text-teal-600" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                  <input
+                    className="field w-full pl-9"
+                    placeholder="Ej: Bahía Blanca"
+                    value={localidadQuery}
+                    onChange={(e) => { setLocalidadQuery(e.target.value); setShowCiudades(true); }}
+                    onFocus={() => setShowCiudades(true)}
+                    autoComplete="off"
+                  />
+                  {showCiudades && localidadQuery.trim().length > 0 && (() => {
+                    const resultados = buscarCiudades(localidadQuery).slice(0, 8);
+                    return resultados.length > 0 ? (
+                      <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
+                        {resultados.map((c) => (
+                          <button
+                            key={c.nombre}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setLocalidad(c.nombre);
+                              setLocalidadQuery('');
+                              setLocalidadLat(c.lat);
+                              setLocalidadLng(c.lng);
+                              setShowCiudades(false);
+                            }}
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-brand-cream"
+                          >
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-brand-primary" />
+                            <span className="font-semibold text-ink">{c.nombre}</span>
+                            <span className="ml-auto text-xs text-ink-muted">{c.provincia}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
             </div>
           </div>
 

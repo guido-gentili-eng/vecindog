@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     const {
       nombre, categoria, telefono, direccion, localidad,
+      lat, lng,
       horario_apertura, horario_cierre, dias_atencion,
       descripcion, link, email, imagen_url,
     } = await req.json();
@@ -67,8 +68,8 @@ export async function POST(req: NextRequest) {
       direccion_comercio: direccionCompleta || null,
       localidad_comercio: localidad?.trim().toLowerCase() || null,
       categoria_local:    categoria.trim() || null,
-      lat:                null,
-      lng:                null,
+      lat:                lat ?? null,
+      lng:                lng ?? null,
     }).select('id').single();
 
     if (dbError || !data?.id) {

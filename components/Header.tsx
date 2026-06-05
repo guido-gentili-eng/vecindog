@@ -45,14 +45,14 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-black/5 bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2">
         {/* Logo */}
         <Link href="/" className="flex items-center" aria-label="Ir al inicio de Vecindog">
           <BrandBadge size="md" highlight />
         </Link>
 
         {/* Nav desktop */}
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {navConPerros.map((item) => (
             <Link key={item.href} href={item.href} className="btn-ghost">
               {item.href === '/mis-perros'
@@ -77,14 +77,14 @@ export default function Header() {
         </nav>
 
         {/* Acciones */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Ciudad (desktop) */}
           {ciudad && (
             <button
               type="button"
               onClick={clearCiudad}
               title="Cambiar ciudad"
-              className="hidden items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary lg:inline-flex"
+              className="hidden items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary lg:inline-flex"
             >
               <MapPin className="h-3.5 w-3.5 text-brand-primary" />
               {nombreCorto(ciudad)}
@@ -93,12 +93,12 @@ export default function Header() {
 
           {/* Desktop: idioma + campanita + perfil/publicar */}
           {!loading && (
-            <div className="hidden items-center gap-2 lg:flex">
+            <div className="hidden items-center gap-1.5 lg:flex">
 
               {/* Selector de idioma — dropdown */}
               <div ref={langRef} className="relative">
                 <button type="button" onClick={() => setLangOpen((o) => !o)}
-                  className="flex items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10">
+                  className="flex items-center gap-1 rounded-2xl bg-brand-cream px-2.5 py-1.5 text-xs font-bold text-ink transition hover:bg-brand-primary/10 h-[30px]">
                   <span>{LANGS.find((l) => l.lang === lang)?.flag}</span>
                   <span>{LANGS.find((l) => l.lang === lang)?.label}</span>
                   <ChevronDown className={`h-3 w-3 text-ink-muted transition-transform ${langOpen ? 'rotate-180' : ''}`} />
@@ -119,7 +119,7 @@ export default function Header() {
               <Link
                 href="/descargas"
                 title="Descargar app"
-                className="grid h-8 w-8 place-items-center rounded-2xl bg-brand-cream text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+                className="grid h-[30px] w-[30px] place-items-center rounded-2xl bg-brand-cream text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
               >
                 <Download className="h-3.5 w-3.5" />
               </Link>
@@ -130,7 +130,7 @@ export default function Header() {
                 /* Dropdown Mi perfil */
                 <div ref={profileRef} className="relative">
                   <button type="button" onClick={() => setProfileOpen((o) => !o)}
-                    className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-3 py-1.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
+                    className="inline-flex items-center gap-1 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-2.5 py-1.5 text-xs font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark h-[30px]">
                     <User className="h-4 w-4" /> Mi perfil
                     <ChevronDown className={`h-3 w-3 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                   </button>

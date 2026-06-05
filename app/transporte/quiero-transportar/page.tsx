@@ -48,6 +48,7 @@ export default function QuieroTransportarPage() {
     if (!user) { setError('Tenés que iniciar sesión para registrarte.'); return; }
     if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
     if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
+    if (contacto.replace(/\D/g, '').length < 8) { setError('El WhatsApp debe tener al menos 8 dígitos. Ejemplo: 2914050210'); return; }
 
     setEnviando(true);
     setError('');

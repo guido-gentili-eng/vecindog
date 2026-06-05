@@ -47,10 +47,6 @@ const TAMANOS: { valor: Tamano; etiqueta: string; descripcion: string }[] = [
   { valor: 'grande',  etiqueta: 'Grande',   descripcion: 'más de 25 kg'    },
 ];
 
-export const metadata = {
-  title: 'Calculadora de Edad — Vecindog',
-};
-
 export default function CalculadoraEdadPage() {
   const [años,   setAños]   = useState<number>(0);
   const [meses,  setMeses]  = useState<number>(0);

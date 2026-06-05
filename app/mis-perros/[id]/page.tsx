@@ -1815,6 +1815,8 @@ function EstudiosSection({
 
   const esTipoConTurno = tipo === 'ecografia' || tipo === 'radiografia';
 
+  const [showCotizacionModal, setShowCotizacionModal] = useState(false);
+
   async function confirmarSubida() {
     if (!pendingFile) return;
     setUploadError('');
@@ -1929,6 +1931,28 @@ function EstudiosSection({
       ) : null}
 
       {/* Sección de turno — solo ecografía y radiografía */}
+      {/* Banner cotización — solo laboratorio */}
+      {tipo === 'laboratorio' && (
+        <div className="mt-4 border-t border-black/5 pt-4">
+          <div className="flex items-center justify-between rounded-2xl bg-brand-cream px-4 py-3">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-4 w-4 shrink-0 text-brand-primary/60" />
+              <p className="text-sm text-ink-muted">¿Necesitás una cotización?</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCotizacionModal(true)}
+              className="ml-3 shrink-0 text-xs font-bold text-brand-primary hover:underline"
+            >
+              Solicitá aquí
+            </button>
+          </div>
+          {showCotizacionModal && (
+            <CotizacionLabModal onClose={() => setShowCotizacionModal(false)} />
+          )}
+        </div>
+      )}
+
       {esTipoConTurno && onRegistrarTurno && !locked && (
         <div className="mt-4 border-t border-black/5 pt-4">
           {turno ? (
@@ -2116,6 +2140,192 @@ function EnviarEstudioModal({
           className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
           Cancelar
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Modal de cotización de laboratorio ── */
+function CotizacionLabModal({ onClose }: { onClose: () => void }) {
+  const [nombreApellido, setNombreApellido] = useState('');
+  const [email,          setEmail]          = useState('');
+  const [nombrePerro,    setNombrePerro]    = useState('');
+  const [recetaFile,     setRecetaFile]     = useState<File | null>(null);
+  const [enviando,       setEnviando]       = useState(false);
+  const [error,          setError]          = useState('');
+  const [exito,          setExito]          = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit() {
+    if (!nombreApellido.trim() || !email.trim() || !nombrePerro.trim()) {
+      setError('Completá todos los campos requeridos.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Ingresá un email válido.');
+      return;
+    }
+
+    setEnviando(true);
+    setError('');
+
+    try {
+      let receta_url = '';
+      if (recetaFile) {
+        receta_url = await subirArchivoEstudio(recetaFile);
+      }
+
+      const res = await fetch('/api/cotizacion-laboratorio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_apellido: nombreApellido.trim(),
+          email:           email.trim(),
+          nombre_perro:    nombrePerro.trim(),
+          receta_url,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error ?? 'Error al enviar');
+
+      setExito(true);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'No se pudo enviar. Intentá de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+
+        {exito ? (
+          <div className="flex flex-col items-center gap-4 py-4 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-good/10">
+              <CheckCircle2 className="h-8 w-8 text-good" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-black text-ink">¡Solicitud enviada!</h2>
+              <p className="mt-2 text-sm text-ink-muted">
+                Nos contactaremos con vos a la brevedad para darte la cotización.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-2 w-full rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:bg-brand-primary/90"
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-5">
+              <h2 className="font-display text-xl font-black text-ink">Solicitar cotización</h2>
+              <p className="mt-1 text-sm text-ink-muted">Análisis de laboratorio para tu perro</p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">Nombre y Apellido *</label>
+                <input
+                  type="text"
+                  value={nombreApellido}
+                  onChange={(e) => setNombreApellido(e.target.value)}
+                  placeholder="Ej: María García"
+                  className="field w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">Email *</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="field w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">Nombre del perro *</label>
+                <input
+                  type="text"
+                  value={nombrePerro}
+                  onChange={(e) => setNombrePerro(e.target.value)}
+                  placeholder="Ej: Luna"
+                  className="field w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">Receta del veterinario</label>
+                {recetaFile ? (
+                  <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 px-4 py-2.5">
+                    <FileText className="h-4 w-4 shrink-0 text-brand-primary" />
+                    <p className="flex-1 min-w-0 truncate text-sm font-semibold text-ink">{recetaFile.name}</p>
+                    <button type="button" onClick={() => setRecetaFile(null)} className="text-ink-muted/40 hover:text-bad transition">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-black/10 px-4 py-3 text-sm font-semibold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
+                  >
+                    <Upload className="h-4 w-4" /> Subir receta del veterinario
+                  </button>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setRecetaFile(f);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-bad">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+              </p>
+            )}
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={enviando}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
+              >
+                {enviando
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <><Send className="h-4 w-4" /> Enviar solicitud</>}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={enviando}
+                className="rounded-2xl border-2 border-black/10 px-4 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

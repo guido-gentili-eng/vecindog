@@ -20,6 +20,7 @@ export default function MisPerrosPage() {
   const [amigosOpen,   setAmigosOpen]   = useState(false);
   const [eliminarTarget, setEliminarTarget] = useState<{ id: string; nombre: string } | null>(null);
   const [eliminando,   setEliminando]   = useState(false);
+  const [eliminarError, setEliminarError] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -33,10 +34,13 @@ export default function MisPerrosPage() {
   async function handleConfirmEliminar() {
     if (!eliminarTarget) return;
     setEliminando(true);
+    setEliminarError('');
     try {
       await eliminarPerro(eliminarTarget.id);
       setPerros((prev) => prev.filter((p) => p.id !== eliminarTarget.id));
       setEliminarTarget(null);
+    } catch {
+      setEliminarError('No se pudo eliminar. Intentá de nuevo.');
     } finally {
       setEliminando(false);
     }
@@ -73,6 +77,7 @@ export default function MisPerrosPage() {
             </div>
             <h2 className="font-display text-lg font-black text-ink text-center">¿Eliminás a {eliminarTarget.nombre}?</h2>
             <p className="mt-1 text-sm text-ink-muted text-center">Esta acción no se puede deshacer.</p>
+            {eliminarError && <p className="mt-2 text-xs font-semibold text-bad text-center">{eliminarError}</p>}
             <div className="mt-5 flex gap-2">
               <button type="button" onClick={handleConfirmEliminar} disabled={eliminando}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-bad py-3 text-sm font-bold text-white transition hover:bg-bad/90 disabled:opacity-60">

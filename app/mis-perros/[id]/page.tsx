@@ -231,8 +231,12 @@ export default function PerroDetallePage() {
 
   async function handleEstadoSalud(estado: EstadoSalud | '') {
     if (!perro) return;
-    await actualizarPerro(perro.id, { estado_salud: estado });
-    setPerro((p) => p ? { ...p, estado_salud: (estado || null) as EstadoSalud | null } : p);
+    try {
+      await actualizarPerro(perro.id, { estado_salud: estado });
+      setPerro((p) => p ? { ...p, estado_salud: (estado || null) as EstadoSalud | null } : p);
+    } catch {
+      // Estado no guardado — no mostramos feedback para no interrumpir el flujo visual
+    }
   }
 
   async function handleRenovar() {
@@ -3927,7 +3931,8 @@ function GroomingSection({ perroId, grooming, onGuardar, locked }: {
   const [form, setForm] = useState({ ultima_fecha: new Date().toISOString().slice(0,10), frecuencia_dias: 30, tipo: 'ambos' as TipoGrooming, notas:'' });
 
   useEffect(() => {
-    if (grooming) setForm({ ultima_fecha: grooming.ultima_fecha, frecuencia_dias: grooming.frecuencia_dias, tipo: grooming.tipo, notas: grooming.notas??'' });
+    // Solo sincronizar si el usuario NO está editando (evita sobreescribir cambios en progreso)
+    if (grooming && !editando) setForm({ ultima_fecha: grooming.ultima_fecha, frecuencia_dias: grooming.frecuencia_dias, tipo: grooming.tipo, notas: grooming.notas??'' });
   }, [grooming]);
 
   const proximaFecha = grooming ? (() => {
@@ -4108,7 +4113,7 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
               <p className="text-xs text-ink-muted">{c.telefono}</p>
               {c.notas && <p className="text-[11px] text-ink-muted italic">{c.notas}</p>}
             </div>
-            <a href={`tel:${c.telefono.replace(/\s/g,'')}`}
+            <a href={`tel:${c.telefono.replace(/[^\d+]/g,'')}`}
               className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-good/10 text-good hover:bg-good/20 transition">
               <PhoneCall className="h-3.5 w-3.5" />
             </a>

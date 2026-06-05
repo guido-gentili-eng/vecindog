@@ -19,7 +19,7 @@ export async function obtenerGrooming(perroId: string): Promise<Grooming | null>
     .eq('perro_id', perroId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   return (data ?? null) as Grooming | null;
 }
 
@@ -27,13 +27,30 @@ export async function guardarGrooming(
   perroId: string,
   grooming: Omit<Grooming, 'id' | 'created_at'>
 ): Promise<Grooming> {
-  // Delete existing and insert new (upsert pattern)
-  await supabase.from('grooming').delete().eq('perro_id', perroId);
-  const { data, error } = await supabase
+  // Buscar registro existente para hacer update seguro (sin delete previo que pueda borrar datos)
+  const { data: existing } = await supabase
     .from('grooming')
-    .insert(grooming)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data as Grooming;
+    .select('id')
+    .eq('perro_id', perroId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing?.id) {
+    const { data, error } = await supabase
+      .from('grooming')
+      .update({ ultima_fecha: grooming.ultima_fecha, frecuencia_dias: grooming.frecuencia_dias, tipo: grooming.tipo, notas: grooming.notas })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as Grooming;
+  } else {
+    const { data, error } = await supabase
+      .from('grooming')
+      .insert(grooming)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as Grooming;
+  }
 }

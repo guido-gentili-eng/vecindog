@@ -75,7 +75,9 @@ export async function GET(req: NextRequest) {
       .gte('created_at', hoyStr)
       .limit(1);
 
-    if (!existing || existing.length === 0) {
+    const yaNotificado = existing && existing.length > 0;
+
+    if (!yaNotificado) {
       await admin.from('notifications').insert({
         user_id: perro.user_id,
         post_id:  null,
@@ -84,6 +86,9 @@ export async function GET(req: NextRequest) {
         leida:    false,
       });
     }
+
+    // Solo enviar email si no hubo notificación hoy
+    if (yaNotificado) continue;
 
     const { data: userData } = await admin.auth.admin.getUserById(perro.user_id);
     const email = userData?.user?.email;

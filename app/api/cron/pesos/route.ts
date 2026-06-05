@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       .eq('perro_id', perro.id)
       .order('fecha', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     // Si tiene un peso reciente (< 60 días), saltar
     if (ultimoPeso && ultimoPeso.fecha >= hace60Str) continue;

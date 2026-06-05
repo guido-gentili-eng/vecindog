@@ -31,7 +31,7 @@ export default function QuieroTransportarPage() {
   const [experiencias,  setExperiencias]  = useState<string[]>([]);
   const [disponibilidad, setDisponibilidad] = useState<string[]>([]);
   const [maxPerros,     setMaxPerros]     = useState('1');
-  const [tienePerros,   setTienePerros]   = useState<'si' | 'no' | ''>('');
+  const [vehiculo,      setVehiculo]      = useState<'auto' | 'camioneta' | 'camion' | ''>('');
   const [detalles,      setDetalles]      = useState('');
   const [zona,          setZona]          = useState('');
   const [contacto,      setContacto]      = useState('');
@@ -55,11 +55,10 @@ export default function QuieroTransportarPage() {
     setError('');
 
     const partes: string[] = [];
+    if (vehiculo)              partes.push(`Vehículo: ${vehiculo === 'camion' ? 'Camión' : vehiculo.charAt(0).toUpperCase() + vehiculo.slice(1)}.`);
     if (experiencias.length)   partes.push(`Experiencia: ${experiencias.join(', ')}.`);
     if (disponibilidad.length) partes.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
     partes.push(`Puede transportar hasta ${maxPerros} perro${maxPerros !== '1' ? 's' : ''} a la vez.`);
-    if (tienePerros === 'si')  partes.push('Tiene perros propios.');
-    if (tienePerros === 'no')  partes.push('No tiene perros propios.');
     if (detalles.trim())       partes.push(detalles.trim());
     const descripcion = partes.join(' ');
 
@@ -221,17 +220,17 @@ export default function QuieroTransportarPage() {
           </div>
         </div>
 
-        {/* Tiene perros propios */}
+        {/* Vehículo */}
         <div>
-          <label className="label">¿Tenés perros en casa?</label>
-          <div className="mt-2 flex gap-3">
-            {([['si', 'Sí'], ['no', 'No']] as const).map(([val, lbl]) => (
+          <label className="label">¿Qué vehículo tenés?</label>
+          <div className="mt-2 flex gap-2">
+            {([['auto', '🚗 Auto'], ['camioneta', '🚐 Camioneta'], ['camion', '🚛 Camión']] as const).map(([val, lbl]) => (
               <button
                 key={val}
                 type="button"
-                onClick={() => setTienePerros(tienePerros === val ? '' : val)}
+                onClick={() => setVehiculo(vehiculo === val ? '' : val)}
                 className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
-                  tienePerros === val
+                  vehiculo === val
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-black/10 text-ink-muted hover:border-blue-200'
                 }`}

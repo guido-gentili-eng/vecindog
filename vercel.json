@@ -7,6 +7,7 @@
     { "path": "/api/cron/avisos-vencidos",    "schedule": "0 10 * * *" },
     { "path": "/api/cron/publicidad-vencida", "schedule": "0 11 * * *" },
     { "path": "/api/cron/pesos",              "schedule": "0 11 * * 1" },
-    { "path": "/api/cron/grooming",           "schedule": "0 9 * * 1"  }
+    { "path": "/api/cron/grooming",           "schedule": "0 9 * * 1"  },
+    { "path": "/api/cron/plan-vencido",       "schedule": "0 12 * * *" }
   ]
 }

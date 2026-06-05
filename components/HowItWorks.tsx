@@ -32,22 +32,22 @@ export default function HowItWorks() {
       {/* Calculadora de edad canina */}
       <Link
         href="/calculadora-edad"
-        className="mt-8 flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-brand-cream to-brand-cream-soft p-5 ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card group"
+        className="mt-8 flex flex-col items-center gap-3 rounded-2xl bg-gradient-to-br from-brand-cream to-brand-cream-soft p-6 ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card group text-center"
       >
-        <div className="flex items-center gap-4">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-primary/10 text-brand-primary">
-            <Calculator className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="font-display text-base font-extrabold text-ink">
-              Calculadora de edad canina
-            </h3>
-            <p className="mt-0.5 text-sm text-ink-muted">
-              ¿Cuántos años tiene tu perro en años humanos?
-            </p>
-          </div>
+        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+          <Calculator className="h-6 w-6" />
         </div>
-        <ArrowRight className="h-5 w-5 shrink-0 text-brand-primary/40 transition group-hover:translate-x-0.5 group-hover:text-brand-primary" />
+        <div>
+          <h3 className="font-display text-base font-extrabold text-ink">
+            Calculadora de edad canina
+          </h3>
+          <p className="mt-0.5 text-sm text-ink-muted">
+            ¿Cuántos años tiene tu perro en años humanos?
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-primary group-hover:underline">
+          Calcular ahora <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+        </span>
       </Link>
     </section>
   );

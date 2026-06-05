@@ -2683,7 +2683,7 @@ function HistoriaClinica({
   }
 
   return (
-    <div className="card p-5 mb-5 mt-2">
+    <div id="historia-print" className="card p-5 mb-5 mt-2">
       {/* Título + botón enviar */}
       <div className="flex items-center justify-between gap-2 mb-5">
         <div className="flex items-center gap-2">

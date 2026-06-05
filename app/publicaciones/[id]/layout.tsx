@@ -4,9 +4,11 @@ import type { Metadata } from 'next';
 interface Props { params: { id: string }; children: React.ReactNode }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { title: 'Aviso | Vecindog' };
+
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
   const { data: post } = await admin
     .from('posts')

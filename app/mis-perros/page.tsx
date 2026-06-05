@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles, X } from 'lucide-react';
+import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles } from 'lucide-react';
 import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';

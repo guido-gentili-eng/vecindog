@@ -138,7 +138,7 @@ export default function DetalleAvisoPage() {
   const canManage = isOwner || isAdmin;
   const resuelto  = post.estado === 'resuelto';
 
-  const waNumero = post.contacto.replace(/[^0-9]/g, '');
+  const waNumero = (post.contacto ?? '').replace(/[^0-9]/g, '');
   const waTexto  = encodeURIComponent(
     `Hola, te escribo por el aviso de Vecindog (${ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} en ${post.zona}).`
   );

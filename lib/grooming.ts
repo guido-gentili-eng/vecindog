@@ -45,9 +45,11 @@ export async function guardarGrooming(
     if (error) throw new Error(error.message);
     return data as Grooming;
   } else {
+    // upsert con ignoreDuplicates:false para que, en caso de race condition
+    // donde dos inserts concurrentes colisionan, el segundo simplemente actualice
     const { data, error } = await supabase
       .from('grooming')
-      .insert(grooming)
+      .upsert(grooming, { onConflict: 'perro_id', ignoreDuplicates: false })
       .select()
       .single();
     if (error) throw new Error(error.message);

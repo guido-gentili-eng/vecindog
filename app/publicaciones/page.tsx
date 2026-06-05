@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ScanSearch, Sparkles, ArrowRight, Dog, Loader2, Search } from 'lucide-react';
@@ -245,12 +245,12 @@ export default function PublicacionesPage() {
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {visiblesSlice.map((p, i) => (
-                <>
-                  <AnimalCard key={p.id} animal={postToAnimal(p)} />
+                <React.Fragment key={p.id}>
+                  <AnimalCard animal={postToAnimal(p)} />
                   {(i + 1) % AD_INTERVAL === 0 && (
                     <AdSlot key={`ad-${i}`} variant="card" />
                   )}
-                </>
+                </React.Fragment>
               ))}
             </div>
 

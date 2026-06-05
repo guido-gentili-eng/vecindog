@@ -373,7 +373,8 @@ export default function PublicarPage() {
         );
       }
 
-      fotos.forEach((f) => URL.revokeObjectURL(f.url));
+      // Usar urlsRef (siempre actualizado) en lugar del closure de fotos para revocar correctamente
+      urlsRef.current.forEach((u) => URL.revokeObjectURL(u));
       urlsRef.current = [];
       setFotos([]);
       setForm(estadoInicial(catParam));

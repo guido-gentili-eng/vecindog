@@ -193,15 +193,25 @@ export default function NotificationsBell() {
                 <div key={n.id}
                   className={`px-4 py-3 border-b border-black/5 last:border-0 transition ${!n.leida ? 'bg-brand-primary/5' : ''}`}>
                   <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${
-                      n.tipo === 'expiracion' ? 'bg-amber-100 text-amber-600' :
-                      n.tipo === 'visita'     ? 'bg-blue-50 text-blue-500' :
+                    <div className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm ${
+                      n.tipo === 'expiracion'       ? 'bg-amber-100 text-amber-600' :
+                      n.tipo === 'visita'           ? 'bg-blue-50 text-blue-500' :
+                      n.tipo === 'vacuna'           ? 'bg-purple-50 text-purple-600' :
+                      n.tipo === 'desparasitacion'  ? 'bg-green-50 text-green-600' :
+                      n.tipo === 'medicamento'      ? 'bg-pink-50 text-pink-600' :
+                      n.tipo === 'turno'            ? 'bg-teal-50 text-teal-600' :
+                      n.tipo === 'peso'             ? 'bg-orange-50 text-orange-500' :
                       !n.leida ? 'bg-brand-primary text-white' : 'bg-brand-cream text-brand-primary'
                     }`}>
                       {n.tipo === 'expiracion'        ? '⏰' :
                        n.tipo === 'visita'            ? <Eye className="h-4 w-4" /> :
                        n.tipo === 'solicitud_amistad' ? <UserPlus className="h-4 w-4" /> :
                        n.tipo === 'amistad_aceptada'  ? <Users className="h-4 w-4" /> :
+                       n.tipo === 'vacuna'            ? '💉' :
+                       n.tipo === 'desparasitacion'   ? '🐛' :
+                       n.tipo === 'medicamento'       ? '💊' :
+                       n.tipo === 'turno'             ? '📅' :
+                       n.tipo === 'peso'              ? '⚖️' :
                        <Dog className="h-4 w-4" />}
                     </div>
                     <div className="flex-1 min-w-0">

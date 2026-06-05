@@ -438,11 +438,6 @@ export default function BuscarPage() {
         </button>
       </form>
 
-      {/* ── Buscar en Facebook vía Google (siempre visible) ── */}
-      <BuscarEnFacebook
-        terminos={['perro perdido', form.color, form.tamano, form.raza, form.zona]}
-      />
-
       {/* ── Resultados ── */}
       {buscado && resultados !== null && (
         <div className="mt-8">

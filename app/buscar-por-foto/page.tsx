@@ -563,9 +563,6 @@ export default function BuscarPorFotoPage() {
         </div>
       </form>
 
-      {/* ── Buscar en Facebook vía Google (siempre visible) ── */}
-      <BuscarEnFacebookFoto color={colorElegido} tamano={tamano} raza={raza} />
-
       {/* ── Resultados ── */}
       {resultados !== null && (
         <section id="resultados" className="mt-10 scroll-mt-24 space-y-6">

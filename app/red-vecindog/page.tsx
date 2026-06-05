@@ -39,7 +39,7 @@ interface PrecioInfo {
 export default function RedVecindogPage() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [precioInfo, setPrecioInfo] = useState<PrecioInfo>({
-    esPromo: true, cuposRestantes: 20, precioActual: 7990, precioRegular: 12900, precioPromo: 7990,
+    esPromo: true, cuposRestantes: 50, precioActual: 7990, precioRegular: 12900, precioPromo: 7990,
   });
 
   useEffect(() => {
@@ -145,14 +145,14 @@ export default function RedVecindogPage() {
                   </span>
                 </div>
                 <h3 className="font-display text-xl font-black text-ink md:text-2xl">
-                  Los primeros 20 comercios adheridos acceden a una tarifa especial
+                  Los primeros 50 comercios por ciudad acceden a una tarifa especial
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-                  En el marco del lanzamiento de la Red Vecindog, los primeros <strong>20 comercios</strong> en
+                  En el marco del lanzamiento de la Red Vecindog, los primeros <strong>50 comercios por ciudad</strong> en
                   registrarse contarán con una <strong>tarifa promocional de ${precioInfo.precioPromo.toLocaleString('es-AR')} ARS/mes durante los primeros
                   6 meses</strong>, con acceso completo a todos los beneficios de la plataforma. Transcurrido
                   dicho período, la tarifa estándar de ${precioInfo.precioRegular.toLocaleString('es-AR')} ARS/mes será aplicada de forma automática.
-                  Esta promoción estará vigente hasta completar los cupos disponibles.
+                  Esta promoción estará vigente hasta completar los cupos disponibles por ciudad.
                 </p>
                 <p className="mt-3 flex items-baseline gap-2 flex-wrap">
                   <span className="font-display text-3xl font-black text-amber-600">

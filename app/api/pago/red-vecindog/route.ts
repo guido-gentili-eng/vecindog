@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-const PRECIO_PROMO   = 7990;   // Primeros 20 comercios — primeros 6 meses
+const PRECIO_PROMO   = 7990;   // Primeros 50 comercios por ciudad — primeros 6 meses
 const PRECIO_REGULAR = 12900;  // Tarifa estándar
-const CUPOS_PROMO    = 20;
+const CUPOS_PROMO    = 50;
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       horario_cierre:     horario_cierre   || null,
       dias_atencion:      dias_atencion    || null,
       direccion_comercio: direccionCompleta || null,
+      localidad_comercio: localidad?.trim().toLowerCase() || null,
       categoria_local:    categoria.trim() || null,
       lat:                null,
       lng:                null,
@@ -75,13 +76,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Error al guardar el registro' }, { status: 500 });
     }
 
-    // Determinar precio según cupos promocionales disponibles
-    const { count: totalActivos } = await admin
+    // Determinar precio según cupos por ciudad
+    const ciudadNorm = (localidad ?? '').trim().toLowerCase();
+    const { count: activosCiudad } = await admin
       .from('ads')
       .select('*', { count: 'exact', head: true })
       .eq('variant', 'comercio')
-      .eq('activo', true);
-    const esPromo      = (totalActivos ?? 0) < CUPOS_PROMO;
+      .eq('activo', true)
+      .eq('localidad_comercio', ciudadNorm);
+    const esPromo = (activosCiudad ?? 0) < CUPOS_PROMO;
     const precioFinal  = esPromo ? PRECIO_PROMO : PRECIO_REGULAR;
     const tituloItem   = esPromo
       ? 'Red Vecindog — Tarifa promocional (primeros 6 meses)'
@@ -130,18 +133,24 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** GET /api/pago/red-vecindog — devuelve cupos y precio actual */
-export async function GET() {
+/** GET /api/pago/red-vecindog?ciudad=bahia+blanca — devuelve cupos y precio por ciudad */
+export async function GET(req: NextRequest) {
   try {
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    const { count } = await admin
+    const ciudad = req.nextUrl.searchParams.get('ciudad')?.trim().toLowerCase() ?? '';
+
+    let query = admin
       .from('ads')
       .select('*', { count: 'exact', head: true })
       .eq('variant', 'comercio')
       .eq('activo', true);
+
+    if (ciudad) query = query.eq('localidad_comercio', ciudad);
+
+    const { count } = await query;
 
     const activos  = count ?? 0;
     const esPromo  = activos < CUPOS_PROMO;

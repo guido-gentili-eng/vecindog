@@ -33,7 +33,6 @@ export default function QuieroTransportarPage() {
   const [maxPerros,     setMaxPerros]     = useState('1');
   const [vehiculo,      setVehiculo]      = useState<'auto' | 'camioneta' | 'camion' | ''>('');
   const [detalles,      setDetalles]      = useState('');
-  const [zona,          setZona]          = useState('');
   const [contacto,      setContacto]      = useState('');
 
   const [enviando,  setEnviando]  = useState(false);
@@ -48,7 +47,6 @@ export default function QuieroTransportarPage() {
     e.preventDefault();
     if (!user) { setError('Tenés que iniciar sesión para registrarte.'); return; }
     if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
-    if (!zona.trim())   { setError('La zona es obligatoria.'); return; }
     if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
 
     setEnviando(true);
@@ -72,7 +70,7 @@ export default function QuieroTransportarPage() {
       color:       null,
       tamano:      null,
       descripcion,
-      zona:        zona.trim(),
+      zona:        null,
       fecha:       new Date().toISOString().slice(0, 10),
       horario:     disponibilidad.join(' / ') || null,
       contacto:    contacto.trim(),
@@ -250,18 +248,6 @@ export default function QuieroTransportarPage() {
             placeholder="Contá algo más: si tenés auto propio, qué zonas cubrís, si hacés traslados al veterinario…"
             value={detalles}
             onChange={(e) => setDetalles(e.target.value)}
-          />
-        </div>
-
-        {/* Zona */}
-        <div>
-          <label className="label">Zona / Barrio <span className="text-bad">*</span></label>
-          <input
-            className="field w-full mt-1"
-            placeholder="Ej: Palermo, Villa Crespo…"
-            value={zona}
-            onChange={(e) => setZona(e.target.value)}
-            required
           />
         </div>
 

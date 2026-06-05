@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Search, ChevronLeft, Dog, MapPin, Calendar, Clock,
-  CheckCircle2, XCircle, HelpCircle, Loader2, ArrowRight, ImageIcon,
+  CheckCircle2, XCircle, HelpCircle, Loader2, ArrowRight, ImageIcon, ExternalLink,
 } from 'lucide-react';
 import { listarPosts, type Post } from '@/lib/posts';
 import { ETIQUETA_CATEGORIA, COLORES_PERRO } from '@/lib/mockData';
@@ -475,6 +475,17 @@ export default function BuscarPage() {
               ))}
             </div>
           )}
+
+          {/* Buscar en Facebook vía Google */}
+          <BuscarEnFacebook
+            terminos={[
+              'perro',
+              form.color,
+              form.tamano,
+              form.raza,
+              form.zona,
+            ]}
+          />
         </div>
       )}
     </div>
@@ -596,5 +607,36 @@ function ResultadoCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+/* ─────────────── Banner buscar en Facebook vía Google ─────────────── */
+function BuscarEnFacebook({ terminos }: { terminos: string[] }) {
+  const palabras = terminos.filter(Boolean).join(' ');
+  if (!palabras.trim()) return null;
+
+  const query = encodeURIComponent(`${palabras} site:facebook.com`);
+  const url   = `https://www.google.com/search?q=${query}`;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-6 flex items-center gap-4 rounded-2xl bg-[#1877F2]/8 p-4 ring-1 ring-[#1877F2]/20 transition hover:bg-[#1877F2]/15 group"
+    >
+      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#1877F2] text-white text-lg font-black">
+        f
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-ink">
+          Buscar estas características en Facebook
+        </p>
+        <p className="mt-0.5 text-xs text-ink-muted truncate">
+          Google buscará: <span className="font-semibold">{palabras}</span> en publicaciones de Facebook
+        </p>
+      </div>
+      <ExternalLink className="h-4 w-4 shrink-0 text-[#1877F2]/60 group-hover:text-[#1877F2] transition" />
+    </a>
   );
 }

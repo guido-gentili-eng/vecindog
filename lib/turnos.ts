@@ -33,5 +33,6 @@ export async function agregarTurno(
 }
 
 export async function eliminarTurno(id: string): Promise<void> {
-  await supabase.from('turnos').delete().eq('id', id);
+  const { error } = await supabase.from('turnos').delete().eq('id', id);
+  if (error) throw new Error(error.message);
 }

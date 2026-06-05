@@ -114,8 +114,15 @@ export default function PerroDetallePage() {
     // Solo un turno activo por tipo — reemplaza si ya existía
     const existing = turnos.find((t) => t.tipo === tipo);
     if (existing) await eliminarTurno(existing.id);
-    const nuevo = await agregarTurno({ perro_id: perro.id, tipo, fecha, nota: nota || null });
-    setTurnos((prev) => [...prev.filter((t) => t.tipo !== tipo), nuevo]);
+    try {
+      const nuevo = await agregarTurno({ perro_id: perro.id, tipo, fecha, nota: nota || null });
+      setTurnos((prev) => [...prev.filter((t) => t.tipo !== tipo), nuevo]);
+    } catch {
+      // Si el insert falla luego del delete, recargamos turnos desde la DB
+      // para evitar que el estado local quede desincronizado
+      listarTurnos(perro.id).then(setTurnos);
+      throw new Error('No se pudo guardar el turno. Intentá de nuevo.');
+    }
   }
 
   async function handleEliminarTurno(id: string) {
@@ -1798,6 +1805,7 @@ function EstudiosSection({
   const [turnoFecha,    setTurnoFecha]    = useState('');
   const [turnoNota,     setTurnoNota]     = useState('');
   const [guardandoTurno, setGuardandoTurno] = useState(false);
+  const [turnoError,     setTurnoError]     = useState('');
 
   const esTipoConTurno = tipo === 'ecografia' || tipo === 'radiografia';
 
@@ -1980,6 +1988,11 @@ function EstudiosSection({
                   className="w-full rounded-xl border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-ink placeholder:text-ink-muted/50 focus:border-brand-primary focus:outline-none"
                 />
               </div>
+              {turnoError && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-bad">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {turnoError}
+                </p>
+              )}
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
@@ -1987,11 +2000,14 @@ function EstudiosSection({
                   onClick={async () => {
                     if (!turnoFecha) return;
                     setGuardandoTurno(true);
+                    setTurnoError('');
                     try {
                       await onRegistrarTurno(turnoFecha, turnoNota);
                       setShowTurnoForm(false);
                       setTurnoFecha('');
                       setTurnoNota('');
+                    } catch (e: unknown) {
+                      setTurnoError(e instanceof Error ? e.message : 'No se pudo guardar el turno.');
                     } finally {
                       setGuardandoTurno(false);
                     }

@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Email inválido' }, { status: 400 });
     }
 
+    // Validar que receta_url sea una URL https o vacía (previene javascript: XSS en el email)
+    if (receta_url && !/^https:\/\/.+/.test(receta_url)) {
+      return NextResponse.json({ ok: false, error: 'URL de receta inválida' }, { status: 400 });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.error('[cotizacion-laboratorio] RESEND_API_KEY no configurada');
+      return NextResponse.json({ ok: false, error: 'Configuración de email incompleta' }, { status: 500 });
+    }
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {

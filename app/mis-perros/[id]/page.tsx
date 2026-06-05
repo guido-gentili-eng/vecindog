@@ -555,6 +555,7 @@ export default function PerroDetallePage() {
             onEliminar={handleEliminarPeso}
             onSetAgregando={setAgregandoPeso}
             locked={!isPro}
+            perroNombre={perro.nombre}
           />
 
           {/* Análisis de Laboratorio */}
@@ -3158,7 +3159,7 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
 
 /* ── Historial de peso ── */
 function PesoSection({
-  pesos, agregando, onAgregar, onEliminar, onSetAgregando, locked,
+  pesos, agregando, onAgregar, onEliminar, onSetAgregando, locked, perroNombre,
 }: {
   pesos:          Peso[];
   agregando:      boolean;
@@ -3166,12 +3167,16 @@ function PesoSection({
   onEliminar:     (id: string) => Promise<void>;
   onSetAgregando: (v: boolean) => void;
   locked?:        boolean;
+  perroNombre?:   string;
 }) {
-  const [form,   setForm]   = useState<{ fecha: string; valor_kg: string; notas: string }>({
+  const [form,        setForm]        = useState<{ fecha: string; valor_kg: string; notas: string }>({
     fecha: new Date().toISOString().slice(0, 10), valor_kg: '', notas: '',
   });
-  const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState('');
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [showEnviar,  setShowEnviar]  = useState(false);
+  const [emailDest,   setEmailDest]   = useState('');
+  const [copied,      setCopied]      = useState(false);
 
   const ultimo = pesos[0] ?? null;
   const maxKg  = Math.max(...pesos.map((p) => p.valor_kg), 0.1);
@@ -3207,10 +3212,18 @@ function PesoSection({
             <Sparkles className="h-3 w-3" /> VecindogPro
           </Link>
         ) : (
-          <button type="button" onClick={() => onSetAgregando(!agregando)}
-            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-            {agregando ? <X className="h-3 w-3" /> : <>+ Registrar</>}
-          </button>
+          <div className="ml-auto flex gap-2">
+            {pesos.length > 0 && (
+              <button type="button" onClick={() => setShowEnviar(true)}
+                className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
+                <Send className="h-3 w-3" /> Enviar
+              </button>
+            )}
+            <button type="button" onClick={() => onSetAgregando(!agregando)}
+              className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
+              {agregando ? <X className="h-3 w-3" /> : <>+ Registrar</>}
+            </button>
+          </div>
         )}
       </div>
 
@@ -3341,6 +3354,76 @@ function PesoSection({
           ))}
         </div>
       ) : null}
+
+      {/* Modal enviar historial de peso */}
+      {showEnviar && (() => {
+        const texto = [
+          `⚖️ Historial de peso de ${perroNombre ?? 'mi perro'} 🐾`,
+          '',
+          ...pesos.map((p) => `📅 ${formatFecha(p.fecha)} — ${p.valor_kg} kg${p.notas ? ` (${p.notas})` : ''}`),
+        ].join('\n');
+
+        function enviarEmail() {
+          const s = encodeURIComponent(`Historial de peso de ${perroNombre ?? 'mi perro'}`);
+          const b = encodeURIComponent(texto);
+          window.open(`mailto:${encodeURIComponent(emailDest.trim())}?subject=${s}&body=${b}`, '_blank');
+        }
+        function enviarWA() {
+          window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+        }
+        async function copiar() {
+          await navigator.clipboard.writeText(texto);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowEnviar(false); }}>
+            <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
+              <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+              <div className="mb-5">
+                <h2 className="font-display text-xl font-black text-ink">Enviar historial de peso</h2>
+                <p className="mt-1 text-sm text-ink-muted">{perroNombre} · {pesos.length} registro{pesos.length !== 1 ? 's' : ''}</p>
+              </div>
+              {/* Copiar */}
+              <button type="button" onClick={copiar}
+                className="mb-4 flex w-full items-center justify-between gap-2 rounded-2xl bg-brand-cream px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10">
+                <span className="truncate text-xs text-ink-muted">{texto.slice(0, 60)}…</span>
+                {copied ? <Check className="h-4 w-4 shrink-0 text-good" /> : <Copy className="h-4 w-4 shrink-0 text-brand-primary" />}
+              </button>
+              {/* Email */}
+              <div className="mb-3">
+                <label className="label mb-1 flex items-center gap-1.5 text-xs">
+                  <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+                </label>
+                <div className="flex gap-2">
+                  <input type="email" placeholder="destinatario@email.com" value={emailDest}
+                    onChange={(e) => setEmailDest(e.target.value)}
+                    className="field flex-1 text-sm" />
+                  <button type="button" onClick={enviarEmail} disabled={!emailDest.trim()}
+                    className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40">
+                    Enviar
+                  </button>
+                </div>
+              </div>
+              <div className="my-4 flex items-center gap-3">
+                <div className="flex-1 border-t border-black/10" />
+                <span className="text-xs text-ink-muted">o</span>
+                <div className="flex-1 border-t border-black/10" />
+              </div>
+              <button type="button" onClick={enviarWA}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
+                <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+              </button>
+              <button type="button" onClick={() => setShowEnviar(false)}
+                className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -64,7 +64,7 @@ export default function BuscoCuidadorPage() {
       tamano:      perroSel?.tamano || null,
       descripcion: descFinal,
       zona:        zona.trim(),
-      fecha:       new Date().toISOString().slice(0, 10),
+      fecha:       fechaHasta || new Date().toISOString().slice(0, 10),
       horario:     null,
       contacto:    contacto.trim(),
       images:      perroSel?.foto_url ? [perroSel.foto_url] : [],

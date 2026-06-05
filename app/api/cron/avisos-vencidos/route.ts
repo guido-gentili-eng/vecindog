@@ -184,10 +184,36 @@ export async function GET(req: NextRequest) {
     borrados = postsBorrar.length;
   }
 
+  // ── ETAPA 4: Cerrar busco_cuidador cuya fecha de devolución ya pasó ──
+  const hoyStr = ahora.toISOString().slice(0, 10);
+  const { data: cuidadoresVencidos } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, zona')
+    .eq('categoria', 'busco_cuidador')
+    .eq('estado', 'activo')
+    .lt('fecha', hoyStr);
+
+  if (cuidadoresVencidos?.length) {
+    const ids = cuidadoresVencidos.map((p: { id: string }) => p.id);
+    await admin.from('posts').update({ estado: 'resuelto' }).in('id', ids);
+
+    for (const post of cuidadoresVencidos) {
+      if (!post.user_id) continue;
+      await admin.from('notifications').insert({
+        user_id: post.user_id,
+        post_id: post.id,
+        tipo: 'expiracion',
+        mensaje: `✅ Tu aviso de busco cuidador${post.nombre ? ` para ${post.nombre}` : ''} venció y fue cerrado automáticamente.`,
+        leida: false,
+      });
+    }
+  }
+
   return NextResponse.json({
     ok:      true,
-    notif1,   // primer aviso (día 5)
-    notif2,   // segundo aviso (día 6)
-    borrados, // cerrados automáticamente (día 7+)
+    notif1,
+    notif2,
+    borrados,
+    cuidadoresVencidos: cuidadoresVencidos?.length ?? 0,
   });
 }

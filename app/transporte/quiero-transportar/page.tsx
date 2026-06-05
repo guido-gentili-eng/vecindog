@@ -83,7 +83,7 @@ export default function QuieroTransportarPage() {
     });
 
     setEnviando(false);
-    if (dbErr) { setError('No se pudo registrar. Intentá de nuevo.'); return; }
+    if (dbErr) { setError(dbErr.message ?? 'No se pudo registrar. Intentá de nuevo.'); return; }
     setPublicado(true);
     setTimeout(() => router.push('/transporte'), 1800);
   }

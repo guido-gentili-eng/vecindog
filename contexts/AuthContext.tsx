@@ -99,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
       if (confirmedUser) {
+        setProfileLoading(true);
         fetchProfile(confirmedUser.id);
       } else if (typeof window !== 'undefined') {
         setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
@@ -112,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(confirmedUser);
       if (confirmedUser) {
         setIsGuest(false);
+        setProfileLoading(true);
         if (typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);
         fetchProfile(confirmedUser.id);
       } else {

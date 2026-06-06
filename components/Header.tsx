@@ -145,6 +145,10 @@ export default function Header() {
                         <Megaphone className="h-4 w-4 text-brand-primary" />
                         {isPro ? 'Mi plan Pro' : 'Planes'}
                       </Link>
+                      <Link href="/mi-comercio" onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
+                        <Store className="h-4 w-4 text-amber-600" /> Mi comercio
+                      </Link>
                       <button type="button" onClick={() => { clearCiudad(); setProfileOpen(false); }}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition w-full text-left">
                         <MapPin className="h-4 w-4 text-brand-primary" /> Cambiar ubicación
@@ -262,6 +266,10 @@ export default function Header() {
                     <Link href="/mi-perfil" onClick={() => setOpen(false)}
                       className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
                       <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
+                    </Link>
+                    <Link href="/mi-comercio" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <Store className="h-4 w-4 text-amber-600" /> Mi comercio
                     </Link>
                     <button type="button" onClick={() => { signOut(); setOpen(false); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">

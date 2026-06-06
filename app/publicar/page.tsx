@@ -224,11 +224,18 @@ export default function PublicarPage() {
     setGpsEstado('cargando');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setForm((f) => ({ ...f, lat: pos.coords.latitude, lng: pos.coords.longitude }));
+        const { latitude: lat, longitude: lng } = pos.coords;
+        // Validar que las coordenadas estén dentro de Argentina
+        const dentroDeArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
+        if (!dentroDeArgentina) {
+          setGpsEstado('error');
+          return;
+        }
+        setForm((f) => ({ ...f, lat, lng }));
         setGpsEstado('ok');
       },
       () => setGpsEstado('error'),
-      { timeout: 10000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   }
 

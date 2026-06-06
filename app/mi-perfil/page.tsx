@@ -202,9 +202,22 @@ export default function MiPerfilPage() {
 
         {/* Nombre + acciones */}
         <div className="flex-1 min-w-0">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-            <User className="h-3.5 w-3.5" /> Mi perfil
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
+              <User className="h-3.5 w-3.5" /> Mi perfil
+            </span>
+            {isPro ? (
+              <button type="button" onClick={() => setQrOpen(true)}
+                className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                <QrCode className="h-3.5 w-3.5" /> QR
+              </button>
+            ) : (
+              <Link href="/planes"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                <QrCode className="h-3.5 w-3.5" /> QR
+              </Link>
+            )}
+          </div>
           <h1 className="mt-1 font-display text-2xl font-black tracking-tight text-ink truncate">
             {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
           </h1>
@@ -213,19 +226,8 @@ export default function MiPerfilPage() {
           )}
         </div>
 
-        {/* Botones QR + Obediencia */}
-        <div className="flex flex-col gap-2 shrink-0">
-          {isPro ? (
-            <button type="button" onClick={() => setQrOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
-              <QrCode className="h-4 w-4" /> QR
-            </button>
-          ) : (
-            <Link href="/planes"
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-cream px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
-              <QrCode className="h-4 w-4" /> QR
-            </Link>
-          )}
+        {/* Botón Obediencia */}
+        <div className="shrink-0">
           {isPro ? (
             <a href="/plan-obediencia-canina.pdf" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">

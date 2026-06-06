@@ -62,7 +62,7 @@ const PAQUETES = [
     descripcion: 'Ideal para empezar a probar.',
     slots: ['1 slot Sidebar (detalle de aviso)'],
     destacado: false,
-    cta: 'Empezar',
+    cta: 'Elegir Básico',
   },
   {
     nombre: 'Estándar',
@@ -89,7 +89,7 @@ const PAQUETES = [
       'Sidebar en detalle',
     ],
     destacado: false,
-    cta: 'Contactar',
+    cta: 'Elegir Premium',
   },
 ];
 

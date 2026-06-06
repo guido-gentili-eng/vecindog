@@ -40,7 +40,7 @@ export default function CategoriaPage() {
 
   const { isPro, loading: authLoading, ciudad, setCiudad } = useAuth();
 
-  const [comercios, setComercior] = useState<Ad[]>([]);
+  const [comercios, setComerciosState] = useState<Ad[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function CategoriaPage() {
       .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
-        setComercior((data as Ad[]) ?? []);
+        setComerciosState((data as Ad[]) ?? []);
         setDataLoading(false);
       });
   }, [catKey, cat, ciudad]);

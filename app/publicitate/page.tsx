@@ -524,7 +524,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     }
     if (telefono.trim()) {
       const digitos = telefono.replace(/\D/g, '');
-      if (digitos.length < 8) { setError('El teléfono debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210'); return; }
+      if (digitos.length < 10) { setError('El teléfono debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210'); return; }
     }
     setError(''); setLoading(true);
 

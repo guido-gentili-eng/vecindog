@@ -40,11 +40,10 @@ export async function getAdForSlot(variant: AdVariant): Promise<Ad | null> {
     .select('*')
     .eq('variant', variant)
     .eq('activo', true)
-    .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-  return data ?? null;
+    .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`);
+  if (!data || data.length === 0) return null;
+  // Rotar aleatoriamente entre todos los anuncios activos del slot
+  return data[Math.floor(Math.random() * data.length)];
 }
 
 /** Devuelve comercios adheridos activos que tienen coordenadas (para el mapa). */

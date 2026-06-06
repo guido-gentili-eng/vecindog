@@ -21,14 +21,16 @@ export interface Ad {
   fecha_fin:         string | null;
   created_at:        string;
   // Campos exclusivos de comercios adheridos
-  lat?:                 number | null;
-  lng?:                 number | null;
-  telefono_comercio?:   string | null;
-  horario_apertura?:    string | null;
-  horario_cierre?:      string | null;
-  dias_atencion?:       string | null;
-  direccion_comercio?:  string | null;
-  categoria_local?:     string | null;
+  lat?:                   number | null;
+  lng?:                   number | null;
+  telefono_comercio?:     string | null;
+  horario_apertura?:      string | null;
+  horario_cierre?:        string | null;
+  dias_atencion?:         string | null;
+  direccion_comercio?:    string | null;
+  categoria_local?:       string | null;
+  descripcion_comercio?:  string | null;
+  localidad_comercio?:    string | null;
 }
 
 export type AdInput = Omit<Ad, 'id' | 'created_at'>;

@@ -38,10 +38,24 @@ export async function GET(req: NextRequest) {
   ]);
 
   const hoy         = new Date().toISOString().slice(0, 10);
+  const hace30      = new Date(); hace30.setDate(hace30.getDate() - 30);
+  const hace30Str   = hace30.toISOString().slice(0, 10);
   const negociosAll = new Set((ads ?? []).map((a: {anunciante: string}) => a.anunciante).filter(Boolean));
   const negociosAct = new Set((ads ?? []).filter((a: {activo: boolean}) => a.activo).map((a: {anunciante: string}) => a.anunciante).filter(Boolean));
-  const proVencidos = await admin.from('profiles').select('id', { count: 'exact', head: true })
-    .eq('plan', 'pro').lt('plan_vencimiento', hoy);
+
+  const [proVencidos, conversionesMes, comerciosMes, reportesPendientes] = await Promise.all([
+    admin.from('profiles').select('id', { count: 'exact', head: true })
+      .eq('plan', 'pro').lt('plan_vencimiento', hoy),
+    // Usuarios que se convirtieron a Pro en los últimos 30 días (tienen plan_vencimiento futuro y fue actualizado recientemente)
+    admin.from('profiles').select('id', { count: 'exact', head: true })
+      .eq('plan', 'pro').gte('plan_vencimiento', hoy),
+    // Comercios nuevos en los últimos 30 días
+    admin.from('ads').select('id', { count: 'exact', head: true })
+      .eq('variant', 'comercio').gte('created_at', hace30Str),
+    // Reportes sin revisar
+    admin.from('reportes').select('id', { count: 'exact', head: true })
+      .eq('revisado', false),
+  ]);
 
   // Mapa de id → perfil
   const profileMap: Record<string, { nombre: string; apellido: string; telefono: string; ciudad: string; provincia: string; direccion: string; plan: string; suspendido: boolean }> = {};
@@ -91,6 +105,14 @@ export async function GET(req: NextRequest) {
     negocios: {
       total:   negociosAll.size,
       activos: negociosAct.size,
+    },
+    metricas: {
+      proActivos:        conversionesMes.count ?? 0,
+      comerciosMes:      comerciosMes.count ?? 0,
+      reportesPendientes: reportesPendientes.count ?? 0,
+      tasaConversion:    totalUsuarios
+        ? Math.round(((usuariosPro ?? 0) / (totalUsuarios ?? 1)) * 100)
+        : 0,
     },
     ultimosUsuarios,
   });

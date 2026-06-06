@@ -194,6 +194,63 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Notificar a comercios cercanos (solo avisos de perros perdidos) ─
+    if (categoria === 'perdido') {
+      const { data: comercios } = await admin
+        .from('ads')
+        .select('id, titulo, anunciante, lat, lng, categoria_local')
+        .eq('variant', 'comercio')
+        .eq('activo', true)
+        .not('lat', 'is', null)
+        .not('lng', 'is', null)
+        .not('anunciante', 'is', null);
+
+      const comerciosCercanos = (comercios ?? []).filter((c: { lat: number; lng: number }) =>
+        haversineKm(latN, lngN, c.lat, c.lng) <= 2  // radio 2km para comercios
+      );
+
+      for (const comercio of comerciosCercanos as Array<{ anunciante: string; titulo: string; id: string }>) {
+        const emailC = comercio.anunciante;
+        if (!emailC || !emailC.includes('@')) continue;
+
+        const postUrl = `https://www.mivecindog.com.ar/publicaciones/${esc(postIdS)}`;
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'Vecindog <noreply@mivecindog.com.ar>',
+            to: [emailC],
+            subject: `🐾 Perro perdido cerca de ${esc(comercio.titulo)}`,
+            html: `
+              <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+                <div style="background:#EE5A3B;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+                  <h1 style="color:white;margin:0;font-size:22px;">🐾 Vecindog</h1>
+                </div>
+                <h2 style="color:#1a1a1a;">Hola ${esc(comercio.titulo)},</h2>
+                <p style="color:#555;font-size:16px;line-height:1.6;">
+                  Se publicó un aviso de <strong>perro perdido</strong> cerca de tu comercio:
+                  ${nombrePerroS ? `<strong>${esc(nombrePerroS)}</strong>` : 'un perro'} en ${esc(zonaLabel)}.
+                </p>
+                <p style="color:#555;font-size:15px;">
+                  Si el perro llega a tu local o lo ven cerca, podés ayudar al dueño contactándolo desde el aviso.
+                </p>
+                <div style="text-align:center;margin-top:24px;">
+                  <a href="${postUrl}"
+                     style="background:#EE5A3B;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;">
+                    Ver aviso completo
+                  </a>
+                </div>
+                <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center;">
+                  Vecindog — tu comercio adherido colabora con la comunidad<br/>
+                  <a href="https://www.mivecindog.com.ar/mi-comercio" style="color:#EE5A3B;">Gestionar mi comercio</a>
+                </p>
+              </div>
+            `,
+          }),
+        }).catch(() => {}); // no bloquear si falla
+      }
+    }
+
     return NextResponse.json({ ok: true, enviados });
   } catch {
     return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 500 });

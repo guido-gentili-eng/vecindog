@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import EncontrePerroButton from './EncontrePerroButton';
+import PrintButton from './PrintButton';
 
 interface Props { params: { perroId: string } }
 
@@ -37,7 +39,6 @@ export default async function HistoriaPublicaPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Cargar perro + vacunas + estudios + avisos en paralelo
   const [{ data: perro }, { data: vacunas }, { data: estudios }, { data: posts }] = await Promise.all([
     admin.from('perros').select('*').eq('id', perroId).single(),
     admin.from('vacunas').select('*').eq('perro_id', perroId).order('fecha', { ascending: false }),
@@ -47,20 +48,32 @@ export default async function HistoriaPublicaPage({ params }: Props) {
 
   if (!perro) notFound();
 
+  // Perfil del dueño (solo teléfono, para contacto)
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('nombre, apellido, telefono')
+    .eq('id', perro.user_id)
+    .single();
+
   const labs   = (estudios ?? []).filter((e) => e.tipo === 'laboratorio');
   const radios = (estudios ?? []).filter((e) => e.tipo === 'radiografia');
   const ecos   = (estudios ?? []).filter((e) => e.tipo === 'ecografia');
 
   const hoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  const nombreDuenio = [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') || 'Dueño';
+
   return (
     <div className="min-h-screen bg-[#f5f0eb] py-8 px-4">
-      <div className="mx-auto max-w-xl">
+      <div id="historia-print" className="mx-auto max-w-xl">
 
-        <Link href="/mis-perros"
-          className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Volver a Mis perros
-        </Link>
+        <div className="mb-4 flex items-center justify-between no-print">
+          <Link href="/mis-perros"
+            className="inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+            <ArrowLeft className="h-4 w-4" /> Volver a Mis perros
+          </Link>
+          <PrintButton />
+        </div>
 
         {/* Header Vecindog */}
         <div className="mb-6 flex items-center justify-between">
@@ -77,6 +90,15 @@ export default async function HistoriaPublicaPage({ params }: Props) {
           <h1 className="font-display text-3xl font-black">{perro.nombre}</h1>
           <p className="mt-1 text-sm opacity-75">Emitida el {hoy}</p>
         </div>
+
+        {/* Botón "Encontré este perro" + contacto dueño */}
+        <EncontrePerroButton
+          perroId={perroId}
+          perroNombre={perro.nombre}
+          perroFoto={perro.foto_url}
+          nombreDuenio={nombreDuenio}
+          telefonoDuenio={profile?.telefono ?? null}
+        />
 
         {/* Perfil */}
         <Section titulo="Perfil del Paciente" lleno>
@@ -162,7 +184,6 @@ export default async function HistoriaPublicaPage({ params }: Props) {
                     href={`/publicaciones/${post.id}`}
                     className="flex items-center gap-3 rounded-2xl border border-black/5 bg-[#faf7f4] p-3 transition hover:border-brand-primary/20 hover:bg-white"
                   >
-                    {/* Miniatura */}
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
                       {post.images?.[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -171,8 +192,6 @@ export default async function HistoriaPublicaPage({ params }: Props) {
                         <div className="flex h-full items-center justify-center text-2xl">🐾</div>
                       )}
                     </div>
-
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${catColor}`}>
@@ -191,7 +210,6 @@ export default async function HistoriaPublicaPage({ params }: Props) {
                         {post.zona} · {fmt(post.fecha ?? post.created_at)}
                       </p>
                     </div>
-
                     <span className="shrink-0 text-xs font-bold text-brand-primary">Ver →</span>
                   </Link>
                 );

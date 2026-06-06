@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import PhotoGallery from '@/components/PhotoGallery';
 import ContactBlock from '@/components/ContactBlock';
+import MensajesHilo from '@/components/MensajesHilo';
 import AdSlot from '@/components/AdSlot';
 import AdoptionSheet from '@/components/AdoptionSheet';
 import FoundModal from '@/components/FoundModal';
@@ -591,6 +592,12 @@ export default function DetalleAvisoPage() {
             animalId={post.id}
           />
 
+          <MensajesHilo
+            postId={post.id}
+            isAuthenticated={isAuthenticated}
+            userId={user?.id ?? null}
+          />
+
           {/* ── Panel de gestión ── */}
           {canManage && (
             <div className={`card overflow-hidden ${resuelto ? 'border border-black/10' : 'border border-brand-primary/20'}`}>
@@ -768,6 +775,11 @@ export default function DetalleAvisoPage() {
         <AdoptionSheet post={post} onClose={() => setAdoptarOpen(false)} />
       )}
 
+      {/* Reportar aviso — solo usuarios autenticados, no dueños */}
+      {isAuthenticated && !isOwner && !resuelto && (
+        <ReportarAvisoButton postId={post.id} />
+      )}
+
       {/* Barra flotante de contacto — solo mobile, solo si no está resuelto */}
       {!resuelto && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
@@ -796,6 +808,80 @@ function Row({ label, value, tone = '' }: { label: string; value: string; tone?:
     <div className="flex items-center justify-between gap-3 border-b border-black/5 pb-2 last:border-0 last:pb-0">
       <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</dt>
       <dd className={`text-sm font-extrabold text-ink ${tone}`}>{value}</dd>
+    </div>
+  );
+}
+
+/* ── Reportar aviso ── */
+function ReportarAvisoButton({ postId }: { postId: string }) {
+  const [open,     setOpen]     = useState(false);
+  const [motivo,   setMotivo]   = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [enviado,  setEnviado]  = useState(false);
+
+  const MOTIVOS = ['Spam o publicidad', 'Contenido falso o engañoso', 'Información incorrecta', 'Duplicado', 'Otro'];
+
+  async function handleReportar() {
+    if (!motivo || enviando) return;
+    setEnviando(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch('/api/reportar-aviso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.access_token}` },
+        body: JSON.stringify({ post_id: postId, motivo }),
+      });
+      setEnviado(true);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  if (enviado) return null;
+
+  return (
+    <div className="mt-6 text-center">
+      <button onClick={() => setOpen(true)} className="text-xs text-ink-muted/50 hover:text-ink-muted underline underline-offset-2">
+        Reportar este aviso
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center" onClick={() => setOpen(false)}>
+          <div className="w-full max-w-sm rounded-t-[32px] bg-white px-6 pb-8 pt-6 shadow-2xl sm:rounded-[32px]" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+            {enviado ? (
+              <div className="py-4 text-center">
+                <CheckCircle2 className="mx-auto mb-3 h-12 w-12 text-[#3F8B5C]" />
+                <p className="font-bold text-ink">Reporte enviado. Gracias.</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="mb-4 font-display text-xl font-black text-ink">Reportar aviso</h2>
+                <div className="space-y-2 mb-4">
+                  {MOTIVOS.map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMotivo(m)}
+                      className={`w-full rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold transition ${
+                        motivo === m ? 'border-bad bg-bad/5 text-bad' : 'border-black/10 text-ink hover:border-bad/30'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={handleReportar}
+                  disabled={!motivo || enviando}
+                  className="w-full rounded-2xl bg-bad py-3 text-sm font-bold text-white disabled:opacity-40"
+                >
+                  {enviando ? 'Enviando...' : 'Enviar reporte'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

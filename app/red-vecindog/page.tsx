@@ -6,6 +6,7 @@ import {
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
   MapPin, Clock, Phone, CheckCircle2, X, Loader2, AlertCircle,
   ImagePlus, Star, ChevronRight, Building2, Map, Users, ArrowRight, Search, Plus,
+  Heart, Pill,
 } from 'lucide-react';
 import { buscarCiudades } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,9 @@ const CATEGORIAS = [
   { url: 'adiestrador',       slug: 'Adiestrador',       label: 'Adiestrador',       icon: Award,       bg: 'bg-purple-50', text: 'text-purple-600', desc: 'Educación, obediencia y conducta' },
   { url: 'paseador',          slug: 'Paseador',          label: 'Paseador',          icon: Footprints,  bg: 'bg-orange-50', text: 'text-orange-500', desc: 'Paseos diarios y actividad física' },
   { url: 'guarderia-hotel',   slug: 'Guardería / Hotel', label: 'Guardería / Hotel', icon: Home,        bg: 'bg-amber-50',  text: 'text-amber-600',  desc: 'Cuidado diurno y hospedaje canino' },
+  { url: 'refugio-rescate',   slug: 'Refugio / Rescate', label: 'Refugio / Rescate', icon: Heart,       bg: 'bg-red-50',    text: 'text-red-500',    desc: 'Adopción responsable y rescate animal' },
+  { url: 'tienda-mascotas',   slug: 'Tienda de Mascotas',label: 'Tienda de Mascotas',icon: ShoppingBag, bg: 'bg-teal-50',   text: 'text-teal-600',   desc: 'Ropa, accesorios y artículos para mascotas' },
+  { url: 'farmacia-veterinaria', slug: 'Farmacia Veterinaria', label: 'Farmacia Veterinaria', icon: Pill, bg: 'bg-cyan-50', text: 'text-cyan-600',  desc: 'Medicamentos, antiparasitarios y suplementos' },
 ];
 
 const BENEFICIOS = [

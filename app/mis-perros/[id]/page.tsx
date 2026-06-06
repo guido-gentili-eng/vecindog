@@ -363,6 +363,12 @@ export default function PerroDetallePage() {
             >
               <QrCode className="h-3.5 w-3.5" /> QR Collar
             </button>
+            <Link
+              href={`/mis-perros/${perro.id}/timeline`}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
+            >
+              <Activity className="h-3.5 w-3.5" /> Diario
+            </Link>
             <button
               type="button"
               onClick={() => setEditando(true)}

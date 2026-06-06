@@ -57,7 +57,22 @@ interface Stats {
     total:   number;
     activos: number;
   };
+  metricas?: {
+    proActivos:         number;
+    comerciosMes:       number;
+    reportesPendientes: number;
+    tasaConversion:     number;
+  };
   ultimosUsuarios: Usuario[];
+}
+
+interface ReporteAdmin {
+  id:       string;
+  motivo:   string;
+  revisado: boolean;
+  created_at: string;
+  post_id:  string;
+  posts:    { id: string; categoria: string; nombre: string | null; zona: string; estado: string; images: string[] } | null;
 }
 
 export default function AdminPage() {
@@ -86,6 +101,9 @@ export default function AdminPage() {
   const [adsData,       setAdsData]       = useState<Ad[] | null>(null);
   const [adsOrden,      setAdsOrden]      = useState<'az' | 'recientes'>('az');
   const [adsLoading,    setAdsLoading]    = useState(false);
+  const [reportes,      setReportes]      = useState<ReporteAdmin[]>([]);
+  const [reportesOpen,  setReportesOpen]  = useState(false);
+  const [reportesLoad,  setReportesLoad]  = useState(false);
 
   async function abrirAdsModal() {
     setAdsModal(true);
@@ -97,6 +115,29 @@ export default function AdminPage() {
     } finally {
       setAdsLoading(false);
     }
+  }
+
+  async function cargarReportes() {
+    setReportesOpen(true);
+    setReportesLoad(true);
+    try {
+      const res = await fetch('/api/admin/reportes', {
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
+      });
+      const json = await res.json();
+      setReportes(json.reportes ?? []);
+    } finally {
+      setReportesLoad(false);
+    }
+  }
+
+  async function accionReporte(reporteId: string, accion: 'desestimar' | 'eliminar_aviso') {
+    await fetch('/api/admin/reportes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
+      body: JSON.stringify({ reporte_id: reporteId, accion }),
+    });
+    setReportes((prev) => prev.filter((r) => r.id !== reporteId));
   }
 
   function showError(msg: string) {
@@ -324,6 +365,84 @@ export default function AdminPage() {
           );
         })}
       </div>
+
+      {/* Métricas de conversión */}
+      {stats.metricas && (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="card p-4 flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Tasa conversión</p>
+            <p className="font-display text-2xl font-black text-[#7c3aed]">{stats.metricas.tasaConversion}%</p>
+            <p className="text-[10px] text-ink-muted">Free → Pro</p>
+          </div>
+          <div className="card p-4 flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Pro activos</p>
+            <p className="font-display text-2xl font-black text-good">{stats.metricas.proActivos}</p>
+            <p className="text-[10px] text-ink-muted">Con plan vigente</p>
+          </div>
+          <div className="card p-4 flex flex-col gap-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Comercios nuevos</p>
+            <p className="font-display text-2xl font-black text-brand-primary">{stats.metricas.comerciosMes}</p>
+            <p className="text-[10px] text-ink-muted">Últimos 30 días</p>
+          </div>
+          <button
+            onClick={cargarReportes}
+            className="card p-4 flex flex-col gap-1 text-left transition hover:ring-2 hover:ring-bad/30"
+          >
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Reportes</p>
+            <p className={`font-display text-2xl font-black ${stats.metricas.reportesPendientes > 0 ? 'text-bad' : 'text-ink'}`}>
+              {stats.metricas.reportesPendientes}
+            </p>
+            <p className="text-[10px] text-ink-muted">Pendientes de revisión</p>
+          </button>
+        </div>
+      )}
+
+      {/* Panel de reportes */}
+      {reportesOpen && (
+        <div className="mb-6 card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-black/8 px-5 py-4">
+            <h2 className="font-display text-base font-extrabold text-ink flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-bad" /> Reportes pendientes
+            </h2>
+            <button onClick={() => setReportesOpen(false)} className="text-ink-muted hover:text-ink">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {reportesLoad ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-brand-primary" /></div>
+          ) : reportes.length === 0 ? (
+            <p className="px-5 py-6 text-center text-sm text-ink-muted">No hay reportes pendientes.</p>
+          ) : (
+            <div className="divide-y divide-black/5">
+              {reportes.map((r) => (
+                <div key={r.id} className="px-5 py-4 flex items-start gap-4">
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-bad uppercase tracking-wide">{r.motivo}</p>
+                    <p className="text-sm font-bold text-ink mt-0.5">
+                      {r.posts?.nombre ?? 'Sin nombre'} · {r.posts?.zona ?? '—'}
+                    </p>
+                    <p className="text-xs text-ink-muted capitalize">{r.posts?.categoria} · {r.posts?.estado}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => accionReporte(r.id, 'desestimar')}
+                      className="rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-black/10"
+                    >
+                      Desestimar
+                    </button>
+                    <button
+                      onClick={() => accionReporte(r.id, 'eliminar_aviso')}
+                      className="rounded-xl bg-bad/10 px-3 py-1.5 text-xs font-bold text-bad hover:bg-bad/20"
+                    >
+                      Eliminar aviso
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Lista de usuarios */}
       <div className="card overflow-hidden">

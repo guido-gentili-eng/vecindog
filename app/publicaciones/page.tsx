@@ -71,6 +71,9 @@ export default function PublicacionesPage() {
   const [busqueda, setBusqueda] = useState('');
   const [visibles, setVisibles] = useState(PAGE_SIZE);
 
+  /* Scroll al tope al montar la página */
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   /* Sync URL → filtros cuando el usuario navega atrás/adelante */
   useEffect(() => {
     setFiltros((f) => ({

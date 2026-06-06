@@ -39,9 +39,6 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = adminClient;
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
 
     const vencimiento = new Date();
     vencimiento.setDate(vencimiento.getDate() + 30);

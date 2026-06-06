@@ -4,11 +4,12 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle,
   CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X,
   Instagram, Facebook, Sparkles, FileText, Camera, AlarmClock, History,
-  Bell, Siren, ImagePlus, Heart,
+  Bell, Siren, Heart,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listarMisPerros, subirFotoPerfil, listarMisVacunasProximas, type Perro, type Vacuna } from '@/lib/perros';
@@ -35,10 +36,12 @@ function diasHasta(fecha: string): number {
 
 export default function MiPerfilPage() {
   const { user, profile, isAuthenticated, isPro, loading: authLoading, saveProfile, resetPassword } = useAuth();
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef  = useRef<HTMLInputElement>(null);
+  const router   = useRouter();
 
   const [pwSent,   setPwSent]   = useState(false);
   const [qrOpen,   setQrOpen]   = useState(false);
+  const [sosOpen,  setSosOpen]  = useState(false);
 
   async function handleChangePassword() {
     if (!user?.email) return;
@@ -248,19 +251,36 @@ export default function MiPerfilPage() {
 
       {/* ── SOS: Botón perro perdido ── */}
       {isPro && (
-        <Link
-          href="/publicar?cat=perdido"
-          className="flex items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-r from-lost to-[#c0392b] p-4 text-white shadow-soft transition hover:opacity-90 active:scale-[0.99]"
+        <button
+          type="button"
+          onClick={() => setSosOpen(true)}
+          className="flex w-full items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-r from-lost to-[#c0392b] p-4 text-white shadow-soft transition hover:opacity-90 active:scale-[0.99]"
         >
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/20">
             <Siren className="h-6 w-6" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 text-left">
             <p className="font-display text-base font-black">🚨 Perro perdido — alertar ahora</p>
-            <p className="text-xs text-white/80">Publicá un aviso de emergencia y notificá a tu comunidad al instante.</p>
+            <p className="text-xs text-white/80">Notificá a tus amigos y publicá el aviso de emergencia.</p>
           </div>
           <ChevronRight className="h-5 w-5 shrink-0 opacity-70" />
-        </Link>
+        </button>
+      )}
+
+      {/* Modal SOS */}
+      {sosOpen && (
+        <SOSModal
+          perros={perros}
+          user={user}
+          ownerNombre={profile ? `${profile.nombre} ${profile.apellido}`.trim() : ''}
+          onClose={() => setSosOpen(false)}
+          onDone={(perroId, nombrePerro) => {
+            setSosOpen(false);
+            const params = new URLSearchParams({ cat: 'perdido' });
+            if (perroId) params.set('perro', perroId);
+            router.push(`/publicar?${params.toString()}`);
+          }}
+        />
       )}
 
       {/* ── Datos personales ── */}
@@ -640,6 +660,170 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
       <span className="shrink-0">{icon}</span>
       <span className="text-xs text-ink-muted w-20 shrink-0">{label}</span>
       <span className="text-sm font-semibold text-ink">{value}</span>
+    </div>
+  );
+}
+
+/* ── Modal SOS perro perdido ── */
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+function SOSModal({
+  perros,
+  user,
+  ownerNombre,
+  onClose,
+  onDone,
+}: {
+  perros: Perro[];
+  user: SupabaseUser | null;
+  ownerNombre: string;
+  onClose: () => void;
+  onDone: (perroId: string | null, nombrePerro: string) => void;
+}) {
+  const [perroSel,  setPerroSel]  = useState<string>(perros[0]?.id ?? '');
+  const [enviando,  setEnviando]  = useState(false);
+  const [enviado,   setEnviado]   = useState(false);
+  const [amigosCount, setAmigosCount] = useState<number | null>(null);
+  const [errorSos,  setErrorSos]  = useState('');
+
+  const perroActual = perros.find((p) => p.id === perroSel) ?? perros[0] ?? null;
+
+  async function handleSOS() {
+    if (!user) return;
+    setEnviando(true);
+    setErrorSos('');
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      const res = await fetch('/api/sos-perro-perdido', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          nombre_perro: perroActual?.nombre ?? '',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Error');
+      setAmigosCount(json.amigos ?? 0);
+      setEnviado(true);
+    } catch {
+      setErrorSos('No se pudo enviar la alerta. Intentá de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-sm rounded-[28px] bg-white p-6 shadow-2xl">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-lost/10">
+              <Siren className="h-5 w-5 text-lost" />
+            </div>
+            <div>
+              <p className="font-display text-base font-black text-ink">Alerta de emergencia</p>
+              <p className="text-xs text-ink-muted">Se notifica a tus amigos</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose}
+            className="rounded-xl p-1.5 text-ink-muted hover:bg-brand-cream transition">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {!enviado ? (
+          <>
+            {/* Selector de perro */}
+            {perros.length === 0 ? (
+              <p className="rounded-2xl bg-brand-cream px-4 py-3 text-sm text-ink-muted text-center">
+                No tenés perros registrados. <Link href="/mis-perros/nuevo" className="font-bold text-brand-primary">Registrá uno</Link> para usar esta función.
+              </p>
+            ) : (
+              <div className="space-y-2 mb-5">
+                <p className="text-xs font-semibold text-ink-muted">¿Cuál de tus perros se perdió?</p>
+                {perros.map((p) => (
+                  <button key={p.id} type="button"
+                    onClick={() => setPerroSel(p.id)}
+                    className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 transition ${
+                      perroSel === p.id
+                        ? 'border-lost bg-lost/5'
+                        : 'border-black/10 hover:border-lost/40'
+                    }`}
+                  >
+                    {p.foto_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.foto_url} alt={p.nombre} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0">
+                        <Dog className="h-5 w-5 text-brand-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1 text-left">
+                      <p className="font-bold text-ink">{p.nombre}</p>
+                      <p className="text-xs text-ink-muted">
+                        {[p.raza, p.color].filter(Boolean).join(' · ') || 'Sin descripción'}
+                      </p>
+                    </div>
+                    {perroSel === p.id && <CheckCircle2 className="h-5 w-5 text-lost shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {errorSos && (
+              <p className="mb-3 flex items-center gap-1.5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">
+                <AlertCircle className="h-4 w-4 shrink-0" />{errorSos}
+              </p>
+            )}
+
+            <div className="space-y-2">
+              {perros.length > 0 && (
+                <button type="button" onClick={handleSOS} disabled={enviando || !perroSel}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-lost py-3 text-sm font-bold text-white transition hover:bg-lost/90 disabled:opacity-60">
+                  {enviando
+                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando alerta…</>
+                    : <><Siren className="h-4 w-4" /> Alertar a mis amigos</>}
+                </button>
+              )}
+              <button type="button"
+                onClick={() => onDone(perroSel || null, perroActual?.nombre ?? '')}
+                className="w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted hover:border-black/20 transition">
+                Solo publicar aviso →
+              </button>
+            </div>
+          </>
+        ) : (
+          /* Confirmación enviada */
+          <div className="text-center py-4 space-y-4">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-good/10">
+              <CheckCircle2 className="h-8 w-8 text-good" />
+            </div>
+            <div>
+              <p className="font-display text-lg font-black text-ink">¡Alerta enviada!</p>
+              {amigosCount !== null && amigosCount > 0 ? (
+                <p className="mt-1 text-sm text-ink-muted">
+                  Notificamos a <strong>{amigosCount} amigo{amigosCount !== 1 ? 's' : ''}</strong> por notificación y email.
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-ink-muted">
+                  Todavía no tenés amigos en Vecindog. Publicá el aviso para que te ayuden los vecinos.
+                </p>
+              )}
+            </div>
+            <button type="button"
+              onClick={() => onDone(perroSel || null, perroActual?.nombre ?? '')}
+              className="w-full rounded-2xl bg-lost py-3 text-sm font-bold text-white transition hover:bg-lost/90">
+              Publicar aviso completo →
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

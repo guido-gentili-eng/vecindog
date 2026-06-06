@@ -83,7 +83,14 @@ export default function AuthModal() {
     setError(''); setSubmitting(true);
     try {
       const err = await verifyOtp(email, code.trim());
-      if (err) setError(tradError(err));
+      if (err) {
+        const isTokenError = err.includes('is invalid') || err.includes('Unable to validate') || err.includes('Token');
+        if (isTokenError) {
+          setError(t.errTokenExpired);
+        } else {
+          setError(tradError(err));
+        }
+      }
     } finally {
       setSubmitting(false);
     }

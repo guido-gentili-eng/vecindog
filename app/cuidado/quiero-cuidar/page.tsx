@@ -50,7 +50,7 @@ export default function QuieroCuidarPage() {
     if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
     if (!zona.trim())   { setError('La zona es obligatoria.'); return; }
     if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
-    if (contacto.replace(/\D/g, '').length < 8) { setError('El WhatsApp debe tener al menos 8 dígitos. Ejemplo: 2914050210'); return; }
+    if (contacto.replace(/\D/g, '').length < 10) { setError('El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210'); return; }
 
     setEnviando(true);
     setError('');
@@ -279,6 +279,11 @@ export default function QuieroCuidarPage() {
             onChange={(e) => setContacto(e.target.value)}
             required
           />
+          {contacto.trim() && contacto.replace(/\D/g, '').length < 10 && (
+            <p className="mt-1.5 text-xs font-semibold text-bad">
+              Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210
+            </p>
+          )}
         </div>
 
         {error && (

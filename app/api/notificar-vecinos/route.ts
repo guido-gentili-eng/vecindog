@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validar categoría
-    if (!['perdido', 'encontrado', 'adopcion'].includes(categoria)) {
+    if (!['perdido', 'encontrado', 'adopcion', 'transito'].includes(categoria)) {
       return NextResponse.json({ ok: false, reason: 'categoría inválida' });
     }
 
@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
     const categoriaLabel =
       categoria === 'perdido'    ? 'perro perdido' :
       categoria === 'encontrado' ? 'perro visto' :
+      categoria === 'transito'   ? 'perro en tránsito' :
       'perro en adopción';
 
     const zonaLabel = [zonaS, ciudadS].filter(Boolean).join(', ');

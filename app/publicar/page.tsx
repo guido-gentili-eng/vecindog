@@ -251,7 +251,7 @@ export default function PublicarPage() {
     }
 
     // Límite de 5 publicaciones activas para usuarios Free
-    if (!isPro && user && ['perdido', 'encontrado'].includes(form.categoria)) {
+    if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
       const count = await contarPostsActivosDelUsuario();
       if (count >= 5) {
         setSubmitError('Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.');
@@ -400,31 +400,6 @@ export default function PublicarPage() {
   }
 
   /* ── Bloqueo tránsito para Free ── */
-  if (form.categoria === 'transito' && !isPro) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <div className="w-full max-w-sm rounded-[28px] bg-white p-8 text-center shadow-2xl">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7c3aed]/10">
-            <span className="text-3xl">🐾</span>
-          </div>
-          <h2 className="mt-5 font-display text-xl font-black text-ink">Perros en tránsito</h2>
-          <p className="mt-2 text-sm text-ink-muted">
-            Publicar animales en tránsito es una función exclusiva de <strong>VecindogPro</strong>.
-          </p>
-          <div className="mt-6 space-y-2">
-            <Link href="/planes"
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
-              <Sparkles className="h-4 w-4" /> Ver plan Pro
-            </Link>
-            <Link href="/"
-              className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-              Volver al inicio
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   /* ── Bloqueo invitados ── */
   if (isGuest) {

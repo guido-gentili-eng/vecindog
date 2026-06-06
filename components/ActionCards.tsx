@@ -66,7 +66,7 @@ const ACCIONES: Accion[] = [
     icon: Footprints,
     titulo: 'En tránsito',
     texto: 'Lo tenés temporalmente o lo viste en la calle. La comunidad puede ayudar.',
-    chip: 'VecindogPro',
+    chip: 'Comunidad',
     bg:     'bg-[#5b21b6]',
     text:   'text-white',
     iconBg: 'bg-white/22',

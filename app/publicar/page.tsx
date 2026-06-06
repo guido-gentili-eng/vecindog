@@ -130,6 +130,7 @@ export default function PublicarPage() {
   const [latVisto,        setLatVisto]        = useState<number | null>(null);
   const [lngVisto,        setLngVisto]        = useState<number | null>(null);
   const [horarioVisto,    setHorarioVisto]    = useState('');
+  const [zonaManual,      setZonaManual]      = useState(false);
 
   /* Scroll al tope cuando el aviso se publicó exitosamente */
   useEffect(() => {
@@ -219,22 +220,34 @@ export default function PublicarPage() {
   }
 
   /* ── GPS para el pin del mapa ── */
-  function capturarGPS() {
-    if (!navigator.geolocation) { setGpsEstado('error'); return; }
+  async function capturarGPS() {
+    if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
     setGpsEstado('cargando');
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
-        // Validar que las coordenadas estén dentro de Argentina
         const dentroDeArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
-        if (!dentroDeArgentina) {
-          setGpsEstado('error');
-          return;
-        }
+        if (!dentroDeArgentina) { setGpsEstado('error'); setZonaManual(true); return; }
         setForm((f) => ({ ...f, lat, lng }));
         setGpsEstado('ok');
+        // Reverse geocode para llenar el campo zona
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+            { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+          );
+          const data = await res.json();
+          if (data?.address) {
+            const a = data.address;
+            const calle = a.road ?? a.pedestrian ?? a.footway ?? '';
+            const numero = a.house_number ?? '';
+            const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
+            const zona = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
+            if (zona) handleChange('zona', zona);
+          }
+        } catch { /* sin reverse geocode, el usuario puede escribir */ }
       },
-      () => setGpsEstado('error'),
+      () => { setGpsEstado('error'); setZonaManual(true); },
       { timeout: 10000, enableHighAccuracy: true }
     );
   }
@@ -948,50 +961,61 @@ export default function PublicarPage() {
               </div>
             )}
 
-            <div className="sm:col-span-2">
-              <Field label="Barrio o zona donde fue visto">
-                <AddressAutocomplete
-                  value={form.zona}
-                  onChange={(v) => handleChange('zona', v)}
-                  onSelectCoords={(lat, lng) => { setForm((f) => ({ ...f, lat, lng })); setGpsEstado('ok'); }}
-                  onClearCoords={() => { setForm((f) => ({ ...f, lat: undefined, lng: undefined })); setGpsEstado('idle'); }}
-                  placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
-                  ciudad={efectivaCiudad}
-                  required
-                />
-                <p className="mt-1 text-xs text-ink-muted">
-                  Podés escribir la calle y elegir una sugerencia, o escribir el barrio general. Para que aparezca en el mapa usá el GPS de abajo.
-                </p>
-              </Field>
-
-              {/* Botón GPS para pin en el mapa */}
-              <div className="mt-2">
-                {gpsEstado === 'ok' ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-good/10 px-3 py-1.5 text-xs font-bold text-good">
-                    <CheckCheck className="h-3.5 w-3.5" /> Ubicación GPS capturada — va a aparecer en el mapa
-                  </span>
-                ) : (
+            <div className="sm:col-span-2 space-y-3">
+              {/* GPS — opción principal */}
+              {gpsEstado === 'ok' ? (
+                <div className="flex items-center justify-between rounded-2xl bg-good/10 px-4 py-3 ring-1 ring-good/20">
+                  <div className="flex items-center gap-2 text-sm font-bold text-good">
+                    <CheckCheck className="h-4 w-4 shrink-0" />
+                    <span>Ubicación GPS capturada</span>
+                  </div>
+                  <button type="button"
+                    onClick={() => { setGpsEstado('idle'); setZonaManual(true); setForm((f) => ({ ...f, lat: null, lng: null })); }}
+                    className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                </div>
+              ) : gpsEstado === 'cargando' ? (
+                <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-4 py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
+                  <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+                </div>
+              ) : !zonaManual ? (
+                <div className="space-y-2">
                   <button
                     type="button"
                     onClick={capturarGPS}
-                    disabled={gpsEstado === 'cargando'}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition disabled:opacity-60 ${
-                      form.categoria === 'transito' && form.situacion_transito === 'calle'
-                        ? 'border-2 border-[#7c3aed]/40 bg-[#7c3aed]/5 text-[#7c3aed] hover:bg-[#7c3aed]/10'
-                        : 'border border-black/10 bg-white text-ink-muted hover:border-brand-primary hover:text-brand-primary'
-                    }`}
+                    className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-4 py-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 active:scale-[0.99]"
                   >
-                    {gpsEstado === 'cargando'
-                      ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Obteniendo ubicación…</>
-                      : gpsEstado === 'error'
-                      ? <><Navigation className="h-3.5 w-3.5" /> No se pudo obtener el GPS — tocar para reintentar</>
-                      : form.categoria === 'transito' && form.situacion_transito === 'calle'
-                      ? <><Navigation className="h-3.5 w-3.5" /> 📍 Activar GPS — necesario para el mapa</>
-                      : <><Navigation className="h-3.5 w-3.5" /> Agregar ubicación GPS (opcional — aparece en el mapa)</>
-                    }
+                    <Navigation className="h-5 w-5" />
+                    {gpsEstado === 'error' ? 'No se pudo obtener el GPS — reintentar' : 'Usar mi ubicación GPS'}
                   </button>
-                )}
-              </div>
+                  <button type="button" onClick={() => setZonaManual(true)}
+                    className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
+                    No tengo GPS / prefiero escribir la dirección
+                  </button>
+                </div>
+              ) : null}
+
+              {/* Campo manual — se muestra si eligió escribir o GPS falló */}
+              {(zonaManual || gpsEstado === 'ok') && (
+                <Field label={gpsEstado === 'ok' ? 'Confirmá o ajustá la dirección' : 'Dirección o zona'}>
+                  <AddressAutocomplete
+                    value={form.zona}
+                    onChange={(v) => handleChange('zona', v)}
+                    onSelectCoords={(lat, lng) => { setForm((f) => ({ ...f, lat, lng })); setGpsEstado('ok'); }}
+                    onClearCoords={() => { setForm((f) => ({ ...f, lat: null, lng: null })); }}
+                    placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
+                    ciudad={efectivaCiudad}
+                    required
+                  />
+                  {zonaManual && gpsEstado !== 'ok' && (
+                    <button type="button" onClick={() => { setZonaManual(false); capturarGPS(); }}
+                      className="mt-1 text-xs text-brand-primary hover:underline">
+                      ← Volver a usar GPS
+                    </button>
+                  )}
+                </Field>
+              )}
+
             </div>
 
             <Field label="Fecha">

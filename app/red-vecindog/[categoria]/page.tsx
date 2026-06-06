@@ -47,19 +47,19 @@ export default function CategoriaPage() {
     if (!cat || !ciudad) { setDataLoading(false); return; }
 
     const hoy = new Date().toISOString().slice(0, 10);
-    supabase
-      .from('ads')
-      .select('*')
-      .eq('variant', 'comercio')
-      .eq('activo', true)
-      .eq('categoria_local', cat.slug)
-      .ilike('direccion_comercio', `%${ciudad}%`)
-      .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setComerciosState((data as Ad[]) ?? []);
-      })
-      .finally(() => setDataLoading(false));
+    Promise.resolve(
+      supabase
+        .from('ads')
+        .select('*')
+        .eq('variant', 'comercio')
+        .eq('activo', true)
+        .eq('categoria_local', cat.slug)
+        .ilike('direccion_comercio', `%${ciudad}%`)
+        .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
+        .order('created_at', { ascending: false })
+    ).then(({ data }) => {
+      setComerciosState((data as Ad[]) ?? []);
+    }).finally(() => setDataLoading(false));
   }, [catKey, cat, ciudad]);
 
   if (!cat) {

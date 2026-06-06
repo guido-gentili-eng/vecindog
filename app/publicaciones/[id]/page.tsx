@@ -81,6 +81,7 @@ export default function DetalleAvisoPage() {
   const [loViGps,        setLoViGps]        = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
   const [loViManual,     setLoViManual]     = useState(false);
   const [loViShowMap,    setLoViShowMap]    = useState(false);
+  const [loViMismoLugar, setLoViMismoLugar] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -240,12 +241,14 @@ export default function DetalleAvisoPage() {
   }
 
   async function handleLoVi() {
-    if (!loViCalle.trim() || !loViHora.trim()) return;
+    const calleEfectiva = loViMismoLugar ? (post!.zona ?? '') : loViCalle.trim();
+    if (!calleEfectiva || !loViHora.trim()) return;
     setLoViLoading(true);
     setLoViError('');
     try {
       if (post!.categoria === 'perdido') {
-        const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} en ${loViCalle.trim()} a las ${loViHora}.`;
+        const lugarTexto = loViMismoLugar ? `en el mismo lugar (${calleEfectiva})` : `en ${calleEfectiva}`;
+        const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} ${lugarTexto} a las ${loViHora}.`;
         const { error } = await supabase.from('notifications').insert({
           user_id: post!.user_id,
           post_id: post!.id,
@@ -254,12 +257,17 @@ export default function DetalleAvisoPage() {
           leida:   false,
         });
         if (error) throw error;
+        // Actualizar horario del aviso en ambos casos
+        await actualizarZonaPost(post!.id, calleEfectiva, loViHora,
+          loViMismoLugar ? undefined : (loViLat ?? undefined),
+          loViMismoLugar ? undefined : (loViLng ?? undefined)
+        );
+        setPost((p) => p ? { ...p, horario: loViHora } : p);
       } else if (post!.categoria === 'encontrado') {
-        // Usa coords del GPS o las del autocomplete — nunca pisa con null
-        const lat = loViLat ?? undefined;
-        const lng = loViLng ?? undefined;
-        await actualizarZonaPost(post!.id, loViCalle.trim(), loViHora, lat, lng);
-        setPost((p) => p ? { ...p, zona: loViCalle.trim(), horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
+        const lat = loViMismoLugar ? undefined : (loViLat ?? undefined);
+        const lng = loViMismoLugar ? undefined : (loViLng ?? undefined);
+        await actualizarZonaPost(post!.id, calleEfectiva, loViHora, lat, lng);
+        setPost((p) => p ? { ...p, zona: calleEfectiva, horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
       }
       setLoViEnviado(true);
     } catch {
@@ -279,6 +287,7 @@ export default function DetalleAvisoPage() {
     setLoViGps('idle');
     setLoViManual(false);
     setLoViShowMap(false);
+    setLoViMismoLugar(false);
     setLoViOpen(true);
   }
 
@@ -388,34 +397,58 @@ export default function DetalleAvisoPage() {
                     <Eye className="h-4 w-4 text-brand-primary shrink-0" /> ¿Dónde y cuándo lo viste?
                   </p>
 
-                  {/* ── GPS o manual ── */}
-                  {loViGps === 'ok' ? (
-                    <div className="flex items-center justify-between rounded-2xl bg-good/10 px-3 py-2.5 ring-1 ring-good/20">
-                      <div className="flex items-center gap-2 text-sm font-bold text-good">
-                        <CheckCheck className="h-4 w-4 shrink-0" /> Ubicación GPS capturada
+                  {/* ── Mismo lugar ── */}
+                  {!loViMismoLugar && loViGps !== 'ok' && !loViManual && (
+                    <button
+                      type="button"
+                      onClick={() => setLoViMismoLugar(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-black/15 bg-black/5 px-3 py-3 text-sm font-bold text-ink transition hover:bg-black/8"
+                    >
+                      <MapPin className="h-4 w-4 text-brand-primary" /> En el mismo lugar
+                    </button>
+                  )}
+
+                  {loViMismoLugar && (
+                    <div className="flex items-center justify-between rounded-2xl bg-brand-primary/8 px-3 py-2.5 ring-1 ring-brand-primary/20">
+                      <div className="flex items-center gap-2 text-sm font-bold text-brand-primary">
+                        <MapPin className="h-4 w-4 shrink-0" /> Mismo lugar que el aviso
                       </div>
                       <button type="button"
-                        onClick={() => { setLoViGps('idle'); setLoViManual(true); setLoViLat(null); setLoViLng(null); setLoViShowMap(false); }}
+                        onClick={() => setLoViMismoLugar(false)}
                         className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
                     </div>
-                  ) : loViGps === 'cargando' ? (
-                    <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
-                      <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
-                    </div>
-                  ) : !loViManual ? (
-                    <div className="space-y-2">
-                      <button type="button" onClick={capturarGpsLoVi}
-                        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-3 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
-                        <Navigation className="h-4 w-4" />
-                        {loViGps === 'error' ? 'No se pudo obtener GPS — reintentar' : 'Usar mi ubicación GPS'}
-                      </button>
-                      <button type="button" onClick={() => setLoViManual(true)}
-                        className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
-                        Escribir dirección manual
-                      </button>
-                    </div>
-                  ) : null}
+                  )}
+
+                  {/* ── GPS o manual (solo si no eligió mismo lugar) ── */}
+                  {!loViMismoLugar && (
+                    loViGps === 'ok' ? (
+                      <div className="flex items-center justify-between rounded-2xl bg-good/10 px-3 py-2.5 ring-1 ring-good/20">
+                        <div className="flex items-center gap-2 text-sm font-bold text-good">
+                          <CheckCheck className="h-4 w-4 shrink-0" /> Ubicación GPS capturada
+                        </div>
+                        <button type="button"
+                          onClick={() => { setLoViGps('idle'); setLoViManual(true); setLoViLat(null); setLoViLng(null); setLoViShowMap(false); }}
+                          className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                      </div>
+                    ) : loViGps === 'cargando' ? (
+                      <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-3">
+                        <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
+                        <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+                      </div>
+                    ) : !loViManual ? (
+                      <div className="space-y-2">
+                        <button type="button" onClick={capturarGpsLoVi}
+                          className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-3 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                          <Navigation className="h-4 w-4" />
+                          {loViGps === 'error' ? 'No se pudo obtener GPS — reintentar' : 'Usar mi ubicación GPS'}
+                        </button>
+                        <button type="button" onClick={() => setLoViManual(true)}
+                          className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
+                          Escribir dirección manual
+                        </button>
+                      </div>
+                    ) : null
+                  )}
 
                   {/* Campo de dirección — manual o confirmación GPS */}
                   {(loViManual || loViGps === 'ok') && (
@@ -447,7 +480,7 @@ export default function DetalleAvisoPage() {
                   )}
 
                   {/* Hora */}
-                  {(loViManual || loViGps === 'ok') && (
+                  {(loViMismoLugar || loViManual || loViGps === 'ok') && (
                     <div>
                       <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Hora aproximada
@@ -465,11 +498,11 @@ export default function DetalleAvisoPage() {
                     <p className="text-xs font-bold text-bad">{loViError}</p>
                   )}
 
-                  {(loViManual || loViGps === 'ok') && (
+                  {(loViMismoLugar || loViManual || loViGps === 'ok') && (
                     <div className="flex gap-2 pt-1">
                       <button
                         type="button"
-                        disabled={loViLoading || !loViCalle.trim() || !loViHora.trim()}
+                        disabled={loViLoading || !loViHora.trim() || (!loViMismoLugar && !loViCalle.trim())}
                         onClick={handleLoVi}
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                       >
@@ -480,7 +513,7 @@ export default function DetalleAvisoPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setLoViOpen(false); setLoViError(''); }}
+                        onClick={() => { setLoViOpen(false); setLoViError(''); setLoViMismoLugar(false); }}
                         className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
                       >
                         Cancelar

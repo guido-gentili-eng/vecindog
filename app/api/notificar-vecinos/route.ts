@@ -89,17 +89,18 @@ export async function POST(req: NextRequest) {
     // ── Traer perfiles con coordenadas ───────────────────────────────
     const { data: profiles } = await admin
       .from('profiles')
-      .select('id, nombre, apellido, lat, lng')
+      .select('id, nombre, apellido, lat, lng, radio_alerta_km')
       .not('lat', 'is', null)
       .not('lng', 'is', null)
       .neq('id', publicador_id ?? '');
 
     if (!profiles || profiles.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 
-    // Filtrar por radio
-    const cercanos = profiles.filter((p: { lat: number; lng: number }) =>
-      haversineKm(latN, lngN, p.lat, p.lng) <= RADIO_KM
-    );
+    // Filtrar por el radio personalizado de cada usuario (default RADIO_KM si no tiene)
+    const cercanos = profiles.filter((p: { lat: number; lng: number; radio_alerta_km?: number | null }) => {
+      const radio = p.radio_alerta_km ?? RADIO_KM;
+      return haversineKm(latN, lngN, p.lat, p.lng) <= radio;
+    });
     if (cercanos.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 
     // ── Obtener emails en batch ──────────────────────────────────────

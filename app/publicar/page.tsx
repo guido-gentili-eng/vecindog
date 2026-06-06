@@ -1064,6 +1064,11 @@ export default function PublicarPage() {
           <Field label="WhatsApp de contacto">
             <input type="tel" className="field" placeholder="+54 9 291 ..."
               value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} required />
+            {form.contacto.trim() && form.contacto.replace(/\D/g, '').length < 10 && (
+              <p className="mt-1.5 text-xs font-semibold text-bad">
+                Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210
+              </p>
+            )}
           </Field>
         </StepCard>
 

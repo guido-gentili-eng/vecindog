@@ -129,6 +129,17 @@ async function enviarEmailBienvenidaComercio(email: string, nombreNegocio: strin
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar auth
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ ok: false, error: 'No autenticado' }, { status: 401 });
+
+    const adminForAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
+    const { data: { user } } = await adminForAuth.auth.getUser(token);
+    if (!user) return NextResponse.json({ ok: false, error: 'No autenticado' }, { status: 401 });
+
     const { payment_id, ad_ids } = await req.json();
 
     if (!payment_id || !Array.isArray(ad_ids) || ad_ids.length === 0) {
@@ -145,6 +156,14 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: `Pago no aprobado (estado: ${payment.status})`,
       });
+    }
+
+    // Verificar que los ad_ids del request coinciden con los del pago
+    const meta = payment.metadata as Record<string, unknown> | null;
+    const metaAdIds = (meta as { ad_ids?: string[] } | null)?.ad_ids ?? [];
+    const idsValidos = ad_ids.every((id: string) => metaAdIds.includes(id));
+    if (metaAdIds.length > 0 && !idsValidos) {
+      return NextResponse.json({ ok: false, error: 'ad_ids no coinciden con el pago' }, { status: 403 });
     }
 
     await activarAds(ad_ids);

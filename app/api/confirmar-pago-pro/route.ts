@@ -4,6 +4,17 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar que el caller está autenticado
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: { user } } = await adminClient.auth.getUser(token);
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
     const { payment_id } = await req.json();
     if (!payment_id) {
       return NextResponse.json({ error: 'payment_id requerido' }, { status: 400 });
@@ -22,7 +33,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, reason: 'no es un pago Pro' });
     }
 
-    const admin = createClient(
+    // El user_id del pago debe coincidir con el usuario autenticado
+    if (meta.user_id !== user.id) {
+      return NextResponse.json({ ok: false, reason: 'usuario no coincide' }, { status: 403 });
+    }
+
+    const admin = adminClient;
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );

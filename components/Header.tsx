@@ -124,7 +124,7 @@ export default function Header() {
                 <Download className="h-3.5 w-3.5" />
               </Link>
 
-              {isPro && <NotificationsBell />}
+              {isAuthenticated && <NotificationsBell />}
 
               {isAuthenticated ? (
                 /* Dropdown Mi perfil */

@@ -79,6 +79,12 @@ export default function AdminPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const tokenRef   = useRef('');
+
+  async function getToken(): Promise<string> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) tokenRef.current = session.access_token;
+    return tokenRef.current;
+  }
   const [stats,      setStats]      = useState<Stats | null>(null);
   const [cargando,   setCargando]   = useState(true);
   const [error,      setError]      = useState('');
@@ -122,7 +128,7 @@ export default function AdminPage() {
     setReportesLoad(true);
     try {
       const res = await fetch('/api/admin/reportes', {
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
       const json = await res.json();
       setReportes(json.reportes ?? []);
@@ -132,12 +138,17 @@ export default function AdminPage() {
   }
 
   async function accionReporte(reporteId: string, accion: 'desestimar' | 'eliminar_aviso') {
-    await fetch('/api/admin/reportes', {
+    const prev = reportes;
+    setReportes((r) => r.filter((x) => x.id !== reporteId));
+    const res = await fetch('/api/admin/reportes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await getToken()}` },
       body: JSON.stringify({ reporte_id: reporteId, accion }),
     });
-    setReportes((prev) => prev.filter((r) => r.id !== reporteId));
+    if (!res.ok) {
+      setReportes(prev);
+      showError('Error al procesar el reporte. Intentá de nuevo.');
+    }
   }
 
   function showError(msg: string) {
@@ -184,7 +195,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/user-action', {
         method:  'POST',
-        headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${await getToken()}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ uid, accion }),
       });
       if (!res.ok) {
@@ -226,7 +237,7 @@ export default function AdminPage() {
     setLoadingCarnet(perroId);
     try {
       const res  = await fetch(`/api/admin/perro-carnet?perroId=${perroId}`, {
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
       const data = await res.json();
       if (data.perro) {
@@ -247,7 +258,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/user-plan', {
         method:  'POST',
-        headers: { 'Authorization': `Bearer ${tokenRef.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${await getToken()}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ uid: planModal.uid, plan: nuevoPlan, plan_vencimiento: nuevoPlan === 'pro' && planVenc ? planVenc : null }),
       });
       if (!res.ok) {
@@ -288,7 +299,7 @@ export default function AdminPage() {
     setLoadingExp(uid + tipo);
     try {
       const endpoint = tipo === 'perros' ? `/api/admin/user-dogs?uid=${uid}` : `/api/admin/user-posts?uid=${uid}`;
-      const res  = await fetch(endpoint, { headers: { Authorization: `Bearer ${tokenRef.current}` } });
+      const res  = await fetch(endpoint, { headers: { Authorization: `Bearer ${await getToken()}` } });
       const data = await res.json();
       if (tipo === 'perros') setPerrosMap((prev) => ({ ...prev, [uid]: data.perros ?? [] }));
       else                   setPostsMap ((prev) => ({ ...prev, [uid]: data.posts  ?? [] }));

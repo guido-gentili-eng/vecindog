@@ -134,16 +134,26 @@ export default function MiPerfilPage() {
 
   async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !user || !profile) return;
     if (file.size > 5 * 1024 * 1024) { setError('La foto debe pesar menos de 5 MB.'); return; }
     setAvatarLoading(true);
     try {
       const url = await subirFotoPerfil(file, user.id);
       setFotoUrl(url);
+      // Usar siempre los datos del perfil guardado, no el estado del form que puede estar incompleto
       await saveProfile({
-        nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion,
-        instagram: instagram || null, facebook: facebook || null,
-        bio: bio || null, radio_alerta_km: radioAlerta, foto_url: url,
+        nombre:           profile.nombre,
+        apellido:         profile.apellido,
+        telefono:         profile.telefono,
+        ciudad:           profile.ciudad,
+        provincia:        profile.provincia,
+        pais:             profile.pais,
+        direccion:        profile.direccion,
+        instagram:        profile.instagram ?? null,
+        facebook:         profile.facebook  ?? null,
+        bio:              profile.bio       ?? null,
+        radio_alerta_km:  profile.radio_alerta_km ?? null,
+        foto_url: url,
       });
     } catch { setError('Error al subir la foto.'); }
     finally { setAvatarLoading(false); }

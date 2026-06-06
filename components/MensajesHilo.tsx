@@ -40,6 +40,17 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
   useEffect(() => {
     if (!abierto || !isAuthenticated) return;
     cargarMensajes();
+
+    const channel = supabase
+      .channel(`mensajes-${postId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `post_id=eq.${postId}` },
+        () => { cargarMensajes(); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierto, isAuthenticated]);
 

@@ -35,7 +35,7 @@ export default function NotificationsBell() {
 
     // Suscripción realtime
     const channel = supabase
-      .channel('notifications')
+      .channel(`notifications-${user.id}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
@@ -60,9 +60,11 @@ export default function NotificationsBell() {
   }, []);
 
   async function fetchNotifs() {
+    if (!user) return;
     const { data } = await supabase
       .from('notifications')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
     if (data) setNotifs(data as Notification[]);

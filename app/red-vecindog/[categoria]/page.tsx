@@ -58,8 +58,9 @@ export default function CategoriaPage() {
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setComerciosState((data as Ad[]) ?? []);
-        setDataLoading(false);
-      });
+      })
+      .catch(() => {})
+      .finally(() => setDataLoading(false));
   }, [catKey, cat, ciudad]);
 
   if (!cat) {

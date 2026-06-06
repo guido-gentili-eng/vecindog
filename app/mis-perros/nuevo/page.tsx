@@ -91,6 +91,13 @@ export default function NuevoPerroPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.nombre.trim()) { setError('El nombre es obligatorio.'); return; }
+
+    // Re-verificar límite de perros al momento del submit (evita race condition)
+    if (!isPro) {
+      const lista = await listarMisPerros().catch(() => [] as Awaited<ReturnType<typeof listarMisPerros>>);
+      if (lista.length >= 1) { setBloqueado(true); return; }
+    }
+
     setError('');
     setLoading(true);
 

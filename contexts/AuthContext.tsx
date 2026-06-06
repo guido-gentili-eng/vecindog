@@ -228,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
-      isPro:           profile?.plan === 'pro' || user?.email === ADMIN_EMAIL,
+      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || profile.plan_vencimiento >= new Date().toISOString().slice(0, 10))) || user?.email === ADMIN_EMAIL,
       isSuspendido:    profile?.suspendido === true && user?.email !== ADMIN_EMAIL,
       ciudad,
       hasCity:         !!ciudad,

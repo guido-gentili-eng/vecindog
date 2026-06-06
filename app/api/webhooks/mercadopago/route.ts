@@ -28,10 +28,26 @@ export async function POST(req: NextRequest) {
 
     // ── Pago de suscripción Pro ──────────────────────────────────────
     if (meta?.tipo === 'pro' && meta?.user_id) {
+      // Validar que el monto sea el correcto para evitar pagos de $1
+      const PRECIO_PRO = Number(process.env.PRECIO_PRO ?? 1000);
+      const montoAbonado = payment.transaction_amount ?? 0;
+      if (montoAbonado < PRECIO_PRO) {
+        console.warn('[MP webhook] monto insuficiente para Pro:', montoAbonado);
+        return NextResponse.json({ ok: false, reason: 'monto insuficiente' }, { status: 400 });
+      }
+
       const admin = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
+
+      // Verificar que el user_id existe en auth.users antes de actualizar
+      const { data: authUser } = await admin.auth.admin.getUserById(String(meta.user_id));
+      if (!authUser?.user) {
+        console.warn('[MP webhook] user_id no encontrado:', meta.user_id);
+        return NextResponse.json({ ok: false, reason: 'usuario no encontrado' }, { status: 400 });
+      }
+
       const vencimiento = new Date();
       vencimiento.setDate(vencimiento.getDate() + 30);
       await admin

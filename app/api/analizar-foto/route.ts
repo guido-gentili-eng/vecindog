@@ -1,10 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@supabase/supabase-js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar auth y plan Pro
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: { user } } = await admin.auth.getUser(token);
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('plan, plan_vencimiento')
+      .eq('id', user.id)
+      .single();
+
+    const hoy = new Date().toISOString().slice(0, 10);
+    const isPro = profile?.plan === 'pro' &&
+      (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
+
+    if (!isPro && user.email !== process.env.ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('foto') as File | null;
     if (!file) return NextResponse.json({ error: 'No se recibió foto' }, { status: 400 });

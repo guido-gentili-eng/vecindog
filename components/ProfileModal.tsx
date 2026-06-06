@@ -32,6 +32,11 @@ export default function ProfileModal() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    const digitos = telefono.replace(/\D/g, '');
+    if (digitos.length < 10) {
+      setError('El teléfono debe tener al menos 10 dígitos con código de área. Ej: +54 9 291 4050210');
+      return;
+    }
     setSubmitting(true);
     try {
       const err = await saveProfile({ nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion });

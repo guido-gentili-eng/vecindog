@@ -98,7 +98,7 @@ export async function resolverPost(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Cuenta los avisos activos (no resueltos) del usuario autenticado. */
+/** Cuenta los avisos activos (no resueltos) del usuario autenticado — solo categorías de aviso. */
 export async function contarPostsActivosDelUsuario(): Promise<number> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) return 0;
@@ -106,7 +106,8 @@ export async function contarPostsActivosDelUsuario(): Promise<number> {
     .from('posts')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', session.user.id)
-    .neq('estado', 'resuelto');
+    .neq('estado', 'resuelto')
+    .in('categoria', ['perdido', 'encontrado', 'adopcion', 'transito']);
   return count ?? 0;
 }
 

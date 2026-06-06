@@ -72,6 +72,7 @@ export default function DetalleAvisoPage() {
   const [loViHora,    setLoViHora]    = useState('');
   const [loViLoading, setLoViLoading] = useState(false);
   const [loViEnviado, setLoViEnviado] = useState(false);
+  const [loViError,   setLoViError]   = useState('');
 
   useEffect(() => {
     obtenerPost(id)
@@ -199,21 +200,22 @@ export default function DetalleAvisoPage() {
   async function handleLoVi() {
     if (!loViCalle.trim() || !loViHora.trim()) return;
     setLoViLoading(true);
+    setLoViError('');
     try {
       if (post!.categoria === 'perdido') {
-        // Notificar al dueño
         const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} en ${loViCalle.trim()} a las ${loViHora}.`;
-        await supabase.from('notifications').insert({
+        const { error } = await supabase.from('notifications').insert({
           user_id: post!.user_id,
           post_id: post!.id,
           tipo:    'avistamiento',
           mensaje,
           leida:   false,
         });
+        if (error) throw error;
       } else if (post!.categoria === 'encontrado') {
-        // Actualizar zona del aviso; intentar geocodificar para mover el pin
-        let lat: number | null = null;
-        let lng: number | null = null;
+        // Intentar geocodificar — solo actualiza coords si tiene resultado válido
+        let lat: number | undefined;
+        let lng: number | undefined;
         try {
           const geo = await fetch(
             `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(loViCalle.trim())}&format=json&limit=1&countrycodes=ar`,
@@ -221,16 +223,24 @@ export default function DetalleAvisoPage() {
           );
           const geoData = await geo.json();
           if (geoData[0]) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon); }
-        } catch { /* geocoding best-effort */ }
+        } catch { /* geocoding best-effort, no pisa coords existentes */ }
         await actualizarZonaPost(post!.id, loViCalle.trim(), loViHora, lat, lng);
         setPost((p) => p ? { ...p, zona: loViCalle.trim(), horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
       }
       setLoViEnviado(true);
     } catch {
-      // silently fail
+      setLoViError('No se pudo enviar. Intentá de nuevo.');
     } finally {
       setLoViLoading(false);
     }
+  }
+
+  function resetLoVi() {
+    setLoViEnviado(false);
+    setLoViCalle('');
+    setLoViHora('');
+    setLoViError('');
+    setLoViOpen(true);
   }
 
   const postUrl = `https://www.mivecindog.com.ar/publicaciones/${post.id}`;
@@ -359,6 +369,9 @@ export default function DetalleAvisoPage() {
                       className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                     />
                   </div>
+                  {loViError && (
+                    <p className="text-xs font-bold text-bad">{loViError}</p>
+                  )}
                   <div className="flex gap-2 pt-1">
                     <button
                       type="button"
@@ -373,7 +386,7 @@ export default function DetalleAvisoPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setLoViOpen(false)}
+                      onClick={() => { setLoViOpen(false); setLoViError(''); }}
                       className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
                     >
                       Cancelar
@@ -383,11 +396,20 @@ export default function DetalleAvisoPage() {
               )}
 
               {loViEnviado && (
-                <div className="p-4 flex items-center gap-2 text-good">
-                  <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  <p className="text-sm font-bold">
-                    {post.categoria === 'encontrado' ? '¡Ubicación actualizada en el mapa!' : '¡Aviso enviado al dueño!'}
-                  </p>
+                <div className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-good">
+                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                    <p className="text-sm font-bold">
+                      {post.categoria === 'encontrado' ? '¡Ubicación actualizada en el mapa!' : '¡Aviso enviado al dueño!'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={resetLoVi}
+                    className="text-xs font-bold text-brand-primary hover:underline"
+                  >
+                    Reportar otro avistamiento
+                  </button>
                 </div>
               )}
             </div>

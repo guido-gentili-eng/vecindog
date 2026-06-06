@@ -278,6 +278,16 @@ export default function PublicarPage() {
 
     setLoading(true);
     try {
+      // Double-check límite Free justo antes del insert (reduce condición de carrera)
+      if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
+        const countFinal = await contarPostsActivosDelUsuario();
+        if (countFinal >= 5) {
+          setSubmitError('Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const uploadedUrls: string[] = [];
 
       /* Foto del perfil del perro (ya subida, no se re-sube) */

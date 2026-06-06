@@ -65,11 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchProfile(userId: string) {
     setProfileLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = no rows found (usuario nuevo sin perfil todavía)
+      console.warn('[AuthContext] fetchProfile error:', error.message);
+    }
     setProfile(data ?? null);
     setProfileLoading(false);
   }

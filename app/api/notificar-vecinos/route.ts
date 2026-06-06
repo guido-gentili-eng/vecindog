@@ -185,7 +185,12 @@ export async function POST(req: NextRequest) {
         }),
       });
 
-      if (res.ok) enviados++;
+      if (res.ok) {
+        enviados++;
+      } else {
+        const body = await res.text().catch(() => '');
+        console.error(`[notificar-vecinos] Resend error ${res.status} para ${email}:`, body);
+      }
     }
 
     return NextResponse.json({ ok: true, enviados });

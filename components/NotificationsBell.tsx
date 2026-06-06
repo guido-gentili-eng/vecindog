@@ -69,13 +69,17 @@ export default function NotificationsBell() {
   }
 
   async function marcarLeida(id: string) {
-    setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
-    await supabase.from('notifications').update({ leida: true }).eq('id', id);
+    const prev = notifs;
+    setNotifs((ns) => ns.map((n) => n.id === id ? { ...n, leida: true } : n));
+    const { error } = await supabase.from('notifications').update({ leida: true }).eq('id', id);
+    if (error) setNotifs(prev);
   }
 
   async function marcarTodasLeidas() {
-    setNotifs((prev) => prev.map((n) => ({ ...n, leida: true })));
-    await supabase.from('notifications').update({ leida: true }).eq('user_id', user!.id);
+    const prev = notifs;
+    setNotifs((ns) => ns.map((n) => ({ ...n, leida: true })));
+    const { error } = await supabase.from('notifications').update({ leida: true }).eq('user_id', user!.id);
+    if (error) setNotifs(prev);
   }
 
   async function handleEncontrado(notif: Notification) {

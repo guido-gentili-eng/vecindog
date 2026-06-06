@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { buscarCiudades } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
 
@@ -291,6 +292,8 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
   const [localidadQuery,  setLocalidadQuery]  = useState('');
   const [localidadLat,    setLocalidadLat]    = useState<number | null>(null);
   const [localidadLng,    setLocalidadLng]    = useState<number | null>(null);
+  const [adLat,           setAdLat]           = useState<number | null>(null);
+  const [adLng,           setAdLng]           = useState<number | null>(null);
   const [showCiudades,    setShowCiudades]    = useState(false);
   const [horarioApertura, setHorarioApertura] = useState('');
   const [horarioCierre,   setHorarioCierre]   = useState('');
@@ -343,8 +346,8 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
         activo:             true,
         fecha_inicio:       new Date().toISOString().slice(0, 10),
         fecha_fin:          null,
-        lat:                localidadLat,
-        lng:                localidadLng,
+        lat:                adLat ?? localidadLat,
+        lng:                adLng ?? localidadLng,
         telefono_comercio:  telefono.trim(),
         horario_apertura:   horarioApertura || null,
         horario_cierre:     horarioCierre || null,
@@ -471,11 +474,13 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
                 <label className="mb-1 block text-xs font-semibold text-ink-muted">
                   Dirección <span className="text-bad">*</span>
                 </label>
-                <input
-                  className="field w-full"
-                  placeholder="Av. San Martín 1234"
+                <AddressAutocomplete
                   value={direccion}
-                  onChange={(e) => setDireccion(e.target.value)}
+                  onChange={setDireccion}
+                  onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
+                  onClearCoords={() => { setAdLat(null); setAdLng(null); }}
+                  placeholder="Av. San Martín 1234"
+                  ciudad={localidad || null}
                   required
                 />
               </div>
@@ -636,6 +641,8 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
   const [localidadQuery,  setLocalidadQuery]  = useState('');
   const [localidadLat,    setLocalidadLat]    = useState<number | null>(null);
   const [localidadLng,    setLocalidadLng]    = useState<number | null>(null);
+  const [adLat,           setAdLat]           = useState<number | null>(null);
+  const [adLng,           setAdLng]           = useState<number | null>(null);
   const [showCiudades,    setShowCiudades]    = useState(false);
   const [horarioApertura, setHorarioApertura] = useState('');
   const [horarioCierre,   setHorarioCierre]   = useState('');
@@ -684,7 +691,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre, categoria, telefono, direccion, localidad,
-          lat: localidadLat, lng: localidadLng,
+          lat: adLat ?? localidadLat, lng: adLng ?? localidadLng,
           horario_apertura: horarioApertura,
           horario_cierre:   horarioCierre,
           dias_atencion:    diasAtencion,
@@ -813,11 +820,13 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
               <label className="mb-1 block text-xs font-semibold text-ink-muted">
                 Dirección <span className="text-bad">*</span>
               </label>
-              <input
-                className="field w-full"
-                placeholder="Av. San Martín 1234"
+              <AddressAutocomplete
                 value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
+                onChange={setDireccion}
+                onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
+                onClearCoords={() => { setAdLat(null); setAdLng(null); }}
+                placeholder="Av. San Martín 1234"
+                ciudad={localidad || null}
                 required
               />
             </div>

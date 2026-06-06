@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { subirImagenAd, type Ad } from '@/lib/ads';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 /* ── helpers ── */
 function fmtFecha(iso: string | null) {
@@ -330,6 +331,8 @@ function EditarComercioModal({
     comercio.href && !comercio.href.startsWith('tel:') && comercio.href !== 'https://www.mivecindog.com.ar'
       ? comercio.href : ''
   );
+  const [adLat,       setAdLat]       = useState<number | null>(comercio.lat ?? null);
+  const [adLng,       setAdLng]       = useState<number | null>(comercio.lng ?? null);
   const [fotoFile,    setFotoFile]    = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(comercio.imagen_url ?? null);
   const [loading,     setLoading]     = useState(false);
@@ -362,6 +365,8 @@ function EditarComercioModal({
         titulo:              nombre.trim(),
         telefono_comercio:   telefono.trim() || null,
         direccion_comercio:  direccion.trim() || null,
+        lat:                 adLat,
+        lng:                 adLng,
         descripcion_comercio: descripcion.trim() || null,
         horario_apertura:    apertura || null,
         horario_cierre:      cierre || null,
@@ -456,7 +461,13 @@ function EditarComercioModal({
 
               {/* Dirección */}
               <Field label="Dirección">
-                <input value={direccion} onChange={(e) => setDireccion(e.target.value)} className="field" />
+                <AddressAutocomplete
+                  value={direccion}
+                  onChange={setDireccion}
+                  onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
+                  onClearCoords={() => { setAdLat(null); setAdLng(null); }}
+                  placeholder="Av. San Martín 1234"
+                />
               </Field>
 
               {/* Horarios */}

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
   Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock, Heart,
-  Share2, MessageCircle, Eye, Clock, SendHorizonal,
+  Share2, MessageCircle, Eye, Clock, SendHorizonal, Navigation, CheckCheck,
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
@@ -19,6 +19,9 @@ import ContactBlock from '@/components/ContactBlock';
 import AdSlot from '@/components/AdSlot';
 import AdoptionSheet from '@/components/AdoptionSheet';
 import FoundModal from '@/components/FoundModal';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
+import dynamic from 'next/dynamic';
+const MapPinPicker = dynamic(() => import('@/components/MapPinPicker'), { ssr: false });
 
 /* ──────────── Constantes ──────────── */
 
@@ -67,12 +70,17 @@ export default function DetalleAvisoPage() {
   const [msgErr,         setMsgErr]         = useState('');
 
   /* Lo vi */
-  const [loViOpen,    setLoViOpen]    = useState(false);
-  const [loViCalle,   setLoViCalle]   = useState('');
-  const [loViHora,    setLoViHora]    = useState('');
-  const [loViLoading, setLoViLoading] = useState(false);
-  const [loViEnviado, setLoViEnviado] = useState(false);
-  const [loViError,   setLoViError]   = useState('');
+  const [loViOpen,       setLoViOpen]       = useState(false);
+  const [loViCalle,      setLoViCalle]      = useState('');
+  const [loViLat,        setLoViLat]        = useState<number | null>(null);
+  const [loViLng,        setLoViLng]        = useState<number | null>(null);
+  const [loViHora,       setLoViHora]       = useState('');
+  const [loViLoading,    setLoViLoading]    = useState(false);
+  const [loViEnviado,    setLoViEnviado]    = useState(false);
+  const [loViError,      setLoViError]      = useState('');
+  const [loViGps,        setLoViGps]        = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
+  const [loViManual,     setLoViManual]     = useState(false);
+  const [loViShowMap,    setLoViShowMap]    = useState(false);
 
   useEffect(() => {
     obtenerPost(id)
@@ -197,6 +205,38 @@ export default function DetalleAvisoPage() {
     }
   }
 
+  async function capturarGpsLoVi() {
+    if (!navigator.geolocation) { setLoViGps('error'); setLoViManual(true); return; }
+    setLoViGps('cargando');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const enArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
+        if (!enArgentina) { setLoViGps('error'); setLoViManual(true); return; }
+        setLoViLat(lat); setLoViLng(lng);
+        setLoViGps('ok');
+        setLoViShowMap(true);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+            { headers: { 'User-Agent': 'Vecindog/1.0' } }
+          );
+          const data = await res.json();
+          if (data?.address) {
+            const a = data.address;
+            const calle  = a.road ?? a.pedestrian ?? a.footway ?? '';
+            const numero = a.house_number ?? '';
+            const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
+            const zona   = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
+            if (zona) setLoViCalle(zona);
+          }
+        } catch { /* sin reverse geocode */ }
+      },
+      () => { setLoViGps('error'); setLoViManual(true); },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  }
+
   async function handleLoVi() {
     if (!loViCalle.trim() || !loViHora.trim()) return;
     setLoViLoading(true);
@@ -213,17 +253,9 @@ export default function DetalleAvisoPage() {
         });
         if (error) throw error;
       } else if (post!.categoria === 'encontrado') {
-        // Intentar geocodificar — solo actualiza coords si tiene resultado válido
-        let lat: number | undefined;
-        let lng: number | undefined;
-        try {
-          const geo = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(loViCalle.trim())}&format=json&limit=1&countrycodes=ar`,
-            { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' } }
-          );
-          const geoData = await geo.json();
-          if (geoData[0]) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon); }
-        } catch { /* geocoding best-effort, no pisa coords existentes */ }
+        // Usa coords del GPS o las del autocomplete — nunca pisa con null
+        const lat = loViLat ?? undefined;
+        const lng = loViLng ?? undefined;
         await actualizarZonaPost(post!.id, loViCalle.trim(), loViHora, lat, lng);
         setPost((p) => p ? { ...p, zona: loViCalle.trim(), horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
       }
@@ -240,6 +272,11 @@ export default function DetalleAvisoPage() {
     setLoViCalle('');
     setLoViHora('');
     setLoViError('');
+    setLoViLat(null);
+    setLoViLng(null);
+    setLoViGps('idle');
+    setLoViManual(false);
+    setLoViShowMap(false);
     setLoViOpen(true);
   }
 
@@ -348,50 +385,106 @@ export default function DetalleAvisoPage() {
                   <p className="text-sm font-extrabold text-ink flex items-center gap-1.5">
                     <Eye className="h-4 w-4 text-brand-primary shrink-0" /> ¿Dónde y cuándo lo viste?
                   </p>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">Calle / zona</label>
-                    <input
-                      type="text"
-                      value={loViCalle}
-                      onChange={(e) => setLoViCalle(e.target.value)}
-                      placeholder="Ej: Av. Colón y Brandsen"
-                      className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+
+                  {/* ── GPS o manual ── */}
+                  {loViGps === 'ok' ? (
+                    <div className="flex items-center justify-between rounded-2xl bg-good/10 px-3 py-2.5 ring-1 ring-good/20">
+                      <div className="flex items-center gap-2 text-sm font-bold text-good">
+                        <CheckCheck className="h-4 w-4 shrink-0" /> Ubicación GPS capturada
+                      </div>
+                      <button type="button"
+                        onClick={() => { setLoViGps('idle'); setLoViManual(true); setLoViLat(null); setLoViLng(null); setLoViShowMap(false); }}
+                        className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                    </div>
+                  ) : loViGps === 'cargando' ? (
+                    <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-3">
+                      <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
+                      <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+                    </div>
+                  ) : !loViManual ? (
+                    <div className="space-y-2">
+                      <button type="button" onClick={capturarGpsLoVi}
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-3 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                        <Navigation className="h-4 w-4" />
+                        {loViGps === 'error' ? 'No se pudo obtener GPS — reintentar' : 'Usar mi ubicación GPS'}
+                      </button>
+                      <button type="button" onClick={() => setLoViManual(true)}
+                        className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
+                        Escribir dirección manual
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {/* Campo de dirección — manual o confirmación GPS */}
+                  {(loViManual || loViGps === 'ok') && (
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">
+                        {loViGps === 'ok' ? 'Confirmá o ajustá la dirección' : 'Calle / zona'}
+                      </label>
+                      <AddressAutocomplete
+                        value={loViCalle}
+                        onChange={setLoViCalle}
+                        onSelectCoords={(lat, lng) => {
+                          setLoViLat(lat); setLoViLng(lng);
+                          setLoViShowMap(true);
+                        }}
+                        placeholder="Ej: Av. Colón y Brandsen"
+                        ciudad={post.zona}
+                      />
+                    </div>
+                  )}
+
+                  {/* MapPinPicker — confirmar pin */}
+                  {loViShowMap && loViLat != null && loViLng != null && (
+                    <MapPinPicker
+                      lat={loViLat}
+                      lng={loViLng}
+                      onChange={(lat, lng) => { setLoViLat(lat); setLoViLng(lng); }}
+                      onConfirm={() => setLoViShowMap(false)}
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Hora aproximada
-                    </label>
-                    <input
-                      type="time"
-                      value={loViHora}
-                      onChange={(e) => setLoViHora(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
-                    />
-                  </div>
+                  )}
+
+                  {/* Hora */}
+                  {(loViManual || loViGps === 'ok') && (
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Hora aproximada
+                      </label>
+                      <input
+                        type="time"
+                        value={loViHora}
+                        onChange={(e) => setLoViHora(e.target.value)}
+                        className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                      />
+                    </div>
+                  )}
+
                   {loViError && (
                     <p className="text-xs font-bold text-bad">{loViError}</p>
                   )}
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      disabled={loViLoading || !loViCalle.trim() || !loViHora.trim()}
-                      onClick={handleLoVi}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
-                    >
-                      {loViLoading
-                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                        : <><SendHorizonal className="h-4 w-4" /> Enviar aviso</>
-                      }
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setLoViOpen(false); setLoViError(''); }}
-                      className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+
+                  {(loViManual || loViGps === 'ok') && (
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        disabled={loViLoading || !loViCalle.trim() || !loViHora.trim()}
+                        onClick={handleLoVi}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                      >
+                        {loViLoading
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <><SendHorizonal className="h-4 w-4" /> Enviar aviso</>
+                        }
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setLoViOpen(false); setLoViError(''); }}
+                        className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

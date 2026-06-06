@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
 import InstallBanner from '@/components/InstallBanner';
+import AiHelpButton from '@/components/AiHelpButton';
 
 export const viewport: Viewport = {
   themeColor: '#B85C4A',
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="mx-auto max-w-6xl px-4 pb-16">{children}</main>
           <Footer />
           <InstallBanner />
+          <AiHelpButton />
         </Providers>
       </body>
     </html>

@@ -141,7 +141,7 @@ export default function QuieroCuidarPage() {
         <ChevronLeft className="h-4 w-4" /> Volver
       </Link>
 
-      <h1 className="font-display text-3xl font-black text-ink mb-1">Quiero cuidar perros</h1>
+      <h1 className="font-display text-3xl font-black text-ink mb-1">Quiero cuidar</h1>
       <p className="text-sm text-ink-muted mb-8">
         Completá tu perfil de cuidador para que los dueños puedan encontrarte.
       </p>

@@ -111,7 +111,7 @@ export default function CuidadoPage() {
                 <HandHeart className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="font-display text-xl font-extrabold leading-tight">Quiero cuidar perros</h2>
+                <h2 className="font-display text-xl font-extrabold leading-tight">Quiero cuidar</h2>
                 <p className="mt-1 text-sm text-white/80">
                   Anotate como cuidador disponible para ayudar a vecinos que lo necesiten.
                 </p>

@@ -82,6 +82,8 @@ export default function DetalleAvisoPage() {
   const [loViManual,     setLoViManual]     = useState(false);
   const [loViShowMap,    setLoViShowMap]    = useState(false);
 
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   useEffect(() => {
     obtenerPost(id)
       .then(setPost)

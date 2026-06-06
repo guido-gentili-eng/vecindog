@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Check, X, Sparkles, Dog, Lock, AlertCircle,
-  Bell, Users, Camera, ScanSearch, Trophy, ArrowLeft,
+  Bell, Users, Camera, ScanSearch, Trophy, ArrowLeft, Car, Heart, MapPin,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -27,6 +27,9 @@ const FEATURES_BLOQUEADAS = [
   { icon: Users,     label: 'Panel de Amigos' },
   { icon: Bell,      label: 'Notificaciones en tiempo real' },
   { icon: Lock,      label: 'Instagram y Facebook en el perfil' },
+  { icon: MapPin,    label: 'Comercios adheridos en el mapa' },
+  { icon: Car,       label: 'Ofrecer servicio de transporte' },
+  { icon: Heart,     label: 'Ofrecer servicio de cuidado' },
 ];
 
 const FEATURES_PRO = [
@@ -41,6 +44,9 @@ const FEATURES_PRO = [
   { label: 'Notificaciones en tiempo real 🔔' },
   { label: 'Instagram y Facebook en el perfil' },
   { label: 'Acceso a Mi red Vecindog 🐾' },
+  { label: 'Comercios adheridos en el mapa 📍' },
+  { label: 'Ofrecer servicio de transporte 🚗' },
+  { label: 'Ofrecer servicio de cuidado 🐾' },
 ];
 
 /* ── Página ── */

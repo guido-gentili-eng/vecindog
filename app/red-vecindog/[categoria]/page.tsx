@@ -6,10 +6,11 @@ import Link from 'next/link';
 import {
   ArrowLeft, Phone, MapPin, Clock, ExternalLink, Building2, Loader2,
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
-  Lock, Sparkles,
+  Lock, Sparkles, Search, X, ChevronRight, PenLine,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { buscarCiudades } from '@/lib/ciudades';
 import type { Ad } from '@/lib/ads';
 
 /* ── Mapa de categorías ──────────────────────────────────────────── */
@@ -37,13 +38,13 @@ export default function CategoriaPage() {
   const catKey  = params?.categoria as string;
   const cat     = CATEGORIAS[catKey];
 
-  const { isPro, loading: authLoading } = useAuth();
+  const { isPro, loading: authLoading, ciudad, setCiudad } = useAuth();
 
   const [comercios, setComercior] = useState<Ad[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!cat) { setDataLoading(false); return; }
+    if (!cat || !ciudad) { setDataLoading(false); return; }
 
     const hoy = new Date().toISOString().slice(0, 10);
     supabase
@@ -52,13 +53,14 @@ export default function CategoriaPage() {
       .eq('variant', 'comercio')
       .eq('activo', true)
       .eq('categoria_local', cat.slug)
+      .ilike('direccion_comercio', `%${ciudad}%`)
       .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setComercior((data as Ad[]) ?? []);
         setDataLoading(false);
       });
-  }, [catKey, cat]);
+  }, [catKey, cat, ciudad]);
 
   if (!cat) {
     return (
@@ -73,6 +75,10 @@ export default function CategoriaPage() {
 
   const Icon    = cat.icon;
   const cargando = authLoading || dataLoading;
+
+  if (!authLoading && !ciudad) {
+    return <CiudadGate onConfirm={setCiudad} />;
+  }
 
   return (
     <div className="py-10 md:py-14">
@@ -92,6 +98,10 @@ export default function CategoriaPage() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-black text-ink md:text-4xl">{cat.label}</h1>
+            <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-muted">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-brand-primary" />
+              {ciudad}
+            </p>
             {!cargando && isPro && (
               <p className="mt-1 text-sm text-ink-muted">
                 {comercios.length === 0
@@ -258,6 +268,107 @@ function ComercioCard({ comercio: c }: { comercio: Ad }) {
             <ExternalLink className="h-4 w-4" /> Ver negocio
           </a>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Gate ciudad ─────────────────────────────────────────────────── */
+
+function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
+  const [query,      setQuery]      = useState('');
+  const [custom,     setCustom]     = useState('');
+  const [showCustom, setShowCustom] = useState(false);
+
+  const resultados = query.trim().length > 0 ? buscarCiudades(query) : [];
+
+  function confirmar(nombre: string) {
+    if (!nombre.trim()) return;
+    onConfirm(nombre.trim());
+  }
+
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center py-10">
+      <div className="card w-full max-w-md p-8 text-center">
+        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+          <MapPin className="h-7 w-7" />
+        </span>
+        <h2 className="mt-4 font-display text-2xl font-black text-ink">
+          ¿En qué ciudad estás?
+        </h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          Tenés que elegir tu ciudad para ver los negocios de tu zona.
+        </p>
+
+        <div className="mt-5 text-left">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Escribí tu ciudad…"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setShowCustom(false); setCustom(''); }}
+              className="field w-full pl-10 pr-10"
+              autoFocus
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-ink-muted hover:text-ink">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {query.trim().length > 0 && !showCustom && (
+            <div className="mt-1 max-h-56 overflow-y-auto rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
+              {resultados.length === 0 ? (
+                <div className="py-4 text-center">
+                  <p className="text-sm text-ink-muted">No encontramos <strong>"{query}"</strong></p>
+                  <button type="button" onClick={() => setShowCustom(true)}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary/10 px-3 py-1.5 text-sm font-bold text-brand-primary">
+                    <PenLine className="h-3.5 w-3.5" /> Usar "{query.trim()}" igual
+                  </button>
+                </div>
+              ) : (
+                resultados.map((c) => (
+                  <button key={c.nombre} type="button" onClick={() => confirmar(c.nombre)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-brand-cream">
+                    <MapPin className="h-4 w-4 shrink-0 text-brand-primary/60" />
+                    <div className="flex-1">
+                      <span className="block font-bold text-ink">{c.nombre}</span>
+                      <span className="block text-xs text-ink-muted">{c.provincia}</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-ink-muted/40" />
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {showCustom && (
+            <div className="mt-3">
+              <input
+                type="text"
+                placeholder="Ej: Villa Regina"
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmar(custom)}
+                className="field w-full"
+                autoFocus
+              />
+              <div className="mt-2 flex gap-2">
+                <button type="button" onClick={() => setShowCustom(false)}
+                  className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted hover:border-brand-primary hover:text-brand-primary">
+                  Volver
+                </button>
+                <button type="button" onClick={() => confirmar(custom)} disabled={!custom.trim()}
+                  className="flex-1 rounded-2xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-40">
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

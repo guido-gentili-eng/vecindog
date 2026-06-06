@@ -300,6 +300,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
   const [diasAtencion,    setDiasAtencion]    = useState('');
   const [descripcion,     setDescripcion]     = useState('');
   const [link,            setLink]            = useState('');
+  const [emailDuenio,     setEmailDuenio]     = useState(ADMIN_EMAIL);
   const [fotoFile,        setFotoFile]        = useState<File | null>(null);
   const [preview,         setPreview]         = useState('');
   const [loading,         setLoading]         = useState(false);
@@ -341,7 +342,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
         imagen_logo_url:    null,
         href:               link.trim() || '',
         cta:                null,
-        anunciante:         nombre.trim(),
+        anunciante:         emailDuenio.trim() || ADMIN_EMAIL,
         plan:               'comercio',
         activo:             true,
         fecha_inicio:       new Date().toISOString().slice(0, 10),
@@ -601,6 +602,18 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
                     const v = link.trim();
                     if (v && !v.includes('://')) setLink(`https://${v}`);
                   }}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+                  Email del dueño (para Mi comercio)
+                </label>
+                <input
+                  type="email"
+                  className="field w-full"
+                  placeholder="duenio@email.com"
+                  value={emailDuenio}
+                  onChange={(e) => setEmailDuenio(e.target.value)}
                 />
               </div>
             </div>

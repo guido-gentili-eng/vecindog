@@ -19,7 +19,7 @@ const MapView = dynamic(() => import('@/components/MapView'), {
 interface LatLng { lat: number; lng: number }
 
 export default function MapaPage() {
-  const { ciudad } = useAuth();
+  const { ciudad, isPro } = useAuth();
   const [posts,      setPosts]     = useState<Post[]>([]);
   const [comercios,  setComercio]  = useState<Ad[]>([]);
   const [cargando,   setCargando]  = useState(true);
@@ -28,7 +28,7 @@ export default function MapaPage() {
 
   useEffect(() => {
     listarPosts().then(setPosts).finally(() => setCargando(false));
-    listarComerciosConUbicacion().then(setComercio);
+    if (isPro) listarComerciosConUbicacion().then(setComercio);
 
     // 1. Intentar geolocalización del navegador (más precisa)
     if (navigator.geolocation) {
@@ -45,7 +45,7 @@ export default function MapaPage() {
       // Sin soporte de geolocalización → usar ciudad guardada
       geocodificarCiudad(ciudad);
     }
-  }, [ciudad]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ciudad, isPro]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   async function geocodificarCiudad(nombre: string) {
     try {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search } from 'lucide-react';
 import { listarAds, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
@@ -72,6 +72,7 @@ export default function AdminPage() {
   const [expandido,  setExpandido]  = useState<{ uid: string; tipo: 'perros' | 'avisos' } | null>(null);
   const [loadingExp, setLoadingExp] = useState<string | null>(null);
   const [orden,       setOrden]       = useState<'az' | 'recientes'>('az');
+  const [busqueda,    setBusqueda]    = useState('');
   const [accionando,  setAccionando]  = useState<string | null>(null);
   const [confirmar,   setConfirmar]   = useState<{ uid: string; accion: 'pausar' | 'eliminar' } | null>(null);
   const [planModal,     setPlanModal]     = useState<{ uid: string; nombre: string; plan: string } | null>(null);
@@ -326,12 +327,29 @@ export default function AdminPage() {
 
       {/* Lista de usuarios */}
       <div className="card overflow-hidden">
-        <div className="border-b border-black/8 px-5 py-4 flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
+        <div className="border-b border-black/8 px-5 py-4 flex flex-wrap items-center gap-3">
+          <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink shrink-0">
             <Users className="h-4 w-4 text-brand-primary" /> Usuarios ({stats.ultimosUsuarios.length})
           </h2>
+          {/* Buscador */}
+          <div className="relative flex-1 min-w-[160px]">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, email…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full rounded-xl border border-black/10 bg-brand-cream py-1.5 pl-8 pr-3 text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+            />
+            {busqueda && (
+              <button type="button" onClick={() => setBusqueda('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
           {/* Toggle orden */}
-          <div className="flex rounded-xl border border-black/10 overflow-hidden text-xs font-bold">
+          <div className="flex rounded-xl border border-black/10 overflow-hidden text-xs font-bold shrink-0">
             <button
               type="button"
               onClick={() => setOrden('az')}
@@ -350,7 +368,16 @@ export default function AdminPage() {
         </div>
         {/* Contenedor scrollable */}
         <ul className="divide-y divide-black/5 max-h-[600px] overflow-y-auto">
-          {[...stats.ultimosUsuarios].sort((a, b) => {
+          {[...stats.ultimosUsuarios].filter((u) => {
+            if (!busqueda.trim()) return true;
+            const q = busqueda.toLowerCase();
+            return (
+              `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
+              (u.email ?? '').toLowerCase().includes(q) ||
+              (u.telefono ?? '').includes(q) ||
+              (u.ciudad ?? '').toLowerCase().includes(q)
+            );
+          }).sort((a, b) => {
             if (orden === 'recientes') {
               return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
             }

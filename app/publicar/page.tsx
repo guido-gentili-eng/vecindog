@@ -22,6 +22,8 @@ import { listarPosts, actualizarZonaPost, contarPostsActivosDelUsuario, type Pos
 import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
+import dynamicImport from 'next/dynamic';
+const MapPinPicker = dynamicImport(() => import('@/components/MapPinPicker'), { ssr: false });
 
 /* ─── Tipos ─── */
 
@@ -131,6 +133,7 @@ export default function PublicarPage() {
   const [lngVisto,        setLngVisto]        = useState<number | null>(null);
   const [horarioVisto,    setHorarioVisto]    = useState('');
   const [zonaManual,      setZonaManual]      = useState(false);
+  const [showMapPicker,   setShowMapPicker]   = useState(false);
 
   /* Scroll al tope cuando el aviso se publicó exitosamente */
   useEffect(() => {
@@ -1000,9 +1003,13 @@ export default function PublicarPage() {
                 <Field label={gpsEstado === 'ok' ? 'Confirmá o ajustá la dirección' : 'Dirección o zona'}>
                   <AddressAutocomplete
                     value={form.zona}
-                    onChange={(v) => handleChange('zona', v)}
-                    onSelectCoords={(lat, lng) => { setForm((f) => ({ ...f, lat, lng })); setGpsEstado('ok'); }}
-                    onClearCoords={() => { setForm((f) => ({ ...f, lat: null, lng: null })); }}
+                    onChange={(v) => { handleChange('zona', v); setShowMapPicker(false); }}
+                    onSelectCoords={(lat, lng) => {
+                      setForm((f) => ({ ...f, lat, lng }));
+                      setGpsEstado('ok');
+                      setShowMapPicker(true);
+                    }}
+                    onClearCoords={() => { setForm((f) => ({ ...f, lat: null, lng: null })); setShowMapPicker(false); }}
                     placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
                     ciudad={efectivaCiudad}
                     required
@@ -1014,6 +1021,16 @@ export default function PublicarPage() {
                     </button>
                   )}
                 </Field>
+              )}
+
+              {/* Mapa confirmador de pin — aparece tras seleccionar dirección manual */}
+              {showMapPicker && form.lat && form.lng && (
+                <MapPinPicker
+                  lat={form.lat}
+                  lng={form.lng}
+                  onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+                  onConfirm={() => setShowMapPicker(false)}
+                />
               )}
 
             </div>

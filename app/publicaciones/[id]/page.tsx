@@ -82,6 +82,8 @@ export default function DetalleAvisoPage() {
   const [loViManual,     setLoViManual]     = useState(false);
   const [loViShowMap,    setLoViShowMap]    = useState(false);
   const [loViMismoLugar, setLoViMismoLugar] = useState(false);
+  const [loViFecha,      setLoViFecha]      = useState<'hoy' | 'otro'>('hoy');
+  const [loViOtroDia,    setLoViOtroDia]    = useState('');
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -242,13 +244,19 @@ export default function DetalleAvisoPage() {
 
   async function handleLoVi() {
     const calleEfectiva = loViMismoLugar ? (post!.zona ?? '') : loViCalle.trim();
-    if (!calleEfectiva || !loViHora.trim()) return;
+    const fechaEfectiva = loViFecha === 'hoy'
+      ? new Date().toISOString().slice(0, 10)
+      : loViOtroDia;
+    if (!calleEfectiva || !loViHora.trim() || !fechaEfectiva) return;
     setLoViLoading(true);
     setLoViError('');
     try {
+      const fechaLabel = loViFecha === 'hoy'
+        ? 'hoy'
+        : new Date(fechaEfectiva + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
       if (post!.categoria === 'perdido') {
         const lugarTexto = loViMismoLugar ? `en el mismo lugar (${calleEfectiva})` : `en ${calleEfectiva}`;
-        const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} ${lugarTexto} a las ${loViHora}.`;
+        const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} ${lugarTexto} a las ${loViHora} (${fechaLabel}).`;
         const { error } = await supabase.from('notifications').insert({
           user_id: post!.user_id,
           post_id: post!.id,
@@ -257,17 +265,17 @@ export default function DetalleAvisoPage() {
           leida:   false,
         });
         if (error) throw error;
-        // Actualizar horario del aviso en ambos casos
         await actualizarZonaPost(post!.id, calleEfectiva, loViHora,
           loViMismoLugar ? undefined : (loViLat ?? undefined),
-          loViMismoLugar ? undefined : (loViLng ?? undefined)
+          loViMismoLugar ? undefined : (loViLng ?? undefined),
+          fechaEfectiva,
         );
-        setPost((p) => p ? { ...p, horario: loViHora } : p);
+        setPost((p) => p ? { ...p, horario: loViHora, fecha: fechaEfectiva } : p);
       } else if (post!.categoria === 'encontrado') {
         const lat = loViMismoLugar ? undefined : (loViLat ?? undefined);
         const lng = loViMismoLugar ? undefined : (loViLng ?? undefined);
-        await actualizarZonaPost(post!.id, calleEfectiva, loViHora, lat, lng);
-        setPost((p) => p ? { ...p, zona: calleEfectiva, horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
+        await actualizarZonaPost(post!.id, calleEfectiva, loViHora, lat, lng, fechaEfectiva);
+        setPost((p) => p ? { ...p, zona: calleEfectiva, horario: loViHora, fecha: fechaEfectiva, ...(lat != null ? { lat, lng } : {}) } : p);
       }
       setLoViEnviado(true);
     } catch {
@@ -288,6 +296,8 @@ export default function DetalleAvisoPage() {
     setLoViManual(false);
     setLoViShowMap(false);
     setLoViMismoLugar(false);
+    setLoViFecha('hoy');
+    setLoViOtroDia('');
     setLoViOpen(true);
   }
 
@@ -481,7 +491,29 @@ export default function DetalleAvisoPage() {
 
                   {/* Hora */}
                   {(loViMismoLugar || loViManual || loViGps === 'ok') && (
-                    <div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">¿Cuándo lo viste?</label>
+                      <div className="flex gap-2">
+                        <button type="button"
+                          onClick={() => setLoViFecha('hoy')}
+                          className={`flex-1 rounded-xl border-2 py-2 text-sm font-bold transition ${loViFecha === 'hoy' ? 'border-brand-primary bg-brand-primary/8 text-brand-primary' : 'border-black/15 text-ink-muted hover:border-brand-primary/40'}`}>
+                          Hoy
+                        </button>
+                        <button type="button"
+                          onClick={() => setLoViFecha('otro')}
+                          className={`flex-1 rounded-xl border-2 py-2 text-sm font-bold transition ${loViFecha === 'otro' ? 'border-brand-primary bg-brand-primary/8 text-brand-primary' : 'border-black/15 text-ink-muted hover:border-brand-primary/40'}`}>
+                          Otro día
+                        </button>
+                      </div>
+                      {loViFecha === 'otro' && (
+                        <input
+                          type="date"
+                          value={loViOtroDia}
+                          max={new Date().toISOString().slice(0, 10)}
+                          onChange={(e) => setLoViOtroDia(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                        />
+                      )}
                       <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Hora aproximada
                       </label>
@@ -489,7 +521,7 @@ export default function DetalleAvisoPage() {
                         type="time"
                         value={loViHora}
                         onChange={(e) => setLoViHora(e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                        className="w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                       />
                     </div>
                   )}
@@ -502,7 +534,7 @@ export default function DetalleAvisoPage() {
                     <div className="flex gap-2 pt-1">
                       <button
                         type="button"
-                        disabled={loViLoading || !loViHora.trim() || (!loViMismoLugar && !loViCalle.trim())}
+                        disabled={loViLoading || !loViHora.trim() || (!loViMismoLugar && !loViCalle.trim()) || (loViFecha === 'otro' && !loViOtroDia)}
                         onClick={handleLoVi}
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                       >

@@ -125,11 +125,13 @@ export async function actualizarZonaPost(
   horario?: string,
   lat?: number | null,
   lng?: number | null,
+  fecha?: string,
 ): Promise<void> {
   const payload: Record<string, unknown> = { zona };
   if (horario) payload.horario = horario;
   if (lat != null) payload.lat = lat;
   if (lng != null) payload.lng = lng;
+  if (fecha)  payload.fecha  = fecha;
   const { error } = await supabase.from('posts').update(payload).eq('id', id);
   if (error) throw error;
 }

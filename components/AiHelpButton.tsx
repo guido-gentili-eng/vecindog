@@ -70,7 +70,7 @@ export default function AiHelpButton() {
       <button
         type="button"
         onClick={() => setAbierto((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary shadow-2xl transition-transform hover:scale-110 active:scale-95"
+        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary shadow-2xl transition-transform hover:scale-110 active:scale-95"
         aria-label="Ayuda con IA"
       >
         {abierto
@@ -80,7 +80,7 @@ export default function AiHelpButton() {
 
       {/* Panel de chat */}
       {abierto && (
-        <div className="fixed bottom-24 right-6 z-50 flex w-[340px] max-w-[calc(100vw-24px)] flex-col rounded-[24px] bg-white shadow-2xl ring-1 ring-black/8"
+        <div className="fixed bottom-44 right-6 z-50 flex w-[340px] max-w-[calc(100vw-24px)] flex-col rounded-[24px] bg-white shadow-2xl ring-1 ring-black/8"
              style={{ maxHeight: 'min(520px, calc(100vh - 120px))' }}>
 
           {/* Header */}

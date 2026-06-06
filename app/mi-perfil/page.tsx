@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import {
   User, Phone, MapPin, Mail, Dog, Plus, ChevronRight, Loader2, AlertCircle,
   CheckCircle2, Pencil, Globe, BookOpen, KeyRound, Lock, QrCode, X,
@@ -667,7 +668,6 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 }
 
 /* ── Modal SOS perro perdido ── */
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 function SOSModal({
   perros,

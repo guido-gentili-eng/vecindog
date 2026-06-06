@@ -53,7 +53,7 @@ export default function DetalleAvisoPage() {
   const { id }    = useParams<{ id: string }>();
   const router    = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthenticated }  = useAuth();
+  const { user, isAuthenticated, ciudad }  = useAuth();
 
   const [post,        setPost]        = useState<Post | null>(null);
   const [cargando,    setCargando]    = useState(true);
@@ -431,7 +431,7 @@ export default function DetalleAvisoPage() {
                           setLoViShowMap(true);
                         }}
                         placeholder="Ej: Av. Colón y Brandsen"
-                        ciudad={post.zona}
+                        ciudad={ciudad}
                       />
                     </div>
                   )}

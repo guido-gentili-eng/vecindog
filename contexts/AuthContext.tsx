@@ -70,6 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single();
+
+    if (!data) {
+      // Forzar refresh del token para verificar server-side si el usuario sigue existiendo
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        // Usuario eliminado de auth o sesión inválida — cerrar sesión local
+        await supabase.auth.signOut();
+        setProfile(null);
+        setProfileLoading(false);
+        return;
+      }
+    }
+
     setProfile(data ?? null);
     setProfileLoading(false);
   }

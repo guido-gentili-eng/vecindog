@@ -24,7 +24,7 @@ export default function FoundModal({ nombrePerro, onClose }: Props) {
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
       <div className="w-full max-w-sm rounded-[32px] bg-white px-6 py-8 shadow-2xl text-center my-auto">
 
         <div className="text-5xl mb-3">🐾</div>

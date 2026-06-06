@@ -141,12 +141,6 @@ export default function NotificationsBell() {
 
   return (
     <>
-    {foundModal && (
-      <FoundModal
-        nombrePerro={foundModal.nombre}
-        onClose={() => setFoundModal(null)}
-      />
-    )}
     <div ref={containerRef} className="relative">
       <button
         type="button"
@@ -252,7 +246,7 @@ export default function NotificationsBell() {
                   )}
 
                   {/* Botones de acción para expiración */}
-                  {n.tipo === 'expiracion' && n.post_id && (
+                  {n.tipo === 'expiracion' && n.post_id && !n.leida && (
                     <div className="mt-2 flex gap-2 ml-11">
                       <button type="button"
                         onClick={() => handleEncontrado(n)}
@@ -277,6 +271,12 @@ export default function NotificationsBell() {
         </div>
       )}
     </div>
+    {foundModal && (
+      <FoundModal
+        nombrePerro={foundModal.nombre}
+        onClose={() => setFoundModal(null)}
+      />
+    )}
     </>
   );
 }

@@ -69,6 +69,9 @@ export default function TransportePage() {
         <p className="mt-3 text-ink-muted">
           Encontrá un vecino de confianza para transportar a tu perro, o anotate para ayudar a otros.
         </p>
+        <p className="mt-2 text-xs font-semibold text-bad/80">
+          Esta sección es exclusivamente para intercambios entre vecinos. Está prohibido ofrecer servicios comerciales o cobrar por el transporte.
+        </p>
       </div>
 
       {/* CTA registrarse */}

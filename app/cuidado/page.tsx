@@ -47,6 +47,9 @@ export default function CuidadoPage() {
         <p className="mt-3 text-ink-muted">
           Encontrá un vecino de confianza para cuidar a tu perro, o anotate para cuidar perros de la comunidad.
         </p>
+        <p className="mt-2 text-xs font-semibold text-bad/80">
+          Esta sección es exclusivamente para intercambios entre vecinos. Está prohibido ofrecer servicios comerciales o cobrar por el cuidado.
+        </p>
       </div>
 
       {/* Grid 2 columnas: izquierda = busco cuidador, derecha = quiero cuidar */}

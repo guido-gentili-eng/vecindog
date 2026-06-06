@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
-  obtenerPost, resolverPost, encontrarPost, renovarPost, eliminarPost, type Post,
+  obtenerPost, resolverPost, encontrarPost, renovarPost, eliminarPost, actualizarZonaPost, type Post,
 } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -200,17 +200,34 @@ export default function DetalleAvisoPage() {
     if (!loViCalle.trim() || !loViHora.trim()) return;
     setLoViLoading(true);
     try {
-      const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} en ${loViCalle.trim()} a las ${loViHora}.`;
-      await supabase.from('notifications').insert({
-        user_id: post!.user_id,
-        post_id: post!.id,
-        tipo:    'avistamiento',
-        mensaje,
-        leida:   false,
-      });
+      if (post!.categoria === 'perdido') {
+        // Notificar al dueño
+        const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} en ${loViCalle.trim()} a las ${loViHora}.`;
+        await supabase.from('notifications').insert({
+          user_id: post!.user_id,
+          post_id: post!.id,
+          tipo:    'avistamiento',
+          mensaje,
+          leida:   false,
+        });
+      } else if (post!.categoria === 'encontrado') {
+        // Actualizar zona del aviso; intentar geocodificar para mover el pin
+        let lat: number | null = null;
+        let lng: number | null = null;
+        try {
+          const geo = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(loViCalle.trim())}&format=json&limit=1&countrycodes=ar`,
+            { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' } }
+          );
+          const geoData = await geo.json();
+          if (geoData[0]) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon); }
+        } catch { /* geocoding best-effort */ }
+        await actualizarZonaPost(post!.id, loViCalle.trim(), loViHora, lat, lng);
+        setPost((p) => p ? { ...p, zona: loViCalle.trim(), horario: loViHora, ...(lat != null ? { lat, lng } : {}) } : p);
+      }
       setLoViEnviado(true);
     } catch {
-      // silently fail — notification is best-effort
+      // silently fail
     } finally {
       setLoViLoading(false);
     }
@@ -302,8 +319,8 @@ export default function DetalleAvisoPage() {
 
         {/* Columna derecha sticky */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          {/* ── "Lo vi" — solo para perdido, activo, no dueño ── */}
-          {post.categoria === 'perdido' && !resuelto && isAuthenticated && !isOwner && (
+          {/* ── "Lo vi / Yo también lo vi" — perdido y encontrado, activo, no dueño ── */}
+          {(post.categoria === 'perdido' || post.categoria === 'encontrado') && !resuelto && isAuthenticated && !isOwner && (
             <div className="card overflow-hidden border border-brand-primary/20">
               {!loViOpen && !loViEnviado && (
                 <button
@@ -311,7 +328,8 @@ export default function DetalleAvisoPage() {
                   onClick={() => setLoViOpen(true)}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-4 text-base font-bold text-white transition hover:opacity-90 active:scale-[0.99]"
                 >
-                  <Eye className="h-5 w-5" /> Lo vi
+                  <Eye className="h-5 w-5" />
+                  {post.categoria === 'encontrado' ? 'Yo también lo vi' : 'Lo vi'}
                 </button>
               )}
 
@@ -367,7 +385,9 @@ export default function DetalleAvisoPage() {
               {loViEnviado && (
                 <div className="p-4 flex items-center gap-2 text-good">
                   <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  <p className="text-sm font-bold">¡Aviso enviado al dueño!</p>
+                  <p className="text-sm font-bold">
+                    {post.categoria === 'encontrado' ? '¡Ubicación actualizada en el mapa!' : '¡Aviso enviado al dueño!'}
+                  </p>
                 </div>
               )}
             </div>

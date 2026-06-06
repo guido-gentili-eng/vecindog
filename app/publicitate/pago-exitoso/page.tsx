@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Loader2, Clock, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const PLAN_LABEL: Record<string, string> = {
   basico:   'Plan Básico',
@@ -42,11 +43,15 @@ export default function PagoExitosoPage() {
     }
 
     // Verificar el pago con MP server-side y activar los ads
+    supabase.auth.getSession().then(({ data: { session } }) =>
     fetch('/api/confirmar-pago', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
       body: JSON.stringify({ payment_id: paymentId, ad_ids: adIds }),
-    })
+    }))
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) setActivado(true);

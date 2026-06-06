@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 type Estado = 'cargando' | 'ok' | 'pendiente' | 'error';
 
@@ -21,11 +22,15 @@ export default function PagoExitosoPro() {
     if (pending) { setEstado('pendiente'); return; }
     if (!paymentId) { router.replace('/planes'); return; }
 
+    supabase.auth.getSession().then(({ data: { session } }) =>
     fetch('/api/confirmar-pago-pro', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
       body:    JSON.stringify({ payment_id: paymentId }),
-    })
+    }))
       .then((r) => r.json())
       .then(async (data) => {
         if (data.ok) {

@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     const meta = payment.metadata as Record<string, unknown> | null;
     const metaAdIds = (meta as { ad_ids?: string[] } | null)?.ad_ids ?? [];
     const idsValidos = ad_ids.every((id: string) => metaAdIds.includes(id));
-    if (metaAdIds.length > 0 && !idsValidos) {
+    if (!idsValidos) {
       return NextResponse.json({ ok: false, error: 'ad_ids no coinciden con el pago' }, { status: 403 });
     }
 

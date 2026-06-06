@@ -70,19 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single();
-
-    if (!data) {
-      // Forzar refresh del token para verificar server-side si el usuario sigue existiendo
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (refreshError) {
-        // Usuario eliminado de auth o sesión inválida — cerrar sesión local
-        await supabase.auth.signOut();
-        setProfile(null);
-        setProfileLoading(false);
-        return;
-      }
-    }
-
     setProfile(data ?? null);
     setProfileLoading(false);
   }
@@ -109,7 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // TOKEN_REFRESHED no requiere re-fetchear el perfil — evita el loop de re-renders
+      if (event === 'TOKEN_REFRESHED') return;
       const u = session?.user ?? null;
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
@@ -201,7 +190,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...data,
       ...(lat !== null && lng !== null ? { lat, lng } : {}),
     });
-    if (error) return error.message;
+    if (error) {
+      // Si el usuario fue eliminado de auth, cerrar sesión
+      if (error.message.includes('JWT') || error.message.includes('invalid') || error.code === '42501') {
+        await supabase.auth.signOut();
+      }
+      return error.message;
+    }
     setProfile({ id: user.id, ...data });
     return null;
   };

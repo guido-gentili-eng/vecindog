@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck } from 'lucide-react';
+import { listarAds, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
 import { type Perro as PerroCompleto } from '@/lib/perros';
@@ -80,6 +81,22 @@ export default function AdminPage() {
   const [carnetModal,   setCarnetModal]   = useState<{ perro: PerroCompleto; profile: Profile | null } | null>(null);
   const [loadingCarnet, setLoadingCarnet] = useState<string | null>(null);
   const [toast,         setToast]         = useState('');
+  const [adsModal,      setAdsModal]      = useState(false);
+  const [adsData,       setAdsData]       = useState<Ad[] | null>(null);
+  const [adsOrden,      setAdsOrden]      = useState<'az' | 'recientes'>('az');
+  const [adsLoading,    setAdsLoading]    = useState(false);
+
+  async function abrirAdsModal() {
+    setAdsModal(true);
+    if (adsData !== null) return;
+    setAdsLoading(true);
+    try {
+      const data = await listarAds();
+      setAdsData(data);
+    } finally {
+      setAdsLoading(false);
+    }
+  }
 
   function showError(msg: string) {
     setToast(msg);
@@ -93,10 +110,11 @@ export default function AdminPage() {
       if (carnetModal) { setCarnetModal(null); return; }
       if (planModal)   { setPlanModal(null);   return; }
       if (confirmar)   { setConfirmar(null);   return; }
+      if (adsModal)    { setAdsModal(false);   return; }
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [carnetModal, planModal, confirmar]);
+  }, [carnetModal, planModal, confirmar, adsModal]);
 
   useEffect(() => {
     if (loading) return;
@@ -275,17 +293,35 @@ export default function AdminPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mb-8">
-        {STAT_CARDS.map(({ label, val, icon: Icon, color, bg }) => (
-          <div key={label} className="card p-5 flex items-center gap-4">
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${bg}`}>
-              <Icon className={`h-5 w-5 ${color}`} />
+        {STAT_CARDS.map(({ label, val, icon: Icon, color, bg }) => {
+          const clickable = label === 'Anuncios activos';
+          return clickable ? (
+            <button
+              key={label}
+              type="button"
+              onClick={abrirAdsModal}
+              className="card p-5 flex items-center gap-4 text-left transition hover:ring-2 hover:ring-good/40 hover:shadow-md"
+            >
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${bg}`}>
+                <Icon className={`h-5 w-5 ${color}`} />
+              </div>
+              <div>
+                <p className={`font-display text-2xl font-black ${color}`}>{val}</p>
+                <p className="text-xs text-ink-muted leading-tight">{label}</p>
+              </div>
+            </button>
+          ) : (
+            <div key={label} className="card p-5 flex items-center gap-4">
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${bg}`}>
+                <Icon className={`h-5 w-5 ${color}`} />
+              </div>
+              <div>
+                <p className={`font-display text-2xl font-black ${color}`}>{val}</p>
+                <p className="text-xs text-ink-muted leading-tight">{label}</p>
+              </div>
             </div>
-            <div>
-              <p className={`font-display text-2xl font-black ${color}`}>{val}</p>
-              <p className="text-xs text-ink-muted leading-tight">{label}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Lista de usuarios */}
@@ -569,6 +605,74 @@ export default function AdminPage() {
                 className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de anuncios */}
+      {adsModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-[28px] bg-white shadow-2xl flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 px-6 pt-6 pb-4 border-b border-black/8">
+              <h3 className="font-display text-lg font-black text-ink flex items-center gap-2">
+                <Megaphone className="h-5 w-5 text-brand-primary" /> Anuncios
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-xl border border-black/10 overflow-hidden text-xs font-bold">
+                  <button type="button" onClick={() => setAdsOrden('az')}
+                    className={`flex items-center gap-1 px-3 py-1.5 transition ${adsOrden === 'az' ? 'bg-brand-primary text-white' : 'text-ink-muted hover:bg-brand-cream'}`}>
+                    <ArrowDownAZ className="h-3.5 w-3.5" /> A-Z
+                  </button>
+                  <button type="button" onClick={() => setAdsOrden('recientes')}
+                    className={`flex items-center gap-1 px-3 py-1.5 transition ${adsOrden === 'recientes' ? 'bg-brand-primary text-white' : 'text-ink-muted hover:bg-brand-cream'}`}>
+                    <Clock className="h-3.5 w-3.5" /> Recientes
+                  </button>
+                </div>
+                <button type="button" onClick={() => setAdsModal(false)}
+                  className="grid h-8 w-8 place-items-center rounded-xl bg-black/8 text-ink-muted hover:bg-black/12 transition">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Lista */}
+            <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2">
+              {adsLoading && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-brand-primary" />
+                </div>
+              )}
+              {!adsLoading && adsData && adsData.length === 0 && (
+                <p className="text-center text-sm text-ink-muted py-8">Sin anuncios registrados.</p>
+              )}
+              {!adsLoading && adsData && [...adsData].sort((a, b) => {
+                if (adsOrden === 'recientes') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                return (a.anunciante ?? '').localeCompare(b.anunciante ?? '', 'es');
+              }).map((ad) => (
+                <div key={ad.id} className="rounded-2xl border border-black/8 bg-brand-cream/40 px-4 py-3 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-sm text-ink truncate">{ad.titulo}</p>
+                    {ad.activo
+                      ? <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-good/15 px-2 py-0.5 text-[10px] font-bold text-good"><BadgeCheck className="h-3 w-3" /> Activo</span>
+                      : <span className="shrink-0 rounded-full bg-black/8 px-2 py-0.5 text-[10px] font-bold text-ink-muted">Inactivo</span>
+                    }
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-muted">
+                    <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {ad.anunciante ?? '—'}</span>
+                    <span className="capitalize">{ad.plan}</span>
+                    <span className="uppercase tracking-wide">{ad.variant}</span>
+                    {ad.fecha_fin && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Vence {ad.fecha_fin}</span>}
+                  </div>
+                  {ad.href && (
+                    <a href={ad.href} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-brand-primary hover:underline">
+                      <ExternalLink className="h-3 w-3" /> {ad.href}
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

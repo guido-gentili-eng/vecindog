@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Calendar, Dog, BadgeCheck, Loader2, AlertCircle,
   Trash2, CheckCircle2, RefreshCw, ShieldAlert, ChevronDown, ChevronUp, Lock, Heart,
-  Share2, MessageCircle,
+  Share2, MessageCircle, Eye, Clock, SendHorizonal,
 } from 'lucide-react';
 import { ETIQUETA_CATEGORIA, ETIQUETA_ESPECIE } from '@/lib/mockData';
 import {
@@ -65,6 +65,13 @@ export default function DetalleAvisoPage() {
   const [showFoundModal,  setShowFoundModal]  = useState(false);
   const [msgOk,           setMsgOk]           = useState('');
   const [msgErr,         setMsgErr]         = useState('');
+
+  /* Lo vi */
+  const [loViOpen,    setLoViOpen]    = useState(false);
+  const [loViCalle,   setLoViCalle]   = useState('');
+  const [loViHora,    setLoViHora]    = useState('');
+  const [loViLoading, setLoViLoading] = useState(false);
+  const [loViEnviado, setLoViEnviado] = useState(false);
 
   useEffect(() => {
     obtenerPost(id)
@@ -189,6 +196,26 @@ export default function DetalleAvisoPage() {
     }
   }
 
+  async function handleLoVi() {
+    if (!loViCalle.trim() || !loViHora.trim()) return;
+    setLoViLoading(true);
+    try {
+      const mensaje = `👀 Alguien vio a ${post!.nombre ?? 'tu perro'} en ${loViCalle.trim()} a las ${loViHora}.`;
+      await supabase.from('notifications').insert({
+        user_id: post!.user_id,
+        post_id: post!.id,
+        tipo:    'avistamiento',
+        mensaje,
+        leida:   false,
+      });
+      setLoViEnviado(true);
+    } catch {
+      // silently fail — notification is best-effort
+    } finally {
+      setLoViLoading(false);
+    }
+  }
+
   const postUrl = `https://www.mivecindog.com.ar/publicaciones/${post.id}`;
 
   function handleShare() {
@@ -275,6 +302,77 @@ export default function DetalleAvisoPage() {
 
         {/* Columna derecha sticky */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          {/* ── "Lo vi" — solo para perdido, activo, no dueño ── */}
+          {post.categoria === 'perdido' && !resuelto && isAuthenticated && !isOwner && (
+            <div className="card overflow-hidden border border-brand-primary/20">
+              {!loViOpen && !loViEnviado && (
+                <button
+                  type="button"
+                  onClick={() => setLoViOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-4 text-base font-bold text-white transition hover:opacity-90 active:scale-[0.99]"
+                >
+                  <Eye className="h-5 w-5" /> Lo vi
+                </button>
+              )}
+
+              {loViOpen && !loViEnviado && (
+                <div className="p-4 space-y-3">
+                  <p className="text-sm font-extrabold text-ink flex items-center gap-1.5">
+                    <Eye className="h-4 w-4 text-brand-primary shrink-0" /> ¿Dónde y cuándo lo viste?
+                  </p>
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">Calle / zona</label>
+                    <input
+                      type="text"
+                      value={loViCalle}
+                      onChange={(e) => setLoViCalle(e.target.value)}
+                      placeholder="Ej: Av. Colón y Brandsen"
+                      className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Hora aproximada
+                    </label>
+                    <input
+                      type="time"
+                      value={loViHora}
+                      onChange={(e) => setLoViHora(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-black/15 bg-brand-cream px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={loViLoading || !loViCalle.trim() || !loViHora.trim()}
+                      onClick={handleLoVi}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                    >
+                      {loViLoading
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <><SendHorizonal className="h-4 w-4" /> Enviar aviso</>
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLoViOpen(false)}
+                      className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {loViEnviado && (
+                <div className="p-4 flex items-center gap-2 text-good">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                  <p className="text-sm font-bold">¡Aviso enviado al dueño!</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {post.categoria === 'adopcion' && !resuelto && isAuthenticated && (
             <button
               type="button"

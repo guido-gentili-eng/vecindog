@@ -178,6 +178,21 @@ export async function eliminarPost(id: string, images: string[]): Promise<void> 
   if (error) throw error;
 }
 
+/** Lista los posts resueltos del usuario autenticado. */
+export async function listarMisPostsResueltos(limite = 10): Promise<Post[]> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .eq('estado', 'resuelto')
+    .order('created_at', { ascending: false })
+    .limit(limite);
+  if (error) return [];
+  return (data ?? []) as Post[];
+}
+
 /** Lista los posts de una categoría de cuidado específica. */
 export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible' | 'transportador_disponible'): Promise<Post[]> {
   const { data, error } = await supabase

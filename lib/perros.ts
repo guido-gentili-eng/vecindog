@@ -218,6 +218,33 @@ export async function subirFotoPerro(file: File): Promise<string> {
   return data.publicUrl;
 }
 
+/** Devuelve todas las vacunas con fecha próxima de los perros del usuario, ordenadas por fecha. */
+export async function listarMisVacunasProximas(): Promise<Array<Vacuna & { perro_nombre: string }>> {
+  const perros = await listarMisPerros();
+  if (perros.length === 0) return [];
+  const perroIds = perros.map((p) => p.id);
+  const { data } = await supabase
+    .from('vacunas')
+    .select('*')
+    .in('perro_id', perroIds)
+    .not('proxima', 'is', null)
+    .neq('proxima', '')
+    .order('proxima', { ascending: true });
+  if (!data) return [];
+  const perroMap = Object.fromEntries(perros.map((p) => [p.id, p.nombre]));
+  return (data as Vacuna[]).map((v) => ({ ...v, perro_nombre: perroMap[v.perro_id] ?? '?' }));
+}
+
+/** Sube foto de avatar del usuario al storage. */
+export async function subirFotoPerfil(file: File, userId: string): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg';
+  const path = `avatars/${userId}.${ext}`;
+  const { error } = await supabase.storage.from('posts').upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = supabase.storage.from('posts').getPublicUrl(path);
+  return `${data.publicUrl}?t=${Date.now()}`;
+}
+
 /* ─────────────────── Constantes helpers ─────────────────── */
 
 export const VACUNAS_COMUNES = [

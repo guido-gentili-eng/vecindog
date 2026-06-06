@@ -21,6 +21,9 @@ export interface Profile {
   direccion:         string;
   instagram?:        string | null;
   facebook?:         string | null;
+  foto_url?:         string | null;
+  bio?:              string | null;
+  radio_alerta_km?:  number | null;
   plan?:             'free' | 'pro';
   plan_vencimiento?: string | null;
   suspendido?:       boolean;

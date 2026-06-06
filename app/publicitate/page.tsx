@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Megaphone, CheckCircle2, ArrowRight, Star, LayoutTemplate,
   Layers, Sidebar, Mail, MessageCircle, TrendingUp, Users, MapPin, Target,
-  X, Loader2, AlertCircle, ImagePlus,
+  X, Loader2, AlertCircle, ImagePlus, ArrowLeft,
 } from 'lucide-react';
 
 const WHATSAPP = '5492914050210';
@@ -115,12 +116,18 @@ const FAQ = [
 /* ─────────────────────── PAGE ─────────────────────── */
 
 export default function PublicitatePage() {
+  const router   = useRouter();
   const waLink   = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quiero publicitar mi negocio en Vecindog')}`;
   const mailLink = `mailto:${EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`;
   const [planSeleccionado, setPlanSeleccionado] = useState<string | null>(null);
 
   return (
     <div className="py-10 md:py-14">
+
+      <button type="button" onClick={() => router.back()}
+        className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+        <ArrowLeft className="h-4 w-4" /> Volver
+      </button>
 
       {/* ── HERO ──────────────────────────────────────────────── */}
       <section className="mb-16 text-center md:mb-20">

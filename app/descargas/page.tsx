@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Smartphone, Apple, Share2, PlusSquare, Chrome, MoreVertical, Check } from 'lucide-react';
+import Link from 'next/link';
+import { Smartphone, Apple, Share2, PlusSquare, Chrome, MoreVertical, Check, ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Descargá Vecindog | Instalá la app en tu celular',
@@ -71,6 +72,11 @@ function StepCard({ icon, title, desc, num }: { icon: string; title: string; des
 export default function DescargasPage() {
   return (
     <div className="py-10 md:py-14">
+
+      <Link href="/"
+        className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+        <ArrowLeft className="h-4 w-4" /> Volver
+      </Link>
 
       {/* Hero */}
       <section className="mb-14 text-center">

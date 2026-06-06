@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Check, X, Sparkles, Dog, Lock, AlertCircle,
-  Bell, Users, Camera, ScanSearch, Trophy,
+  Bell, Users, Camera, ScanSearch, Trophy, ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -86,6 +86,15 @@ export default function PlanesPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+
+      {/* Volver */}
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
+      >
+        <ArrowLeft className="h-4 w-4" /> Volver
+      </button>
 
       {/* Header */}
       <div className="mb-10 text-center">

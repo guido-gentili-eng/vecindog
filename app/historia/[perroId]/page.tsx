@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 interface Props { params: { perroId: string } }
 
@@ -55,6 +56,11 @@ export default async function HistoriaPublicaPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-[#f5f0eb] py-8 px-4">
       <div className="mx-auto max-w-xl">
+
+        <Link href="/mis-perros"
+          className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+          <ArrowLeft className="h-4 w-4" /> Volver a Mis perros
+        </Link>
 
         {/* Header Vecindog */}
         <div className="mb-6 flex items-center justify-between">

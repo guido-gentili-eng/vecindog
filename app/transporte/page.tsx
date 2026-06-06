@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Car, Phone, MapPin, Calendar, ChevronRight, User, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Car, Phone, MapPin, Calendar, ChevronRight, User, Star, ArrowLeft } from 'lucide-react';
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function TransportePage() {
+  const router   = useRouter();
   const { user } = useAuth();
   const [transportadores, setTransportadores] = useState<Post[]>([]);
   const [promedios, setPromedios] = useState<Record<string, number>>({});
@@ -52,6 +54,11 @@ export default function TransportePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+
+      <button type="button" onClick={() => router.back()}
+        className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+        <ArrowLeft className="h-4 w-4" /> Volver
+      </button>
 
       {/* Hero */}
       <div className="mb-10 text-center">

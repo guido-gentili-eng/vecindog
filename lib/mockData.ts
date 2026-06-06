@@ -21,6 +21,7 @@ export interface Animal {
   zona: string;          // barrio / referencia
   ciudad: string;
   fecha: string;         // YYYY-MM-DD
+  horario?: string | null;
   imagenes: string[];    // 1 a 5 URLs. La primera es la principal.
   contacto: string;      // WhatsApp visible
   estado: EstadoVida;

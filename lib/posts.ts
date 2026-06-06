@@ -43,8 +43,9 @@ export function postToAnimal(p: Post): Animal {
     nombre:      p.nombre,
     descripcion: p.descripcion,
     zona:        p.zona,
-    ciudad:      '',           // sin columna ciudad por ahora
+    ciudad:      '',
     fecha:       p.fecha,
+    horario:     p.horario,
     imagenes:    p.images,
     contacto:    p.contacto,
     estado:      'vivo',

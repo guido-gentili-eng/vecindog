@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile,        setProfile]        = useState<Profile | null>(null);
   const [isGuest,        setIsGuest]        = useState(false);
   const [loading,        setLoading]        = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [ciudad,         setCiudadState]    = useState<string | null>(null);
 
   async function fetchProfile(userId: string) {
@@ -99,10 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
       if (confirmedUser) {
-        setProfileLoading(true);
         fetchProfile(confirmedUser.id);
-      } else if (typeof window !== 'undefined') {
-        setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
+      } else {
+        setProfileLoading(false);
+        if (typeof window !== 'undefined') {
+          setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
+        }
       }
       setLoading(false);
     });
@@ -118,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchProfile(confirmedUser.id);
       } else {
         setProfile(null);
+        setProfileLoading(false);
       }
     });
 

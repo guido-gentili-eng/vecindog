@@ -260,8 +260,8 @@ export default function PublicarPage() {
     e.preventDefault();
     setSubmitError('');
     const digitos = form.contacto.replace(/\D/g, '');
-    if (digitos.length < 8) {
-      setSubmitError('El WhatsApp debe tener al menos 8 dígitos. Ejemplo: +54 9 291 4050210');
+    if (digitos.length < 10) {
+      setSubmitError('El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210');
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
       return;
     }

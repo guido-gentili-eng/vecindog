@@ -664,7 +664,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
     if (!direccion.trim()) { setError('Ingresá la dirección de tu negocio.'); return; }
     if (!email.trim())     { setError('Ingresá tu email.'); return; }
     const digitos = telefono.replace(/\D/g, '');
-    if (digitos.length < 8) { setError('El teléfono debe tener al menos 8 dígitos.'); return; }
+    if (digitos.length < 10) { setError('El teléfono debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210'); return; }
 
     setError(''); setLoading(true);
 

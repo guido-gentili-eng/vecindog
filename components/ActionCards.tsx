@@ -31,7 +31,7 @@ const ACCIONES: Accion[] = [
   {
     href: '/publicar?cat=perdido',
     icon: Search,
-    titulo: 'Estoy buscando un perro',
+    titulo: 'Estoy buscando',
     texto: 'Publicá un aviso para que la comunidad te ayude a encontrarlo.',
     chip: 'Perdidos',
     bg:     'bg-brand-coral-bright',
@@ -42,7 +42,7 @@ const ACCIONES: Accion[] = [
   {
     href: '/publicar?cat=encontrado',
     icon: MapPin,
-    titulo: 'Vi un perro perdido',
+    titulo: 'Vi uno perdido',
     texto: 'Avisá a la comunidad para ayudarlo a volver a casa.',
     chip: 'Tarda 1 minuto',
     bg:     'bg-brand-sage',
@@ -64,7 +64,7 @@ const ACCIONES: Accion[] = [
   {
     href: '/publicar?cat=transito',
     icon: Footprints,
-    titulo: 'Perro en tránsito',
+    titulo: 'En tránsito',
     texto: 'Lo tenés temporalmente o lo viste en la calle. La comunidad puede ayudar.',
     chip: 'VecindogPro',
     bg:     'bg-[#5b21b6]',
@@ -107,7 +107,7 @@ export default function ActionCards() {
                 Nuevo
               </span>
               <h3 className="mt-1 font-display text-lg font-extrabold leading-tight sm:text-xl">
-                Cuidado de perros
+                Cuidado
               </h3>
               <p className="mt-0.5 text-xs leading-snug opacity-90 sm:text-sm">
                 Buscá un cuidador o anotate para cuidar perros de otros vecinos.
@@ -136,7 +136,7 @@ export default function ActionCards() {
                 Nuevo
               </span>
               <h3 className="mt-1 font-display text-lg font-extrabold leading-tight sm:text-xl">
-                Transporte de perros
+                Transporte
               </h3>
               <p className="mt-0.5 text-xs leading-snug opacity-90 sm:text-sm">
                 Encontrá quien lleve a tu perro o anotate para transportar perros de vecinos.

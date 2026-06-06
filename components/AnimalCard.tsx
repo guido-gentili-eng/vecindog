@@ -88,6 +88,11 @@ export default function AnimalCard({ animal }: { animal: Animal }) {
           <span className="inline-flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" /> {animal.fecha}
           </span>
+          {animal.horario && (
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" /> {animal.horario}
+            </span>
+          )}
         </div>
 
         {/* Badge fecha límite para tránsito "tengo" */}

@@ -11,10 +11,11 @@ import { ETIQUETA_CATEGORIA, COLORES_PERRO } from '@/lib/mockData';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import ProGate from '@/components/ProGate';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /* ─────────────── Tipos del formulario ─────────────── */
 
-type Triestado = 'si' | 'no' | 'ns';  // sí / no / no sé
+type Triestado = 'si' | 'no' | 'ns';
 
 interface BuscarForm {
   raza:       string;
@@ -43,26 +44,12 @@ const FORM_INICIAL: BuscarForm = {
   zona: '', fecha: '', horario: '',
 };
 
-
-const COLOR_CATEGORIA: Record<string, string> = {
-  perdido:    'bg-lost text-white',
-  encontrado: 'bg-found text-white',
-  adopcion:   'bg-adopt text-[#5b3a0e]',
-};
-
 /* ─────────────── Matching ─────────────── */
 
 function norm(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-/**
- * Nuevo sistema de matching: filtros obligatorios + score de confianza.
- *
- * Si un criterio está especificado Y el aviso tiene ese dato Y no coincide → EXCLUIR.
- * Si el aviso no tiene ese dato → no excluir (puede ser que no lo cargaron).
- * El score sirve solo para ordenar entre los que pasan el filtro.
- */
 function calcularScore(post: Post, f: BuscarForm): { score: number; max: number; excluir: boolean } {
   const desc = norm(post.descripcion);
   const zona = norm(post.zona);
@@ -70,27 +57,23 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
   let max     = 0;
   let excluir = false;
 
-  /* ── RAZA (filtro obligatorio + score alto) ── */
   if (f.raza.trim()) {
     max += 40;
     const razaBuscada = norm(f.raza);
     if (post.raza) {
       const razaPost = norm(post.raza);
       if (razaPost.includes(razaBuscada) || razaBuscada.includes(razaPost)) {
-        score += 40; // coincidencia exacta en campo estructurado
+        score += 40;
       } else if (desc.includes(razaBuscada)) {
-        score += 20; // menciona la raza en la descripción
+        score += 20;
       } else {
-        excluir = true; // tiene raza distinta → excluir
+        excluir = true;
       }
     } else {
-      // No tiene raza cargada → buscar en descripción
       if (desc.includes(razaBuscada)) score += 20;
-      // Si no está en descripción, no excluir (dato ausente = desconocido)
     }
   }
 
-  /* ── COLOR (filtro obligatorio) ── */
   if (f.color && !excluir) {
     max += 30;
     const colorBuscado = norm(f.color);
@@ -98,17 +81,15 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
       if (norm(post.color) === colorBuscado || norm(post.color).includes(colorBuscado)) {
         score += 30;
       } else if (desc.includes(colorBuscado)) {
-        score += 15; // mencionado en descripción aunque campo distinto
+        score += 15;
       } else {
-        excluir = true; // color claramente diferente → excluir
+        excluir = true;
       }
     } else {
       if (desc.includes(colorBuscado)) score += 15;
-      // Si no, dato ausente → no excluir
     }
   }
 
-  /* ── TAMAÑO (filtro obligatorio) ── */
   if (f.tamano && !excluir) {
     max += 15;
     const palabrasTamano: Record<string, string[]> = {
@@ -120,17 +101,15 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
       if (post.tamano === f.tamano) {
         score += 15;
       } else {
-        excluir = true; // tamaño diferente → excluir
+        excluir = true;
       }
     } else {
       if (palabrasTamano[f.tamano]?.some((p) => desc.includes(p))) score += 15;
     }
   }
 
-  /* ── SEXO (filtro obligatorio) ── */
   if (f.sexo !== 'ns' && !excluir) {
     max += 10;
-    // El sexo puede estar en la descripción o en el campo estructurado
     const sexoPost = (post as unknown as Record<string, string | undefined>).sexo;
     if (sexoPost) {
       if (norm(sexoPost) === f.sexo) {
@@ -141,7 +120,6 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     } else if (desc.includes(f.sexo)) {
       score += 10;
     } else {
-      // Buscar variantes
       const esMacho  = ['macho', 'perrito', 'cachorro macho'].some((p) => desc.includes(p));
       const esHembra = ['hembra', 'perrita', 'cachorra'].some((p) => desc.includes(p));
       if (f.sexo === 'macho'  && esHembra) { excluir = true; }
@@ -151,7 +129,6 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     }
   }
 
-  /* ── COLLAR (filtro cuando hay datos explícitos) ── */
   if (f.collar !== 'ns' && !excluir) {
     max += 8;
     if (post.collar !== null && post.collar !== undefined) {
@@ -163,13 +140,11 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     }
   }
 
-  /* Color del collar (solo informativo, no excluye) */
   if (f.collar === 'si' && f.colorCollar.trim() && !excluir) {
     max += 5;
     if (desc.includes(norm(f.colorCollar))) score += 5;
   }
 
-  /* ── CHAPITA (filtro cuando hay datos explícitos) ── */
   if (f.chapita !== 'ns' && !excluir) {
     max += 7;
     if (post.chapita !== null && post.chapita !== undefined) {
@@ -181,7 +156,6 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     }
   }
 
-  /* ── ZONA (no excluye, pero suma mucho si coincide) ── */
   if (f.zona.trim() && !excluir) {
     max += 15;
     const zonaBuscada = norm(f.zona);
@@ -189,7 +163,6 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     else if (zona.split(' ').some((w) => w.length > 3 && zonaBuscada.includes(w))) score += 8;
   }
 
-  /* ── FECHA (rango de 7 días, no excluye) ── */
   if (f.fecha && !excluir) {
     max += 5;
     const dias = Math.abs(new Date(post.fecha).getTime() - new Date(f.fecha).getTime()) / (1000 * 60 * 60 * 24);
@@ -197,7 +170,6 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
     else if (dias <= 7) score += 3;
   }
 
-  /* ── HORARIO (±3 hs, no excluye) ── */
   if (f.horario && post.horario && !excluir) {
     const [hB, mB] = f.horario.split(':').map(Number);
     const [hP, mP] = post.horario.split(':').map(Number);
@@ -214,6 +186,7 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
 
 export default function BuscarPage() {
   const { isPro } = useAuth();
+  const { t } = useLanguage();
   const [form,      setForm]      = useState<BuscarForm>(FORM_INICIAL);
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
   const [cargando,  setCargando]  = useState(false);
@@ -229,10 +202,7 @@ export default function BuscarPage() {
     setBuscado(false);
 
     try {
-      /* Traer TODOS los posts (en un futuro se puede filtrar server-side) */
       const todos = await listarPosts();
-
-      /* Solo "encontrado" y "perdido" para buscar coincidencias */
       const candidatos = todos.filter((p) => p.categoria !== 'adopcion');
 
       const hayAlgunCriterio =
@@ -243,7 +213,6 @@ export default function BuscarPage() {
       let lista: Resultado[];
 
       if (!hayAlgunCriterio) {
-        /* Sin criterios → mostrar todos los encontrado/perdido sin score */
         lista = candidatos.map((post) => ({
           post, score: 0, max: 0, porcentaje: 0, excluir: false,
         }));
@@ -267,25 +236,21 @@ export default function BuscarPage() {
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
-      {/* Back */}
       <Link
         href="/publicaciones"
         className="mb-5 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted transition hover:text-ink"
       >
-        <ChevronLeft className="h-4 w-4" /> Volver a los avisos
+        <ChevronLeft className="h-4 w-4" /> {t.bscBack}
       </Link>
 
-      {/* Header */}
       <div className="mb-6">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-          <Search className="h-3.5 w-3.5" /> Buscar por características
+          <Search className="h-3.5 w-3.5" /> {t.bscChip}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink">
-          ¿Cómo era el perro?
+          {t.bscTitle}
         </h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Completá lo que sepas. Cuanto más datos, mejores las coincidencias.
-        </p>
+        <p className="mt-1 text-sm text-ink-muted">{t.bscSub}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -294,37 +259,34 @@ export default function BuscarPage() {
         <ProGate feature="Búsqueda avanzada por características">
         <div className="card p-5 sm:p-6">
           <h2 className="mb-4 flex items-center gap-2 font-display text-base font-extrabold text-ink">
-            <Dog className="h-4 w-4 text-brand-primary" /> Características del perro
+            <Dog className="h-4 w-4 text-brand-primary" /> {t.bscSecCaract}
           </h2>
 
           <div className="space-y-4">
-            {/* Raza */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="label">Raza</label>
+                <label className="label">{t.bscRaza}</label>
                 <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
-                <p className="mt-1 text-xs text-ink-muted">Si especificás raza, solo aparecen perros de esa raza</p>
+                <p className="mt-1 text-xs text-ink-muted">{t.bscRazaHint}</p>
               </div>
 
-              {/* Color */}
               <div>
-                <label className="label">Color principal</label>
+                <label className="label">{t.bscColor}</label>
                 <select
                   className="field w-full"
                   value={form.color}
                   onChange={(e) => campo('color', e.target.value)}
                 >
-                  <option value="">No sé / no recuerdo</option>
+                  <option value="">{t.bscColorNoSe}</option>
                   {COLORES_PERRO.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Tamaño */}
             <div>
-              <label className="label">Tamaño</label>
+              <label className="label">{t.bscTamano}</label>
               <div className="grid grid-cols-3 gap-2">
-                {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+                {([['pequeño', t.bscChico], ['mediano', t.bscMediano], ['grande', t.bscGrande]] as const).map(([v, l]) => (
                   <button
                     key={v}
                     type="button"
@@ -341,11 +303,10 @@ export default function BuscarPage() {
               </div>
             </div>
 
-            {/* Sexo */}
             <div>
-              <label className="label">Sexo</label>
+              <label className="label">{t.bscSexo}</label>
               <div className="flex gap-2">
-                {([['macho', 'Macho'], ['hembra', 'Hembra'], ['ns', 'No sé']] as const).map(([v, l]) => (
+                {([['macho', t.bscMacho], ['hembra', t.bscHembra], ['ns', t.bscNs]] as const).map(([v, l]) => (
                   <button
                     key={v}
                     type="button"
@@ -362,29 +323,28 @@ export default function BuscarPage() {
               </div>
             </div>
 
-            {/* Collar */}
             <div>
-              <label className="label">¿Tenía collar?</label>
-              <TriestadoBotones value={form.collar} onChange={(v) => campo('collar', v)} />
+              <label className="label">{t.bscCollar}</label>
+              <TriestadoBotones value={form.collar} onChange={(v) => campo('collar', v)}
+                labelSi={t.adpSi} labelNo={t.adpNo} labelNs={t.bscNs} />
             </div>
 
-            {/* Color del collar (solo si tiene collar) */}
             {form.collar === 'si' && (
               <div>
-                <label className="label">Color del collar</label>
+                <label className="label">{t.bscColorCollar}</label>
                 <input
                   className="field w-full"
-                  placeholder="Rojo, azul, negro…"
+                  placeholder={t.bscColorCollarPh}
                   value={form.colorCollar}
                   onChange={(e) => campo('colorCollar', e.target.value)}
                 />
               </div>
             )}
 
-            {/* Chapita */}
             <div>
-              <label className="label">¿Tenía chapita / plaquita identificadora?</label>
-              <TriestadoBotones value={form.chapita} onChange={(v) => campo('chapita', v)} />
+              <label className="label">{t.bscChapita}</label>
+              <TriestadoBotones value={form.chapita} onChange={(v) => campo('chapita', v)}
+                labelSi={t.adpSi} labelNo={t.adpNo} labelNs={t.bscNs} />
             </div>
           </div>
         </div>
@@ -393,11 +353,11 @@ export default function BuscarPage() {
         {/* ── Dónde / cuándo ── */}
         <div className="card p-5 sm:p-6">
           <h2 className="mb-4 flex items-center gap-2 font-display text-base font-extrabold text-ink">
-            <MapPin className="h-4 w-4 text-brand-primary" /> Dónde y cuándo
+            <MapPin className="h-4 w-4 text-brand-primary" /> {t.bscSecDonde}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="label">Zona / barrio</label>
+              <label className="label">{t.bscZona}</label>
               <input
                 className="field w-full"
                 placeholder="Villa Mitre, Centro…"
@@ -406,7 +366,7 @@ export default function BuscarPage() {
               />
             </div>
             <div>
-              <label className="label">Fecha aproximada</label>
+              <label className="label">{t.bscFecha}</label>
               <input
                 type="date"
                 className="field w-full"
@@ -415,7 +375,7 @@ export default function BuscarPage() {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="label">Horario aproximado (±3 hs)</label>
+              <label className="label">{t.bscHorario}</label>
               <input
                 type="time"
                 className="field w-full sm:w-48"
@@ -432,8 +392,8 @@ export default function BuscarPage() {
           className="btn-primary w-full disabled:opacity-60"
         >
           {cargando
-            ? <><Loader2 className="h-5 w-5 animate-spin" /> Buscando…</>
-            : <><Search className="h-5 w-5" /> Buscar coincidencias</>
+            ? <><Loader2 className="h-5 w-5 animate-spin" /> {t.bscBuscando}</>
+            : <><Search className="h-5 w-5" /> {t.bscBuscar}</>
           }
         </button>
       </form>
@@ -443,21 +403,17 @@ export default function BuscarPage() {
         <div className="mt-8">
           <h2 className="mb-4 font-display text-xl font-extrabold text-ink">
             {resultados.length === 0
-              ? 'Sin coincidencias'
-              : `${resultados.length} aviso${resultados.length !== 1 ? 's' : ''} encontrado${resultados.length !== 1 ? 's' : ''}`}
+              ? t.bscSinCoincidencias
+              : `${resultados.length} ${resultados.length !== 1 ? t.bscAvisos : t.bscAviso} ${resultados.length !== 1 ? t.bscEncontradosP : t.bscEncontradoS}`}
           </h2>
 
           {resultados.length === 0 ? (
             <div className="card p-8 text-center">
               <Dog className="mx-auto h-10 w-10 text-brand-primary/30" />
-              <p className="mt-3 font-bold text-ink">
-                No encontramos avisos que coincidan
-              </p>
-              <p className="mt-1 text-ink-muted text-sm">
-                Probá con menos filtros o revisá todos los avisos.
-              </p>
+              <p className="mt-3 font-bold text-ink">{t.bscNoEncontramos}</p>
+              <p className="mt-1 text-ink-muted text-sm">{t.bscProbaFiltros}</p>
               <Link href="/publicaciones?cat=encontrado" className="btn-secondary mt-4 inline-flex">
-                Ver todos los vistos
+                {t.bscVerTodos}
               </Link>
             </div>
           ) : (
@@ -476,17 +432,20 @@ export default function BuscarPage() {
 /* ─────────────── Sub-componentes ─────────────── */
 
 function TriestadoBotones({
-  value, onChange,
+  value, onChange, labelSi, labelNo, labelNs,
 }: {
   value: Triestado;
   onChange: (v: Triestado) => void;
+  labelSi: string;
+  labelNo: string;
+  labelNs: string;
 }) {
   return (
     <div className="flex gap-2">
       {([
-        ['si', 'Sí',    CheckCircle2],
-        ['no', 'No',    XCircle],
-        ['ns', 'No sé', HelpCircle],
+        ['si', labelSi,  CheckCircle2],
+        ['no', labelNo,  XCircle],
+        ['ns', labelNs,  HelpCircle],
       ] as const).map(([v, l, Icon]) => (
         <button
           key={v}
@@ -524,7 +483,6 @@ function ResultadoCard({
       href={`/publicaciones/${post.id}`}
       className="group flex gap-4 overflow-hidden rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card"
     >
-      {/* Foto */}
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
         {principal ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -540,7 +498,6 @@ function ResultadoCard({
         )}
       </div>
 
-      {/* Info */}
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
           <div className="flex items-start justify-between gap-2">
@@ -594,7 +551,6 @@ function ResultadoCard({
 /* ─────────────── Banner buscar en Facebook vía Google ─────────────── */
 function BuscarEnFacebook({ terminos }: { terminos: string[] }) {
   const palabras = terminos.filter(Boolean).join(' ') || 'perro perdido';
-
   const query = encodeURIComponent(`${palabras} site:facebook.com`);
   const url   = `https://www.google.com/search?q=${query}`;
 
@@ -620,3 +576,6 @@ function BuscarEnFacebook({ terminos }: { terminos: string[] }) {
     </a>
   );
 }
+
+// Silence unused-variable warning for BuscarEnFacebook (kept for future use)
+void BuscarEnFacebook;

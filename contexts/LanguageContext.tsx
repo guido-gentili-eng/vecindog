@@ -667,6 +667,265 @@ export type Translations = {
   rvnErrPayment: string;
   rvnErrConnection: string;
   rvnErrPhoto: string;
+  // ── Adoptar page ─────────────────────────────────────
+  adpBack: string;
+  adpChip: string;
+  adpTitle: string;
+  adpSubtitulo: string;
+  adpRequired: string;
+  adpSi: string;
+  adpNo: string;
+  adpSec1: string;
+  adpNombre: string;
+  adpDni: string;
+  adpEdad: string;
+  adpEdadHint: string;
+  adpTelefono: string;
+  adpEmail: string;
+  adpDireccion: string;
+  adpDireccionHint: string;
+  adpZona: string;
+  adpSec2: string;
+  adpSec2Sub: string;
+  adpTipoVivienda: string;
+  adpCasa: string;
+  adpDepto: string;
+  adpCasaPatio: string;
+  adpOtro: string;
+  adpTenencia: string;
+  adpPropietario: string;
+  adpInquilino: string;
+  adpPropPermite: string;
+  adpTienePatio: string;
+  adpPatioFechado: string;
+  adpSec3: string;
+  adpSec3Sub: string;
+  adpCantPersonas: string;
+  adpCantPersonasHint: string;
+  adpHayNinos: string;
+  adpEdadesNinos: string;
+  adpEdadesNinosHint: string;
+  adpTodosDeAcuerdo: string;
+  adpAlergias: string;
+  adpSec4: string;
+  adpMascotasActuales: string;
+  adpCualesYCuantas: string;
+  adpCualesHint: string;
+  adpVacunadasCastradas: string;
+  adpSiTodas: string;
+  adpAlgunas: string;
+  adpMascotasAnteriores: string;
+  adpQuePaso: string;
+  adpHorasSolo: string;
+  adpMenos2: string;
+  adp2a4: string;
+  adp4a6: string;
+  adp6a8: string;
+  adpMas8: string;
+  adpSec5: string;
+  adpSec5Sub: string;
+  adpTamanoPreferido: string;
+  adpChico: string;
+  adpMediano: string;
+  adpGrande: string;
+  adpSinPref: string;
+  adpEdadPreferida: string;
+  adpCachorro: string;
+  adpJoven: string;
+  adpAdulto: string;
+  adpMayor: string;
+  adpPerroEnMente: string;
+  adpPerroEnMenteHint: string;
+  adpPerroEnMentePh: string;
+  adpMotivacion: string;
+  adpMotivacionPh: string;
+  adpSec6: string;
+  adpSec6Sub: string;
+  adpComp1: string;
+  adpComp2: string;
+  adpComp3: string;
+  adpComp4: string;
+  adpEnviando: string;
+  adpEnviar: string;
+  adpSuccessTitle: string;
+  adpSuccessMsg: string;
+  adpVerAdopcion: string;
+  adpErrNombre: string;
+  adpErrDni: string;
+  adpErrEdad: string;
+  adpErrTelefono: string;
+  adpErrEmail: string;
+  adpErrDireccion: string;
+  adpErrZona: string;
+  adpErrVivienda: string;
+  adpErrTenencia: string;
+  adpErrPropPermite: string;
+  adpErrPatio: string;
+  adpErrPatioFechado: string;
+  adpErrPersonas: string;
+  adpErrNinos: string;
+  adpErrEdadesNinos: string;
+  adpErrAcuerdo: string;
+  adpErrAlergias: string;
+  adpErrMascotas: string;
+  adpErrDetalle: string;
+  adpErrVacunadas: string;
+  adpErrAnteriores: string;
+  adpErrQuePaso: string;
+  adpErrHoras: string;
+  adpErrTamano: string;
+  adpErrEdadPref: string;
+  adpErrMotivacion: string;
+  adpErrCompromisos: string;
+  adpErrSubmit: string;
+  // ── Buscar page ───────────────────────────────────────
+  bscBack: string;
+  bscChip: string;
+  bscTitle: string;
+  bscSub: string;
+  bscSecCaract: string;
+  bscRaza: string;
+  bscRazaHint: string;
+  bscColor: string;
+  bscColorNoSe: string;
+  bscTamano: string;
+  bscChico: string;
+  bscMediano: string;
+  bscGrande: string;
+  bscSexo: string;
+  bscMacho: string;
+  bscHembra: string;
+  bscNs: string;
+  bscCollar: string;
+  bscColorCollar: string;
+  bscColorCollarPh: string;
+  bscChapita: string;
+  bscSecDonde: string;
+  bscZona: string;
+  bscFecha: string;
+  bscHorario: string;
+  bscBuscar: string;
+  bscBuscando: string;
+  bscSinCoincidencias: string;
+  bscAviso: string;
+  bscAvisos: string;
+  bscEncontradoS: string;
+  bscEncontradosP: string;
+  bscNoEncontramos: string;
+  bscProbaFiltros: string;
+  bscVerTodos: string;
+  // ── Publicar page ─────────────────────────────────────
+  pbrBack: string;
+  pbrGuestTitle: string;
+  pbrGuestSub: string;
+  pbrGuestBtn: string;
+  pbrChipPerdido: string;
+  pbrChipEncontrado: string;
+  pbrChipTransito: string;
+  pbrChipAdopcion: string;
+  pbrTitlePerdido: string;
+  pbrTitleEncontrado: string;
+  pbrTitleTransito: string;
+  pbrTitleAdopcion: string;
+  pbrSubPerdido: string;
+  pbrSubEncontrado: string;
+  pbrSubTransito: string;
+  pbrSubAdopcion: string;
+  pbrPrePerdido: string;
+  pbrPreEncontrado: string;
+  pbrBuscarCaract: string;
+  pbrBuscarCaractSub: string;
+  pbrBuscarFoto: string;
+  pbrBuscarFotoSub: string;
+  pbrSiNoEncontras: string;
+  pbrPrefillPre: string;
+  pbrPrefillPost: string;
+  pbrPrefillSub: string;
+  pbrStep1: string;
+  pbrStep1Sub: string;
+  pbrFotoPerfilDe: string;
+  pbrPrincipal: string;
+  pbrHacerPrincipal: string;
+  pbrStep2Transit: string;
+  pbrStep2TransitSub: string;
+  pbrLoTengo: string;
+  pbrLoTengoDesc: string;
+  pbrLoVi: string;
+  pbrLoViDesc: string;
+  pbrFechaLimite: string;
+  pbrFechaLimiteSub: string;
+  pbrHoraVisto: string;
+  pbrTransitWarning: string;
+  pbrStep2DataSub: string;
+  pbrStep2DataSubEncontrado: string;
+  pbrStep2DataSubTransito: string;
+  pbrStep2DataSubAdopcion: string;
+  pbrNombre: string;
+  pbrRaza: string;
+  pbrColor: string;
+  pbrColorNoSe: string;
+  pbrTamano: string;
+  pbrChico: string;
+  pbrMediano: string;
+  pbrGrande: string;
+  pbrCollar: string;
+  pbrChapita: string;
+  pbrDescripcion: string;
+  pbrDescripcionPh: string;
+  pbrMatchTitle: string;
+  pbrMatchNo: string;
+  pbrMatchMismaZona: string;
+  pbrMatchOtraZona: string;
+  pbrMatchDondeViste: string;
+  pbrMatchHora: string;
+  pbrMatchConfirm: string;
+  pbrStep3Perdido: string;
+  pbrStep3Encontrado: string;
+  pbrStep3Transito: string;
+  pbrStep3Adopcion: string;
+  pbrDondePerdio: string;
+  pbrEnMiCasa: string;
+  pbrEnOtroLugar: string;
+  pbrSinDireccion: string;
+  pbrAgregarPerfil: string;
+  pbrGpsOk: string;
+  pbrGpsCambiar: string;
+  pbrGpsCargando: string;
+  pbrGpsUsar: string;
+  pbrGpsError: string;
+  pbrGpsManual: string;
+  pbrGpsVolver: string;
+  pbrConfirmDir: string;
+  pbrDireccionZona: string;
+  pbrFecha: string;
+  pbrHorario: string;
+  pbrContactoLabel: string;
+  pbrContactoError: string;
+  pbrLimiteError: string;
+  pbrPublicando: string;
+  pbrPublicar: string;
+  pbrSi: string;
+  pbrNo: string;
+  pbrNoSe: string;
+  pbrAgregarFotos: string;
+  pbrSubirFotos: string;
+  pbrGaleria: string;
+  pbrSacarFoto: string;
+  pbrSuccessTitle: string;
+  pbrSuccessMsg: string;
+  pbrVerAvisos: string;
+  pbrPublicarOtro: string;
+  pbrPostMasPrecision: string;
+  pbrPostEncontrarDueno: string;
+  pbrBuscarFotoProSub: string;
+  pbrSoloPro: string;
+  pbrBuscarCaractTitle: string;
+  pbrBuscarCaractProSub: string;
+  pbrPorCaract: string;
+  pbrFotoLimit: string;
+  pbrFotoInvalida: string;
+  pbrFotoPesada: string;
+  pbrWhatsappError: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -1334,6 +1593,265 @@ const translations: Record<Lang, Translations> = {
     rvnErrPayment: 'Error al procesar el pago.',
     rvnErrConnection: 'Error de conexión. Intentá de nuevo.',
     rvnErrPhoto: 'La imagen debe pesar menos de 5 MB.',
+    // Adoptar
+    adpBack: 'Volver al inicio',
+    adpChip: 'Adopción responsable',
+    adpTitle: 'Solicitud de adopción',
+    adpSubtitulo: 'Completá el formulario con sinceridad. La información es confidencial y nos ayuda a asegurar el bienestar del perro.',
+    adpRequired: 'campo obligatorio',
+    adpSi: 'Sí',
+    adpNo: 'No',
+    adpSec1: 'Tus datos personales',
+    adpNombre: 'Nombre y apellido',
+    adpDni: 'DNI',
+    adpEdad: 'Edad',
+    adpEdadHint: '(mín. 18 años)',
+    adpTelefono: 'Teléfono / WhatsApp',
+    adpEmail: 'Email',
+    adpDireccion: 'Dirección',
+    adpDireccionHint: 'calle y número',
+    adpZona: 'Barrio / zona',
+    adpSec2: 'Tu vivienda',
+    adpSec2Sub: 'El entorno es clave para el bienestar del perro.',
+    adpTipoVivienda: 'Tipo de vivienda',
+    adpCasa: 'Casa',
+    adpDepto: 'Departamento',
+    adpCasaPatio: 'Casa con patio',
+    adpOtro: 'Otro',
+    adpTenencia: '¿Sos propietario o alquilás?',
+    adpPropietario: 'Propietario',
+    adpInquilino: 'Inquilino',
+    adpPropPermite: '¿El propietario permite mascotas?',
+    adpTienePatio: '¿Tenés patio o jardín?',
+    adpPatioFechado: '¿Está cercado o vallado?',
+    adpSec3: 'Tu grupo familiar',
+    adpSec3Sub: 'Necesitamos saber quiénes van a convivir con el perro.',
+    adpCantPersonas: '¿Cuántas personas viven en tu hogar?',
+    adpCantPersonasHint: 'incluíte vos',
+    adpHayNinos: '¿Hay niños en el hogar?',
+    adpEdadesNinos: 'Edades de los niños',
+    adpEdadesNinosHint: 'ej: 3, 7 y 10 años',
+    adpTodosDeAcuerdo: '¿Todos en el hogar están de acuerdo con la adopción?',
+    adpAlergias: '¿Algún integrante tiene alergia a los animales?',
+    adpSec4: 'Tu experiencia con mascotas',
+    adpMascotasActuales: '¿Tenés mascotas actualmente?',
+    adpCualesYCuantas: '¿Cuáles y cuántas?',
+    adpCualesHint: 'tipo, raza y cantidad',
+    adpVacunadasCastradas: '¿Están vacunadas y castradas?',
+    adpSiTodas: 'Sí, todas',
+    adpAlgunas: 'Algunas',
+    adpMascotasAnteriores: '¿Tuviste mascotas anteriormente?',
+    adpQuePaso: '¿Qué pasó con ellas?',
+    adpHorasSolo: '¿Cuántas horas por día estaría solo el perro?',
+    adpMenos2: 'Menos de 2 hs',
+    adp2a4: '2 a 4 hs',
+    adp4a6: '4 a 6 hs',
+    adp6a8: '6 a 8 hs',
+    adpMas8: 'Más de 8 hs',
+    adpSec5: '¿Qué perro buscás?',
+    adpSec5Sub: 'Nos ayuda a encontrar la mejor coincidencia para vos y para el perro.',
+    adpTamanoPreferido: 'Tamaño preferido',
+    adpChico: 'Chico',
+    adpMediano: 'Mediano',
+    adpGrande: 'Grande',
+    adpSinPref: 'Sin preferencia',
+    adpEdadPreferida: 'Edad preferida',
+    adpCachorro: 'Cachorro',
+    adpJoven: 'Joven',
+    adpAdulto: 'Adulto',
+    adpMayor: 'Mayor',
+    adpPerroEnMente: '¿Tenés algún perro en mente?',
+    adpPerroEnMenteHint: 'opcional',
+    adpPerroEnMentePh: 'Nombre o descripción del perro que te interesa',
+    adpMotivacion: '¿Por qué querés adoptar un perro?',
+    adpMotivacionPh: 'Contanos tu motivación, tu estilo de vida, cuánto tiempo le podés dedicar, qué esperás de la convivencia…',
+    adpSec6: 'Compromisos',
+    adpSec6Sub: 'Para garantizar el bienestar del perro necesitamos que aceptes los siguientes puntos. Todos son obligatorios.',
+    adpComp1: 'Me comprometo a proveer atención veterinaria regular: vacunas anuales, desparasitación y controles de salud.',
+    adpComp2: 'Acepto que se realice una visita previa al hogar antes de confirmar la adopción.',
+    adpComp3: 'Si por alguna razón no puedo conservar al perro, me comprometo a devolverlo a la organización y no darlo a terceros sin aviso previo.',
+    adpComp4: 'Me comprometo a esterilizar al perro si aún no lo está, en los plazos recomendados por el veterinario.',
+    adpEnviando: 'Enviando…',
+    adpEnviar: 'Enviar solicitud de adopción',
+    adpSuccessTitle: '¡Solicitud enviada!',
+    adpSuccessMsg: 'Recibimos tu solicitud. Te contactaremos a la brevedad. Gracias por querer adoptar de forma responsable.',
+    adpVerAdopcion: 'Ver perros en adopción',
+    adpErrNombre: 'El nombre completo es obligatorio.',
+    adpErrDni: 'El DNI es obligatorio.',
+    adpErrEdad: 'La edad es obligatoria.',
+    adpErrTelefono: 'El teléfono es obligatorio.',
+    adpErrEmail: 'El email es obligatorio.',
+    adpErrDireccion: 'La dirección es obligatoria.',
+    adpErrZona: 'La zona o barrio es obligatoria.',
+    adpErrVivienda: 'Indicá el tipo de vivienda.',
+    adpErrTenencia: 'Indicá si sos propietario o inquilino.',
+    adpErrPropPermite: 'Indicá si el propietario permite mascotas.',
+    adpErrPatio: 'Indicá si tenés patio o jardín.',
+    adpErrPatioFechado: 'Indicá si el patio está cercado.',
+    adpErrPersonas: 'Indicá cuántas personas viven en tu hogar.',
+    adpErrNinos: 'Indicá si hay niños en el hogar.',
+    adpErrEdadesNinos: 'Escribí las edades de los niños.',
+    adpErrAcuerdo: 'Indicá si todos en el hogar están de acuerdo.',
+    adpErrAlergias: 'Indicá si alguien tiene alergia a los animales.',
+    adpErrMascotas: 'Indicá si tenés mascotas actualmente.',
+    adpErrDetalle: 'Describí tus mascotas actuales.',
+    adpErrVacunadas: 'Indicá si tus mascotas están vacunadas y castradas.',
+    adpErrAnteriores: 'Indicá si tuviste mascotas anteriormente.',
+    adpErrQuePaso: 'Contanos qué pasó con tus mascotas anteriores.',
+    adpErrHoras: 'Indicá cuántas horas estaría solo el perro.',
+    adpErrTamano: 'Elegí el tamaño preferido.',
+    adpErrEdadPref: 'Elegí la edad preferida.',
+    adpErrMotivacion: 'Contanos por qué querés adoptar.',
+    adpErrCompromisos: 'Debés aceptar todos los compromisos para continuar.',
+    adpErrSubmit: 'Error al enviar la solicitud: ',
+    // Buscar
+    bscBack: 'Volver a los avisos',
+    bscChip: 'Buscar por características',
+    bscTitle: '¿Cómo era el perro?',
+    bscSub: 'Completá lo que sepas. Cuanto más datos, mejores las coincidencias.',
+    bscSecCaract: 'Características del perro',
+    bscRaza: 'Raza',
+    bscRazaHint: 'Si especificás raza, solo aparecen perros de esa raza',
+    bscColor: 'Color principal',
+    bscColorNoSe: 'No sé / no recuerdo',
+    bscTamano: 'Tamaño',
+    bscChico: 'Chico',
+    bscMediano: 'Mediano',
+    bscGrande: 'Grande',
+    bscSexo: 'Sexo',
+    bscMacho: 'Macho',
+    bscHembra: 'Hembra',
+    bscNs: 'No sé',
+    bscCollar: '¿Tenía collar?',
+    bscColorCollar: 'Color del collar',
+    bscColorCollarPh: 'Rojo, azul, negro…',
+    bscChapita: '¿Tenía chapita / plaquita identificadora?',
+    bscSecDonde: 'Dónde y cuándo',
+    bscZona: 'Zona / barrio',
+    bscFecha: 'Fecha aproximada',
+    bscHorario: 'Horario aproximado (±3 hs)',
+    bscBuscar: 'Buscar coincidencias',
+    bscBuscando: 'Buscando…',
+    bscSinCoincidencias: 'Sin coincidencias',
+    bscAviso: 'aviso',
+    bscAvisos: 'avisos',
+    bscEncontradoS: 'encontrado',
+    bscEncontradosP: 'encontrados',
+    bscNoEncontramos: 'No encontramos avisos que coincidan',
+    bscProbaFiltros: 'Probá con menos filtros o revisá todos los avisos.',
+    bscVerTodos: 'Ver todos los vistos',
+    // Publicar
+    pbrBack: 'Volver al inicio',
+    pbrGuestTitle: 'Necesitás una cuenta',
+    pbrGuestSub: 'Para publicar un aviso tenés que estar registrado. Es gratis y tarda menos de un minuto.',
+    pbrGuestBtn: 'Crear cuenta gratis',
+    pbrChipPerdido: 'Perro perdido',
+    pbrChipEncontrado: 'Vi un perro perdido',
+    pbrChipTransito: 'Perro en tránsito',
+    pbrChipAdopcion: 'Doy en adopción',
+    pbrTitlePerdido: 'Perdí a mi perro',
+    pbrTitleEncontrado: 'Vi un perro perdido',
+    pbrTitleTransito: 'Perro en tránsito',
+    pbrTitleAdopcion: 'Doy en adopción',
+    pbrSubPerdido: 'Completá los datos y los vecinos te van a ayudar a encontrarlo.',
+    pbrSubEncontrado: 'Cargá los datos del perro que viste para que su familia lo encuentre.',
+    pbrSubTransito: 'Indicá si lo tenés vos o si lo viste en la calle, y la comunidad puede ayudar.',
+    pbrSubAdopcion: 'Completá la información para encontrarle una familia responsable.',
+    pbrPrePerdido: '🔍 Antes de publicar: ¿alguien ya lo encontró?',
+    pbrPreEncontrado: '🔍 Antes de publicar: ¿el dueño ya puso un aviso?',
+    pbrBuscarCaract: 'Buscar por características',
+    pbrBuscarCaractSub: 'Color, tamaño, collar…',
+    pbrBuscarFoto: 'Buscar por foto',
+    pbrBuscarFotoSub: 'Subí una foto y comparamos',
+    pbrSiNoEncontras: 'Si no encontrás nada, completá el formulario de abajo para publicar tu aviso.',
+    pbrPrefillPre: 'Reportando a',
+    pbrPrefillPost: 'como perdido/a',
+    pbrPrefillSub: 'Cargamos los datos del perfil. Revisá y completá si necesitás.',
+    pbrStep1: 'Fotos del perro',
+    pbrStep1Sub: 'Subí hasta {max} fotos. La primera se usa como imagen principal.',
+    pbrFotoPerfilDe: 'Foto del perfil de',
+    pbrPrincipal: 'Principal',
+    pbrHacerPrincipal: 'Hacer principal',
+    pbrStep2Transit: 'Situación del animal',
+    pbrStep2TransitSub: 'Contanos cómo encontraste o cómo estás con el perro.',
+    pbrLoTengo: '🏠 Lo tengo yo temporalmente',
+    pbrLoTengoDesc: 'Lo encontraste y lo cuidás hasta encontrarle dueño',
+    pbrLoVi: '🚨 Lo vi en la calle',
+    pbrLoViDesc: 'Necesita ayuda pero no pudiste llevártelo',
+    pbrFechaLimite: '¿Hasta cuándo lo podés tener? (fecha límite)',
+    pbrFechaLimiteSub: 'Aparecerá como cuenta regresiva en tu aviso. Genera urgencia para que alguien lo adopte.',
+    pbrHoraVisto: '¿A qué hora lo viste?',
+    pbrTransitWarning: '⚠️ Este aviso aparecerá en el mapa en color violeta para que los vecinos cercanos puedan ayudar.',
+    pbrStep2DataSub: 'Completá lo que sepas. Más datos = más chances de encontrarlo.',
+    pbrStep2DataSubEncontrado: 'Describí el perro que viste para que su familia lo reconozca.',
+    pbrStep2DataSubTransito: 'Describí el animal para que alguien lo reconozca o decida ayudar.',
+    pbrStep2DataSubAdopcion: 'Contanos cómo es el perro que das en adopción.',
+    pbrNombre: 'Nombre (si lo sabés)',
+    pbrRaza: 'Raza',
+    pbrColor: 'Color principal',
+    pbrColorNoSe: 'No sé / no recuerdo',
+    pbrTamano: 'Tamaño',
+    pbrChico: 'Chico',
+    pbrMediano: 'Mediano',
+    pbrGrande: 'Grande',
+    pbrCollar: '¿Tenía collar?',
+    pbrChapita: '¿Tenía chapita / plaquita identificadora?',
+    pbrDescripcion: 'Descripción adicional',
+    pbrDescripcionPh: 'Marcas especiales, manchas, comportamiento, collar rojo con chapita azul…',
+    pbrMatchTitle: '¿Es alguno de estos perros que estaban buscando?',
+    pbrMatchNo: 'No, es otro perro',
+    pbrMatchMismaZona: '¿Lo viste en la misma zona donde se perdió?',
+    pbrMatchOtraZona: 'No, otra zona',
+    pbrMatchDondeViste: '¿En qué zona lo viste?',
+    pbrMatchHora: '¿A qué hora lo viste? (opcional)',
+    pbrMatchConfirm: '✓ Al publicar, el aviso de búsqueda se va a actualizar a la nueva zona.',
+    pbrStep3Perdido: '¿Dónde y cuándo se perdió?',
+    pbrStep3Encontrado: '¿Dónde y cuándo lo viste?',
+    pbrStep3Transito: '¿Dónde está o dónde lo viste?',
+    pbrStep3Adopcion: '¿Dónde está el perro?',
+    pbrDondePerdio: '¿Dónde se perdió?',
+    pbrEnMiCasa: 'En mi casa',
+    pbrEnOtroLugar: 'En otro lugar',
+    pbrSinDireccion: 'No tenés dirección guardada.',
+    pbrAgregarPerfil: 'Agregarla al perfil',
+    pbrGpsOk: 'Ubicación GPS capturada',
+    pbrGpsCambiar: 'Cambiar',
+    pbrGpsCargando: 'Obteniendo ubicación…',
+    pbrGpsUsar: 'Usar mi ubicación GPS',
+    pbrGpsError: 'No se pudo obtener el GPS — reintentar',
+    pbrGpsManual: 'No tengo GPS / prefiero escribir la dirección',
+    pbrGpsVolver: '← Volver a usar GPS',
+    pbrConfirmDir: 'Confirmá o ajustá la dirección',
+    pbrDireccionZona: 'Dirección o zona',
+    pbrFecha: 'Fecha',
+    pbrHorario: 'Horario aproximado',
+    pbrContactoLabel: 'WhatsApp de contacto',
+    pbrContactoError: 'Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210',
+    pbrLimiteError: 'Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.',
+    pbrPublicando: 'Publicando…',
+    pbrPublicar: 'Publicar aviso',
+    pbrSi: 'Sí',
+    pbrNo: 'No',
+    pbrNoSe: 'No sé',
+    pbrAgregarFotos: 'Agregar más fotos',
+    pbrSubirFotos: 'Subir fotos',
+    pbrGaleria: 'Galería',
+    pbrSacarFoto: 'Sacar foto',
+    pbrSuccessTitle: '¡Aviso publicado!',
+    pbrSuccessMsg: 'Tu aviso ya está publicado y los vecinos de {city} pueden verlo.',
+    pbrVerAvisos: 'Ver todos los avisos',
+    pbrPublicarOtro: 'Publicar otro',
+    pbrPostMasPrecision: '¿Querés buscar al perro con más precisión?',
+    pbrPostEncontrarDueno: '¿Querés encontrar al dueño más rápido?',
+    pbrBuscarFotoProSub: 'Subí una foto y usamos IA',
+    pbrSoloPro: 'Solo Pro',
+    pbrBuscarCaractTitle: 'Buscar por características',
+    pbrBuscarCaractProSub: 'Raza, color, tamaño',
+    pbrPorCaract: 'Por características',
+    pbrFotoLimit: 'Ya subiste el máximo de {max} fotos.',
+    pbrFotoInvalida: 'no es una imagen válida (JPG, PNG o WEBP).',
+    pbrFotoPesada: 'pesa {mb} MB.',
+    pbrWhatsappError: 'El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -2000,6 +2518,265 @@ const translations: Record<Lang, Translations> = {
     rvnErrPayment: 'Error processing payment.',
     rvnErrConnection: 'Connection error. Please try again.',
     rvnErrPhoto: 'Image must be smaller than 5 MB.',
+    // Adoptar
+    adpBack: 'Back to home',
+    adpChip: 'Responsible adoption',
+    adpTitle: 'Adoption request',
+    adpSubtitulo: "Fill out the form honestly. The information is confidential and helps us ensure the dog's wellbeing.",
+    adpRequired: 'required field',
+    adpSi: 'Yes',
+    adpNo: 'No',
+    adpSec1: 'Your personal data',
+    adpNombre: 'Full name',
+    adpDni: 'ID number',
+    adpEdad: 'Age',
+    adpEdadHint: '(min. 18 years)',
+    adpTelefono: 'Phone / WhatsApp',
+    adpEmail: 'Email',
+    adpDireccion: 'Address',
+    adpDireccionHint: 'street and number',
+    adpZona: 'Neighborhood / area',
+    adpSec2: 'Your home',
+    adpSec2Sub: "The environment is key to the dog's wellbeing.",
+    adpTipoVivienda: 'Type of housing',
+    adpCasa: 'House',
+    adpDepto: 'Apartment',
+    adpCasaPatio: 'House with yard',
+    adpOtro: 'Other',
+    adpTenencia: 'Do you own or rent?',
+    adpPropietario: 'Owner',
+    adpInquilino: 'Tenant',
+    adpPropPermite: 'Does the landlord allow pets?',
+    adpTienePatio: 'Do you have a yard or garden?',
+    adpPatioFechado: 'Is it fenced?',
+    adpSec3: 'Your household',
+    adpSec3Sub: 'We need to know who will live with the dog.',
+    adpCantPersonas: 'How many people live in your home?',
+    adpCantPersonasHint: 'include yourself',
+    adpHayNinos: 'Are there children at home?',
+    adpEdadesNinos: "Children's ages",
+    adpEdadesNinosHint: 'e.g.: 3, 7 and 10',
+    adpTodosDeAcuerdo: 'Is everyone at home okay with the adoption?',
+    adpAlergias: 'Does anyone have animal allergies?',
+    adpSec4: 'Your experience with pets',
+    adpMascotasActuales: 'Do you currently have pets?',
+    adpCualesYCuantas: 'Which and how many?',
+    adpCualesHint: 'type, breed and amount',
+    adpVacunadasCastradas: 'Are they vaccinated and neutered?',
+    adpSiTodas: 'Yes, all',
+    adpAlgunas: 'Some',
+    adpMascotasAnteriores: 'Have you had pets before?',
+    adpQuePaso: 'What happened to them?',
+    adpHorasSolo: 'How many hours a day would the dog be alone?',
+    adpMenos2: 'Less than 2 h',
+    adp2a4: '2 to 4 h',
+    adp4a6: '4 to 6 h',
+    adp6a8: '6 to 8 h',
+    adpMas8: 'More than 8 h',
+    adpSec5: 'What dog are you looking for?',
+    adpSec5Sub: 'Helps us find the best match for you and the dog.',
+    adpTamanoPreferido: 'Preferred size',
+    adpChico: 'Small',
+    adpMediano: 'Medium',
+    adpGrande: 'Large',
+    adpSinPref: 'No preference',
+    adpEdadPreferida: 'Preferred age',
+    adpCachorro: 'Puppy',
+    adpJoven: 'Young',
+    adpAdulto: 'Adult',
+    adpMayor: 'Senior',
+    adpPerroEnMente: 'Do you have a specific dog in mind?',
+    adpPerroEnMenteHint: 'optional',
+    adpPerroEnMentePh: 'Name or description of the dog you are interested in',
+    adpMotivacion: 'Why do you want to adopt a dog?',
+    adpMotivacionPh: "Tell us your motivation, lifestyle, how much time you can dedicate, what you expect from living together…",
+    adpSec6: 'Commitments',
+    adpSec6Sub: "To guarantee the dog's wellbeing, you must accept the following points. All are mandatory.",
+    adpComp1: 'I commit to providing regular veterinary care: annual vaccines, deworming and health checkups.',
+    adpComp2: 'I accept that a home visit will be conducted before confirming the adoption.',
+    adpComp3: "If for any reason I can't keep the dog, I commit to returning it to the organization and not giving it to third parties without prior notice.",
+    adpComp4: 'I commit to neutering the dog if not already done, within the timeframe recommended by the vet.',
+    adpEnviando: 'Sending…',
+    adpEnviar: 'Send adoption request',
+    adpSuccessTitle: 'Request sent!',
+    adpSuccessMsg: 'We received your request. We will contact you shortly. Thank you for wanting to adopt responsibly.',
+    adpVerAdopcion: 'View dogs for adoption',
+    adpErrNombre: 'Full name is required.',
+    adpErrDni: 'ID number is required.',
+    adpErrEdad: 'Age is required.',
+    adpErrTelefono: 'Phone is required.',
+    adpErrEmail: 'Email is required.',
+    adpErrDireccion: 'Address is required.',
+    adpErrZona: 'Neighborhood is required.',
+    adpErrVivienda: 'Indicate the type of housing.',
+    adpErrTenencia: 'Indicate if you own or rent.',
+    adpErrPropPermite: 'Indicate if the landlord allows pets.',
+    adpErrPatio: 'Indicate if you have a yard.',
+    adpErrPatioFechado: 'Indicate if the yard is fenced.',
+    adpErrPersonas: 'Indicate how many people live in your home.',
+    adpErrNinos: 'Indicate if there are children at home.',
+    adpErrEdadesNinos: "Write the children's ages.",
+    adpErrAcuerdo: 'Indicate if everyone at home agrees.',
+    adpErrAlergias: 'Indicate if anyone has animal allergies.',
+    adpErrMascotas: 'Indicate if you currently have pets.',
+    adpErrDetalle: 'Describe your current pets.',
+    adpErrVacunadas: 'Indicate if your pets are vaccinated and neutered.',
+    adpErrAnteriores: 'Indicate if you have had pets before.',
+    adpErrQuePaso: 'Tell us what happened to your previous pets.',
+    adpErrHoras: 'Indicate how many hours the dog would be alone.',
+    adpErrTamano: 'Choose the preferred size.',
+    adpErrEdadPref: 'Choose the preferred age.',
+    adpErrMotivacion: 'Tell us why you want to adopt.',
+    adpErrCompromisos: 'You must accept all commitments to continue.',
+    adpErrSubmit: 'Error sending the request: ',
+    // Buscar
+    bscBack: 'Back to notices',
+    bscChip: 'Search by characteristics',
+    bscTitle: 'What did the dog look like?',
+    bscSub: 'Fill in what you know. The more details, the better the matches.',
+    bscSecCaract: 'Dog characteristics',
+    bscRaza: 'Breed',
+    bscRazaHint: 'If you specify a breed, only dogs of that breed appear',
+    bscColor: 'Main color',
+    bscColorNoSe: "Don't know / don't remember",
+    bscTamano: 'Size',
+    bscChico: 'Small',
+    bscMediano: 'Medium',
+    bscGrande: 'Large',
+    bscSexo: 'Sex',
+    bscMacho: 'Male',
+    bscHembra: 'Female',
+    bscNs: "Don't know",
+    bscCollar: 'Did it have a collar?',
+    bscColorCollar: 'Collar color',
+    bscColorCollarPh: 'Red, blue, black…',
+    bscChapita: 'Did it have an ID tag?',
+    bscSecDonde: 'Where and when',
+    bscZona: 'Area / neighborhood',
+    bscFecha: 'Approximate date',
+    bscHorario: 'Approximate time (±3 h)',
+    bscBuscar: 'Search matches',
+    bscBuscando: 'Searching…',
+    bscSinCoincidencias: 'No matches',
+    bscAviso: 'notice',
+    bscAvisos: 'notices',
+    bscEncontradoS: 'found',
+    bscEncontradosP: 'found',
+    bscNoEncontramos: 'No matching notices found',
+    bscProbaFiltros: 'Try with fewer filters or view all notices.',
+    bscVerTodos: 'View all found',
+    // Publicar
+    pbrBack: 'Back to home',
+    pbrGuestTitle: 'You need an account',
+    pbrGuestSub: 'To post a notice you need to be registered. It is free and takes less than a minute.',
+    pbrGuestBtn: 'Create free account',
+    pbrChipPerdido: 'Lost dog',
+    pbrChipEncontrado: 'I saw a lost dog',
+    pbrChipTransito: 'Dog in transit',
+    pbrChipAdopcion: 'Giving for adoption',
+    pbrTitlePerdido: 'I lost my dog',
+    pbrTitleEncontrado: 'I saw a lost dog',
+    pbrTitleTransito: 'Dog in transit',
+    pbrTitleAdopcion: 'Giving for adoption',
+    pbrSubPerdido: 'Fill in the details and neighbors will help you find it.',
+    pbrSubEncontrado: 'Enter the details of the dog you saw so its family can find it.',
+    pbrSubTransito: 'Indicate if you have it or saw it on the street, and the community can help.',
+    pbrSubAdopcion: 'Fill in the information to find it a responsible family.',
+    pbrPrePerdido: '🔍 Before posting: did someone already find it?',
+    pbrPreEncontrado: '🔍 Before posting: did the owner already post a notice?',
+    pbrBuscarCaract: 'Search by characteristics',
+    pbrBuscarCaractSub: 'Color, size, collar…',
+    pbrBuscarFoto: 'Search by photo',
+    pbrBuscarFotoSub: 'Upload a photo and we compare',
+    pbrSiNoEncontras: "If you don't find anything, fill in the form below to post your notice.",
+    pbrPrefillPre: 'Reporting',
+    pbrPrefillPost: 'as lost',
+    pbrPrefillSub: 'We loaded the profile data. Review and complete if needed.',
+    pbrStep1: 'Dog photos',
+    pbrStep1Sub: 'Upload up to {max} photos. The first is used as the main image.',
+    pbrFotoPerfilDe: 'Profile photo of',
+    pbrPrincipal: 'Main',
+    pbrHacerPrincipal: 'Make main',
+    pbrStep2Transit: 'Animal situation',
+    pbrStep2TransitSub: 'Tell us how you found or how you are with the dog.',
+    pbrLoTengo: '🏠 I have it temporarily',
+    pbrLoTengoDesc: 'You found it and are caring for it until an owner is found',
+    pbrLoVi: '🚨 I saw it on the street',
+    pbrLoViDesc: "It needs help but you couldn't take it",
+    pbrFechaLimite: 'Until when can you keep it? (deadline)',
+    pbrFechaLimiteSub: 'Will appear as a countdown on your notice. Creates urgency for someone to adopt it.',
+    pbrHoraVisto: 'What time did you see it?',
+    pbrTransitWarning: '⚠️ This notice will appear on the map in purple so nearby neighbors can help.',
+    pbrStep2DataSub: 'Fill in what you know. More data = more chances of finding it.',
+    pbrStep2DataSubEncontrado: 'Describe the dog you saw so its family can recognize it.',
+    pbrStep2DataSubTransito: 'Describe the animal so someone can recognize it or decide to help.',
+    pbrStep2DataSubAdopcion: 'Tell us about the dog you are giving for adoption.',
+    pbrNombre: 'Name (if you know it)',
+    pbrRaza: 'Breed',
+    pbrColor: 'Main color',
+    pbrColorNoSe: "Don't know / don't remember",
+    pbrTamano: 'Size',
+    pbrChico: 'Small',
+    pbrMediano: 'Medium',
+    pbrGrande: 'Large',
+    pbrCollar: 'Did it have a collar?',
+    pbrChapita: 'Did it have an ID tag?',
+    pbrDescripcion: 'Additional description',
+    pbrDescripcionPh: 'Special marks, spots, behavior, red collar with blue tag…',
+    pbrMatchTitle: 'Is it one of these dogs that were being searched for?',
+    pbrMatchNo: 'No, it is another dog',
+    pbrMatchMismaZona: 'Did you see it in the same area where it was lost?',
+    pbrMatchOtraZona: 'No, different area',
+    pbrMatchDondeViste: 'In which area did you see it?',
+    pbrMatchHora: 'What time did you see it? (optional)',
+    pbrMatchConfirm: '✓ When posting, the search notice will be updated to the new area.',
+    pbrStep3Perdido: 'Where and when was it lost?',
+    pbrStep3Encontrado: 'Where and when did you see it?',
+    pbrStep3Transito: 'Where is it or where did you see it?',
+    pbrStep3Adopcion: 'Where is the dog?',
+    pbrDondePerdio: 'Where was it lost?',
+    pbrEnMiCasa: 'At my home',
+    pbrEnOtroLugar: 'Somewhere else',
+    pbrSinDireccion: "You don't have a saved address.",
+    pbrAgregarPerfil: 'Add it to profile',
+    pbrGpsOk: 'GPS location captured',
+    pbrGpsCambiar: 'Change',
+    pbrGpsCargando: 'Getting location…',
+    pbrGpsUsar: 'Use my GPS location',
+    pbrGpsError: 'Could not get GPS — retry',
+    pbrGpsManual: 'No GPS / prefer to type the address',
+    pbrGpsVolver: '← Back to GPS',
+    pbrConfirmDir: 'Confirm or adjust the address',
+    pbrDireccionZona: 'Address or area',
+    pbrFecha: 'Date',
+    pbrHorario: 'Approximate time',
+    pbrContactoLabel: 'Contact WhatsApp',
+    pbrContactoError: 'Incomplete number — enter the full number with area code. E.g.: +54 9 291 4050210',
+    pbrLimiteError: 'You reached the limit of 5 active notices on the Free plan. Upgrade to VecindogPro for unlimited notices.',
+    pbrPublicando: 'Publishing…',
+    pbrPublicar: 'Post notice',
+    pbrSi: 'Yes',
+    pbrNo: 'No',
+    pbrNoSe: "Don't know",
+    pbrAgregarFotos: 'Add more photos',
+    pbrSubirFotos: 'Upload photos',
+    pbrGaleria: 'Gallery',
+    pbrSacarFoto: 'Take photo',
+    pbrSuccessTitle: 'Notice posted!',
+    pbrSuccessMsg: 'Your notice is now published and neighbors in {city} can see it.',
+    pbrVerAvisos: 'View all notices',
+    pbrPublicarOtro: 'Post another',
+    pbrPostMasPrecision: 'Do you want to search for the dog more precisely?',
+    pbrPostEncontrarDueno: 'Do you want to find the owner faster?',
+    pbrBuscarFotoProSub: 'Upload a photo and we use AI',
+    pbrSoloPro: 'Pro only',
+    pbrBuscarCaractTitle: 'Search by characteristics',
+    pbrBuscarCaractProSub: 'Breed, color, size',
+    pbrPorCaract: 'By characteristics',
+    pbrFotoLimit: 'You already uploaded the maximum of {max} photos.',
+    pbrFotoInvalida: 'is not a valid image (JPG, PNG or WEBP).',
+    pbrFotoPesada: 'weighs {mb} MB.',
+    pbrWhatsappError: 'WhatsApp must have at least 10 digits. Example: +54 9 291 4050210',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -2666,6 +3443,265 @@ const translations: Record<Lang, Translations> = {
     rvnErrPayment: 'Erro ao processar o pagamento.',
     rvnErrConnection: 'Erro de conexão. Tente novamente.',
     rvnErrPhoto: 'A imagem deve ter menos de 5 MB.',
+    // Adoptar
+    adpBack: 'Voltar ao início',
+    adpChip: 'Adoção responsável',
+    adpTitle: 'Pedido de adoção',
+    adpSubtitulo: 'Preencha o formulário com sinceridade. As informações são confidenciais e nos ajudam a garantir o bem-estar do cão.',
+    adpRequired: 'campo obrigatório',
+    adpSi: 'Sim',
+    adpNo: 'Não',
+    adpSec1: 'Seus dados pessoais',
+    adpNombre: 'Nome completo',
+    adpDni: 'CPF/ID',
+    adpEdad: 'Idade',
+    adpEdadHint: '(mín. 18 anos)',
+    adpTelefono: 'Telefone / WhatsApp',
+    adpEmail: 'Email',
+    adpDireccion: 'Endereço',
+    adpDireccionHint: 'rua e número',
+    adpZona: 'Bairro / zona',
+    adpSec2: 'Sua moradia',
+    adpSec2Sub: 'O ambiente é fundamental para o bem-estar do cão.',
+    adpTipoVivienda: 'Tipo de moradia',
+    adpCasa: 'Casa',
+    adpDepto: 'Apartamento',
+    adpCasaPatio: 'Casa com quintal',
+    adpOtro: 'Outro',
+    adpTenencia: 'Você é proprietário ou inquilino?',
+    adpPropietario: 'Proprietário',
+    adpInquilino: 'Inquilino',
+    adpPropPermite: 'O proprietário permite animais?',
+    adpTienePatio: 'Você tem quintal ou jardim?',
+    adpPatioFechado: 'É cercado?',
+    adpSec3: 'Sua família',
+    adpSec3Sub: 'Precisamos saber quem vai conviver com o cão.',
+    adpCantPersonas: 'Quantas pessoas moram na sua casa?',
+    adpCantPersonasHint: 'incluindo você',
+    adpHayNinos: 'Há crianças em casa?',
+    adpEdadesNinos: 'Idades das crianças',
+    adpEdadesNinosHint: 'ex.: 3, 7 e 10 anos',
+    adpTodosDeAcuerdo: 'Todos em casa concordam com a adoção?',
+    adpAlergias: 'Alguém tem alergia a animais?',
+    adpSec4: 'Sua experiência com animais',
+    adpMascotasActuales: 'Você tem animais atualmente?',
+    adpCualesYCuantas: 'Quais e quantos?',
+    adpCualesHint: 'tipo, raça e quantidade',
+    adpVacunadasCastradas: 'Estão vacinados e castrados?',
+    adpSiTodas: 'Sim, todos',
+    adpAlgunas: 'Alguns',
+    adpMascotasAnteriores: 'Você já teve animais antes?',
+    adpQuePaso: 'O que aconteceu com eles?',
+    adpHorasSolo: 'Quantas horas por dia o cão ficaria sozinho?',
+    adpMenos2: 'Menos de 2 h',
+    adp2a4: '2 a 4 h',
+    adp4a6: '4 a 6 h',
+    adp6a8: '6 a 8 h',
+    adpMas8: 'Mais de 8 h',
+    adpSec5: 'Que cão você procura?',
+    adpSec5Sub: 'Nos ajuda a encontrar a melhor combinação para você e para o cão.',
+    adpTamanoPreferido: 'Tamanho preferido',
+    adpChico: 'Pequeno',
+    adpMediano: 'Médio',
+    adpGrande: 'Grande',
+    adpSinPref: 'Sem preferência',
+    adpEdadPreferida: 'Idade preferida',
+    adpCachorro: 'Filhote',
+    adpJoven: 'Jovem',
+    adpAdulto: 'Adulto',
+    adpMayor: 'Idoso',
+    adpPerroEnMente: 'Você tem algum cão em mente?',
+    adpPerroEnMenteHint: 'opcional',
+    adpPerroEnMentePh: 'Nome ou descrição do cão que te interessa',
+    adpMotivacion: 'Por que você quer adotar um cão?',
+    adpMotivacionPh: 'Conte sua motivação, estilo de vida, quanto tempo pode dedicar, o que espera da convivência…',
+    adpSec6: 'Compromissos',
+    adpSec6Sub: 'Para garantir o bem-estar do cão precisamos que você aceite os seguintes pontos. Todos são obrigatórios.',
+    adpComp1: 'Comprometo-me a fornecer cuidados veterinários regulares: vacinas anuais, vermifugação e checkups de saúde.',
+    adpComp2: 'Aceito que seja realizada uma visita prévia à minha casa antes de confirmar a adoção.',
+    adpComp3: 'Se por algum motivo não puder ficar com o cão, comprometo-me a devolvê-lo à organização e não dá-lo a terceiros sem aviso prévio.',
+    adpComp4: 'Comprometo-me a castrar o cão se ainda não estiver, dentro dos prazos recomendados pelo veterinário.',
+    adpEnviando: 'Enviando…',
+    adpEnviar: 'Enviar pedido de adoção',
+    adpSuccessTitle: 'Pedido enviado!',
+    adpSuccessMsg: 'Recebemos seu pedido. Entraremos em contato em breve. Obrigado por querer adotar de forma responsável.',
+    adpVerAdopcion: 'Ver cães para adoção',
+    adpErrNombre: 'O nome completo é obrigatório.',
+    adpErrDni: 'O CPF/ID é obrigatório.',
+    adpErrEdad: 'A idade é obrigatória.',
+    adpErrTelefono: 'O telefone é obrigatório.',
+    adpErrEmail: 'O email é obrigatório.',
+    adpErrDireccion: 'O endereço é obrigatório.',
+    adpErrZona: 'O bairro ou zona é obrigatório.',
+    adpErrVivienda: 'Indique o tipo de moradia.',
+    adpErrTenencia: 'Indique se é proprietário ou inquilino.',
+    adpErrPropPermite: 'Indique se o proprietário permite animais.',
+    adpErrPatio: 'Indique se tem quintal ou jardim.',
+    adpErrPatioFechado: 'Indique se o quintal é cercado.',
+    adpErrPersonas: 'Indique quantas pessoas moram na sua casa.',
+    adpErrNinos: 'Indique se há crianças em casa.',
+    adpErrEdadesNinos: 'Escreva as idades das crianças.',
+    adpErrAcuerdo: 'Indique se todos em casa concordam.',
+    adpErrAlergias: 'Indique se alguém tem alergia a animais.',
+    adpErrMascotas: 'Indique se tem animais atualmente.',
+    adpErrDetalle: 'Descreva seus animais atuais.',
+    adpErrVacunadas: 'Indique se seus animais estão vacinados e castrados.',
+    adpErrAnteriores: 'Indique se já teve animais antes.',
+    adpErrQuePaso: 'Conte o que aconteceu com seus animais anteriores.',
+    adpErrHoras: 'Indique quantas horas o cão ficaria sozinho.',
+    adpErrTamano: 'Escolha o tamanho preferido.',
+    adpErrEdadPref: 'Escolha a idade preferida.',
+    adpErrMotivacion: 'Conte por que você quer adotar.',
+    adpErrCompromisos: 'Você deve aceitar todos os compromissos para continuar.',
+    adpErrSubmit: 'Erro ao enviar o pedido: ',
+    // Buscar
+    bscBack: 'Voltar aos avisos',
+    bscChip: 'Buscar por características',
+    bscTitle: 'Como era o cão?',
+    bscSub: 'Preencha o que souber. Quanto mais dados, melhores as coincidências.',
+    bscSecCaract: 'Características do cão',
+    bscRaza: 'Raça',
+    bscRazaHint: 'Se especificar raça, aparecem apenas cães dessa raça',
+    bscColor: 'Cor principal',
+    bscColorNoSe: 'Não sei / não lembro',
+    bscTamano: 'Tamanho',
+    bscChico: 'Pequeno',
+    bscMediano: 'Médio',
+    bscGrande: 'Grande',
+    bscSexo: 'Sexo',
+    bscMacho: 'Macho',
+    bscHembra: 'Fêmea',
+    bscNs: 'Não sei',
+    bscCollar: 'Tinha coleira?',
+    bscColorCollar: 'Cor da coleira',
+    bscColorCollarPh: 'Vermelho, azul, preto…',
+    bscChapita: 'Tinha plaquinha de identificação?',
+    bscSecDonde: 'Onde e quando',
+    bscZona: 'Zona / bairro',
+    bscFecha: 'Data aproximada',
+    bscHorario: 'Horário aproximado (±3 h)',
+    bscBuscar: 'Buscar coincidências',
+    bscBuscando: 'Buscando…',
+    bscSinCoincidencias: 'Sem coincidências',
+    bscAviso: 'aviso',
+    bscAvisos: 'avisos',
+    bscEncontradoS: 'encontrado',
+    bscEncontradosP: 'encontrados',
+    bscNoEncontramos: 'Não encontramos avisos correspondentes',
+    bscProbaFiltros: 'Tente com menos filtros ou veja todos os avisos.',
+    bscVerTodos: 'Ver todos os avistados',
+    // Publicar
+    pbrBack: 'Voltar ao início',
+    pbrGuestTitle: 'Você precisa de uma conta',
+    pbrGuestSub: 'Para publicar um aviso você precisa estar cadastrado. É grátis e leva menos de um minuto.',
+    pbrGuestBtn: 'Criar conta grátis',
+    pbrChipPerdido: 'Cão perdido',
+    pbrChipEncontrado: 'Vi um cão perdido',
+    pbrChipTransito: 'Cão em trânsito',
+    pbrChipAdopcion: 'Dou para adoção',
+    pbrTitlePerdido: 'Perdi meu cão',
+    pbrTitleEncontrado: 'Vi um cão perdido',
+    pbrTitleTransito: 'Cão em trânsito',
+    pbrTitleAdopcion: 'Dou para adoção',
+    pbrSubPerdido: 'Preencha os dados e os vizinhos vão te ajudar a encontrá-lo.',
+    pbrSubEncontrado: 'Insira os dados do cão que viu para que sua família o encontre.',
+    pbrSubTransito: 'Indique se você tem ou se viu na rua, e a comunidade pode ajudar.',
+    pbrSubAdopcion: 'Preencha as informações para encontrar uma família responsável.',
+    pbrPrePerdido: '🔍 Antes de publicar: alguém já encontrou?',
+    pbrPreEncontrado: '🔍 Antes de publicar: o dono já publicou um aviso?',
+    pbrBuscarCaract: 'Buscar por características',
+    pbrBuscarCaractSub: 'Cor, tamanho, coleira…',
+    pbrBuscarFoto: 'Buscar por foto',
+    pbrBuscarFotoSub: 'Envie uma foto e comparamos',
+    pbrSiNoEncontras: 'Se não encontrar nada, preencha o formulário abaixo para publicar seu aviso.',
+    pbrPrefillPre: 'Reportando',
+    pbrPrefillPost: 'como perdido/a',
+    pbrPrefillSub: 'Carregamos os dados do perfil. Revise e complete se necessário.',
+    pbrStep1: 'Fotos do cão',
+    pbrStep1Sub: 'Envie até {max} fotos. A primeira é usada como imagem principal.',
+    pbrFotoPerfilDe: 'Foto do perfil de',
+    pbrPrincipal: 'Principal',
+    pbrHacerPrincipal: 'Tornar principal',
+    pbrStep2Transit: 'Situação do animal',
+    pbrStep2TransitSub: 'Conte como encontrou ou como está com o cão.',
+    pbrLoTengo: '🏠 Estou com ele temporariamente',
+    pbrLoTengoDesc: 'Você o encontrou e cuida até encontrar o dono',
+    pbrLoVi: '🚨 Vi na rua',
+    pbrLoViDesc: 'Precisa de ajuda mas você não pôde levá-lo',
+    pbrFechaLimite: 'Até quando pode ficar com ele? (prazo limite)',
+    pbrFechaLimiteSub: 'Aparecerá como contagem regressiva no seu aviso. Gera urgência para alguém adotá-lo.',
+    pbrHoraVisto: 'Que horas você o viu?',
+    pbrTransitWarning: '⚠️ Este aviso aparecerá no mapa em roxo para que os vizinhos próximos possam ajudar.',
+    pbrStep2DataSub: 'Preencha o que sabe. Mais dados = mais chances de encontrá-lo.',
+    pbrStep2DataSubEncontrado: 'Descreva o cão que viu para que sua família o reconheça.',
+    pbrStep2DataSubTransito: 'Descreva o animal para que alguém o reconheça ou decida ajudar.',
+    pbrStep2DataSubAdopcion: 'Conte como é o cão que dá para adoção.',
+    pbrNombre: 'Nome (se souber)',
+    pbrRaza: 'Raça',
+    pbrColor: 'Cor principal',
+    pbrColorNoSe: 'Não sei / não lembro',
+    pbrTamano: 'Tamanho',
+    pbrChico: 'Pequeno',
+    pbrMediano: 'Médio',
+    pbrGrande: 'Grande',
+    pbrCollar: 'Tinha coleira?',
+    pbrChapita: 'Tinha plaquinha de identificação?',
+    pbrDescripcion: 'Descrição adicional',
+    pbrDescripcionPh: 'Marcas especiais, manchas, comportamento, coleira vermelha com plaquinha azul…',
+    pbrMatchTitle: 'É algum desses cães que estavam procurando?',
+    pbrMatchNo: 'Não, é outro cão',
+    pbrMatchMismaZona: 'Você o viu na mesma área onde se perdeu?',
+    pbrMatchOtraZona: 'Não, outra área',
+    pbrMatchDondeViste: 'Em qual área você o viu?',
+    pbrMatchHora: 'Que horas você o viu? (opcional)',
+    pbrMatchConfirm: '✓ Ao publicar, o aviso de busca será atualizado para a nova área.',
+    pbrStep3Perdido: 'Onde e quando se perdeu?',
+    pbrStep3Encontrado: 'Onde e quando você o viu?',
+    pbrStep3Transito: 'Onde está ou onde o viu?',
+    pbrStep3Adopcion: 'Onde está o cão?',
+    pbrDondePerdio: 'Onde se perdeu?',
+    pbrEnMiCasa: 'Na minha casa',
+    pbrEnOtroLugar: 'Em outro lugar',
+    pbrSinDireccion: 'Você não tem endereço salvo.',
+    pbrAgregarPerfil: 'Adicionar ao perfil',
+    pbrGpsOk: 'Localização GPS capturada',
+    pbrGpsCambiar: 'Alterar',
+    pbrGpsCargando: 'Obtendo localização…',
+    pbrGpsUsar: 'Usar minha localização GPS',
+    pbrGpsError: 'Não foi possível obter o GPS — tentar novamente',
+    pbrGpsManual: 'Sem GPS / prefiro digitar o endereço',
+    pbrGpsVolver: '← Voltar ao GPS',
+    pbrConfirmDir: 'Confirme ou ajuste o endereço',
+    pbrDireccionZona: 'Endereço ou zona',
+    pbrFecha: 'Data',
+    pbrHorario: 'Horário aproximado',
+    pbrContactoLabel: 'WhatsApp de contato',
+    pbrContactoError: 'Número incompleto — insira o número completo com código de área. Ex.: +54 9 291 4050210',
+    pbrLimiteError: 'Você atingiu o limite de 5 avisos ativos do plano Grátis. Assine o VecindogPro para avisos ilimitados.',
+    pbrPublicando: 'Publicando…',
+    pbrPublicar: 'Publicar aviso',
+    pbrSi: 'Sim',
+    pbrNo: 'Não',
+    pbrNoSe: 'Não sei',
+    pbrAgregarFotos: 'Adicionar mais fotos',
+    pbrSubirFotos: 'Enviar fotos',
+    pbrGaleria: 'Galeria',
+    pbrSacarFoto: 'Tirar foto',
+    pbrSuccessTitle: 'Aviso publicado!',
+    pbrSuccessMsg: 'Seu aviso já está publicado e os vizinhos de {city} podem vê-lo.',
+    pbrVerAvisos: 'Ver todos os avisos',
+    pbrPublicarOtro: 'Publicar outro',
+    pbrPostMasPrecision: 'Quer buscar o cão com mais precisão?',
+    pbrPostEncontrarDueno: 'Quer encontrar o dono mais rápido?',
+    pbrBuscarFotoProSub: 'Envie uma foto e usamos IA',
+    pbrSoloPro: 'Só Pro',
+    pbrBuscarCaractTitle: 'Buscar por características',
+    pbrBuscarCaractProSub: 'Raça, cor, tamanho',
+    pbrPorCaract: 'Por características',
+    pbrFotoLimit: 'Você já enviou o máximo de {max} fotos.',
+    pbrFotoInvalida: 'não é uma imagem válida (JPG, PNG ou WEBP).',
+    pbrFotoPesada: 'pesa {mb} MB.',
+    pbrWhatsappError: 'O WhatsApp deve ter pelo menos 10 dígitos. Exemplo: +54 9 291 4050210',
   },
 };
 

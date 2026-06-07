@@ -16,6 +16,7 @@ import {
 } from '@/lib/mockData';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { nombreCorto } from '@/lib/ciudades';
 import { obtenerPerro, type Perro } from '@/lib/perros';
 import { listarPosts, actualizarZonaPost, contarPostsActivosDelUsuario, type Post } from '@/lib/posts';
@@ -28,7 +29,7 @@ const MapPinPicker = dynamicImport(() => import('@/components/MapPinPicker'), { 
 /* ─── Tipos ─── */
 
 type Tamano  = 'pequeño' | 'mediano' | 'grande';
-type Ternario = boolean | null;   // true=sí, false=no, null=no sé
+type Ternario = boolean | null;
 
 interface FormState {
   categoria:             Categoria;
@@ -93,7 +94,6 @@ function generarDescripcion(p: Perro): string {
   return partes.length > 0 ? partes.join(', ') + '.' : '';
 }
 
-/** Agrega la ciudad a la zona si no está ya incluida, para que el geocoding funcione bien */
 function appendCiudad(zona: string, ciudad: string | null): string {
   if (!ciudad || !zona.trim()) return zona;
   const ciudadBase = ciudad.toLowerCase().split(' ')[0];
@@ -108,6 +108,7 @@ export default function PublicarPage() {
   const catParam  = searchParams.get('cat');
   const perroId   = searchParams.get('perro');
   const { ciudad, user, isGuest, profile, isPro } = useAuth();
+  const { t } = useLanguage();
   const efectivaCiudad = profile?.ciudad || ciudad;
   const cityLabel = efectivaCiudad ? nombreCorto(efectivaCiudad) : 'tu ciudad';
 
@@ -119,12 +120,10 @@ export default function PublicarPage() {
   const [submitError, setSubmitError] = useState('');
   const [gpsEstado,   setGpsEstado]   = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
 
-  /* ── Perro pre-fill ── */
   const [perroData,         setPerroData]         = useState<Perro | null>(null);
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
   const [ubicacion,         setUbicacion]         = useState<'casa' | 'otro' | null>(null);
 
-  /* ── Matching con perdidos (solo para "encontrado") ── */
   const [matchCandidatos, setMatchCandidatos] = useState<Post[]>([]);
   const [matchPost,       setMatchPost]       = useState<Post | null>(null);
   const [mismaZona,       setMismaZona]       = useState<boolean | null>(null);
@@ -135,12 +134,10 @@ export default function PublicarPage() {
   const [zonaManual,      setZonaManual]      = useState(false);
   const [showMapPicker,   setShowMapPicker]   = useState(false);
 
-  /* Scroll al tope cuando el aviso se publicó exitosamente */
   useEffect(() => {
     if (enviado) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [enviado]);
 
-  /* Buscar coincidencias en avisos perdidos cuando se llena color + tamaño */
   useEffect(() => {
     if (form.categoria !== 'encontrado') return;
     if (!form.color && !form.tamano) { setMatchCandidatos([]); return; }
@@ -162,7 +159,6 @@ export default function PublicarPage() {
     return () => { urlsRef.current.forEach((u) => URL.revokeObjectURL(u)); };
   }, []);
 
-  /* Cargar datos del perro si viene desde el perfil */
   useEffect(() => {
     if (!perroId) return;
     obtenerPerro(perroId).then((p) => {
@@ -183,26 +179,28 @@ export default function PublicarPage() {
     setForm((f) => ({ ...f, [key]: val }));
   }
 
-  /* ── Fotos ── */
   function handleAgregarFotos(files: FileList | null) {
     setErrorFoto('');
     if (!files || files.length === 0) return;
     const restantes = MAX_FOTOS - fotos.length;
-    if (restantes <= 0) { setErrorFoto(`Ya subiste el máximo de ${MAX_FOTOS} fotos.`); return; }
+    if (restantes <= 0) {
+      setErrorFoto(t.pbrFotoLimit.replace('{max}', String(MAX_FOTOS)));
+      return;
+    }
     const nuevos: FotoPreview[] = [];
     const errores: string[]    = [];
     const pesadas: string[]    = [];
     for (const f of Array.from(files).slice(0, restantes)) {
       if (!TIPOS_IMAGEN_PERMITIDOS.includes(f.type)) {
-        errores.push(`"${f.name}" no es una imagen válida (JPG, PNG o WEBP).`); continue;
+        errores.push(`"${f.name}" ${t.pbrFotoInvalida}`); continue;
       }
       const pesoMb = f.size / (1024 * 1024);
-      if (pesoMb > MAX_PESO_MB) pesadas.push(`"${f.name}" pesa ${pesoMb.toFixed(1)} MB.`);
+      if (pesoMb > MAX_PESO_MB) pesadas.push(`"${f.name}" ${t.pbrFotoPesada.replace('{mb}', pesoMb.toFixed(1))}`);
       const url = URL.createObjectURL(f);
       urlsRef.current.push(url);
       nuevos.push({ file: f, url, pesoMb });
     }
-    if (files.length > restantes) errores.push(`Solo podés subir ${MAX_FOTOS} fotos en total.`);
+    if (files.length > restantes) errores.push(t.pbrFotoLimit.replace('{max}', String(MAX_FOTOS)));
     if (nuevos.length > 0) setFotos((prev) => [...prev, ...nuevos]);
     const msg = [...errores, ...pesadas].join(' ');
     if (msg) setErrorFoto(msg);
@@ -222,7 +220,6 @@ export default function PublicarPage() {
     setFotos((prev) => { const c = [...prev]; const [m] = c.splice(idx, 1); c.unshift(m); return c; });
   }
 
-  /* ── GPS para el pin del mapa ── */
   async function capturarGPS() {
     if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
     setGpsEstado('cargando');
@@ -233,7 +230,6 @@ export default function PublicarPage() {
         if (!dentroDeArgentina) { setGpsEstado('error'); setZonaManual(true); return; }
         setForm((f) => ({ ...f, lat, lng }));
         setGpsEstado('ok');
-        // Reverse geocode para llenar el campo zona
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
@@ -248,29 +244,27 @@ export default function PublicarPage() {
             const zona = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
             if (zona) handleChange('zona', zona);
           }
-        } catch { /* sin reverse geocode, el usuario puede escribir */ }
+        } catch { /* sin reverse geocode */ }
       },
       () => { setGpsEstado('error'); setZonaManual(true); },
       { timeout: 10000, enableHighAccuracy: true }
     );
   }
 
-  /* ── Submit ── */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError('');
     const digitos = form.contacto.replace(/\D/g, '');
     if (digitos.length < 10) {
-      setSubmitError('El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210');
+      setSubmitError(t.pbrWhatsappError);
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
       return;
     }
 
-    // Límite de 5 publicaciones activas para usuarios Free
     if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
       const count = await contarPostsActivosDelUsuario();
       if (count >= 5) {
-        setSubmitError('Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.');
+        setSubmitError(t.pbrLimiteError);
         setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
         return;
       }
@@ -278,11 +272,10 @@ export default function PublicarPage() {
 
     setLoading(true);
     try {
-      // Double-check límite Free justo antes del insert (reduce condición de carrera)
       if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
         const countFinal = await contarPostsActivosDelUsuario();
         if (countFinal >= 5) {
-          setSubmitError('Llegaste al límite de 5 publicaciones activas del plan Gratis. Pasate a VecindogPro para publicaciones ilimitadas.');
+          setSubmitError(t.pbrLimiteError);
           setLoading(false);
           return;
         }
@@ -290,10 +283,8 @@ export default function PublicarPage() {
 
       const uploadedUrls: string[] = [];
 
-      /* Foto del perfil del perro (ya subida, no se re-sube) */
       if (perroData?.foto_url && !perroFotoRemovida) uploadedUrls.push(perroData.foto_url);
 
-      /* Subir fotos nuevas */
       for (const foto of fotos) {
         const ext  = foto.file.name.split('.').pop() ?? 'jpg';
         const path = `${form.categoria}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -320,9 +311,7 @@ export default function PublicarPage() {
         horario:     form.horario     || null,
         contacto:    form.contacto,
         images:      uploadedUrls,
-        // Solo incluir lat/lng si el usuario capturó GPS (evita error si la columna aún no existe)
         ...(form.lat != null && form.lng != null ? { lat: form.lat, lng: form.lng } : {}),
-        // Campos tránsito
         ...(form.categoria === 'transito' ? {
           situacion_transito:    form.situacion_transito || null,
           fecha_limite_transito: (form.situacion_transito === 'tengo' && form.fecha_limite_transito) ? form.fecha_limite_transito : null,
@@ -330,7 +319,6 @@ export default function PublicarPage() {
       });
       if (insErr) throw insErr;
 
-      // Obtener el post recién creado para tener el ID
       const { data: postData, error: postFetchErr } = await supabase
         .from('posts')
         .select('id, lat, lng')
@@ -340,12 +328,10 @@ export default function PublicarPage() {
         .single();
       if (postFetchErr) console.error('[publicar] error recuperando post:', postFetchErr.message);
 
-      // Notificar vecinos cercanos (fire & forget)
       if (postData) {
         let notifLat = postData.lat;
         let notifLng = postData.lng;
 
-        // Si no hay coords GPS, geocodificar la zona
         if (!notifLat || !notifLng) {
           try {
             const q = encodeURIComponent(`${form.zona}${efectivaCiudad ? ', ' + efectivaCiudad : ''}, Argentina`);
@@ -362,7 +348,6 @@ export default function PublicarPage() {
         }
 
         if (notifLat && notifLng) {
-          // Pasar el token de sesión para que la API valide el usuario
           supabase.auth.getSession().then(({ data: { session } }) => {
             fetch('/api/notificar-vecinos', {
               method: 'POST',
@@ -385,7 +370,6 @@ export default function PublicarPage() {
         }
       }
 
-      /* ── Notificar a amigos cuando se publica un perro perdido ── */
       if (form.categoria === 'perdido' && user && postData?.id) {
         notificarAmigosPerroPerdido({
           ownerId:     user.id,
@@ -395,7 +379,6 @@ export default function PublicarPage() {
         }).catch(() => {});
       }
 
-      /* ── Si hay match confirmado en otra zona, actualizar el aviso perdido ── */
       if (matchPost && mismaZona === false && zonaVisto.trim()) {
         await actualizarZonaPost(
           matchPost.id,
@@ -406,7 +389,6 @@ export default function PublicarPage() {
         );
       }
 
-      // Usar urlsRef (siempre actualizado) en lugar del closure de fotos para revocar correctamente
       urlsRef.current.forEach((u) => URL.revokeObjectURL(u));
       urlsRef.current = [];
       setFotos([]);
@@ -425,8 +407,6 @@ export default function PublicarPage() {
     }
   }
 
-  /* ── Bloqueo tránsito para Free ── */
-
   /* ── Bloqueo invitados ── */
   if (isGuest) {
     return (
@@ -435,16 +415,14 @@ export default function PublicarPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-primary/10 text-brand-primary">
             <Lock className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 font-display text-2xl font-black text-ink">Necesitás una cuenta</h1>
-          <p className="mt-2 text-sm text-ink-muted">
-            Para publicar un aviso tenés que estar registrado. Es gratis y tarda menos de un minuto.
-          </p>
+          <h1 className="mt-4 font-display text-2xl font-black text-ink">{t.pbrGuestTitle}</h1>
+          <p className="mt-2 text-sm text-ink-muted">{t.pbrGuestSub}</p>
           <a
             href="/"
             onClick={() => { if (typeof window !== 'undefined') localStorage.removeItem('vecindog_guest'); }}
             className="btn-primary mt-6 inline-flex"
           >
-            Crear cuenta gratis
+            {t.pbrGuestBtn}
           </a>
         </div>
       </div>
@@ -460,12 +438,12 @@ export default function PublicarPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-good/15 text-good">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 font-display text-2xl font-black text-ink">¡Aviso publicado!</h1>
+          <h1 className="mt-4 font-display text-2xl font-black text-ink">{t.pbrSuccessTitle}</h1>
           <p className="mt-2 text-ink-muted">
-            Tu aviso ya está publicado y los vecinos de {cityLabel} pueden verlo.
+            {t.pbrSuccessMsg.replace('{city}', cityLabel)}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/publicaciones" className="btn-primary">Ver todos los avisos</Link>
+            <Link href="/publicaciones" className="btn-primary">{t.pbrVerAvisos}</Link>
             <button
               type="button"
               onClick={() => {
@@ -480,54 +458,49 @@ export default function PublicarPage() {
               }}
               className="btn-secondary"
             >
-              <Plus className="h-5 w-5" /> Publicar otro
+              <Plus className="h-5 w-5" /> {t.pbrPublicarOtro}
             </button>
           </div>
         </div>
 
-        {/* Opciones de búsqueda para perdido/encontrado */}
         {esBusqueda && (
           <div className="card p-6">
             <p className="mb-4 text-center text-sm font-bold text-ink">
-              {form.categoria === 'perdido'
-                ? '¿Querés buscar al perro con más precisión?'
-                : '¿Querés encontrar al dueño más rápido?'}
+              {form.categoria === 'perdido' ? t.pbrPostMasPrecision : t.pbrPostEncontrarDueno}
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {/* Búsqueda por foto */}
               {isPro ? (
                 <Link href="/buscar-por-foto"
                   className="flex flex-col items-center gap-2 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 text-center transition hover:bg-brand-primary/10">
                   <Camera className="h-7 w-7 text-brand-primary" />
-                  <span className="text-xs font-bold text-ink">Buscar por foto</span>
-                  <span className="text-[10px] text-ink-muted leading-tight">Subí una foto y usamos IA</span>
+                  <span className="text-xs font-bold text-ink">{t.pbrBuscarFoto}</span>
+                  <span className="text-[10px] text-ink-muted leading-tight">{t.pbrBuscarFotoProSub}</span>
                 </Link>
               ) : (
                 <Link href="/planes"
                   className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 p-4 text-center transition hover:border-brand-primary/30">
                   <Camera className="h-7 w-7 text-ink-muted/40" />
-                  <span className="text-xs font-bold text-ink-muted">Buscar por foto</span>
+                  <span className="text-xs font-bold text-ink-muted">{t.pbrBuscarFoto}</span>
                   <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
-                    <Sparkles className="h-3 w-3" /> Solo Pro
+                    <Sparkles className="h-3 w-3" /> {t.pbrSoloPro}
                   </span>
                 </Link>
               )}
 
-              {/* Búsqueda por características */}
               {isPro ? (
                 <Link href="/buscar"
                   className="flex flex-col items-center gap-2 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 text-center transition hover:bg-brand-primary/10">
                   <ScanSearch className="h-7 w-7 text-brand-primary" />
-                  <span className="text-xs font-bold text-ink">Buscar por características</span>
-                  <span className="text-[10px] text-ink-muted leading-tight">Raza, color, tamaño</span>
+                  <span className="text-xs font-bold text-ink">{t.pbrBuscarCaractTitle}</span>
+                  <span className="text-[10px] text-ink-muted leading-tight">{t.pbrBuscarCaractProSub}</span>
                 </Link>
               ) : (
                 <Link href="/planes"
                   className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 p-4 text-center transition hover:border-brand-primary/30">
                   <ScanSearch className="h-7 w-7 text-ink-muted/40" />
-                  <span className="text-xs font-bold text-ink-muted">Por características</span>
+                  <span className="text-xs font-bold text-ink-muted">{t.pbrPorCaract}</span>
                   <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
-                    <Sparkles className="h-3 w-3" /> Solo Pro
+                    <Sparkles className="h-3 w-3" /> {t.pbrSoloPro}
                   </span>
                 </Link>
               )}
@@ -543,7 +516,7 @@ export default function PublicarPage() {
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
       <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-        <ArrowLeft className="h-4 w-4" /> Volver al inicio
+        <ArrowLeft className="h-4 w-4" /> {t.pbrBack}
       </Link>
 
       <header className="mb-6">
@@ -554,22 +527,22 @@ export default function PublicarPage() {
                                            'bg-adopt/30 text-[#7a4f00]'
         }`}>
           <Dog className="h-3.5 w-3.5" />
-          {form.categoria === 'perdido'    ? 'Perro perdido' :
-           form.categoria === 'encontrado' ? 'Vi un perro perdido' :
-           form.categoria === 'transito'   ? 'Perro en tránsito' :
-                                            'Doy en adopción'}
+          {form.categoria === 'perdido'    ? t.pbrChipPerdido :
+           form.categoria === 'encontrado' ? t.pbrChipEncontrado :
+           form.categoria === 'transito'   ? t.pbrChipTransito :
+                                            t.pbrChipAdopcion}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-          {form.categoria === 'perdido'    ? 'Perdí a mi perro' :
-           form.categoria === 'encontrado' ? 'Vi un perro perdido' :
-           form.categoria === 'transito'   ? 'Perro en tránsito' :
-                                            'Doy en adopción'}
+          {form.categoria === 'perdido'    ? t.pbrTitlePerdido :
+           form.categoria === 'encontrado' ? t.pbrTitleEncontrado :
+           form.categoria === 'transito'   ? t.pbrTitleTransito :
+                                            t.pbrTitleAdopcion}
         </h1>
         <p className="mt-1 text-ink-muted">
-          {form.categoria === 'perdido'    ? 'Completá los datos y los vecinos te van a ayudar a encontrarlo.' :
-           form.categoria === 'encontrado' ? 'Cargá los datos del perro que viste para que su familia lo encuentre.' :
-           form.categoria === 'transito'   ? 'Indicá si lo tenés vos o si lo viste en la calle, y la comunidad puede ayudar.' :
-                                            'Completá la información para encontrarle una familia responsable.'}
+          {form.categoria === 'perdido'    ? t.pbrSubPerdido :
+           form.categoria === 'encontrado' ? t.pbrSubEncontrado :
+           form.categoria === 'transito'   ? t.pbrSubTransito :
+                                            t.pbrSubAdopcion}
         </p>
       </header>
 
@@ -577,9 +550,7 @@ export default function PublicarPage() {
       {(form.categoria === 'perdido' || form.categoria === 'encontrado') && (
         <div className="mb-5 rounded-2xl border border-black/8 bg-brand-cream/60 p-4">
           <p className="mb-3 text-sm font-bold text-ink">
-            {form.categoria === 'perdido'
-              ? '🔍 Antes de publicar: ¿alguien ya lo encontró?'
-              : '🔍 Antes de publicar: ¿el dueño ya puso un aviso?'}
+            {form.categoria === 'perdido' ? t.pbrPrePerdido : t.pbrPreEncontrado}
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
@@ -590,8 +561,8 @@ export default function PublicarPage() {
                 <ScanSearch className="h-4.5 w-4.5" />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-extrabold leading-tight">Buscar por características</p>
-                <p className="text-[11px] text-white/75 leading-tight mt-0.5">Color, tamaño, collar…</p>
+                <p className="text-xs font-extrabold leading-tight">{t.pbrBuscarCaract}</p>
+                <p className="text-[11px] text-white/75 leading-tight mt-0.5">{t.pbrBuscarCaractSub}</p>
               </div>
               <ArrowRight className="h-4 w-4 shrink-0 opacity-70 transition group-hover:translate-x-0.5" />
             </Link>
@@ -604,15 +575,13 @@ export default function PublicarPage() {
                 <Sparkles className="h-4.5 w-4.5" />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-extrabold leading-tight">Buscar por foto</p>
-                <p className="text-[11px] text-white/75 leading-tight mt-0.5">Subí una foto y comparamos</p>
+                <p className="text-xs font-extrabold leading-tight">{t.pbrBuscarFoto}</p>
+                <p className="text-[11px] text-white/75 leading-tight mt-0.5">{t.pbrBuscarFotoSub}</p>
               </div>
               <ArrowRight className="h-4 w-4 shrink-0 opacity-70 transition group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <p className="mt-2.5 text-[11px] text-ink-muted">
-            Si no encontrás nada, completá el formulario de abajo para publicar tu aviso.
-          </p>
+          <p className="mt-2.5 text-[11px] text-ink-muted">{t.pbrSiNoEncontras}</p>
         </div>
       )}
 
@@ -621,8 +590,8 @@ export default function PublicarPage() {
         <div className="mb-5 flex items-center gap-3 rounded-2xl bg-brand-primary/10 p-4">
           <Dog className="h-5 w-5 shrink-0 text-brand-primary" />
           <div>
-            <p className="font-bold text-ink">Reportando a {perroData.nombre} como perdido/a</p>
-            <p className="text-xs text-ink-muted">Cargamos los datos del perfil. Revisá y completá si necesitás.</p>
+            <p className="font-bold text-ink">{t.pbrPrefillPre} {perroData.nombre} {t.pbrPrefillPost}</p>
+            <p className="text-xs text-ink-muted">{t.pbrPrefillSub}</p>
           </div>
         </div>
       )}
@@ -630,18 +599,18 @@ export default function PublicarPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* ── PASO 1: fotos ── */}
-        <StepCard n={1} titulo="Fotos del perro" subtitulo={`Subí hasta ${MAX_FOTOS} fotos. La primera se usa como imagen principal.`}>
-          {/* Foto del perfil pre-cargada */}
+        <StepCard n={1} titulo={t.pbrStep1}
+          subtitulo={t.pbrStep1Sub.replace('{max}', String(MAX_FOTOS))}>
           {perroData?.foto_url && !perroFotoRemovida && (
             <div className="mb-3">
               <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-muted">
-                Foto del perfil de {perroData.nombre}
+                {t.pbrFotoPerfilDe} {perroData.nombre}
               </p>
               <div className="relative inline-block">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={perroData.foto_url} alt={perroData.nombre} className="h-24 w-24 rounded-2xl object-cover ring-2 ring-brand-primary" />
                 <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-brand-primary px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
-                  <Star className="h-3 w-3 fill-current" /> Principal
+                  <Star className="h-3 w-3 fill-current" /> {t.pbrPrincipal}
                 </span>
                 <button type="button" onClick={() => setPerroFotoRemovida(true)} aria-label="Quitar"
                   className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/75">
@@ -657,6 +626,12 @@ export default function PublicarPage() {
             onAgregar={handleAgregarFotos}
             onRemover={handleRemoverFoto}
             onHacerPrincipal={handleHacerPrincipal}
+            labelAgregar={t.pbrAgregarFotos}
+            labelSubir={t.pbrSubirFotos}
+            labelPrincipal={t.pbrPrincipal}
+            labelHacerPrincipal={t.pbrHacerPrincipal}
+            labelGaleria={t.pbrGaleria}
+            labelCamara={t.pbrSacarFoto}
           />
           {errorFoto && (
             <p className="mt-3 flex items-start gap-1.5 text-sm text-bad">
@@ -667,12 +642,12 @@ export default function PublicarPage() {
 
         {/* ── PASO 2 especial: sub-tipo tránsito ── */}
         {form.categoria === 'transito' && (
-          <StepCard n={2} titulo="Situación del animal" subtitulo="Contanos cómo encontraste o cómo estás con el perro.">
+          <StepCard n={2} titulo={t.pbrStep2Transit} subtitulo={t.pbrStep2TransitSub}>
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 {([
-                  { val: 'tengo', label: '🏠 Lo tengo yo temporalmente', desc: 'Lo encontraste y lo cuidás hasta encontrarle dueño' },
-                  { val: 'calle', label: '🚨 Lo vi en la calle', desc: 'Necesita ayuda pero no pudiste llevártelo' },
+                  { val: 'tengo', label: t.pbrLoTengo, desc: t.pbrLoTengoDesc },
+                  { val: 'calle', label: t.pbrLoVi,    desc: t.pbrLoViDesc },
                 ] as const).map(({ val, label, desc }) => (
                   <button
                     key={val}
@@ -691,7 +666,7 @@ export default function PublicarPage() {
               </div>
 
               {form.situacion_transito === 'tengo' && (
-                <Field label="¿Hasta cuándo lo podés tener? (fecha límite)">
+                <Field label={t.pbrFechaLimite}>
                   <input
                     type="date"
                     className="field"
@@ -699,13 +674,13 @@ export default function PublicarPage() {
                     value={form.fecha_limite_transito}
                     onChange={(e) => handleChange('fecha_limite_transito', e.target.value)}
                   />
-                  <p className="mt-1 text-xs text-ink-muted">Aparecerá como cuenta regresiva en tu aviso. Genera urgencia para que alguien lo adopte.</p>
+                  <p className="mt-1 text-xs text-ink-muted">{t.pbrFechaLimiteSub}</p>
                 </Field>
               )}
 
               {form.situacion_transito === 'calle' && (
                 <>
-                  <Field label="¿A qué hora lo viste?">
+                  <Field label={t.pbrHoraVisto}>
                     <input
                       type="time"
                       className="field w-40"
@@ -714,7 +689,7 @@ export default function PublicarPage() {
                     />
                   </Field>
                   <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                    ⚠️ Este aviso aparecerá en el mapa en color violeta para que los vecinos cercanos puedan ayudar.
+                    {t.pbrTransitWarning}
                   </div>
                 </>
               )}
@@ -722,43 +697,46 @@ export default function PublicarPage() {
           </StepCard>
         )}
 
-        {/* ── PASO 2: datos del perro ── */}
-        <StepCard n={form.categoria === 'transito' ? 3 : 2} titulo="Datos del perro"
+        {/* ── PASO 2/3: datos del perro ── */}
+        <StepCard n={form.categoria === 'transito' ? 3 : 2}
+          titulo={
+            form.categoria === 'perdido'    ? t.pbrStep1 :
+            form.categoria === 'encontrado' ? t.pbrStep1 :
+            form.categoria === 'transito'   ? t.pbrStep1 :
+                                             t.pbrStep1
+          }
           subtitulo={
-            form.categoria === 'perdido'    ? 'Completá lo que sepas. Más datos = más chances de encontrarlo.' :
-            form.categoria === 'encontrado' ? 'Describí el perro que viste para que su familia lo reconozca.' :
-            form.categoria === 'transito'   ? 'Describí el animal para que alguien lo reconozca o decida ayudar.' :
-                                             'Contanos cómo es el perro que das en adopción.'
+            form.categoria === 'perdido'    ? t.pbrStep2DataSub :
+            form.categoria === 'encontrado' ? t.pbrStep2DataSubEncontrado :
+            form.categoria === 'transito'   ? t.pbrStep2DataSubTransito :
+                                             t.pbrStep2DataSubAdopcion
           }>
           <div className="space-y-4">
 
-            {/* Nombre */}
-            <Field label="Nombre (si lo sabés)">
+            <Field label={t.pbrNombre}>
               <input type="text" className="field" placeholder="Ej: Rocco"
                 value={form.nombre} onChange={(e) => handleChange('nombre', e.target.value)} />
             </Field>
 
-            {/* Raza + Color */}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Raza">
+              <Field label={t.pbrRaza}>
                 <RazaAutocomplete value={form.raza} onChange={(v) => handleChange('raza', v)} />
               </Field>
 
               <div>
-                <label className="label">Color principal</label>
+                <label className="label">{t.pbrColor}</label>
                 <select className="field w-full" value={form.color}
                   onChange={(e) => handleChange('color', e.target.value)}>
-                  <option value="">No sé / no recuerdo</option>
+                  <option value="">{t.pbrColorNoSe}</option>
                   {COLORES_PERRO.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Tamaño */}
             <div>
-              <label className="label">Tamaño</label>
+              <label className="label">{t.pbrTamano}</label>
               <div className="flex gap-2">
-                {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+                {([['pequeño', t.pbrChico], ['mediano', t.pbrMediano], ['grande', t.pbrGrande]] as const).map(([v, l]) => (
                   <button key={v} type="button"
                     onClick={() => handleChange('tamano', form.tamano === v ? '' : v)}
                     className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
@@ -772,22 +750,21 @@ export default function PublicarPage() {
               </div>
             </div>
 
-            {/* Collar */}
             <div>
-              <label className="label">¿Tenía collar?</label>
-              <TernarioBtn value={form.collar} onChange={(v) => handleChange('collar', v)} />
+              <label className="label">{t.pbrCollar}</label>
+              <TernarioBtn value={form.collar} onChange={(v) => handleChange('collar', v)}
+                labelSi={t.pbrSi} labelNo={t.pbrNo} labelNs={t.pbrNoSe} />
             </div>
 
-            {/* Chapita */}
             <div>
-              <label className="label">¿Tenía chapita / plaquita identificadora?</label>
-              <TernarioBtn value={form.chapita} onChange={(v) => handleChange('chapita', v)} />
+              <label className="label">{t.pbrChapita}</label>
+              <TernarioBtn value={form.chapita} onChange={(v) => handleChange('chapita', v)}
+                labelSi={t.pbrSi} labelNo={t.pbrNo} labelNs={t.pbrNoSe} />
             </div>
 
-            {/* Descripción */}
-            <Field label="Descripción adicional">
+            <Field label={t.pbrDescripcion}>
               <textarea className="field min-h-[100px]"
-                placeholder="Marcas especiales, manchas, comportamiento, collar rojo con chapita azul…"
+                placeholder={t.pbrDescripcionPh}
                 value={form.descripcion}
                 onChange={(e) => handleChange('descripcion', e.target.value)}
                 required
@@ -802,9 +779,7 @@ export default function PublicarPage() {
           <div className="rounded-2xl border-2 border-found/30 bg-found/5 p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Dog className="h-5 w-5 shrink-0 text-found" />
-              <p className="font-display font-extrabold text-ink">
-                ¿Es alguno de estos perros que estaban buscando?
-              </p>
+              <p className="font-display font-extrabold text-ink">{t.pbrMatchTitle}</p>
             </div>
 
             <div className="space-y-2">
@@ -850,24 +825,21 @@ export default function PublicarPage() {
                     : 'border-black/10 text-ink-muted hover:border-black/20'
                 }`}
               >
-                No, es otro perro
+                {t.pbrMatchNo}
               </button>
             </div>
 
-            {/* Preguntas de zona y horario */}
             {matchPost && (
               <div className="space-y-4 border-t border-found/20 pt-4">
                 <div>
-                  <p className="mb-2 text-sm font-bold text-ink">
-                    ¿Lo viste en la misma zona donde se perdió?
-                  </p>
+                  <p className="mb-2 text-sm font-bold text-ink">{t.pbrMatchMismaZona}</p>
                   <p className="mb-3 text-xs text-ink-muted">
                     Se perdió en: <span className="font-bold text-ink">{matchPost.zona}</span>
                   </p>
                   <div className="flex gap-2">
                     {([
-                      [true,  'Sí, misma zona'],
-                      [false, 'No, otra zona'],
+                      [true,  t.adpSi],
+                      [false, t.pbrMatchOtraZona],
                     ] as const).map(([v, l]) => (
                       <button
                         key={String(v)}
@@ -888,7 +860,7 @@ export default function PublicarPage() {
                 {mismaZona === false && (
                   <div>
                     <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
-                      ¿En qué zona lo viste?
+                      {t.pbrMatchDondeViste}
                     </label>
                     <AddressAutocomplete
                       value={zonaVisto}
@@ -903,7 +875,7 @@ export default function PublicarPage() {
                 {mismaZona !== null && (
                   <div>
                     <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
-                      ¿A qué hora lo viste? (opcional)
+                      {t.pbrMatchHora}
                     </label>
                     <input
                       type="time"
@@ -916,7 +888,7 @@ export default function PublicarPage() {
 
                 {mismaZona === false && zonaVisto.trim() && (
                   <p className="rounded-xl bg-found/10 px-3 py-2 text-xs font-bold text-found">
-                    ✓ Al publicar, el aviso de búsqueda se va a actualizar a la nueva zona.
+                    {t.pbrMatchConfirm}
                   </p>
                 )}
               </div>
@@ -927,17 +899,16 @@ export default function PublicarPage() {
         {/* ── PASO 3/4: dónde y cuándo ── */}
         <StepCard n={form.categoria === 'transito' ? 4 : 3}
           titulo={
-            form.categoria === 'perdido'    ? '¿Dónde y cuándo se perdió?' :
-            form.categoria === 'encontrado' ? '¿Dónde y cuándo lo viste?' :
-            form.categoria === 'transito'   ? '¿Dónde está o dónde lo viste?' :
-                                             '¿Dónde está el perro?'
+            form.categoria === 'perdido'    ? t.pbrStep3Perdido :
+            form.categoria === 'encontrado' ? t.pbrStep3Encontrado :
+            form.categoria === 'transito'   ? t.pbrStep3Transito :
+                                             t.pbrStep3Adopcion
           }>
           <div className="grid gap-4 sm:grid-cols-2">
 
-            {/* Selector de ubicación (solo perdido desde perfil) */}
             {perroData && form.categoria === 'perdido' && (
               <div className="sm:col-span-2">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">¿Dónde se perdió?</p>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">{t.pbrDondePerdio}</p>
                 <div className="flex gap-2">
                   <button type="button"
                     onClick={() => {
@@ -950,7 +921,7 @@ export default function PublicarPage() {
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
                     }`}>
-                    <Home className="h-4 w-4" /> En mi casa
+                    <Home className="h-4 w-4" /> {t.pbrEnMiCasa}
                   </button>
                   <button type="button"
                     onClick={() => { setUbicacion('otro'); handleChange('zona', ''); }}
@@ -959,14 +930,14 @@ export default function PublicarPage() {
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
                     }`}>
-                    <MapPin className="h-4 w-4" /> En otro lugar
+                    <MapPin className="h-4 w-4" /> {t.pbrEnOtroLugar}
                   </button>
                 </div>
                 {ubicacion === 'casa' && !perroData.direccion && (
                   <p className="mt-2 text-xs text-ink-muted">
-                    No tenés dirección guardada.{' '}
+                    {t.pbrSinDireccion}{' '}
                     <Link href={`/mis-perros/${perroData.id}`} className="font-bold text-brand-primary underline">
-                      Agregarla al perfil
+                      {t.pbrAgregarPerfil}
                     </Link>
                     {' '}o ingresala abajo.
                   </p>
@@ -975,21 +946,20 @@ export default function PublicarPage() {
             )}
 
             <div className="sm:col-span-2 space-y-3">
-              {/* GPS — opción principal */}
               {gpsEstado === 'ok' ? (
                 <div className="flex items-center justify-between rounded-2xl bg-good/10 px-4 py-3 ring-1 ring-good/20">
                   <div className="flex items-center gap-2 text-sm font-bold text-good">
                     <CheckCheck className="h-4 w-4 shrink-0" />
-                    <span>Ubicación GPS capturada</span>
+                    <span>{t.pbrGpsOk}</span>
                   </div>
                   <button type="button"
                     onClick={() => { setGpsEstado('idle'); setZonaManual(true); setForm((f) => ({ ...f, lat: null, lng: null })); }}
-                    className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                    className="text-xs text-ink-muted hover:text-bad transition">{t.pbrGpsCambiar}</button>
                 </div>
               ) : gpsEstado === 'cargando' ? (
                 <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-4 py-4">
                   <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
-                  <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+                  <span className="text-sm font-bold text-brand-primary">{t.pbrGpsCargando}</span>
                 </div>
               ) : !zonaManual ? (
                 <div className="space-y-2">
@@ -999,18 +969,17 @@ export default function PublicarPage() {
                     className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-4 py-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 active:scale-[0.99]"
                   >
                     <Navigation className="h-5 w-5" />
-                    {gpsEstado === 'error' ? 'No se pudo obtener el GPS — reintentar' : 'Usar mi ubicación GPS'}
+                    {gpsEstado === 'error' ? t.pbrGpsError : t.pbrGpsUsar}
                   </button>
                   <button type="button" onClick={() => setZonaManual(true)}
                     className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
-                    No tengo GPS / prefiero escribir la dirección
+                    {t.pbrGpsManual}
                   </button>
                 </div>
               ) : null}
 
-              {/* Campo manual — se muestra si eligió escribir o GPS falló */}
               {(zonaManual || gpsEstado === 'ok') && (
-                <Field label={gpsEstado === 'ok' ? 'Confirmá o ajustá la dirección' : 'Dirección o zona'}>
+                <Field label={gpsEstado === 'ok' ? t.pbrConfirmDir : t.pbrDireccionZona}>
                   <AddressAutocomplete
                     value={form.zona}
                     onChange={(v) => { handleChange('zona', v); setShowMapPicker(false); }}
@@ -1027,13 +996,12 @@ export default function PublicarPage() {
                   {zonaManual && gpsEstado !== 'ok' && (
                     <button type="button" onClick={() => { setZonaManual(false); capturarGPS(); }}
                       className="mt-1 text-xs text-brand-primary hover:underline">
-                      ← Volver a usar GPS
+                      {t.pbrGpsVolver}
                     </button>
                   )}
                 </Field>
               )}
 
-              {/* Mapa confirmador de pin — aparece tras seleccionar dirección manual */}
               {showMapPicker && form.lat && form.lng && (
                 <MapPinPicker
                   lat={form.lat}
@@ -1045,13 +1013,13 @@ export default function PublicarPage() {
 
             </div>
 
-            <Field label="Fecha">
+            <Field label={t.pbrFecha}>
               <input type="date" className="field" value={form.fecha}
                 onChange={(e) => handleChange('fecha', e.target.value)} required />
             </Field>
 
             {form.categoria === 'encontrado' && (
-              <Field label="Horario aproximado">
+              <Field label={t.pbrHorario}>
                 <input type="time" className="field" value={form.horario}
                   onChange={(e) => handleChange('horario', e.target.value)} />
               </Field>
@@ -1060,14 +1028,12 @@ export default function PublicarPage() {
         </StepCard>
 
         {/* ── PASO 4/5: contacto ── */}
-        <StepCard n={form.categoria === 'transito' ? 5 : 4} titulo="¿Cómo te contactan?">
-          <Field label="WhatsApp de contacto">
+        <StepCard n={form.categoria === 'transito' ? 5 : 4} titulo={t.pbrContactoLabel}>
+          <Field label={t.pbrContactoLabel}>
             <input type="tel" className="field" placeholder="+54 9 291 ..."
               value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} required />
             {form.contacto.trim() && form.contacto.replace(/\D/g, '').length < 10 && (
-              <p className="mt-1.5 text-xs font-semibold text-bad">
-                Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210
-              </p>
+              <p className="mt-1.5 text-xs font-semibold text-bad">{t.pbrContactoError}</p>
             )}
           </Field>
         </StepCard>
@@ -1079,7 +1045,7 @@ export default function PublicarPage() {
         )}
 
         <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
-          {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> Publicando…</> : 'Publicar aviso'}
+          {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> {t.pbrPublicando}</> : t.pbrPublicar}
         </button>
       </form>
     </div>
@@ -1114,13 +1080,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function TernarioBtn({ value, onChange }: { value: Ternario; onChange: (v: Ternario) => void }) {
+function TernarioBtn({ value, onChange, labelSi, labelNo, labelNs }: {
+  value: Ternario;
+  onChange: (v: Ternario) => void;
+  labelSi: string;
+  labelNo: string;
+  labelNs: string;
+}) {
   return (
     <div className="flex gap-2">
       {([
-        [true,  'Sí'],
-        [false, 'No'],
-        [null,  'No sé'],
+        [true,  labelSi],
+        [false, labelNo],
+        [null,  labelNs],
       ] as const).map(([v, l]) => (
         <button key={String(v)} type="button" onClick={() => onChange(v)}
           className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
@@ -1135,11 +1107,18 @@ function TernarioBtn({ value, onChange }: { value: Ternario; onChange: (v: Terna
   );
 }
 
-function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemover, onHacerPrincipal }: {
+function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemover, onHacerPrincipal,
+  labelAgregar, labelSubir, labelPrincipal, labelHacerPrincipal, labelGaleria, labelCamara }: {
   fotos: FotoPreview[]; maxFotos: number; esPrincipalExterna: boolean;
   onAgregar: (files: FileList | null) => void;
   onRemover: (idx: number) => void;
   onHacerPrincipal: (idx: number) => void;
+  labelAgregar: string;
+  labelSubir: string;
+  labelPrincipal: string;
+  labelHacerPrincipal: string;
+  labelGaleria: string;
+  labelCamara: string;
 }) {
   const galeriaRef = useRef<HTMLInputElement>(null);
   const camaraRef  = useRef<HTMLInputElement>(null);
@@ -1154,7 +1133,9 @@ function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemov
               esPrincipal={i === 0 && !esPrincipalExterna}
               pesoMb={f.pesoMb}
               onRemover={() => onRemover(i)}
-              onHacerPrincipal={() => onHacerPrincipal(i)} />
+              onHacerPrincipal={() => onHacerPrincipal(i)}
+              labelPrincipal={labelPrincipal}
+              labelHacerPrincipal={labelHacerPrincipal} />
           ))}
           {!lleno && (
             <button type="button" onClick={() => galeriaRef.current?.click()}
@@ -1170,7 +1151,7 @@ function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemov
         <button type="button" onClick={() => galeriaRef.current?.click()}
           className="mb-3 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 py-6 text-ink-muted transition hover:border-brand-primary hover:text-brand-primary">
           <ImagePlus className="h-7 w-7" />
-          <span className="text-sm font-bold">{esPrincipalExterna ? 'Agregar más fotos' : 'Subir fotos'}</span>
+          <span className="text-sm font-bold">{esPrincipalExterna ? labelAgregar : labelSubir}</span>
           <span className="text-xs">JPG, PNG o WebP · Máx. {MAX_PESO_MB} MB c/u</span>
         </button>
       )}
@@ -1183,11 +1164,11 @@ function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemov
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={lleno} onClick={() => galeriaRef.current?.click()}
           className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-50">
-          <ImagePlus className="h-4 w-4" /> Galería
+          <ImagePlus className="h-4 w-4" /> {labelGaleria}
         </button>
         <button type="button" disabled={lleno} onClick={() => camaraRef.current?.click()}
           className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-2 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-50">
-          <Camera className="h-4 w-4" /> Sacar foto
+          <Camera className="h-4 w-4" /> {labelCamara}
         </button>
         <span className="ml-auto self-center text-xs font-bold text-ink-muted">
           {fotos.length} / {maxFotos}
@@ -1197,8 +1178,9 @@ function FotosUploader({ fotos, maxFotos, esPrincipalExterna, onAgregar, onRemov
   );
 }
 
-function Miniatura({ url, esPrincipal, pesoMb, onRemover, onHacerPrincipal }: {
+function Miniatura({ url, esPrincipal, pesoMb, onRemover, onHacerPrincipal, labelPrincipal, labelHacerPrincipal }: {
   url: string; esPrincipal: boolean; pesoMb: number; onRemover: () => void; onHacerPrincipal: () => void;
+  labelPrincipal: string; labelHacerPrincipal: string;
 }) {
   const pesada = pesoMb > MAX_PESO_MB;
   return (
@@ -1207,12 +1189,12 @@ function Miniatura({ url, esPrincipal, pesoMb, onRemover, onHacerPrincipal }: {
       <img src={url} alt="" className="h-full w-full object-cover" />
       {esPrincipal ? (
         <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-brand-primary px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
-          <Star className="h-3 w-3 fill-current" /> Principal
+          <Star className="h-3 w-3 fill-current" /> {labelPrincipal}
         </span>
       ) : (
         <button type="button" onClick={onHacerPrincipal}
           className="absolute left-1.5 top-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-ink shadow ring-1 ring-black/5 hover:bg-white">
-          Hacer principal
+          {labelHacerPrincipal}
         </button>
       )}
       <button type="button" onClick={onRemover} aria-label="Eliminar foto"

@@ -7,13 +7,13 @@ import {
   Dog, Search, ClipboardList, AlertCircle, Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /* ══════════════════════════════════════════════════════════════
    TIPOS
 ══════════════════════════════════════════════════════════════ */
 
 interface FormAdopcion {
-  // 1. Datos personales
   nombre:    string;
   dni:       string;
   edad:      string;
@@ -21,36 +21,26 @@ interface FormAdopcion {
   email:     string;
   direccion: string;
   zona:      string;
-
-  // 2. Vivienda
   tipoVivienda:       string;
   tenencia:           string;
   propietarioPermite: string;
   tienePatio:         string;
   patioFechado:       string;
-
-  // 3. Grupo familiar
   cantPersonas:    string;
   hayNinos:        string;
   edadesNinos:     string;
   todosDeAcuerdo:  string;
   alergias:        string;
-
-  // 4. Experiencia con mascotas
   mascotasActuales:  string;
   detalleMascotas:   string;
   mascotasVacunadas: string;
   mascotasAnteriores: string;
   quePasoConEllas:   string;
   horasSolo:         string;
-
-  // 5. El perro que buscás
   tamanoPreferido: string;
   edadPreferida:   string;
   perroEnMente:    string;
   motivacion:      string;
-
-  // 6. Compromisos
   compromisoVeterinario:   boolean;
   compromisoVisita:        boolean;
   compromisoDevolucion:    boolean;
@@ -72,10 +62,15 @@ const FORM_INICIAL: FormAdopcion = {
    COMPONENTES AUXILIARES
 ══════════════════════════════════════════════════════════════ */
 
-function SiNo({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function SiNo({ value, onChange, labelSi, labelNo }: {
+  value: string;
+  onChange: (v: string) => void;
+  labelSi: string;
+  labelNo: string;
+}) {
   return (
     <div className="flex gap-2">
-      {[{ v: 'si', label: 'Sí' }, { v: 'no', label: 'No' }].map(({ v, label }) => (
+      {[{ v: 'si', label: labelSi }, { v: 'no', label: labelNo }].map(({ v, label }) => (
         <button
           key={v} type="button"
           onClick={() => onChange(value === v ? '' : v)}
@@ -165,6 +160,7 @@ function Campo({ label, requerido, hint, children }: {
 ══════════════════════════════════════════════════════════════ */
 
 export default function AdoptarPage() {
+  const { t } = useLanguage();
   const [form, setForm]       = useState<FormAdopcion>(FORM_INICIAL);
   const [error, setError]     = useState('');
   const [enviado, setEnviado] = useState(false);
@@ -174,49 +170,44 @@ export default function AdoptarPage() {
     setForm((f) => ({ ...f, [key]: val }));
   }
 
-  /* ── Validación ── */
   function validar(): string {
     const f = form;
-    if (!f.nombre.trim())    return 'El nombre completo es obligatorio.';
-    if (!f.dni.trim())       return 'El DNI es obligatorio.';
-    if (!f.edad.trim())      return 'La edad es obligatoria.';
-    if (!f.telefono.trim())  return 'El teléfono es obligatorio.';
-    if (!f.email.trim())     return 'El email es obligatorio.';
-    if (!f.direccion.trim()) return 'La dirección es obligatoria.';
-    if (!f.zona.trim())      return 'La zona o barrio es obligatoria.';
+    if (!f.nombre.trim())    return t.adpErrNombre;
+    if (!f.dni.trim())       return t.adpErrDni;
+    if (!f.edad.trim())      return t.adpErrEdad;
+    if (!f.telefono.trim())  return t.adpErrTelefono;
+    if (!f.email.trim())     return t.adpErrEmail;
+    if (!f.direccion.trim()) return t.adpErrDireccion;
+    if (!f.zona.trim())      return t.adpErrZona;
 
-    if (!f.tipoVivienda)     return 'Indicá el tipo de vivienda.';
-    if (!f.tenencia)         return 'Indicá si sos propietario o inquilino.';
-    if (f.tenencia === 'inquilino' && !f.propietarioPermite)
-                             return 'Indicá si el propietario permite mascotas.';
-    if (!f.tienePatio)       return 'Indicá si tenés patio o jardín.';
-    if (f.tienePatio === 'si' && !f.patioFechado)
-                             return 'Indicá si el patio está cercado.';
+    if (!f.tipoVivienda)     return t.adpErrVivienda;
+    if (!f.tenencia)         return t.adpErrTenencia;
+    if (f.tenencia === 'inquilino' && !f.propietarioPermite) return t.adpErrPropPermite;
+    if (!f.tienePatio)       return t.adpErrPatio;
+    if (f.tienePatio === 'si' && !f.patioFechado)            return t.adpErrPatioFechado;
 
-    if (!f.cantPersonas.trim()) return 'Indicá cuántas personas viven en tu hogar.';
-    if (!f.hayNinos)         return 'Indicá si hay niños en el hogar.';
-    if (f.hayNinos === 'si' && !f.edadesNinos.trim())
-                             return 'Escribí las edades de los niños.';
-    if (!f.todosDeAcuerdo)   return 'Indicá si todos en el hogar están de acuerdo.';
-    if (!f.alergias)         return 'Indicá si alguien tiene alergia a los animales.';
+    if (!f.cantPersonas.trim()) return t.adpErrPersonas;
+    if (!f.hayNinos)         return t.adpErrNinos;
+    if (f.hayNinos === 'si' && !f.edadesNinos.trim()) return t.adpErrEdadesNinos;
+    if (!f.todosDeAcuerdo)   return t.adpErrAcuerdo;
+    if (!f.alergias)         return t.adpErrAlergias;
 
-    if (!f.mascotasActuales) return 'Indicá si tenés mascotas actualmente.';
+    if (!f.mascotasActuales) return t.adpErrMascotas;
     if (f.mascotasActuales === 'si') {
-      if (!f.detalleMascotas.trim()) return 'Describí tus mascotas actuales.';
-      if (!f.mascotasVacunadas)      return 'Indicá si tus mascotas están vacunadas y castradas.';
+      if (!f.detalleMascotas.trim()) return t.adpErrDetalle;
+      if (!f.mascotasVacunadas)      return t.adpErrVacunadas;
     }
-    if (!f.mascotasAnteriores) return 'Indicá si tuviste mascotas anteriormente.';
-    if (f.mascotasAnteriores === 'si' && !f.quePasoConEllas.trim())
-                             return 'Contanos qué pasó con tus mascotas anteriores.';
-    if (!f.horasSolo)        return 'Indicá cuántas horas estaría solo el perro.';
+    if (!f.mascotasAnteriores) return t.adpErrAnteriores;
+    if (f.mascotasAnteriores === 'si' && !f.quePasoConEllas.trim()) return t.adpErrQuePaso;
+    if (!f.horasSolo)        return t.adpErrHoras;
 
-    if (!f.tamanoPreferido)  return 'Elegí el tamaño preferido.';
-    if (!f.edadPreferida)    return 'Elegí la edad preferida.';
-    if (!f.motivacion.trim()) return 'Contanos por qué querés adoptar.';
+    if (!f.tamanoPreferido)  return t.adpErrTamano;
+    if (!f.edadPreferida)    return t.adpErrEdadPref;
+    if (!f.motivacion.trim()) return t.adpErrMotivacion;
 
     if (!f.compromisoVeterinario || !f.compromisoVisita ||
         !f.compromisoDevolucion  || !f.compromisoEsterilizacion)
-      return 'Debés aceptar todos los compromisos para continuar.';
+      return t.adpErrCompromisos;
 
     return '';
   }
@@ -266,14 +257,13 @@ export default function AdoptarPage() {
       setEnviado(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError('Error al enviar la solicitud: ' + msg);
+      setError(t.adpErrSubmit + msg);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
   }
 
-  /* ── Pantalla de éxito ── */
   if (enviado) {
     return (
       <div className="mx-auto max-w-md py-12">
@@ -281,17 +271,14 @@ export default function AdoptarPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-good/15 text-good">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 font-display text-2xl font-black text-ink">¡Solicitud enviada!</h1>
-          <p className="mt-2 text-ink-muted">
-            Recibimos tu solicitud. Te contactaremos a la brevedad.
-            Gracias por querer adoptar de forma responsable.
-          </p>
+          <h1 className="mt-4 font-display text-2xl font-black text-ink">{t.adpSuccessTitle}</h1>
+          <p className="mt-2 text-ink-muted">{t.adpSuccessMsg}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/publicaciones?cat=adopcion" className="btn-primary">
-              Ver perros en adopción
+              {t.adpVerAdopcion}
             </Link>
             <Link href="/" className="btn-secondary">
-              Volver al inicio
+              {t.adpBack}
             </Link>
           </div>
         </div>
@@ -299,28 +286,26 @@ export default function AdoptarPage() {
     );
   }
 
-  /* ── Formulario ── */
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
       <Link
         href="/"
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
       >
-        <ArrowLeft className="h-4 w-4" /> Volver al inicio
+        <ArrowLeft className="h-4 w-4" /> {t.adpBack}
       </Link>
 
       <header className="mb-6">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold/20 px-3 py-1 text-xs font-bold text-[#7a4f0a]">
-          <Heart className="h-3.5 w-3.5" /> Adopción responsable
+          <Heart className="h-3.5 w-3.5" /> {t.adpChip}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-          Solicitud de adopción
+          {t.adpTitle}
         </h1>
         <p className="mt-1 text-ink-muted">
-          Completá el formulario con sinceridad. La información es confidencial y
-          nos ayuda a asegurar el bienestar del perro.{' '}
+          {t.adpSubtitulo}{' '}
           <span className="font-bold text-bad">*</span>{' '}
-          <span className="text-sm">campo obligatorio</span>
+          <span className="text-sm">{t.adpRequired}</span>
         </p>
       </header>
 
@@ -334,45 +319,45 @@ export default function AdoptarPage() {
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
         {/* ══ 1. DATOS PERSONALES ══════════════════════════════════════ */}
-        <Seccion n={1} icon={User} titulo="Tus datos personales">
+        <Seccion n={1} icon={User} titulo={t.adpSec1}>
           <div className="grid gap-4 sm:grid-cols-2">
 
             <div className="sm:col-span-2">
-              <Campo label="Nombre y apellido" requerido>
+              <Campo label={t.adpNombre} requerido>
                 <input type="text" className="field" placeholder="Juan Pérez"
                   value={form.nombre} onChange={(e) => set('nombre', e.target.value)} />
               </Campo>
             </div>
 
-            <Campo label="DNI" requerido>
+            <Campo label={t.adpDni} requerido>
               <input type="text" className="field" placeholder="30.123.456"
                 value={form.dni} onChange={(e) => set('dni', e.target.value)} />
             </Campo>
 
-            <Campo label="Edad" requerido hint="(mín. 18 años)">
+            <Campo label={t.adpEdad} requerido hint={t.adpEdadHint}>
               <input type="number" className="field" placeholder="30" min={18} max={99}
                 value={form.edad} onChange={(e) => set('edad', e.target.value)} />
             </Campo>
 
-            <Campo label="Teléfono / WhatsApp" requerido>
+            <Campo label={t.adpTelefono} requerido>
               <input type="tel" className="field" placeholder="+54 9 291 ..."
                 value={form.telefono} onChange={(e) => set('telefono', e.target.value)} />
             </Campo>
 
-            <Campo label="Email" requerido>
+            <Campo label={t.adpEmail} requerido>
               <input type="email" className="field" placeholder="juan@email.com"
                 value={form.email} onChange={(e) => set('email', e.target.value)} />
             </Campo>
 
             <div className="sm:col-span-2">
-              <Campo label="Dirección" requerido hint="calle y número">
+              <Campo label={t.adpDireccion} requerido hint={t.adpDireccionHint}>
                 <input type="text" className="field" placeholder="Av. Colón 1234"
                   value={form.direccion} onChange={(e) => set('direccion', e.target.value)} />
               </Campo>
             </div>
 
             <div className="sm:col-span-2">
-              <Campo label="Barrio / zona" requerido>
+              <Campo label={t.adpZona} requerido>
                 <input type="text" className="field" placeholder="Villa Mitre, Centro…"
                   value={form.zona} onChange={(e) => set('zona', e.target.value)} />
               </Campo>
@@ -382,27 +367,26 @@ export default function AdoptarPage() {
         </Seccion>
 
         {/* ══ 2. VIVIENDA ══════════════════════════════════════════════ */}
-        <Seccion n={2} icon={Home} titulo="Tu vivienda"
-          subtitulo="El entorno es clave para el bienestar del perro.">
+        <Seccion n={2} icon={Home} titulo={t.adpSec2} subtitulo={t.adpSec2Sub}>
 
-          <Campo label="Tipo de vivienda" requerido>
+          <Campo label={t.adpTipoVivienda} requerido>
             <Chips
               opciones={[
-                { value: 'casa',       label: 'Casa' },
-                { value: 'depto',      label: 'Departamento' },
-                { value: 'casa_patio', label: 'Casa con patio' },
-                { value: 'otro',       label: 'Otro' },
+                { value: 'casa',       label: t.adpCasa },
+                { value: 'depto',      label: t.adpDepto },
+                { value: 'casa_patio', label: t.adpCasaPatio },
+                { value: 'otro',       label: t.adpOtro },
               ]}
               value={form.tipoVivienda}
               onChange={(v) => set('tipoVivienda', v)}
             />
           </Campo>
 
-          <Campo label="¿Sos propietario o alquilás?" requerido>
+          <Campo label={t.adpTenencia} requerido>
             <Chips
               opciones={[
-                { value: 'propietario', label: 'Propietario' },
-                { value: 'inquilino',   label: 'Inquilino' },
+                { value: 'propietario', label: t.adpPropietario },
+                { value: 'inquilino',   label: t.adpInquilino },
               ]}
               value={form.tenencia}
               onChange={(v) => set('tenencia', v)}
@@ -410,74 +394,80 @@ export default function AdoptarPage() {
           </Campo>
 
           {form.tenencia === 'inquilino' && (
-            <Campo label="¿El propietario permite mascotas?" requerido>
+            <Campo label={t.adpPropPermite} requerido>
               <SiNo value={form.propietarioPermite}
-                onChange={(v) => set('propietarioPermite', v)} />
+                onChange={(v) => set('propietarioPermite', v)}
+                labelSi={t.adpSi} labelNo={t.adpNo} />
             </Campo>
           )}
 
-          <Campo label="¿Tenés patio o jardín?" requerido>
-            <SiNo value={form.tienePatio} onChange={(v) => set('tienePatio', v)} />
+          <Campo label={t.adpTienePatio} requerido>
+            <SiNo value={form.tienePatio} onChange={(v) => set('tienePatio', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
           {form.tienePatio === 'si' && (
-            <Campo label="¿Está cercado o vallado?" requerido>
-              <SiNo value={form.patioFechado} onChange={(v) => set('patioFechado', v)} />
+            <Campo label={t.adpPatioFechado} requerido>
+              <SiNo value={form.patioFechado} onChange={(v) => set('patioFechado', v)}
+                labelSi={t.adpSi} labelNo={t.adpNo} />
             </Campo>
           )}
 
         </Seccion>
 
         {/* ══ 3. GRUPO FAMILIAR ════════════════════════════════════════ */}
-        <Seccion n={3} icon={Users} titulo="Tu grupo familiar"
-          subtitulo="Necesitamos saber quiénes van a convivir con el perro.">
+        <Seccion n={3} icon={Users} titulo={t.adpSec3} subtitulo={t.adpSec3Sub}>
 
-          <Campo label="¿Cuántas personas viven en tu hogar?" requerido hint="incluíte vos">
+          <Campo label={t.adpCantPersonas} requerido hint={t.adpCantPersonasHint}>
             <input type="number" className="field w-32" placeholder="3" min={1}
               value={form.cantPersonas} onChange={(e) => set('cantPersonas', e.target.value)} />
           </Campo>
 
-          <Campo label="¿Hay niños en el hogar?" requerido>
-            <SiNo value={form.hayNinos} onChange={(v) => set('hayNinos', v)} />
+          <Campo label={t.adpHayNinos} requerido>
+            <SiNo value={form.hayNinos} onChange={(v) => set('hayNinos', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
           {form.hayNinos === 'si' && (
-            <Campo label="Edades de los niños" requerido hint="ej: 3, 7 y 10 años">
+            <Campo label={t.adpEdadesNinos} requerido hint={t.adpEdadesNinosHint}>
               <input type="text" className="field" placeholder="3, 7 y 10 años"
                 value={form.edadesNinos} onChange={(e) => set('edadesNinos', e.target.value)} />
             </Campo>
           )}
 
-          <Campo label="¿Todos en el hogar están de acuerdo con la adopción?" requerido>
-            <SiNo value={form.todosDeAcuerdo} onChange={(v) => set('todosDeAcuerdo', v)} />
+          <Campo label={t.adpTodosDeAcuerdo} requerido>
+            <SiNo value={form.todosDeAcuerdo} onChange={(v) => set('todosDeAcuerdo', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
-          <Campo label="¿Algún integrante tiene alergia a los animales?" requerido>
-            <SiNo value={form.alergias} onChange={(v) => set('alergias', v)} />
+          <Campo label={t.adpAlergias} requerido>
+            <SiNo value={form.alergias} onChange={(v) => set('alergias', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
         </Seccion>
 
         {/* ══ 4. EXPERIENCIA CON MASCOTAS ══════════════════════════════ */}
-        <Seccion n={4} icon={Dog} titulo="Tu experiencia con mascotas">
+        <Seccion n={4} icon={Dog} titulo={t.adpSec4}>
 
-          <Campo label="¿Tenés mascotas actualmente?" requerido>
-            <SiNo value={form.mascotasActuales} onChange={(v) => set('mascotasActuales', v)} />
+          <Campo label={t.adpMascotasActuales} requerido>
+            <SiNo value={form.mascotasActuales} onChange={(v) => set('mascotasActuales', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
           {form.mascotasActuales === 'si' && (<>
-            <Campo label="¿Cuáles y cuántas?" requerido hint="tipo, raza y cantidad">
+            <Campo label={t.adpCualesYCuantas} requerido hint={t.adpCualesHint}>
               <input type="text" className="field"
                 placeholder="2 gatos domésticos, 1 perro labrador de 5 años…"
                 value={form.detalleMascotas}
                 onChange={(e) => set('detalleMascotas', e.target.value)} />
             </Campo>
-            <Campo label="¿Están vacunadas y castradas?" requerido>
+            <Campo label={t.adpVacunadasCastradas} requerido>
               <Chips
                 opciones={[
-                  { value: 'si',      label: 'Sí, todas' },
-                  { value: 'algunas', label: 'Algunas' },
-                  { value: 'no',      label: 'No' },
+                  { value: 'si',      label: t.adpSiTodas },
+                  { value: 'algunas', label: t.adpAlgunas },
+                  { value: 'no',      label: t.adpNo },
                 ]}
                 value={form.mascotasVacunadas}
                 onChange={(v) => set('mascotasVacunadas', v)}
@@ -485,12 +475,13 @@ export default function AdoptarPage() {
             </Campo>
           </>)}
 
-          <Campo label="¿Tuviste mascotas anteriormente?" requerido>
-            <SiNo value={form.mascotasAnteriores} onChange={(v) => set('mascotasAnteriores', v)} />
+          <Campo label={t.adpMascotasAnteriores} requerido>
+            <SiNo value={form.mascotasAnteriores} onChange={(v) => set('mascotasAnteriores', v)}
+              labelSi={t.adpSi} labelNo={t.adpNo} />
           </Campo>
 
           {form.mascotasAnteriores === 'si' && (
-            <Campo label="¿Qué pasó con ellas?" requerido>
+            <Campo label={t.adpQuePaso} requerido>
               <textarea className="field min-h-[80px] resize-none"
                 placeholder="Murieron de viejas, las di en adopción, se escaparon…"
                 value={form.quePasoConEllas}
@@ -498,14 +489,14 @@ export default function AdoptarPage() {
             </Campo>
           )}
 
-          <Campo label="¿Cuántas horas por día estaría solo el perro?" requerido>
+          <Campo label={t.adpHorasSolo} requerido>
             <Chips
               opciones={[
-                { value: '0-2', label: 'Menos de 2 hs' },
-                { value: '2-4', label: '2 a 4 hs' },
-                { value: '4-6', label: '4 a 6 hs' },
-                { value: '6-8', label: '6 a 8 hs' },
-                { value: '+8',  label: 'Más de 8 hs' },
+                { value: '0-2', label: t.adpMenos2 },
+                { value: '2-4', label: t.adp2a4 },
+                { value: '4-6', label: t.adp4a6 },
+                { value: '6-8', label: t.adp6a8 },
+                { value: '+8',  label: t.adpMas8 },
               ]}
               value={form.horasSolo}
               onChange={(v) => set('horasSolo', v)}
@@ -515,47 +506,46 @@ export default function AdoptarPage() {
         </Seccion>
 
         {/* ══ 5. EL PERRO QUE BUSCÁS ═══════════════════════════════════ */}
-        <Seccion n={5} icon={Search} titulo="¿Qué perro buscás?"
-          subtitulo="Nos ayuda a encontrar la mejor coincidencia para vos y para el perro.">
+        <Seccion n={5} icon={Search} titulo={t.adpSec5} subtitulo={t.adpSec5Sub}>
 
-          <Campo label="Tamaño preferido" requerido>
+          <Campo label={t.adpTamanoPreferido} requerido>
             <Chips
               opciones={[
-                { value: 'chico',           label: 'Chico' },
-                { value: 'mediano',         label: 'Mediano' },
-                { value: 'grande',          label: 'Grande' },
-                { value: 'sin_preferencia', label: 'Sin preferencia' },
+                { value: 'chico',           label: t.adpChico },
+                { value: 'mediano',         label: t.adpMediano },
+                { value: 'grande',          label: t.adpGrande },
+                { value: 'sin_preferencia', label: t.adpSinPref },
               ]}
               value={form.tamanoPreferido}
               onChange={(v) => set('tamanoPreferido', v)}
             />
           </Campo>
 
-          <Campo label="Edad preferida" requerido>
+          <Campo label={t.adpEdadPreferida} requerido>
             <Chips
               opciones={[
-                { value: 'cachorro',        label: 'Cachorro' },
-                { value: 'joven',           label: 'Joven' },
-                { value: 'adulto',          label: 'Adulto' },
-                { value: 'mayor',           label: 'Mayor' },
-                { value: 'sin_preferencia', label: 'Sin preferencia' },
+                { value: 'cachorro',        label: t.adpCachorro },
+                { value: 'joven',           label: t.adpJoven },
+                { value: 'adulto',          label: t.adpAdulto },
+                { value: 'mayor',           label: t.adpMayor },
+                { value: 'sin_preferencia', label: t.adpSinPref },
               ]}
               value={form.edadPreferida}
               onChange={(v) => set('edadPreferida', v)}
             />
           </Campo>
 
-          <Campo label="¿Tenés algún perro en mente?" hint="opcional">
+          <Campo label={t.adpPerroEnMente} hint={t.adpPerroEnMenteHint}>
             <input type="text" className="field"
-              placeholder="Nombre o descripción del perro que te interesa"
+              placeholder={t.adpPerroEnMentePh}
               value={form.perroEnMente}
               onChange={(e) => set('perroEnMente', e.target.value)} />
           </Campo>
 
-          <Campo label="¿Por qué querés adoptar un perro?" requerido>
+          <Campo label={t.adpMotivacion} requerido>
             <textarea
               className="field min-h-[130px] resize-none"
-              placeholder="Contanos tu motivación, tu estilo de vida, cuánto tiempo le podés dedicar, qué esperás de la convivencia…"
+              placeholder={t.adpMotivacionPh}
               value={form.motivacion}
               onChange={(e) => set('motivacion', e.target.value)}
             />
@@ -564,28 +554,15 @@ export default function AdoptarPage() {
         </Seccion>
 
         {/* ══ 6. COMPROMISOS ═══════════════════════════════════════════ */}
-        <Seccion n={6} icon={ClipboardList} titulo="Compromisos"
-          subtitulo="Para garantizar el bienestar del perro necesitamos que aceptes los siguientes puntos. Todos son obligatorios.">
+        <Seccion n={6} icon={ClipboardList} titulo={t.adpSec6} subtitulo={t.adpSec6Sub}>
 
           <div className="space-y-3">
             {([
-              {
-                key:   'compromisoVeterinario' as const,
-                texto: 'Me comprometo a proveer atención veterinaria regular: vacunas anuales, desparasitación y controles de salud.',
-              },
-              {
-                key:   'compromisoVisita' as const,
-                texto: 'Acepto que se realice una visita previa al hogar antes de confirmar la adopción.',
-              },
-              {
-                key:   'compromisoDevolucion' as const,
-                texto: 'Si por alguna razón no puedo conservar al perro, me comprometo a devolverlo a la organización y no darlo a terceros sin aviso previo.',
-              },
-              {
-                key:   'compromisoEsterilizacion' as const,
-                texto: 'Me comprometo a esterilizar al perro si aún no lo está, en los plazos recomendados por el veterinario.',
-              },
-            ] as const).map(({ key, texto }) => (
+              { key: 'compromisoVeterinario' as const, texto: t.adpComp1 },
+              { key: 'compromisoVisita'      as const, texto: t.adpComp2 },
+              { key: 'compromisoDevolucion'  as const, texto: t.adpComp3 },
+              { key: 'compromisoEsterilizacion' as const, texto: t.adpComp4 },
+            ]).map(({ key, texto }) => (
               <label
                 key={key}
                 className={`flex cursor-pointer items-start gap-3 rounded-2xl p-4 ring-1 transition ${
@@ -610,9 +587,9 @@ export default function AdoptarPage() {
         {/* ══ SUBMIT ═══════════════════════════════════════════════════ */}
         <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
           {loading ? (
-            <><Loader2 className="h-5 w-5 animate-spin" /> Enviando…</>
+            <><Loader2 className="h-5 w-5 animate-spin" /> {t.adpEnviando}</>
           ) : (
-            <><Heart className="h-5 w-5" /> Enviar solicitud de adopción</>
+            <><Heart className="h-5 w-5" /> {t.adpEnviar}</>
           )}
         </button>
 

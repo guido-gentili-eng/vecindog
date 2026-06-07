@@ -102,17 +102,87 @@ export default function MiComercioPage() {
 
   if (!comercio) {
     return (
-      <div className="min-h-screen bg-[#f5f0eb] py-12 px-4">
-        <div className="mx-auto max-w-md text-center">
-          <Store className="mx-auto mb-4 h-14 w-14 text-ink-muted/30" />
-          <h1 className="font-display text-2xl font-black text-ink">{t.mcomSinComercioTitle}</h1>
-          <p className="mt-2 text-sm text-ink-muted">{t.mcomSinComercioSub}</p>
-          <Link
-            href="/red-vecindog"
-            className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-brand-primary px-6 py-3 font-bold text-white"
-          >
-            <Store className="h-4 w-4" /> {t.mcomRegistrar}
-          </Link>
+      <div className="min-h-screen bg-[#f5f0eb] py-8 px-4">
+        <div className="mx-auto max-w-xl space-y-5">
+
+          <div className="flex items-center justify-between">
+            <Link href="/mi-perfil" className="inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
+              <ArrowLeft className="h-4 w-4" /> {t.mcomVolver}
+            </Link>
+          </div>
+
+          {/* Banner CTA */}
+          <div className="rounded-[24px] bg-brand-primary px-6 py-6 text-white text-center">
+            <Store className="mx-auto mb-3 h-10 w-10 opacity-90" />
+            <h1 className="font-display text-xl font-black">{t.mcomSinComercioTitle}</h1>
+            <p className="mt-1.5 text-sm opacity-80">{t.mcomSinComercioSub}</p>
+            <Link
+              href="/red-vecindog"
+              className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-bold text-brand-primary shadow"
+            >
+              <Store className="h-4 w-4" /> {t.mcomRegistrar}
+            </Link>
+          </div>
+
+          {/* Preview: tarjeta de comercio */}
+          <div className="rounded-[24px] bg-white border border-black/5 overflow-hidden opacity-50 pointer-events-none select-none">
+            <div className="h-28 w-full bg-gradient-to-r from-brand-primary/20 to-brand-primary/10" />
+            <div className="px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="h-5 w-40 rounded-full bg-ink/10 mb-2" />
+                  <div className="h-3 w-24 rounded-full bg-ink/5" />
+                </div>
+                <span className="shrink-0 rounded-full px-3 py-1 text-xs font-bold bg-good/15 text-good">
+                  {t.mcomActivo}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-[#f5f0eb] px-4 py-3">
+                  <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">{t.mcomReviews}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Star className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
+                    <span className="font-bold text-ink">4.8</span>
+                    <span className="text-xs text-ink-muted">(12)</span>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-[#f5f0eb] px-4 py-3">
+                  <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">{t.mcomVence}</p>
+                  <p className="mt-1 font-bold text-ink">31/12/2025</p>
+                </div>
+              </div>
+              <div className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary/20 px-4 py-3 text-sm font-bold text-brand-primary">
+                <Edit3 className="h-4 w-4" /> {t.mcomEditar}
+              </div>
+            </div>
+          </div>
+
+          {/* Preview: novedades */}
+          <div className="rounded-[20px] bg-white border border-black/5 overflow-hidden opacity-50 pointer-events-none select-none">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
+              <div className="flex items-center gap-2">
+                <Megaphone className="h-4 w-4 text-brand-primary" />
+                <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">{t.mcomNovedadesTitle}</h2>
+              </div>
+              <div className="inline-flex items-center gap-1 rounded-2xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+                <Plus className="h-3.5 w-3.5" /> {t.mcomNueva}
+              </div>
+            </div>
+            <div className="divide-y divide-black/5">
+              {[1, 2].map((i) => (
+                <div key={i} className="flex items-start gap-3 px-5 py-3">
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-32 rounded-full bg-ink/10" />
+                    <div className="h-2.5 w-48 rounded-full bg-ink/5" />
+                  </div>
+                  <div className="rounded-xl p-1.5 text-ink-muted/20">
+                    <Trash2 className="h-4 w-4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     );

@@ -13,6 +13,7 @@ import {
   obtenerPost, resolverPost, encontrarPost, renovarPost, eliminarPost, actualizarZonaPost, type Post,
 } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import PhotoGallery from '@/components/PhotoGallery';
 import ContactBlock from '@/components/ContactBlock';
@@ -34,20 +35,6 @@ const COLOR_CATEGORIA: Record<string, string> = {
   adopcion:   'bg-adopt text-[#5b3a0e]',
 };
 
-/** Texto del botón "resuelto" según categoría */
-const LABEL_RESUELTO: Record<string, string> = {
-  perdido:    'Lo encontré',
-  encontrado: 'El dueño lo reclamó',
-  adopcion:   'Ya fue adoptado',
-};
-
-/** Texto del botón "renovar" según categoría */
-const LABEL_RENOVAR: Record<string, string> = {
-  perdido:    'Lo sigo buscando',
-  encontrado: 'Sigue sin dueño',
-  adopcion:   'Sigue en adopción',
-};
-
 /* ──────────── Página ──────────── */
 
 export default function DetalleAvisoPage() {
@@ -55,6 +42,7 @@ export default function DetalleAvisoPage() {
   const router    = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, ciudad }  = useAuth();
+  const { t } = useLanguage();
 
   const [post,        setPost]        = useState<Post | null>(null);
   const [cargando,    setCargando]    = useState(true);
@@ -147,9 +135,9 @@ export default function DetalleAvisoPage() {
     return (
       <div className="py-12 text-center">
         <AlertCircle className="mx-auto h-8 w-8 text-bad" />
-        <p className="mt-3 font-bold text-ink">Aviso no encontrado</p>
+        <p className="mt-3 font-bold text-ink">{t.pubNotFound}</p>
         <Link href="/publicaciones" className="btn-primary mt-4 inline-flex">
-          Volver a los avisos
+          {t.pubBackToList}
         </Link>
       </div>
     );
@@ -159,6 +147,17 @@ export default function DetalleAvisoPage() {
   const isAdmin   = !!user && user.email === ADMIN_EMAIL;
   const canManage = isOwner || isAdmin;
   const resuelto  = post.estado === 'resuelto';
+
+  const LABEL_RESUELTO: Record<string, string> = {
+    perdido:    t.pubResueltoLost,
+    encontrado: t.pubResueltoFound,
+    adopcion:   t.pubResueltoAdopcion,
+  };
+  const LABEL_RENOVAR: Record<string, string> = {
+    perdido:    t.pubRenovarBuscar,
+    encontrado: t.pubRenovarEncontrado,
+    adopcion:   t.pubRenovarAdopcion,
+  };
 
   const waNumero = (post.contacto ?? '').replace(/[^0-9]/g, '');
   const waTexto  = encodeURIComponent(
@@ -171,10 +170,10 @@ export default function DetalleAvisoPage() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
       await renovarPost(post!.id);
-      setMsgOk('¡Aviso renovado! Aparece primero en la lista.');
+      setMsgOk(t.pubRenovarOk);
       setConfirmBorrar(false); setConfirmResuelto(false);
     } catch {
-      setMsgErr('No se pudo renovar el aviso.');
+      setMsgErr(t.pubRenovarErr);
     } finally {
       setAccionando(false);
     }
@@ -194,7 +193,7 @@ export default function DetalleAvisoPage() {
         router.push('/mis-perros?resuelto=1');
       }
     } catch {
-      setMsgErr('No se pudo actualizar el aviso.');
+      setMsgErr(t.pubUpdateErr);
     } finally {
       setAccionando(false);
     }
@@ -206,7 +205,7 @@ export default function DetalleAvisoPage() {
       await eliminarPost(post!.id, post!.images);
       router.push('/publicaciones');
     } catch {
-      setMsgErr('No se pudo borrar el aviso.');
+      setMsgErr(t.pubDeleteErr);
       setAccionando(false);
     }
   }
@@ -280,7 +279,7 @@ export default function DetalleAvisoPage() {
       }
       setLoViEnviado(true);
     } catch {
-      setLoViError('No se pudo enviar. Intentá de nuevo.');
+      setLoViError(t.pubLoViSendError);
     } finally {
       setLoViLoading(false);
     }
@@ -327,7 +326,7 @@ export default function DetalleAvisoPage() {
         href="/publicaciones"
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
       >
-        <ArrowLeft className="h-4 w-4" /> Volver a los avisos
+        <ArrowLeft className="h-4 w-4" /> {t.pubBack}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -349,17 +348,17 @@ export default function DetalleAvisoPage() {
                 <Dog className="h-3 w-3" /> {ETIQUETA_ESPECIE[post.especie as keyof typeof ETIQUETA_ESPECIE] ?? post.especie}
               </span>
               <span className={`badge ${resuelto ? 'bg-black/10 text-ink-muted' : 'bg-good/10 text-good'}`}>
-                <BadgeCheck className="h-3 w-3" /> {resuelto ? 'Resuelto' : 'Aviso activo'}
+                <BadgeCheck className="h-3 w-3" /> {resuelto ? t.pubResuelto : t.pubActivo}
               </span>
             </div>
 
             <div className="mt-3 flex items-start justify-between gap-3">
               <h1 className="font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-                {post.nombre ?? 'Perro sin nombre'}
+                {post.nombre ?? t.pubSinNombre}
               </h1>
               <button type="button" onClick={handleShare}
                 className="shrink-0 mt-1 grid h-9 w-9 place-items-center rounded-2xl bg-brand-cream text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
-                title="Compartir aviso">
+                title={t.pubShare}>
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
@@ -378,7 +377,7 @@ export default function DetalleAvisoPage() {
             </div>
 
             <h2 className="mt-6 font-display text-sm font-extrabold uppercase tracking-wide text-ink">
-              Descripción
+              {t.pubDescripcion}
             </h2>
             <p className="mt-2 whitespace-pre-line text-base leading-relaxed text-ink">
               {post.descripcion}
@@ -398,14 +397,14 @@ export default function DetalleAvisoPage() {
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-4 text-base font-bold text-white transition hover:opacity-90 active:scale-[0.99]"
                 >
                   <Eye className="h-5 w-5" />
-                  {post.categoria === 'encontrado' ? 'Yo también lo vi' : 'Lo vi'}
+                  {post.categoria === 'encontrado' ? t.pubLoViTambien : t.pubLoVi}
                 </button>
               )}
 
               {loViOpen && !loViEnviado && (
                 <div className="p-4 space-y-3">
                   <p className="text-sm font-extrabold text-ink flex items-center gap-1.5">
-                    <Eye className="h-4 w-4 text-brand-primary shrink-0" /> ¿Dónde y cuándo lo viste?
+                    <Eye className="h-4 w-4 text-brand-primary shrink-0" /> {t.pubLoViQuestion}
                   </p>
 
                   {/* ── Mismo lugar ── */}
@@ -415,18 +414,18 @@ export default function DetalleAvisoPage() {
                       onClick={() => setLoViMismoLugar(true)}
                       className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-black/15 bg-black/5 px-3 py-3 text-sm font-bold text-ink transition hover:bg-black/8"
                     >
-                      <MapPin className="h-4 w-4 text-brand-primary" /> En el mismo lugar
+                      <MapPin className="h-4 w-4 text-brand-primary" /> {t.pubLoViSamePlace}
                     </button>
                   )}
 
                   {loViMismoLugar && (
                     <div className="flex items-center justify-between rounded-2xl bg-brand-primary/8 px-3 py-2.5 ring-1 ring-brand-primary/20">
                       <div className="flex items-center gap-2 text-sm font-bold text-brand-primary">
-                        <MapPin className="h-4 w-4 shrink-0" /> Mismo lugar que el aviso
+                        <MapPin className="h-4 w-4 shrink-0" /> {t.pubLoViSamePlaceSelected}
                       </div>
                       <button type="button"
                         onClick={() => setLoViMismoLugar(false)}
-                        className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                        className="text-xs text-ink-muted hover:text-bad transition">{t.pubLoViChange}</button>
                     </div>
                   )}
 
@@ -435,27 +434,27 @@ export default function DetalleAvisoPage() {
                     loViGps === 'ok' ? (
                       <div className="flex items-center justify-between rounded-2xl bg-good/10 px-3 py-2.5 ring-1 ring-good/20">
                         <div className="flex items-center gap-2 text-sm font-bold text-good">
-                          <CheckCheck className="h-4 w-4 shrink-0" /> Ubicación GPS capturada
+                          <CheckCheck className="h-4 w-4 shrink-0" /> {t.pubLoViGpsOk}
                         </div>
                         <button type="button"
                           onClick={() => { setLoViGps('idle'); setLoViManual(true); setLoViLat(null); setLoViLng(null); setLoViShowMap(false); }}
-                          className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+                          className="text-xs text-ink-muted hover:text-bad transition">{t.pubLoViChange}</button>
                       </div>
                     ) : loViGps === 'cargando' ? (
                       <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-3">
                         <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
-                        <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+                        <span className="text-sm font-bold text-brand-primary">{t.pubLoViGpsLoading}</span>
                       </div>
                     ) : !loViManual ? (
                       <div className="space-y-2">
                         <button type="button" onClick={capturarGpsLoVi}
                           className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-3 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10">
                           <Navigation className="h-4 w-4" />
-                          {loViGps === 'error' ? 'No se pudo obtener GPS — reintentar' : 'Usar mi ubicación GPS'}
+                          {loViGps === 'error' ? t.pubLoViGpsRetry : t.pubLoViGpsBtn}
                         </button>
                         <button type="button" onClick={() => setLoViManual(true)}
                           className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
-                          Escribir dirección manual
+                          {t.pubLoViManual}
                         </button>
                       </div>
                     ) : null
@@ -465,7 +464,7 @@ export default function DetalleAvisoPage() {
                   {(loViManual || loViGps === 'ok') && (
                     <div>
                       <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">
-                        {loViGps === 'ok' ? 'Confirmá o ajustá la dirección' : 'Calle / zona'}
+                        {loViGps === 'ok' ? t.pubLoViConfirmAddr : t.pubLoViAddrLabel}
                       </label>
                       <AddressAutocomplete
                         value={loViCalle}
@@ -493,17 +492,17 @@ export default function DetalleAvisoPage() {
                   {/* Hora */}
                   {(loViMismoLugar || loViManual || loViGps === 'ok') && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">¿Cuándo lo viste?</label>
+                      <label className="text-xs font-bold uppercase tracking-wide text-ink-muted">{t.pubLoViWhen}</label>
                       <div className="flex gap-2">
                         <button type="button"
                           onClick={() => setLoViFecha('hoy')}
                           className={`flex-1 rounded-xl border-2 py-2 text-sm font-bold transition ${loViFecha === 'hoy' ? 'border-brand-primary bg-brand-primary/8 text-brand-primary' : 'border-black/15 text-ink-muted hover:border-brand-primary/40'}`}>
-                          Hoy
+                          {t.pubLoViToday}
                         </button>
                         <button type="button"
                           onClick={() => setLoViFecha('otro')}
                           className={`flex-1 rounded-xl border-2 py-2 text-sm font-bold transition ${loViFecha === 'otro' ? 'border-brand-primary bg-brand-primary/8 text-brand-primary' : 'border-black/15 text-ink-muted hover:border-brand-primary/40'}`}>
-                          Otro día
+                          {t.pubLoViOtherDay}
                         </button>
                       </div>
                       {loViFecha === 'otro' && (
@@ -516,7 +515,7 @@ export default function DetalleAvisoPage() {
                         />
                       )}
                       <label className="text-xs font-bold uppercase tracking-wide text-ink-muted flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Hora aproximada
+                        <Clock className="h-3 w-3" /> {t.pubLoViTimeLabel}
                       </label>
                       <input
                         type="time"
@@ -541,7 +540,7 @@ export default function DetalleAvisoPage() {
                       >
                         {loViLoading
                           ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <><SendHorizonal className="h-4 w-4" /> Enviar aviso</>
+                          : <><SendHorizonal className="h-4 w-4" /> {t.pubLoViSend}</>
                         }
                       </button>
                       <button
@@ -549,7 +548,7 @@ export default function DetalleAvisoPage() {
                         onClick={() => { setLoViOpen(false); setLoViError(''); setLoViMismoLugar(false); }}
                         className="rounded-xl bg-black/8 px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-black/12"
                       >
-                        Cancelar
+                        {t.pubLoViCancel}
                       </button>
                     </div>
                   )}
@@ -561,7 +560,7 @@ export default function DetalleAvisoPage() {
                   <div className="flex items-center gap-2 text-good">
                     <CheckCircle2 className="h-5 w-5 shrink-0" />
                     <p className="text-sm font-bold">
-                      {post.categoria === 'encontrado' ? '¡Ubicación actualizada en el mapa!' : '¡Aviso enviado al dueño!'}
+                      {post.categoria === 'encontrado' ? t.pubLoViSuccessMap : t.pubLoViSuccessOwner}
                     </p>
                   </div>
                   <button
@@ -569,7 +568,7 @@ export default function DetalleAvisoPage() {
                     onClick={resetLoVi}
                     className="text-xs font-bold text-brand-primary hover:underline"
                   >
-                    Reportar otro avistamiento
+                    {t.pubLoViReportAnother}
                   </button>
                 </div>
               )}
@@ -582,7 +581,7 @@ export default function DetalleAvisoPage() {
               onClick={() => setAdoptarOpen(true)}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-brand-gold to-brand-gold-dark py-4 text-base font-bold text-[#5b3a0e] shadow-soft transition hover:opacity-90"
             >
-              <Heart className="h-5 w-5" /> Quiero adoptarlo
+              <Heart className="h-5 w-5" /> {t.pubAdoptBtn}
             </button>
           )}
 
@@ -612,7 +611,7 @@ export default function DetalleAvisoPage() {
                   : <Dog className="h-4 w-4 shrink-0 text-brand-primary" />
                 }
                 <span className="flex-1 font-display text-sm font-extrabold text-ink">
-                  {isAdmin && !isOwner ? 'Panel de administrador' : 'Gestionar mi aviso'}
+                  {isAdmin && !isOwner ? t.pubAdminPanel : t.pubManagePanel}
                 </span>
                 {panelAbierto
                   ? <ChevronUp className="h-4 w-4 text-ink-muted" />
@@ -644,8 +643,8 @@ export default function DetalleAvisoPage() {
                       className="flex w-full items-center gap-2 rounded-xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-2.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 disabled:opacity-60"
                     >
                       <RefreshCw className={`h-4 w-4 shrink-0 ${accionando ? 'animate-spin' : ''}`} />
-                      {LABEL_RENOVAR[post.categoria] ?? 'Renovar aviso'}
-                      <span className="ml-auto text-[10px] font-normal text-brand-primary/60">Sube el aviso al tope</span>
+                      {LABEL_RENOVAR[post.categoria] ?? t.pubRenovarDefault}
+                      <span className="ml-auto text-[10px] font-normal text-brand-primary/60">{t.pubRenovarHint}</span>
                     </button>
                   )}
 
@@ -659,8 +658,8 @@ export default function DetalleAvisoPage() {
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0" />
                       {isAdmin && !isOwner
-                        ? 'El dueño lo encontró'
-                        : LABEL_RESUELTO[post.categoria] ?? 'Marcar como resuelto'}
+                        ? t.pubAdminResuelto
+                        : LABEL_RESUELTO[post.categoria] ?? t.pubResueltoDefault}
                     </button>
                   )}
 
@@ -669,13 +668,13 @@ export default function DetalleAvisoPage() {
                     <div className="rounded-xl bg-good/8 p-3">
                       <p className="text-xs font-bold text-ink">
                         {post.categoria === 'perdido'
-                          ? '¿Confirmás que lo encontraste? El aviso va a pasar al filtro verde de Vistos.'
-                          : '¿Confirmás que el aviso se resolvió? Se va a ocultar de la lista.'}
+                          ? t.pubConfirmResueltoPerdido
+                          : t.pubConfirmResueltoOther}
                       </p>
                       <p className="mt-1 text-[11px] text-ink-muted">
                         {post.categoria === 'perdido'
-                          ? 'Vas a poder marcarlo como "Volvió a casa" desde ahí cuando el dueño lo reclame.'
-                          : <>El perfil del perro en Mis Perros <strong>no se borra</strong>.</>}
+                          ? t.pubConfirmResueltoPerdidoSub
+                          : <><strong>{t.pubConfirmResueltoOtherSub}</strong></>}
                       </p>
                       <div className="mt-2 flex gap-2">
                         <button
@@ -684,14 +683,14 @@ export default function DetalleAvisoPage() {
                           onClick={handleResuelto}
                           className="flex-1 rounded-xl bg-good px-3 py-2 text-xs font-extrabold text-white transition hover:bg-good/90 disabled:opacity-60"
                         >
-                          {accionando ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Sí, confirmar'}
+                          {accionando ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : t.pubConfirm}
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmResuelto(false)}
                           className="flex-1 rounded-xl bg-black/8 px-3 py-2 text-xs font-bold text-ink transition hover:bg-black/12"
                         >
-                          Cancelar
+                          {t.pubCancel}
                         </button>
                       </div>
                     </div>
@@ -708,7 +707,7 @@ export default function DetalleAvisoPage() {
                         className="flex w-full items-center gap-2 rounded-xl border-2 border-bad/25 bg-bad/5 px-3 py-2.5 text-sm font-bold text-bad transition hover:bg-bad/10 disabled:opacity-60"
                       >
                         <Trash2 className="h-4 w-4 shrink-0" />
-                        Borrar publicación
+                        {t.pubDeleteBtn}
                       </button>
                     )}
 
@@ -716,7 +715,7 @@ export default function DetalleAvisoPage() {
                     {confirmBorrar && (
                       <div className="rounded-xl bg-bad/8 p-3">
                         <p className="text-xs font-bold text-ink">
-                          ¿Seguro que querés borrar este aviso? Esta acción no se puede deshacer.
+                          {t.pubDeleteConfirm}
                         </p>
                         <div className="mt-2 flex gap-2">
                           <button
@@ -725,14 +724,14 @@ export default function DetalleAvisoPage() {
                             onClick={handleBorrar}
                             className="flex-1 rounded-xl bg-bad px-3 py-2 text-xs font-extrabold text-white transition hover:bg-bad/90 disabled:opacity-60"
                           >
-                            {accionando ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Sí, borrar'}
+                            {accionando ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : t.pubDeleteConfirmBtn}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmBorrar(false)}
                             className="flex-1 rounded-xl bg-black/8 px-3 py-2 text-xs font-bold text-ink transition hover:bg-black/12"
                           >
-                            Cancelar
+                            {t.pubCancel}
                           </button>
                         </div>
                       </div>
@@ -747,24 +746,24 @@ export default function DetalleAvisoPage() {
 
           <div className="card p-6">
             <h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink">
-              Estado del aviso
+              {t.pubStatusTitle}
             </h2>
             <dl className="mt-3 space-y-2 text-sm">
-              <Row label="Tipo"      value={ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} />
+              <Row label={t.pubStatusTipo}      value={ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} />
               {isAuthenticated
-                ? <Row label="Zona" value={post.zona} />
+                ? <Row label={t.pubStatusZona} value={post.zona} />
                 : <div className="flex items-center justify-between gap-3 border-b border-black/5 pb-2">
-                    <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">Zona</dt>
+                    <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">{t.pubStatusZona}</dt>
                     <dd className="flex items-center gap-1 text-xs font-bold text-ink-muted">
-                      <Lock className="h-3 w-3" /> Solo usuarios registrados
+                      <Lock className="h-3 w-3" /> {t.pubStatusLocked}
                     </dd>
                   </div>
               }
-              <Row label="Publicado" value={post.fecha} />
-              {post.horario && <Row label="Horario" value={post.horario} />}
+              <Row label={t.pubStatusPublicado} value={post.fecha} />
+              {post.horario && <Row label={t.pubStatusHorario} value={post.horario} />}
               <Row
-                label="Estado"
-                value={resuelto ? 'Resuelto' : 'Activo'}
+                label={t.pubStatusEstado}
+                value={resuelto ? t.pubStatusResuelto : t.pubStatusActivo}
                 tone={resuelto ? 'text-ink-muted' : 'text-good'}
               />
             </dl>
@@ -790,7 +789,7 @@ export default function DetalleAvisoPage() {
               rel="noopener noreferrer"
               className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white"
             >
-              <MessageCircle className="h-4 w-4" /> Contactar por WhatsApp
+              <MessageCircle className="h-4 w-4" /> {t.pubWaBtn}
             </a>
             <button type="button" onClick={handleShare}
               className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-cream text-ink-muted">
@@ -814,12 +813,13 @@ function Row({ label, value, tone = '' }: { label: string; value: string; tone?:
 
 /* ── Reportar aviso ── */
 function ReportarAvisoButton({ postId }: { postId: string }) {
+  const { t } = useLanguage();
   const [open,     setOpen]     = useState(false);
   const [motivo,   setMotivo]   = useState('');
   const [enviando, setEnviando] = useState(false);
   const [enviado,  setEnviado]  = useState(false);
 
-  const MOTIVOS = ['Spam o publicidad', 'Contenido falso o engañoso', 'Información incorrecta', 'Duplicado', 'Otro'];
+  const MOTIVOS = [t.pubReportSpam, t.pubReportFalso, t.pubReportIncorrecto, t.pubReportDuplicado, t.pubReportOtro];
 
   async function handleReportar() {
     if (!motivo || enviando) return;
@@ -842,7 +842,7 @@ function ReportarAvisoButton({ postId }: { postId: string }) {
   return (
     <div className="mt-6 text-center">
       <button onClick={() => setOpen(true)} className="text-xs text-ink-muted/50 hover:text-ink-muted underline underline-offset-2">
-        Reportar este aviso
+        {t.pubReportBtn}
       </button>
 
       {open && (
@@ -852,11 +852,11 @@ function ReportarAvisoButton({ postId }: { postId: string }) {
             {enviado ? (
               <div className="py-4 text-center">
                 <CheckCircle2 className="mx-auto mb-3 h-12 w-12 text-[#3F8B5C]" />
-                <p className="font-bold text-ink">Reporte enviado. Gracias.</p>
+                <p className="font-bold text-ink">{t.pubReportSent}</p>
               </div>
             ) : (
               <>
-                <h2 className="mb-4 font-display text-xl font-black text-ink">Reportar aviso</h2>
+                <h2 className="mb-4 font-display text-xl font-black text-ink">{t.pubReportTitle}</h2>
                 <div className="space-y-2 mb-4">
                   {MOTIVOS.map((m) => (
                     <button
@@ -875,7 +875,7 @@ function ReportarAvisoButton({ postId }: { postId: string }) {
                   disabled={!motivo || enviando}
                   className="w-full rounded-2xl bg-bad py-3 text-sm font-bold text-white disabled:opacity-40"
                 >
-                  {enviando ? 'Enviando...' : 'Enviar reporte'}
+                  {enviando ? t.pubReportSending : t.pubReportSend}
                 </button>
               </>
             )}

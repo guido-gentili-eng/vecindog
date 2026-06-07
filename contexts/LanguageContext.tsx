@@ -418,6 +418,84 @@ export type Translations = {
   calcFormula: string;
   calcEmpty: string;
   calcNote: string;
+  // ── Publicacion detalle page ──────────────────────────
+  pubBack: string;
+  pubNotFound: string;
+  pubBackToList: string;
+  pubDescripcion: string;
+  pubResuelto: string;
+  pubActivo: string;
+  pubSinNombre: string;
+  pubShare: string;
+  pubLoVi: string;
+  pubLoViTambien: string;
+  pubLoViQuestion: string;
+  pubLoViSamePlace: string;
+  pubLoViSamePlaceSelected: string;
+  pubLoViChange: string;
+  pubLoViGpsOk: string;
+  pubLoViGpsLoading: string;
+  pubLoViGpsBtn: string;
+  pubLoViGpsRetry: string;
+  pubLoViManual: string;
+  pubLoViConfirmAddr: string;
+  pubLoViAddrLabel: string;
+  pubLoViWhen: string;
+  pubLoViToday: string;
+  pubLoViOtherDay: string;
+  pubLoViTimeLabel: string;
+  pubLoViSend: string;
+  pubLoViCancel: string;
+  pubLoViSuccessMap: string;
+  pubLoViSuccessOwner: string;
+  pubLoViReportAnother: string;
+  pubLoViSendError: string;
+  pubAdoptBtn: string;
+  pubAdminPanel: string;
+  pubManagePanel: string;
+  pubRenovarBuscar: string;
+  pubRenovarEncontrado: string;
+  pubRenovarAdopcion: string;
+  pubRenovarDefault: string;
+  pubRenovarHint: string;
+  pubRenovarOk: string;
+  pubRenovarErr: string;
+  pubAdminResuelto: string;
+  pubResueltoLost: string;
+  pubResueltoFound: string;
+  pubResueltoAdopcion: string;
+  pubResueltoDefault: string;
+  pubConfirmResueltoPerdido: string;
+  pubConfirmResueltoOther: string;
+  pubConfirmResueltoPerdidoSub: string;
+  pubConfirmResueltoOtherSub: string;
+  pubConfirm: string;
+  pubCancel: string;
+  pubDeleteBtn: string;
+  pubDeleteConfirm: string;
+  pubDeleteConfirmBtn: string;
+  pubDeleteErr: string;
+  pubUpdateErr: string;
+  pubStatusTitle: string;
+  pubStatusTipo: string;
+  pubStatusZona: string;
+  pubStatusPublicado: string;
+  pubStatusHorario: string;
+  pubStatusEstado: string;
+  pubStatusLocked: string;
+  pubStatusResuelto: string;
+  pubStatusActivo: string;
+  pubWaBtn: string;
+  pubReportBtn: string;
+  pubReportTitle: string;
+  pubReportSent: string;
+  pubReportSending: string;
+  pubReportSend: string;
+  pubReportSpam: string;
+  pubReportFalso: string;
+  pubReportIncorrecto: string;
+  pubReportDuplicado: string;
+  pubReportOtro: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -836,6 +914,84 @@ const translations: Record<Lang, Translations> = {
     calcFormula: 'Fórmula aplicada para perro',
     calcEmpty: 'Ingresá la edad de tu perro para ver el resultado.',
     calcNote: 'Esta calculadora es orientativa. Para un seguimiento preciso de la salud de tu perro, consultá siempre a tu veterinario de confianza.',
+    // Publicacion detalle
+    pubBack: 'Volver a los avisos',
+    pubNotFound: 'Aviso no encontrado',
+    pubBackToList: 'Volver a los avisos',
+    pubDescripcion: 'Descripción',
+    pubResuelto: 'Resuelto',
+    pubActivo: 'Aviso activo',
+    pubSinNombre: 'Perro sin nombre',
+    pubShare: 'Compartir aviso',
+    pubLoVi: 'Lo vi',
+    pubLoViTambien: 'Yo también lo vi',
+    pubLoViQuestion: '¿Dónde y cuándo lo viste?',
+    pubLoViSamePlace: 'En el mismo lugar',
+    pubLoViSamePlaceSelected: 'Mismo lugar que el aviso',
+    pubLoViChange: 'Cambiar',
+    pubLoViGpsOk: 'Ubicación GPS capturada',
+    pubLoViGpsLoading: 'Obteniendo ubicación…',
+    pubLoViGpsBtn: 'Usar mi ubicación GPS',
+    pubLoViGpsRetry: 'No se pudo obtener GPS — reintentar',
+    pubLoViManual: 'Escribir dirección manual',
+    pubLoViConfirmAddr: 'Confirmá o ajustá la dirección',
+    pubLoViAddrLabel: 'Calle / zona',
+    pubLoViWhen: '¿Cuándo lo viste?',
+    pubLoViToday: 'Hoy',
+    pubLoViOtherDay: 'Otro día',
+    pubLoViTimeLabel: 'Hora aproximada',
+    pubLoViSend: 'Enviar aviso',
+    pubLoViCancel: 'Cancelar',
+    pubLoViSuccessMap: '¡Ubicación actualizada en el mapa!',
+    pubLoViSuccessOwner: '¡Aviso enviado al dueño!',
+    pubLoViReportAnother: 'Reportar otro avistamiento',
+    pubLoViSendError: 'No se pudo enviar. Intentá de nuevo.',
+    pubAdoptBtn: 'Quiero adoptarlo',
+    pubAdminPanel: 'Panel de administrador',
+    pubManagePanel: 'Gestionar mi aviso',
+    pubRenovarBuscar: 'Lo sigo buscando',
+    pubRenovarEncontrado: 'Sigue sin dueño',
+    pubRenovarAdopcion: 'Sigue en adopción',
+    pubRenovarDefault: 'Renovar aviso',
+    pubRenovarHint: 'Sube el aviso al tope',
+    pubRenovarOk: '¡Aviso renovado! Aparece primero en la lista.',
+    pubRenovarErr: 'No se pudo renovar el aviso.',
+    pubAdminResuelto: 'El dueño lo encontró',
+    pubResueltoLost: 'Lo encontré',
+    pubResueltoFound: 'El dueño lo reclamó',
+    pubResueltoAdopcion: 'Ya fue adoptado',
+    pubResueltoDefault: 'Marcar como resuelto',
+    pubConfirmResueltoPerdido: '¿Confirmás que lo encontraste? El aviso va a pasar al filtro verde de Vistos.',
+    pubConfirmResueltoOther: '¿Confirmás que el aviso se resolvió? Se va a ocultar de la lista.',
+    pubConfirmResueltoPerdidoSub: 'Vas a poder marcarlo como "Volvió a casa" desde ahí cuando el dueño lo reclame.',
+    pubConfirmResueltoOtherSub: 'El perfil del perro en Mis Perros no se borra.',
+    pubConfirm: 'Sí, confirmar',
+    pubCancel: 'Cancelar',
+    pubDeleteBtn: 'Borrar publicación',
+    pubDeleteConfirm: '¿Seguro que querés borrar este aviso? Esta acción no se puede deshacer.',
+    pubDeleteConfirmBtn: 'Sí, borrar',
+    pubDeleteErr: 'No se pudo borrar el aviso.',
+    pubUpdateErr: 'No se pudo actualizar el aviso.',
+    pubStatusTitle: 'Estado del aviso',
+    pubStatusTipo: 'Tipo',
+    pubStatusZona: 'Zona',
+    pubStatusPublicado: 'Publicado',
+    pubStatusHorario: 'Horario',
+    pubStatusEstado: 'Estado',
+    pubStatusLocked: 'Solo usuarios registrados',
+    pubStatusResuelto: 'Resuelto',
+    pubStatusActivo: 'Activo',
+    pubWaBtn: 'Contactar por WhatsApp',
+    pubReportBtn: 'Reportar este aviso',
+    pubReportTitle: 'Reportar aviso',
+    pubReportSent: 'Reporte enviado. Gracias.',
+    pubReportSending: 'Enviando...',
+    pubReportSend: 'Enviar reporte',
+    pubReportSpam: 'Spam o publicidad',
+    pubReportFalso: 'Contenido falso o engañoso',
+    pubReportIncorrecto: 'Información incorrecta',
+    pubReportDuplicado: 'Duplicado',
+    pubReportOtro: 'Otro',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1253,6 +1409,84 @@ const translations: Record<Lang, Translations> = {
     calcFormula: 'Formula applied for',
     calcEmpty: 'Enter your dog\'s age to see the result.',
     calcNote: 'This calculator is a guide. For precise health monitoring, always consult your vet.',
+    // Publicacion detalle
+    pubBack: 'Back to listings',
+    pubNotFound: 'Post not found',
+    pubBackToList: 'Back to listings',
+    pubDescripcion: 'Description',
+    pubResuelto: 'Resolved',
+    pubActivo: 'Active post',
+    pubSinNombre: 'Unnamed dog',
+    pubShare: 'Share post',
+    pubLoVi: 'I saw it',
+    pubLoViTambien: 'I saw it too',
+    pubLoViQuestion: 'Where and when did you see it?',
+    pubLoViSamePlace: 'Same location',
+    pubLoViSamePlaceSelected: 'Same place as the post',
+    pubLoViChange: 'Change',
+    pubLoViGpsOk: 'GPS location captured',
+    pubLoViGpsLoading: 'Getting location…',
+    pubLoViGpsBtn: 'Use my GPS location',
+    pubLoViGpsRetry: 'Could not get GPS — retry',
+    pubLoViManual: 'Enter address manually',
+    pubLoViConfirmAddr: 'Confirm or adjust address',
+    pubLoViAddrLabel: 'Street / area',
+    pubLoViWhen: 'When did you see it?',
+    pubLoViToday: 'Today',
+    pubLoViOtherDay: 'Another day',
+    pubLoViTimeLabel: 'Approximate time',
+    pubLoViSend: 'Send report',
+    pubLoViCancel: 'Cancel',
+    pubLoViSuccessMap: 'Location updated on the map!',
+    pubLoViSuccessOwner: 'Report sent to the owner!',
+    pubLoViReportAnother: 'Report another sighting',
+    pubLoViSendError: 'Could not send. Please try again.',
+    pubAdoptBtn: 'I want to adopt',
+    pubAdminPanel: 'Admin panel',
+    pubManagePanel: 'Manage my post',
+    pubRenovarBuscar: 'Still looking',
+    pubRenovarEncontrado: 'Still no owner',
+    pubRenovarAdopcion: 'Still for adoption',
+    pubRenovarDefault: 'Renew post',
+    pubRenovarHint: 'Moves post to the top',
+    pubRenovarOk: 'Post renewed! It now appears first in the list.',
+    pubRenovarErr: 'Could not renew the post.',
+    pubAdminResuelto: 'Owner reclaimed it',
+    pubResueltoLost: 'I found it',
+    pubResueltoFound: 'Owner reclaimed it',
+    pubResueltoAdopcion: 'Already adopted',
+    pubResueltoDefault: 'Mark as resolved',
+    pubConfirmResueltoPerdido: 'Confirm that you found it? The post will move to the green Seen filter.',
+    pubConfirmResueltoOther: 'Confirm that the post is resolved? It will be hidden from the list.',
+    pubConfirmResueltoPerdidoSub: 'You can mark it as "Came home" from there when the owner claims it.',
+    pubConfirmResueltoOtherSub: 'The dog profile in My Dogs will not be deleted.',
+    pubConfirm: 'Yes, confirm',
+    pubCancel: 'Cancel',
+    pubDeleteBtn: 'Delete post',
+    pubDeleteConfirm: 'Are you sure you want to delete this post? This action cannot be undone.',
+    pubDeleteConfirmBtn: 'Yes, delete',
+    pubDeleteErr: 'Could not delete the post.',
+    pubUpdateErr: 'Could not update the post.',
+    pubStatusTitle: 'Post status',
+    pubStatusTipo: 'Type',
+    pubStatusZona: 'Area',
+    pubStatusPublicado: 'Published',
+    pubStatusHorario: 'Time',
+    pubStatusEstado: 'Status',
+    pubStatusLocked: 'Registered users only',
+    pubStatusResuelto: 'Resolved',
+    pubStatusActivo: 'Active',
+    pubWaBtn: 'Contact via WhatsApp',
+    pubReportBtn: 'Report this post',
+    pubReportTitle: 'Report post',
+    pubReportSent: 'Report sent. Thank you.',
+    pubReportSending: 'Sending...',
+    pubReportSend: 'Send report',
+    pubReportSpam: 'Spam or advertising',
+    pubReportFalso: 'False or misleading content',
+    pubReportIncorrecto: 'Incorrect information',
+    pubReportDuplicado: 'Duplicate',
+    pubReportOtro: 'Other',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1670,6 +1904,84 @@ const translations: Record<Lang, Translations> = {
     calcFormula: 'Fórmula aplicada para cão',
     calcEmpty: 'Insira a idade do seu cão para ver o resultado.',
     calcNote: 'Esta calculadora é orientativa. Para acompanhamento preciso da saúde do seu cão, consulte sempre seu veterinário.',
+    // Publicacion detalle
+    pubBack: 'Voltar aos avisos',
+    pubNotFound: 'Aviso não encontrado',
+    pubBackToList: 'Voltar aos avisos',
+    pubDescripcion: 'Descrição',
+    pubResuelto: 'Resolvido',
+    pubActivo: 'Aviso ativo',
+    pubSinNombre: 'Cão sem nome',
+    pubShare: 'Compartilhar aviso',
+    pubLoVi: 'Eu vi',
+    pubLoViTambien: 'Eu também vi',
+    pubLoViQuestion: 'Onde e quando você o viu?',
+    pubLoViSamePlace: 'Mesmo local',
+    pubLoViSamePlaceSelected: 'Mesmo lugar do aviso',
+    pubLoViChange: 'Alterar',
+    pubLoViGpsOk: 'Localização GPS capturada',
+    pubLoViGpsLoading: 'Obtendo localização…',
+    pubLoViGpsBtn: 'Usar minha localização GPS',
+    pubLoViGpsRetry: 'Não foi possível obter GPS — tentar novamente',
+    pubLoViManual: 'Digitar endereço manualmente',
+    pubLoViConfirmAddr: 'Confirme ou ajuste o endereço',
+    pubLoViAddrLabel: 'Rua / bairro',
+    pubLoViWhen: 'Quando você o viu?',
+    pubLoViToday: 'Hoje',
+    pubLoViOtherDay: 'Outro dia',
+    pubLoViTimeLabel: 'Horário aproximado',
+    pubLoViSend: 'Enviar aviso',
+    pubLoViCancel: 'Cancelar',
+    pubLoViSuccessMap: 'Localização atualizada no mapa!',
+    pubLoViSuccessOwner: 'Aviso enviado ao dono!',
+    pubLoViReportAnother: 'Reportar outro avistamento',
+    pubLoViSendError: 'Não foi possível enviar. Tente novamente.',
+    pubAdoptBtn: 'Quero adotar',
+    pubAdminPanel: 'Painel de administrador',
+    pubManagePanel: 'Gerenciar meu aviso',
+    pubRenovarBuscar: 'Ainda procurando',
+    pubRenovarEncontrado: 'Ainda sem dono',
+    pubRenovarAdopcion: 'Ainda para adoção',
+    pubRenovarDefault: 'Renovar aviso',
+    pubRenovarHint: 'Coloca o aviso no topo',
+    pubRenovarOk: 'Aviso renovado! Aparece primeiro na lista.',
+    pubRenovarErr: 'Não foi possível renovar o aviso.',
+    pubAdminResuelto: 'Dono o reclamou',
+    pubResueltoLost: 'Eu o encontrei',
+    pubResueltoFound: 'Dono o reclamou',
+    pubResueltoAdopcion: 'Já foi adotado',
+    pubResueltoDefault: 'Marcar como resolvido',
+    pubConfirmResueltoPerdido: 'Confirma que o encontrou? O aviso passará para o filtro verde de Vistos.',
+    pubConfirmResueltoOther: 'Confirma que o aviso foi resolvido? Será ocultado da lista.',
+    pubConfirmResueltoPerdidoSub: 'Você poderá marcá-lo como "Voltou para casa" quando o dono o reclamar.',
+    pubConfirmResueltoOtherSub: 'O perfil do cão em Meus Cães não será excluído.',
+    pubConfirm: 'Sim, confirmar',
+    pubCancel: 'Cancelar',
+    pubDeleteBtn: 'Excluir publicação',
+    pubDeleteConfirm: 'Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.',
+    pubDeleteConfirmBtn: 'Sim, excluir',
+    pubDeleteErr: 'Não foi possível excluir o aviso.',
+    pubUpdateErr: 'Não foi possível atualizar o aviso.',
+    pubStatusTitle: 'Status do aviso',
+    pubStatusTipo: 'Tipo',
+    pubStatusZona: 'Área',
+    pubStatusPublicado: 'Publicado',
+    pubStatusHorario: 'Horário',
+    pubStatusEstado: 'Status',
+    pubStatusLocked: 'Apenas usuários registrados',
+    pubStatusResuelto: 'Resolvido',
+    pubStatusActivo: 'Ativo',
+    pubWaBtn: 'Contatar via WhatsApp',
+    pubReportBtn: 'Reportar este aviso',
+    pubReportTitle: 'Reportar aviso',
+    pubReportSent: 'Reporte enviado. Obrigado.',
+    pubReportSending: 'Enviando...',
+    pubReportSend: 'Enviar reporte',
+    pubReportSpam: 'Spam ou publicidade',
+    pubReportFalso: 'Conteúdo falso ou enganoso',
+    pubReportIncorrecto: 'Informação incorreta',
+    pubReportDuplicado: 'Duplicado',
+    pubReportOtro: 'Outro',
   },
 };
 

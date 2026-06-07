@@ -584,6 +584,89 @@ export type Translations = {
   mipSosSinAmigos: string;
   mipSosPublicar: string;
   mipLabelContrasena: string;
+  // ── Red Vecindog page ────────────────────────────────
+  rvnPromoChip: string;
+  rvnNetworkChip: string;
+  rvnHeroSub: string;
+  rvnRegisterBtn: string;
+  rvnAdminBtn: string;
+  rvnBenef1Title: string;
+  rvnBenef1Desc: string;
+  rvnBenef2Title: string;
+  rvnBenef2Desc: string;
+  rvnBenef3Title: string;
+  rvnBenef3Desc: string;
+  rvnBenef4Title: string;
+  rvnBenef4Desc: string;
+  rvnCatTitle: string;
+  rvnCatSub: string;
+  rvnCatSeeMore: string;
+  rvnCatVetDesc: string;
+  rvnCatPetShopDesc: string;
+  rvnCatPeluDesc: string;
+  rvnCatAdiestrDesc: string;
+  rvnCatPaseadorDesc: string;
+  rvnCatGuarderiaDesc: string;
+  rvnCatRefugioDesc: string;
+  rvnCatTiendaDesc: string;
+  rvnCatFarmaciaDesc: string;
+  rvnPromoSubtitle: string;
+  rvnCupo: string;
+  rvnCupos: string;
+  rvnDisponible: string;
+  rvnDisponibles: string;
+  rvnPromoBannerTitle: string;
+  rvnPromoBannerDesc: string;
+  rvnPromoMonths: string;
+  rvnPromoLuego: string;
+  rvnPricingChip: string;
+  rvnPricingTitle: string;
+  rvnPricingPromoSub: string;
+  rvnPricingPromoStrike: string;
+  rvnPricingRegSub: string;
+  rvnPricingSub: string;
+  rvnJoinBtn: string;
+  rvnBenefit1: string;
+  rvnBenefit2: string;
+  rvnBenefit3: string;
+  rvnBenefit4: string;
+  rvnBenefit5: string;
+  rvnBenefit6: string;
+  rvnCtaTitle: string;
+  rvnCtaSub: string;
+  rvnFormTitle: string;
+  rvnFormPhotoLabel: string;
+  rvnFormPhotoBtn: string;
+  rvnFormPhotoChange: string;
+  rvnFormPhotoSize: string;
+  rvnFormNameLabel: string;
+  rvnFormCatLabel: string;
+  rvnFormCatSelect: string;
+  rvnFormDescLabel: string;
+  rvnFormLocLabel: string;
+  rvnFormAddrLabel: string;
+  rvnFormCityLabel: string;
+  rvnFormHoursLabel: string;
+  rvnFormDaysLabel: string;
+  rvnFormOpen: string;
+  rvnFormClose: string;
+  rvnFormPhoneLabel: string;
+  rvnFormLinkLabel: string;
+  rvnFormLinkHint: string;
+  rvnFormEmailLabel: string;
+  rvnFormEmailHint: string;
+  rvnFormPayNote: string;
+  rvnFormSubmitBtn: string;
+  rvnErrName: string;
+  rvnErrCat: string;
+  rvnErrCity: string;
+  rvnErrPhone: string;
+  rvnErrAddr: string;
+  rvnErrEmail: string;
+  rvnErrPhoneDigits: string;
+  rvnErrPayment: string;
+  rvnErrConnection: string;
+  rvnErrPhoto: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -1168,6 +1251,89 @@ const translations: Record<Lang, Translations> = {
     mipSosSinAmigos: 'Todavía no tenés amigos en Vecindog. Publicá el aviso para que te ayuden los vecinos.',
     mipSosPublicar: 'Publicar aviso completo →',
     mipLabelContrasena: 'Contraseña',
+    // Red Vecindog
+    rvnPromoChip: 'Oferta de lanzamiento',
+    rvnNetworkChip: 'Red de comercios adheridos',
+    rvnHeroSub: 'Sumá tu negocio y aparecé en el mapa donde los vecinos buscan a sus perros — con tu teléfono, horario y dirección siempre visibles.',
+    rvnRegisterBtn: 'Registrar mi negocio',
+    rvnAdminBtn: 'Agregar comercio (admin)',
+    rvnBenef1Title: 'En el mapa',
+    rvnBenef1Desc: 'Tu negocio aparece directamente donde los vecinos buscan perros perdidos.',
+    rvnBenef2Title: 'Teléfono visible',
+    rvnBenef2Desc: 'Los usuarios ven tu número con un click desde el mapa.',
+    rvnBenef3Title: 'Horario de atención',
+    rvnBenef3Desc: 'Informá tus días y horarios para que lleguen cuando abrís.',
+    rvnBenef4Title: 'Dirección exacta',
+    rvnBenef4Desc: 'Tu dirección y localidad visibles para toda la comunidad.',
+    rvnCatTitle: '9 rubros en la red',
+    rvnCatSub: 'Encontrá tu categoría y mostrá tu negocio donde importa.',
+    rvnCatSeeMore: 'Ver inscriptos',
+    rvnCatVetDesc: 'Atención médica, vacunas y urgencias',
+    rvnCatPetShopDesc: 'Alimentos, accesorios y juguetes',
+    rvnCatPeluDesc: 'Baño, corte y estética canina',
+    rvnCatAdiestrDesc: 'Educación, obediencia y conducta',
+    rvnCatPaseadorDesc: 'Paseos diarios y actividad física',
+    rvnCatGuarderiaDesc: 'Cuidado diurno y hospedaje canino',
+    rvnCatRefugioDesc: 'Adopción responsable y rescate animal',
+    rvnCatTiendaDesc: 'Ropa, accesorios y artículos para mascotas',
+    rvnCatFarmaciaDesc: 'Medicamentos, antiparasitarios y suplementos',
+    rvnPromoSubtitle: 'Oferta de lanzamiento · Cupos limitados',
+    rvnCupo: 'cupo',
+    rvnCupos: 'cupos',
+    rvnDisponible: 'disponible',
+    rvnDisponibles: 'disponibles',
+    rvnPromoBannerTitle: 'Los primeros 50 comercios por ciudad acceden a una tarifa especial',
+    rvnPromoBannerDesc: 'En el marco del lanzamiento de la Red Vecindog, los primeros 50 comercios por ciudad en registrarse contarán con una tarifa promocional durante los primeros 6 meses, con acceso completo a todos los beneficios de la plataforma.',
+    rvnPromoMonths: '/mes los primeros 6 meses',
+    rvnPromoLuego: 'Luego',
+    rvnPricingChip: 'Sin contratos · Sin letras chicas',
+    rvnPricingTitle: 'Una sola tarifa, sin sorpresas',
+    rvnPricingPromoSub: 'ARS / mes · primeros 6 meses',
+    rvnPricingPromoStrike: '/mes tarifa regular',
+    rvnPricingRegSub: 'ARS / mes',
+    rvnPricingSub: 'Mes a mes. Podés cancelar cuando quieras.',
+    rvnJoinBtn: 'Unirme a la red',
+    rvnBenefit1: 'Aparecés en el mapa donde los vecinos buscan perros',
+    rvnBenefit2: 'Teléfono, dirección y horario siempre visibles',
+    rvnBenefit3: 'Clasificado en tu rubro (vet, petshop, peluquería…)',
+    rvnBenefit4: 'Audiencia 100% dueños de mascotas activos',
+    rvnBenefit5: 'Sin bots — usuarios reales de tu zona',
+    rvnBenefit6: 'Activación en menos de 24 horas',
+    rvnCtaTitle: '¿Listo para sumarte?',
+    rvnCtaSub: 'Completá el formulario, pagá y tu negocio aparece en el mapa en menos de 24 horas.',
+    rvnFormTitle: 'Registrar mi negocio',
+    rvnFormPhotoLabel: 'Foto del negocio',
+    rvnFormPhotoBtn: 'Subir foto del local',
+    rvnFormPhotoChange: 'Cambiar foto',
+    rvnFormPhotoSize: 'PNG, JPG · Máx. 5 MB',
+    rvnFormNameLabel: 'Nombre del negocio',
+    rvnFormCatLabel: 'Categoría',
+    rvnFormCatSelect: 'Seleccioná una categoría',
+    rvnFormDescLabel: 'Descripción breve',
+    rvnFormLocLabel: 'Ubicación',
+    rvnFormAddrLabel: 'Dirección',
+    rvnFormCityLabel: 'Localidad / Ciudad',
+    rvnFormHoursLabel: 'Horarios de atención',
+    rvnFormDaysLabel: 'Días',
+    rvnFormOpen: 'Apertura',
+    rvnFormClose: 'Cierre',
+    rvnFormPhoneLabel: 'Teléfono',
+    rvnFormLinkLabel: 'Link del negocio',
+    rvnFormLinkHint: 'Web, Instagram, WhatsApp — adonde van los clicks',
+    rvnFormEmailLabel: 'Tu email',
+    rvnFormEmailHint: 'Para la confirmación de pago y datos de tu membresía.',
+    rvnFormPayNote: 'Serás redirigido a Mercado Pago para abonar. Tu negocio se activa en menos de 24 horas.',
+    rvnFormSubmitBtn: 'Ir a pagar con Mercado Pago',
+    rvnErrName: 'Ingresá el nombre de tu negocio.',
+    rvnErrCat: 'Seleccioná una categoría.',
+    rvnErrCity: 'Seleccioná la localidad/ciudad de tu negocio.',
+    rvnErrPhone: 'Ingresá un teléfono de contacto.',
+    rvnErrAddr: 'Ingresá la dirección de tu negocio.',
+    rvnErrEmail: 'Ingresá tu email.',
+    rvnErrPhoneDigits: 'El teléfono debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
+    rvnErrPayment: 'Error al procesar el pago.',
+    rvnErrConnection: 'Error de conexión. Intentá de nuevo.',
+    rvnErrPhoto: 'La imagen debe pesar menos de 5 MB.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1751,6 +1917,89 @@ const translations: Record<Lang, Translations> = {
     mipSosSinAmigos: 'You have no friends on Vecindog yet. Post the listing so neighbors can help.',
     mipSosPublicar: 'Post full listing →',
     mipLabelContrasena: 'Password',
+    // Red Vecindog
+    rvnPromoChip: 'Launch offer',
+    rvnNetworkChip: 'Business network',
+    rvnHeroSub: 'Add your business and appear on the map where neighbours search for their dogs — with your phone, hours and address always visible.',
+    rvnRegisterBtn: 'Register my business',
+    rvnAdminBtn: 'Add business (admin)',
+    rvnBenef1Title: 'On the map',
+    rvnBenef1Desc: 'Your business appears directly where neighbours search for lost dogs.',
+    rvnBenef2Title: 'Visible phone',
+    rvnBenef2Desc: 'Users see your number with one click from the map.',
+    rvnBenef3Title: 'Opening hours',
+    rvnBenef3Desc: 'Share your days and hours so people arrive when you are open.',
+    rvnBenef4Title: 'Exact address',
+    rvnBenef4Desc: 'Your address and city visible to the whole community.',
+    rvnCatTitle: '9 categories in the network',
+    rvnCatSub: 'Find your category and show your business where it matters.',
+    rvnCatSeeMore: 'See members',
+    rvnCatVetDesc: 'Medical care, vaccines and emergencies',
+    rvnCatPetShopDesc: 'Food, accessories and toys',
+    rvnCatPeluDesc: 'Bath, grooming and canine aesthetics',
+    rvnCatAdiestrDesc: 'Education, obedience and behaviour',
+    rvnCatPaseadorDesc: 'Daily walks and physical activity',
+    rvnCatGuarderiaDesc: 'Day care and canine boarding',
+    rvnCatRefugioDesc: 'Responsible adoption and animal rescue',
+    rvnCatTiendaDesc: 'Clothing, accessories and pet supplies',
+    rvnCatFarmaciaDesc: 'Medicines, antiparasitics and supplements',
+    rvnPromoSubtitle: 'Launch offer · Limited spots',
+    rvnCupo: 'spot',
+    rvnCupos: 'spots',
+    rvnDisponible: 'available',
+    rvnDisponibles: 'available',
+    rvnPromoBannerTitle: 'The first 50 businesses per city get a special rate',
+    rvnPromoBannerDesc: 'As part of the Red Vecindog launch, the first 50 businesses per city to register will get a promotional rate for the first 6 months, with full access to all platform benefits.',
+    rvnPromoMonths: '/month for the first 6 months',
+    rvnPromoLuego: 'Then',
+    rvnPricingChip: 'No contracts · No fine print',
+    rvnPricingTitle: 'One flat rate, no surprises',
+    rvnPricingPromoSub: 'ARS / month · first 6 months',
+    rvnPricingPromoStrike: '/month standard rate',
+    rvnPricingRegSub: 'ARS / month',
+    rvnPricingSub: 'Month to month. Cancel any time.',
+    rvnJoinBtn: 'Join the network',
+    rvnBenefit1: 'You appear on the map where neighbours look for dogs',
+    rvnBenefit2: 'Phone, address and hours always visible',
+    rvnBenefit3: 'Listed in your category (vet, pet shop, groomer…)',
+    rvnBenefit4: '100% active pet owner audience',
+    rvnBenefit5: 'No bots — real users from your area',
+    rvnBenefit6: 'Activation in less than 24 hours',
+    rvnCtaTitle: 'Ready to join?',
+    rvnCtaSub: 'Fill in the form, pay and your business appears on the map in less than 24 hours.',
+    rvnFormTitle: 'Register my business',
+    rvnFormPhotoLabel: 'Business photo',
+    rvnFormPhotoBtn: 'Upload shop photo',
+    rvnFormPhotoChange: 'Change photo',
+    rvnFormPhotoSize: 'PNG, JPG · Max. 5 MB',
+    rvnFormNameLabel: 'Business name',
+    rvnFormCatLabel: 'Category',
+    rvnFormCatSelect: 'Select a category',
+    rvnFormDescLabel: 'Brief description',
+    rvnFormLocLabel: 'Location',
+    rvnFormAddrLabel: 'Address',
+    rvnFormCityLabel: 'City / Town',
+    rvnFormHoursLabel: 'Opening hours',
+    rvnFormDaysLabel: 'Days',
+    rvnFormOpen: 'Opens',
+    rvnFormClose: 'Closes',
+    rvnFormPhoneLabel: 'Phone',
+    rvnFormLinkLabel: 'Business link',
+    rvnFormLinkHint: 'Website, Instagram, WhatsApp — where clicks go',
+    rvnFormEmailLabel: 'Your email',
+    rvnFormEmailHint: 'For payment confirmation and membership details.',
+    rvnFormPayNote: 'You will be redirected to Mercado Pago to pay. Your business activates in less than 24 hours.',
+    rvnFormSubmitBtn: 'Pay with Mercado Pago',
+    rvnErrName: 'Enter your business name.',
+    rvnErrCat: 'Select a category.',
+    rvnErrCity: 'Select your business city.',
+    rvnErrPhone: 'Enter a contact phone number.',
+    rvnErrAddr: 'Enter your business address.',
+    rvnErrEmail: 'Enter your email.',
+    rvnErrPhoneDigits: 'Phone must have at least 10 digits. Example: +54 9 291 4050210',
+    rvnErrPayment: 'Error processing payment.',
+    rvnErrConnection: 'Connection error. Please try again.',
+    rvnErrPhoto: 'Image must be smaller than 5 MB.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -2334,6 +2583,89 @@ const translations: Record<Lang, Translations> = {
     mipSosSinAmigos: 'Você ainda não tem amigos no Vecindog. Publique o aviso para que os vizinhos possam ajudar.',
     mipSosPublicar: 'Publicar aviso completo →',
     mipLabelContrasena: 'Senha',
+    // Red Vecindog
+    rvnPromoChip: 'Oferta de lançamento',
+    rvnNetworkChip: 'Rede de negócios',
+    rvnHeroSub: 'Adicione seu negócio e apareça no mapa onde os vizinhos buscam seus cães — com telefone, horário e endereço sempre visíveis.',
+    rvnRegisterBtn: 'Registrar meu negócio',
+    rvnAdminBtn: 'Adicionar negócio (admin)',
+    rvnBenef1Title: 'No mapa',
+    rvnBenef1Desc: 'Seu negócio aparece diretamente onde os vizinhos buscam cães perdidos.',
+    rvnBenef2Title: 'Telefone visível',
+    rvnBenef2Desc: 'Os usuários veem seu número com um clique no mapa.',
+    rvnBenef3Title: 'Horário de atendimento',
+    rvnBenef3Desc: 'Informe seus dias e horários para que cheguem quando você está aberto.',
+    rvnBenef4Title: 'Endereço exato',
+    rvnBenef4Desc: 'Seu endereço e cidade visíveis para toda a comunidade.',
+    rvnCatTitle: '9 categorias na rede',
+    rvnCatSub: 'Encontre sua categoria e mostre seu negócio onde importa.',
+    rvnCatSeeMore: 'Ver membros',
+    rvnCatVetDesc: 'Atendimento médico, vacinas e urgências',
+    rvnCatPetShopDesc: 'Alimentos, acessórios e brinquedos',
+    rvnCatPeluDesc: 'Banho, tosa e estética canina',
+    rvnCatAdiestrDesc: 'Educação, obediência e comportamento',
+    rvnCatPaseadorDesc: 'Passeios diários e atividade física',
+    rvnCatGuarderiaDesc: 'Creche e hospedagem canina',
+    rvnCatRefugioDesc: 'Adoção responsável e resgate animal',
+    rvnCatTiendaDesc: 'Roupas, acessórios e artigos para pets',
+    rvnCatFarmaciaDesc: 'Medicamentos, antiparasitários e suplementos',
+    rvnPromoSubtitle: 'Oferta de lançamento · Vagas limitadas',
+    rvnCupo: 'vaga',
+    rvnCupos: 'vagas',
+    rvnDisponible: 'disponível',
+    rvnDisponibles: 'disponíveis',
+    rvnPromoBannerTitle: 'Os primeiros 50 negócios por cidade têm tarifa especial',
+    rvnPromoBannerDesc: 'Como parte do lançamento da Red Vecindog, os primeiros 50 negócios por cidade a se registrarem terão uma tarifa promocional pelos primeiros 6 meses, com acesso completo a todos os benefícios da plataforma.',
+    rvnPromoMonths: '/mês pelos primeiros 6 meses',
+    rvnPromoLuego: 'Depois',
+    rvnPricingChip: 'Sem contratos · Sem letras miúdas',
+    rvnPricingTitle: 'Uma só tarifa, sem surpresas',
+    rvnPricingPromoSub: 'ARS / mês · primeiros 6 meses',
+    rvnPricingPromoStrike: '/mês tarifa regular',
+    rvnPricingRegSub: 'ARS / mês',
+    rvnPricingSub: 'Mês a mês. Cancele quando quiser.',
+    rvnJoinBtn: 'Entrar na rede',
+    rvnBenefit1: 'Você aparece no mapa onde vizinhos procuram cães',
+    rvnBenefit2: 'Telefone, endereço e horário sempre visíveis',
+    rvnBenefit3: 'Listado na sua categoria (vet, pet shop, banho…)',
+    rvnBenefit4: 'Audiência 100% donos de pets ativos',
+    rvnBenefit5: 'Sem bots — usuários reais da sua região',
+    rvnBenefit6: 'Ativação em menos de 24 horas',
+    rvnCtaTitle: 'Pronto para entrar?',
+    rvnCtaSub: 'Preencha o formulário, pague e seu negócio aparece no mapa em menos de 24 horas.',
+    rvnFormTitle: 'Registrar meu negócio',
+    rvnFormPhotoLabel: 'Foto do negócio',
+    rvnFormPhotoBtn: 'Enviar foto do local',
+    rvnFormPhotoChange: 'Alterar foto',
+    rvnFormPhotoSize: 'PNG, JPG · Máx. 5 MB',
+    rvnFormNameLabel: 'Nome do negócio',
+    rvnFormCatLabel: 'Categoria',
+    rvnFormCatSelect: 'Selecione uma categoria',
+    rvnFormDescLabel: 'Descrição breve',
+    rvnFormLocLabel: 'Localização',
+    rvnFormAddrLabel: 'Endereço',
+    rvnFormCityLabel: 'Cidade / Localidade',
+    rvnFormHoursLabel: 'Horários de atendimento',
+    rvnFormDaysLabel: 'Dias',
+    rvnFormOpen: 'Abre',
+    rvnFormClose: 'Fecha',
+    rvnFormPhoneLabel: 'Telefone',
+    rvnFormLinkLabel: 'Link do negócio',
+    rvnFormLinkHint: 'Site, Instagram, WhatsApp — para onde vão os cliques',
+    rvnFormEmailLabel: 'Seu email',
+    rvnFormEmailHint: 'Para confirmação de pagamento e dados de sua assinatura.',
+    rvnFormPayNote: 'Você será redirecionado ao Mercado Pago para pagar. Seu negócio é ativado em menos de 24 horas.',
+    rvnFormSubmitBtn: 'Pagar com Mercado Pago',
+    rvnErrName: 'Informe o nome do seu negócio.',
+    rvnErrCat: 'Selecione uma categoria.',
+    rvnErrCity: 'Selecione a cidade do seu negócio.',
+    rvnErrPhone: 'Informe um telefone de contato.',
+    rvnErrAddr: 'Informe o endereço do seu negócio.',
+    rvnErrEmail: 'Informe seu email.',
+    rvnErrPhoneDigits: 'O telefone deve ter pelo menos 10 dígitos. Exemplo: +54 9 291 4050210',
+    rvnErrPayment: 'Erro ao processar o pagamento.',
+    rvnErrConnection: 'Erro de conexão. Tente novamente.',
+    rvnErrPhoto: 'A imagem deve ter menos de 5 MB.',
   },
 };
 

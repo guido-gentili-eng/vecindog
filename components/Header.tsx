@@ -15,12 +15,6 @@ const LANGS: { lang: Lang; flag: string; label: string }[] = [
   { lang: 'pt', flag: '🇧🇷', label: 'PT' },
 ];
 
-const NAV = [
-  { href: '/',              label: 'Inicio'  },
-  { href: '/mapa',          label: 'Mapa',   icon: 'map' },
-  { href: '/publicaciones', label: 'Avisos'  },
-];
-
 export default function Header() {
   const [open,        setOpen]        = useState(false);
   const [langOpen,    setLangOpen]    = useState(false);
@@ -28,7 +22,7 @@ export default function Header() {
   const langRef    = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { user, profile, isGuest, isAuthenticated, isPro, signOut, loading, ciudad, clearCiudad } = useAuth();
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -39,9 +33,15 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  const NAV_T = [
+    { href: '/',              label: t.navInicio  },
+    { href: '/mapa',          label: t.navMapa,   icon: 'map' },
+    { href: '/publicaciones', label: t.navAvisos  },
+  ];
+
   const navConPerros = isAuthenticated
-    ? [...NAV, { href: '/mis-perros', label: 'Mis perros' }]
-    : NAV;
+    ? [...NAV_T, { href: '/mis-perros', label: t.navMisPerros }]
+    : NAV_T;
 
   return (
     <header className="sticky top-0 z-30 border-b border-black/5 bg-white/85 backdrop-blur-md">
@@ -66,13 +66,13 @@ export default function Header() {
             href="/publicitate"
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
           >
-            <Megaphone className="h-3.5 w-3.5" /> Publicitate
+            <Megaphone className="h-3.5 w-3.5" /> {t.navPublicitate}
           </Link>
           <Link
             href="/red-vecindog"
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-amber-600 transition hover:bg-amber-50"
           >
-            <Store className="h-3.5 w-3.5" /> Red Vecindog
+            <Store className="h-3.5 w-3.5" /> {t.navRedVecindog}
           </Link>
         </nav>
 
@@ -138,34 +138,34 @@ export default function Header() {
                     <div className="absolute right-0 top-full mt-1 z-50 w-52 flex flex-col gap-0.5 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/10">
                       <Link href="/mi-perfil" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
-                        <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
+                        <User className="h-4 w-4 text-brand-primary" /> {t.navEnterPerfil}
                       </Link>
                       <Link href="/planes" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
                         <Megaphone className="h-4 w-4 text-brand-primary" />
-                        {isPro ? 'Mi plan Pro' : 'Planes'}
+                        {isPro ? t.navMiPlanPro : t.navPlanes}
                       </Link>
                       <Link href="/mi-comercio" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
-                        <Store className="h-4 w-4 text-amber-600" /> Mi comercio
+                        <Store className="h-4 w-4 text-amber-600" /> {t.navMiComercio}
                       </Link>
                       <button type="button" onClick={() => { clearCiudad(); setProfileOpen(false); }}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition w-full text-left">
-                        <MapPin className="h-4 w-4 text-brand-primary" /> Cambiar ubicación
+                        <MapPin className="h-4 w-4 text-brand-primary" /> {t.navCambiarUbicacion}
                       </button>
                       {user?.email === 'guido-gentili@live.com.ar' && (
                         <>
                           <div className="my-1 border-t border-black/5" />
                           <Link href="/admin" onClick={() => setProfileOpen(false)}
                             className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
-                            <LayoutDashboard className="h-4 w-4 text-brand-primary" /> Panel admin
+                            <LayoutDashboard className="h-4 w-4 text-brand-primary" /> {t.navPanelAdmin}
                           </Link>
                         </>
                       )}
                       <div className="my-1 border-t border-black/5" />
                       <button type="button" onClick={() => { signOut(); setProfileOpen(false); }}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-bad hover:bg-bad/5 transition">
-                        <LogOut className="h-4 w-4" /> Cerrar sesión
+                        <LogOut className="h-4 w-4" /> {t.navCerrarSesion}
                       </button>
                     </div>
                   )}
@@ -173,21 +173,20 @@ export default function Header() {
               ) : isGuest ? (
                 <div className="flex items-center gap-1.5">
                   <span className="rounded-2xl bg-brand-cream px-3 py-1.5 text-xs font-semibold text-ink-muted">
-                    Invitado
+                    {t.navInvitado}
                   </span>
                   <button
                     type="button"
                     onClick={() => signOut()}
-                    title="Salir del modo invitado"
                     className="inline-flex items-center gap-1 rounded-2xl border border-black/10 bg-white px-3 py-1.5 text-xs font-bold text-ink transition hover:border-brand-primary hover:text-brand-primary"
                   >
-                    <LogOut className="h-3.5 w-3.5" /> Salir
+                    <LogOut className="h-3.5 w-3.5" /> {t.navSalir}
                   </button>
                 </div>
               ) : (
                 <Link href="/publicar"
                   className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-3 py-1.5 text-sm font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark">
-                  <Plus className="h-4 w-4" /> Publicar
+                  <Plus className="h-4 w-4" /> {t.navPublicar}
                 </Link>
               )}
             </div>
@@ -227,21 +226,21 @@ export default function Header() {
               onClick={() => setOpen(false)}
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-primary hover:bg-brand-primary/10"
             >
-              <Megaphone className="h-4 w-4" /> Publicitate
+              <Megaphone className="h-4 w-4" /> {t.navPublicitate}
             </Link>
             <Link
               href="/red-vecindog"
               onClick={() => setOpen(false)}
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-amber-600 hover:bg-amber-50"
             >
-              <Store className="h-4 w-4" /> Red Vecindog
+              <Store className="h-4 w-4" /> {t.navRedVecindog}
             </Link>
             <Link
               href="/descargas"
               onClick={() => setOpen(false)}
               className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-primary hover:bg-brand-primary/10"
             >
-              <Download className="h-4 w-4" /> Descargas
+              <Download className="h-4 w-4" /> {t.navDescargas}
             </Link>
             {/* Selector de idioma mobile */}
             <div className="mt-2 border-t border-black/5 pt-3 px-3">
@@ -265,27 +264,27 @@ export default function Header() {
                   <div className="mt-2 border-t border-black/5 pt-2">
                     <Link href="/mi-perfil" onClick={() => setOpen(false)}
                       className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <User className="h-4 w-4 text-brand-primary" /> Entrar al perfil
+                      <User className="h-4 w-4 text-brand-primary" /> {t.navEnterPerfil}
                     </Link>
                     <Link href="/mi-comercio" onClick={() => setOpen(false)}
                       className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <Store className="h-4 w-4 text-amber-600" /> Mi comercio
+                      <Store className="h-4 w-4 text-amber-600" /> {t.navMiComercio}
                     </Link>
                     <button type="button" onClick={() => { signOut(); setOpen(false); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">
-                      <LogOut className="h-4 w-4" /> Cerrar sesión
+                      <LogOut className="h-4 w-4" /> {t.navCerrarSesion}
                     </button>
                   </div>
                 )}
                 {isGuest && (
                   <div className="mt-2 border-t border-black/5 pt-2">
-                    <p className="px-3 py-1 text-xs font-semibold text-ink-muted">Modo invitado</p>
+                    <p className="px-3 py-1 text-xs font-semibold text-ink-muted">{t.navModoInvitado}</p>
                     <button
                       type="button"
                       onClick={() => { signOut(); setOpen(false); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5 transition"
                     >
-                      <LogOut className="h-4 w-4" /> Salir y crear cuenta
+                      <LogOut className="h-4 w-4" /> {t.navSalirCrearCuenta}
                     </button>
                   </div>
                 )}
@@ -297,7 +296,7 @@ export default function Header() {
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-ink-muted hover:bg-brand-cream"
                     >
                       <MapPin className="h-4 w-4 text-brand-primary" />
-                      {nombreCorto(ciudad)} · <span className="text-brand-primary">Cambiar ciudad</span>
+                      {nombreCorto(ciudad)} · <span className="text-brand-primary">{t.navCambiarCiudad}</span>
                     </button>
                   </div>
                 )}

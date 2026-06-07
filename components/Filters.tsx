@@ -2,6 +2,7 @@
 
 import { Search, X, SlidersHorizontal, User } from 'lucide-react';
 import type { Especie, FiltroCategoria } from '@/lib/mockData';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface FiltrosState {
   categoria: FiltroCategoria;
@@ -17,10 +18,6 @@ export const FILTROS_INICIALES: FiltrosState = {
   soloMios:  false,
 };
 
-/**
- * Filtros del listado. En esta versión solo hay perros, por eso el selector
- * de especie está oculto (queda en el state pero no se renderiza).
- */
 export default function Filters({
   value,
   onChange,
@@ -30,8 +27,8 @@ export default function Filters({
   onChange: (next: FiltrosState) => void;
   isAuthenticated?: boolean;
 }) {
-  const hayFiltros =
-    value.categoria !== 'todas' || value.zona !== '' || value.soloMios;
+  const { t } = useLanguage();
+  const hayFiltros = value.categoria !== 'todas' || value.zona !== '' || value.soloMios;
 
   return (
     <div className="card p-4 md:p-5">
@@ -40,7 +37,7 @@ export default function Filters({
           <SlidersHorizontal className="h-4 w-4" />
         </span>
         <h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink">
-          Filtros
+          {t.filterTitle}
         </h2>
         {hayFiltros && (
           <button
@@ -48,12 +45,11 @@ export default function Filters({
             onClick={() => onChange(FILTROS_INICIALES)}
             className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline"
           >
-            <X className="h-3.5 w-3.5" /> Limpiar
+            <X className="h-3.5 w-3.5" /> {t.filterClear}
           </button>
         )}
       </div>
 
-      {/* Toggle Mis publicaciones — solo si está logueado */}
       {isAuthenticated && (
         <div className="mb-3">
           <button
@@ -66,7 +62,7 @@ export default function Filters({
             }`}
           >
             <User className="h-4 w-4" />
-            Mis publicaciones
+            {t.filterMyPosts}
           </button>
         </div>
       )}
@@ -74,34 +70,34 @@ export default function Filters({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
-            Tipo de aviso
+            {t.filterType}
           </span>
           <select
             className="field"
             value={value.categoria}
-            onChange={(e) =>
-              onChange({ ...value, categoria: e.target.value as FiltrosState['categoria'] })
-            }
+            onChange={(e) => onChange({ ...value, categoria: e.target.value as FiltrosState['categoria'] })}
           >
-            <option value="todas">Todos</option>
-            <option value="buscar">Perdidos y vistos</option>
-            <option value="perdido">Perdidos</option>
-            <option value="encontrado">Vistos</option>
-            <option value="adopcion">En adopción</option>
-            <option value="transito">En tránsito</option>
+            <option value="todas">{t.filterAll}</option>
+            <option value="buscar">{t.filterLostAndFound}</option>
+            <option value="perdido">{t.filterLost}</option>
+            <option value="encontrado">{t.filterFound}</option>
+            <option value="adopcion">{t.filterAdoption}</option>
+            <option value="transito">{t.filterTransit}</option>
+            <option value="busco_cuidador">{t.filterCaretaker}</option>
+            <option value="cuidador_disponible">{t.filterCaretakerAvail}</option>
           </select>
         </label>
 
         <label className="block">
           <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
-            Zona / barrio
+            {t.filterZone}
           </span>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
             <input
               type="text"
               className="field pl-9"
-              placeholder="Centro, Villa Mitre, Palihue…"
+              placeholder={t.filterZonePlaceholder}
               value={value.zona}
               onChange={(e) => onChange({ ...value, zona: e.target.value })}
             />

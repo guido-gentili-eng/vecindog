@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Loader2, Clock, AlertCircle, MapPin, Phone } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function PagoExitosoComercioPage() {
   const params    = useSearchParams();
@@ -22,11 +23,16 @@ export default function PagoExitosoComercioPage() {
     const adIds = adsParam.split(',').filter(Boolean);
     if (adIds.length === 0)   { setCargando(false); return; }
 
-    fetch('/api/confirmar-pago', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ payment_id: paymentId, ad_ids: adIds }),
-    })
+    supabase.auth.getSession().then(({ data: { session } }) =>
+      fetch('/api/confirmar-pago', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ payment_id: paymentId, ad_ids: adIds }),
+      })
+    )
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) setActivado(true);

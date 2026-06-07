@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
   MapPin, Clock, Phone, CheckCircle2, X, Loader2, AlertCircle,
@@ -122,7 +122,7 @@ export default function RedVecindogPage() {
       <section className="mb-16 md:mb-20">
         <div className="mb-8 text-center">
           <h2 className="font-display text-3xl font-black text-ink md:text-4xl">
-            6 rubros en la red
+            9 rubros en la red
           </h2>
           <p className="mt-2 text-ink-muted">
             Encontrá tu categoría y mostrá tu negocio donde importa.
@@ -546,7 +546,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
               <div>
                 <label className="mb-2 block text-xs font-semibold text-ink-muted">Días</label>
                 <div className="flex gap-2">
-                  {(['Lunes a viernes', 'Lunes a sábados', 'Todos los días'] as const).map((op) => (
+                  {(['Lunes a viernes', 'Lunes a sábado', 'Todos los días'] as const).map((op) => (
                     <button
                       key={op}
                       type="button"
@@ -684,6 +684,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
     e.preventDefault();
     if (!nombre.trim())    { setError('Ingresá el nombre de tu negocio.'); return; }
     if (!categoria)        { setError('Seleccioná una categoría.'); return; }
+    if (!localidad.trim()) { setError('Seleccioná la localidad/ciudad de tu negocio.'); return; }
     if (!telefono.trim())  { setError('Ingresá un teléfono de contacto.'); return; }
     if (!direccion.trim()) { setError('Ingresá la dirección de tu negocio.'); return; }
     if (!email.trim())     { setError('Ingresá tu email.'); return; }
@@ -906,7 +907,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
             <div>
               <label className="mb-2 block text-xs font-semibold text-ink-muted">Días</label>
               <div className="flex gap-2">
-                {(['Lunes a viernes', 'Lunes a sábados', 'Todos los días'] as const).map((op) => (
+                {(['Lunes a viernes', 'Lunes a sábado', 'Todos los días'] as const).map((op) => (
                   <button
                     key={op}
                     type="button"

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 import PagoModal from '@/components/PagoModal';
 
 /* ── Features ── */
@@ -52,8 +53,9 @@ const FEATURES_PRO = [
 /* ── Página ── */
 
 export default function PlanesPage() {
-  const { user, profile, isPro, isAuthenticated } = useAuth();
+  const { profile, isPro, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [error,     setError]     = useState('');
@@ -99,23 +101,23 @@ export default function PlanesPage() {
         onClick={() => router.back()}
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
       >
-        <ArrowLeft className="h-4 w-4" /> Volver
+        <ArrowLeft className="h-4 w-4" /> {t.plansBack}
       </button>
 
       {/* Header */}
       <div className="mb-10 text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-          <Sparkles className="h-3.5 w-3.5" /> Planes
+          <Sparkles className="h-3.5 w-3.5" /> {t.navPlanes}
         </span>
         <h1 className="mt-3 font-display text-4xl font-black tracking-tight text-ink md:text-5xl">
-          Elegí tu plan
+          {t.plansTitle}
         </h1>
         <p className="mt-2 text-base text-ink-muted">
-          Vecindog es gratis para empezar. Pasate a Pro para la experiencia completa.
+          {t.plansSub}
         </p>
         {isPro && vencimiento && (
           <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-good/10 px-4 py-2 text-sm font-bold text-good ring-1 ring-good/20">
-            <Check className="h-4 w-4" /> Plan activo hasta el {vencimiento}
+            <Check className="h-4 w-4" /> {t.plansActiveUntil} {vencimiento}
           </div>
         )}
         {error && (
@@ -131,9 +133,9 @@ export default function PlanesPage() {
         {/* ── Plan Gratis ── */}
         <div className="flex flex-col rounded-[24px] border-2 border-black/8 bg-white p-7">
           <div className="mb-1 text-xs font-bold uppercase tracking-widest text-ink-muted">Plan</div>
-          <div className="font-display text-3xl font-black text-ink">Gratis</div>
-          <div className="mt-1 text-2xl font-extrabold text-ink">$0</div>
-          <p className="mt-2 text-sm text-ink-muted">Para empezar a buscar y registrar a tu perro.</p>
+          <div className="font-display text-3xl font-black text-ink">{t.plansFreeLabel}</div>
+          <div className="mt-1 text-2xl font-extrabold text-ink">{t.plansFreePrice}</div>
+          <p className="mt-2 text-sm text-ink-muted">{t.plansFreeSub}</p>
 
           <div className="my-6 border-t border-black/6" />
 
@@ -155,12 +157,12 @@ export default function PlanesPage() {
           <div className="mt-8">
             {!isPro ? (
               <div className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted">
-                Plan actual
+                {t.plansCurrentPlan}
               </div>
             ) : (
               <Link href="/"
                 className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-                Volver al inicio
+                {t.plansGoHome}
               </Link>
             )}
           </div>
@@ -171,17 +173,17 @@ export default function PlanesPage() {
           {/* Badge */}
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold px-4 py-1 text-xs font-extrabold text-[#5b3a0e] shadow">
-              <Sparkles className="h-3 w-3" /> RECOMENDADO
+              <Sparkles className="h-3 w-3" /> {t.plansRecommended}
             </span>
           </div>
 
           <div className="mb-1 text-xs font-bold uppercase tracking-widest text-white/60">Plan</div>
-          <div className="font-display text-3xl font-black">VecindogPro</div>
+          <div className="font-display text-3xl font-black">{t.plansProLabel}</div>
           <div className="mt-1">
-            <span className="text-3xl font-extrabold">$1.000</span>
-            <span className="ml-1 text-sm text-white/70">/ mes</span>
+            <span className="text-3xl font-extrabold">{t.plansProPrice}</span>
+            <span className="ml-1 text-sm text-white/70">{t.plansPerMonth}</span>
           </div>
-          <p className="mt-2 text-sm text-white/80">La experiencia completa para encontrar y cuidar a tu perro.</p>
+          <p className="mt-2 text-sm text-white/80">{t.plansProSub}</p>
 
           <div className="my-6 border-t border-white/20" />
 
@@ -197,17 +199,17 @@ export default function PlanesPage() {
           <div className="mt-8">
             {isPro ? (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
-                <Check className="h-4 w-4" /> Plan activo
+                <Check className="h-4 w-4" /> {t.plansActive}
               </div>
             ) : !isAuthenticated ? (
               <Link href="/"
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">
-                <Sparkles className="h-4 w-4" /> Iniciá sesión para suscribirte
+                <Sparkles className="h-4 w-4" /> {t.plansLoginFirst}
               </Link>
             ) : (
               <button type="button" onClick={handleSuscribirse}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">
-                <Sparkles className="h-4 w-4" /> Suscribirme
+                <Sparkles className="h-4 w-4" /> {t.plansSubscribe}
               </button>
             )}
           </div>
@@ -216,8 +218,7 @@ export default function PlanesPage() {
 
       {/* Footer */}
       <p className="mt-8 text-center text-xs text-ink-muted">
-        Podés pagar con Mercado Pago (saldo, efectivo), tarjeta de débito o crédito.
-        La suscripción no se renueva automáticamente — vence a los 30 días.
+        {t.plansMpNote}
       </p>
 
       {/* Modal de pago */}

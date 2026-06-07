@@ -1,15 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import {
   Camera, ImagePlus, X, AlertCircle, Sparkles, ArrowLeft,
   ScanSearch, RotateCw, MapPin, Calendar, ArrowRight, ImageIcon,
-  ChevronDown, Check, Loader2, Lock, ExternalLink,
+  ChevronDown, Check, Loader2,
 } from 'lucide-react';
-import { TIPOS_IMAGEN_PERMITIDOS, ACCEPT_IMAGEN, ETIQUETA_CATEGORIA, COLORES_PERRO } from '@/lib/mockData';
+import { TIPOS_IMAGEN_PERMITIDOS, ACCEPT_IMAGEN, COLORES_PERRO } from '@/lib/mockData';
+import type { FiltroCategoria } from '@/lib/mockData';
 import { listarPosts, type Post } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /* ─────────────── Tipos ─────────────── */
 
@@ -171,6 +174,7 @@ async function calcularScore(
 
 export default function BuscarPorFotoPage() {
   const { isPro, isAuthenticated, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const [foto,          setFoto]          = useState<FotoPreview | null>(null);
   const [analizando,    setAnalizando]    = useState(false);
   const [analisisIA,    setAnalisisIA]    = useState<AnalisisIA | null>(null);
@@ -192,25 +196,33 @@ export default function BuscarPorFotoPage() {
 
   useEffect(() => () => { if (urlRef.current) URL.revokeObjectURL(urlRef.current); }, []);
 
-  if (!authLoading && (!isAuthenticated || !isPro)) {
+  if (authLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isPro) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
         <div className="w-full max-w-sm rounded-[28px] bg-white p-8 text-center shadow-2xl">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
             <Camera className="h-8 w-8 text-brand-primary" />
           </div>
-          <h2 className="mt-5 font-display text-xl font-black text-ink">Búsqueda por foto</h2>
+          <h2 className="mt-5 font-display text-xl font-black text-ink">{t.bpfPaywallTitle}</h2>
           <p className="mt-2 text-sm text-ink-muted">
-            Subí una foto y encontramos al perro usando IA. Función exclusiva de <strong>VecindogPro</strong>.
+            {t.bpfPaywallSub}
           </p>
           <div className="mt-6 space-y-2">
             <Link href="/planes"
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
-              <Sparkles className="h-4 w-4" /> Ver plan Pro
+              <Sparkles className="h-4 w-4" /> {t.bpfPaywallBtn}
             </Link>
             <Link href="/publicaciones"
               className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-              Ver avisos
+              {t.bpfPaywallLink}
             </Link>
           </div>
         </div>
@@ -234,9 +246,14 @@ export default function BuscarPorFotoPage() {
     // Analizar con IA automáticamente
     setAnalizando(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const fd = new FormData();
       fd.append('foto', f);
-      const res  = await fetch('/api/analizar-foto', { method: 'POST', body: fd });
+      const res  = await fetch('/api/analizar-foto', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+        body: fd,
+      });
       const data = await res.json();
 
       if (data.ok && !data.error) {
@@ -273,14 +290,14 @@ export default function BuscarPorFotoPage() {
     setError(''); setCargando(true); setResultados(null); setVerTodos(false);
 
     try {
-      setPaso('Analizando foto…');
+      setPaso(t.bpfAnalyzingPhoto);
       const colorFoto = await extraerColor(foto.url);
 
-      setPaso('Buscando avisos…');
+      setPaso(t.bpfSearching);
       const todos      = await listarPosts();
       const candidatos = todos.filter(p => p.categoria !== 'adopcion');
 
-      setPaso('Comparando…');
+      setPaso(t.bpfSearching);
       const scored = await Promise.all(
         candidatos.map(post => calcularScore(post, colorFoto, colorElegido, raza, tamano, collar, chapita, colorCache.current))
       );
@@ -301,25 +318,24 @@ export default function BuscarPorFotoPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const topMatch    = resultados?.[0] ?? null;
   const secundarios = resultados?.slice(1).filter(r => r.score >= 30) ?? [];
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
       <Link href="/publicaciones"
         className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-brand-primary hover:underline">
-        <ArrowLeft className="h-4 w-4" /> Volver a los avisos
+        <ArrowLeft className="h-4 w-4" /> {t.bpfBack}
       </Link>
 
       <header className="mb-6">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary">
-          <Sparkles className="h-3.5 w-3.5" /> Búsqueda con IA
+          <Sparkles className="h-3.5 w-3.5" /> {t.bpfChip}
         </span>
         <h1 className="mt-3 flex items-center gap-2 font-display text-3xl font-bold text-ink">
-          <ScanSearch className="h-7 w-7 text-brand-primary" /> Buscar por foto
+          <ScanSearch className="h-7 w-7 text-brand-primary" /> {t.bpfTitle}
         </h1>
         <p className="mt-2 text-ink-muted">
-          Subí una foto — la IA detecta la raza, color y tamaño automáticamente.
+          {t.bpfSub}
         </p>
       </header>
 
@@ -329,9 +345,9 @@ export default function BuscarPorFotoPage() {
         <section className="card p-5 md:p-6">
           <div className="mb-4 flex items-center gap-2">
             <Camera className="h-5 w-5 text-brand-primary" />
-            <h2 className="font-display text-lg font-extrabold text-ink">Foto del perro</h2>
+            <h2 className="font-display text-lg font-extrabold text-ink">{t.bpfPhotoSection}</h2>
             <span className="ml-auto rounded-full bg-brand-primary/10 px-2 py-0.5 text-[10px] font-bold text-brand-primary">
-              Requerida
+              {t.bpfRequired}
             </span>
           </div>
 
@@ -347,7 +363,7 @@ export default function BuscarPorFotoPage() {
               {/* Estado IA */}
               {analizando && (
                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-black/70 py-3 text-sm font-bold text-white backdrop-blur-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Analizando con IA…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t.bpfAnalyzingIA}
                 </div>
               )}
               {!analizando && analisisIA?.descripcion && (
@@ -363,8 +379,8 @@ export default function BuscarPorFotoPage() {
             <button type="button" onClick={() => inputGaleriaRef.current?.click()}
               className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 py-14 text-brand-primary transition hover:border-brand-primary hover:bg-brand-cream">
               <ImagePlus className="h-10 w-10" />
-              <span className="text-sm font-bold">Tocá para subir una foto</span>
-              <span className="text-xs text-ink-muted">La IA detecta raza, color y tamaño automáticamente</span>
+              <span className="text-sm font-bold">{t.bpfUploadTap}</span>
+              <span className="text-xs text-ink-muted">{t.bpfUploadSub}</span>
             </button>
           )}
 
@@ -376,20 +392,20 @@ export default function BuscarPorFotoPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" onClick={() => inputGaleriaRef.current?.click()}
               className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15">
-              <ImagePlus className="h-4 w-4" /> Galería
+              <ImagePlus className="h-4 w-4" /> {t.bpfGallery}
             </button>
             <button type="button" onClick={() => inputCamaraRef.current?.click()}
               className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15">
-              <Camera className="h-4 w-4" /> Sacar foto
+              <Camera className="h-4 w-4" /> {t.bpfTakePhoto}
             </button>
           </div>
         </section>
 
         {/* ── Resultado IA ── */}
-        {analisisIA && !analizando && (
+        {analisisIA && !analizando && (analisisIA.color || analisisIA.raza || analisisIA.tamano) && (
           <div className="rounded-2xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-extrabold text-brand-primary">
-              <Sparkles className="h-3.5 w-3.5" /> IA detectó
+              <Sparkles className="h-3.5 w-3.5" /> {t.bpfIADetected}
             </p>
             <div className="flex flex-wrap gap-2">
               {analisisIA.color && (
@@ -409,20 +425,20 @@ export default function BuscarPorFotoPage() {
                 </span>
               )}
             </div>
-            <p className="mt-2 text-[11px] text-ink-muted">Los filtros se completaron automáticamente. Podés ajustarlos abajo.</p>
+            <p className="mt-2 text-[11px] text-ink-muted">{t.bpfIAAutofilled}</p>
           </div>
         )}
 
         {/* ── Color principal ── */}
         <section className="card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <p className="text-sm font-extrabold text-ink">Color principal</p>
+            <p className="text-sm font-extrabold text-ink">{t.bpfColorTitle}</p>
             {analisisIA?.color && colorElegido === analisisIA.color && (
-              <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-brand-primary">
+              <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
                 <Sparkles className="h-3 w-3" /> IA
               </span>
             )}
-            <span className="ml-auto text-xs text-ink-muted">Opcional</span>
+            <span className="ml-auto text-xs text-ink-muted">{t.commonOptional}</span>
           </div>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
             {COLORES_PERRO.map(c => {
@@ -459,19 +475,19 @@ export default function BuscarPorFotoPage() {
         {/* ── Raza ── */}
         <section className="card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <p className="text-sm font-extrabold text-ink">Raza</p>
+            <p className="text-sm font-extrabold text-ink">{t.bpfRazaTitle}</p>
             {analisisIA?.raza && (
               <span className="ml-1 flex items-center gap-1 text-[10px] font-bold text-brand-primary">
                 <Sparkles className="h-3 w-3" /> IA: {analisisIA.raza}
               </span>
             )}
-            <span className="ml-auto text-xs text-ink-muted">Opcional</span>
+            <span className="ml-auto text-xs text-ink-muted">{t.commonOptional}</span>
           </div>
           <input
             type="text"
             value={raza}
             onChange={e => setRaza(e.target.value)}
-            placeholder="Ej: Labrador, Golden, Mestizo…"
+            placeholder={t.bpfRazaPlaceholder}
             className="w-full rounded-xl border-2 border-black/10 bg-white px-3 py-2.5 text-sm text-ink focus:border-brand-primary focus:outline-none"
           />
         </section>
@@ -479,16 +495,16 @@ export default function BuscarPorFotoPage() {
         {/* ── Tamaño ── */}
         <section className="card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Tamaño</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">{t.bpfSizeTitle}</p>
             {analisisIA?.tamano && (
               <span className="flex items-center gap-1 text-[10px] font-bold text-brand-primary">
                 <Sparkles className="h-3 w-3" /> IA
               </span>
             )}
-            <span className="ml-auto text-xs text-ink-muted">Opcional</span>
+            <span className="ml-auto text-xs text-ink-muted">{t.commonOptional}</span>
           </div>
           <div className="flex gap-2">
-            {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+            {([['pequeño', t.bpfSizeSmall], ['mediano', t.bpfSizeMedium], ['grande', t.bpfSizeLarge]] as const).map(([v, l]) => (
               <button key={v} type="button"
                 onClick={() => setTamano(tamano === v ? '' : v)}
                 className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
@@ -505,11 +521,11 @@ export default function BuscarPorFotoPage() {
         {/* ── Collar y chapita ── */}
         <section className="card p-5">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-muted">
-            Accesorios <span className="font-normal normal-case text-ink-muted/60">— Opcional</span>
+            {t.bpfAccessories} <span className="font-normal normal-case text-ink-muted/60">— {t.commonOptional}</span>
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="mb-1.5 text-xs font-semibold text-ink-muted">Collar</p>
+              <p className="mb-1.5 text-xs font-semibold text-ink-muted">{t.bpfCollar}</p>
               <div className="flex gap-1.5">
                 {([true, false] as const).map(val => (
                   <button key={String(val)} type="button" onClick={() => toggleCollar(val)}
@@ -518,13 +534,13 @@ export default function BuscarPorFotoPage() {
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/30'
                     }`}>
-                    {val ? 'Sí' : 'No'}
+                    {val ? t.bpfYes : t.bpfNo}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="mb-1.5 text-xs font-semibold text-ink-muted">Chapita</p>
+              <p className="mb-1.5 text-xs font-semibold text-ink-muted">{t.bpfTag}</p>
               <div className="flex gap-1.5">
                 {([true, false] as const).map(val => (
                   <button key={String(val)} type="button" onClick={() => toggleChapita(val)}
@@ -533,7 +549,7 @@ export default function BuscarPorFotoPage() {
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/30'
                     }`}>
-                    {val ? 'Sí' : 'No'}
+                    {val ? t.bpfYes : t.bpfNo}
                   </button>
                 ))}
               </div>
@@ -551,10 +567,10 @@ export default function BuscarPorFotoPage() {
           <button type="submit" disabled={cargando || !foto || analizando}
             className="btn-primary flex-1 disabled:opacity-60">
             {cargando
-              ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> {paso || 'Buscando…'}</>
+              ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> {paso || t.bpfSearching}</>
               : analizando
-              ? <><Loader2 className="h-4 w-4 animate-spin" /> Analizando foto…</>
-              : <><ScanSearch className="h-5 w-5" /> Buscar coincidencias</>
+              ? <><Loader2 className="h-4 w-4 animate-spin" /> {t.bpfAnalyzingPhoto}</>
+              : <><ScanSearch className="h-5 w-5" /> {t.bpfSearchBtn}</>
             }
           </button>
           <button type="button" onClick={handleReset} className="btn-secondary" title="Reiniciar">
@@ -567,14 +583,22 @@ export default function BuscarPorFotoPage() {
       {resultados !== null && (
         <section id="resultados" className="mt-10 scroll-mt-24 space-y-6">
 
-          {resultados[0] && (
+          {resultados[0] && resultados[0].score > 0 && (
             <div>
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-good" />
-                <h2 className="font-display text-xl font-extrabold text-ink">Mejor coincidencia</h2>
+                <h2 className="font-display text-xl font-extrabold text-ink">{t.bpfBestMatch}</h2>
                 <ScoreBadge score={resultados[0].score} />
               </div>
               <PostCard post={resultados[0].post} score={resultados[0].score} matches={resultados[0].matches} grande />
+            </div>
+          )}
+
+          {resultados.length > 0 && resultados[0].score === 0 && (
+            <div className="card p-6 text-center">
+              <p className="font-bold text-ink">{t.bpfNoMatches}</p>
+              <p className="mt-1 text-sm text-ink-muted">{t.bpfNoMatchesSub}</p>
+              <Link href="/publicaciones" className="btn-secondary mt-4 inline-flex">{t.bpfSeeAllPosts}</Link>
             </div>
           )}
 
@@ -583,7 +607,7 @@ export default function BuscarPorFotoPage() {
               <button type="button" onClick={() => setVerTodos(v => !v)}
                 className="mb-3 flex w-full items-center gap-2">
                 <ChevronDown className={`h-4 w-4 text-ink-muted transition-transform ${verTodos ? 'rotate-180' : ''}`} />
-                <h2 className="font-display text-base font-extrabold text-ink">Otras posibilidades</h2>
+                <h2 className="font-display text-base font-extrabold text-ink">{t.bpfOtherPossibilities}</h2>
                 <span className="badge bg-black/8 text-ink-muted">{secundarios.length}</span>
               </button>
               {verTodos && (
@@ -598,8 +622,8 @@ export default function BuscarPorFotoPage() {
 
           {resultados.length === 0 && (
             <div className="card p-6 text-center">
-              <p className="font-bold text-ink">No hay avisos publicados todavía.</p>
-              <Link href="/publicaciones" className="btn-secondary mt-4 inline-flex">Ver todos los avisos</Link>
+              <p className="font-bold text-ink">{t.bpfNoPostsYet}</p>
+              <Link href="/publicaciones" className="btn-secondary mt-4 inline-flex">{t.bpfSeeAllPosts}</Link>
             </div>
           )}
 
@@ -616,10 +640,11 @@ function scoreColor(score: number) {
 }
 
 function ScoreBadge({ score }: { score: number }) {
+  const { t } = useLanguage();
   const cls = score >= 75 ? 'bg-good/15 text-good'
             : score >= 50 ? 'bg-warn/20 text-[#8a5a00]'
             : 'bg-black/8 text-ink-muted';
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${cls}`}>{score}% similar</span>;
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${cls}`}>{score}{t.bpfSimilar}</span>;
 }
 
 function Chip({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -631,6 +656,7 @@ function Chip({ children, className = '' }: { children: React.ReactNode; classNa
 }
 
 function PostCard({ post, score, matches, grande = false }: { post: Post; score: number; matches: string[]; grande?: boolean }) {
+  const { t } = useLanguage();
   if (grande) {
     return (
       <Link href={`/publicaciones/${post.id}`}
@@ -656,19 +682,19 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
               <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
                 post.categoria === 'perdido' ? 'bg-lost text-white' :
                 post.categoria === 'encontrado' ? 'bg-found text-white' : 'bg-adopt text-[#5b3a0e]'
-              }`}>{ETIQUETA_CATEGORIA[post.categoria]}</span>
-              <h3 className="mt-1 font-display text-xl font-extrabold text-ink">{post.nombre ?? 'Sin nombre'}</h3>
+              }`}>{({ perdido: t.catPerdido, encontrado: t.catEncontrado, adopcion: t.catAdopcion, transito: t.catTransito, busco_cuidador: t.catBuscoCuidador, cuidador_disponible: t.catCuidadorDisponible } as Record<FiltroCategoria, string>)[post.categoria]}</span>
+              <h3 className="mt-1 font-display text-xl font-extrabold text-ink">{post.nombre ?? t.cardNoName}</h3>
             </div>
             <span className="inline-flex items-center gap-1 text-sm font-bold text-brand-primary transition group-hover:gap-2">
-              Ver aviso <ArrowRight className="h-4 w-4" />
+              {t.bpfSeePost} <ArrowRight className="h-4 w-4" />
             </span>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {post.raza   && <Chip>{post.raza}</Chip>}
             {post.color  && <Chip>{post.color}</Chip>}
             {post.tamano && <Chip className="capitalize">{post.tamano}</Chip>}
-            {post.collar  === true && <Chip>Con collar</Chip>}
-            {post.chapita === true && <Chip>Con chapita</Chip>}
+            {post.collar  === true && <Chip>{t.bpfWithCollar}</Chip>}
+            {post.chapita === true && <Chip>{t.bpfWithTag}</Chip>}
           </div>
           {matches.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
@@ -710,9 +736,10 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
           <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-extrabold ${
-            post.categoria === 'perdido' ? 'bg-lost text-white' : 'bg-found text-white'
-          }`}>{ETIQUETA_CATEGORIA[post.categoria]}</span>
-          <p className="font-display text-sm font-extrabold text-ink">{post.nombre ?? 'Sin nombre'}</p>
+            post.categoria === 'perdido' ? 'bg-lost text-white' :
+            post.categoria === 'encontrado' ? 'bg-found text-white' : 'bg-adopt text-[#5b3a0e]'
+          }`}>{({ perdido: t.catPerdido, encontrado: t.catEncontrado, adopcion: t.catAdopcion, transito: t.catTransito, busco_cuidador: t.catBuscoCuidador, cuidador_disponible: t.catCuidadorDisponible } as Record<FiltroCategoria, string>)[post.categoria]}</span>
+          <p className="font-display text-sm font-extrabold text-ink">{post.nombre ?? t.cardNoName}</p>
           {matches.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-0.5">
               {matches.map(m => (
@@ -730,35 +757,4 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
   );
 }
 
-/* ─────────────── Banner buscar en Facebook vía Google ─────────────── */
-function BuscarEnFacebookFoto({
-  color, tamano, raza,
-}: { color: string; tamano: string; raza: string }) {
-  const palabras = ['perro perdido', color, tamano, raza].filter(Boolean).join(' ');
-
-  const query = encodeURIComponent(`${palabras} site:facebook.com`);
-  const url   = `https://www.google.com/search?q=${query}`;
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-4 rounded-2xl bg-[#1877F2]/8 p-4 ring-1 ring-[#1877F2]/20 transition hover:bg-[#1877F2]/15 group"
-    >
-      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#1877F2] text-white text-lg font-black">
-        f
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-ink">
-          Buscar estas características en Facebook
-        </p>
-        <p className="mt-0.5 text-xs text-ink-muted truncate">
-          Google buscará: <span className="font-semibold">{palabras}</span> en publicaciones de Facebook
-        </p>
-      </div>
-      <ExternalLink className="h-4 w-4 shrink-0 text-[#1877F2]/60 group-hover:text-[#1877F2] transition" />
-    </a>
-  );
-}
 

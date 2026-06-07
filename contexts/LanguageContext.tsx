@@ -7,7 +7,7 @@ export type Lang = 'es' | 'en' | 'pt';
 const LANG_KEY = 'vecindog_lang';
 
 export type Translations = {
-  // AuthModal
+  // ── AuthModal ────────────────────────────────────────
   welcome: string;
   welcomeSub: string;
   confirmEmail: string;
@@ -46,14 +46,12 @@ export type Translations = {
   errTokenNotFound: string;
   errSignupDisabled: string;
   errNetwork: string;
-  // Forgot password
   forgotLink: string;
   forgotTitle: string;
   forgotSub: string;
   btnSendReset: string;
   forgotSuccess: string;
   backToLogin: string;
-  // Reset password page
   newPasswordTitle: string;
   newPasswordSub: string;
   newPasswordPlaceholder: string;
@@ -63,7 +61,7 @@ export type Translations = {
   updatePasswordSuccess: string;
   updatePasswordSuccessSub: string;
   invalidResetLink: string;
-  // ProfileModal
+  // ── ProfileModal ─────────────────────────────────────
   profileTitle: string;
   profileSub: string;
   firstName: string;
@@ -73,10 +71,252 @@ export type Translations = {
   province: string;
   country: string;
   btnSave: string;
+  // ── Navigation ───────────────────────────────────────
+  navInicio: string;
+  navMapa: string;
+  navAvisos: string;
+  navMisPerros: string;
+  navPublicar: string;
+  navEnterPerfil: string;
+  navMiPlanPro: string;
+  navPlanes: string;
+  navMiComercio: string;
+  navCambiarUbicacion: string;
+  navPanelAdmin: string;
+  navCerrarSesion: string;
+  navDescargas: string;
+  navInvitado: string;
+  navModoInvitado: string;
+  navSalirCrearCuenta: string;
+  navSalir: string;
+  navCambiarCiudad: string;
+  navRedVecindog: string;
+  navPublicitate: string;
+  // ── Hero ─────────────────────────────────────────────
+  heroChip: string;
+  heroTitle: string;
+  heroTitleAccent: string;
+  heroSub: string;
+  heroSubBold: string;
+  // ── ActionCards ──────────────────────────────────────
+  accionBuscando: string;
+  accionBuscandoText: string;
+  accionViPerdido: string;
+  accionViPerdidoText: string;
+  accionDoyAdopcion: string;
+  accionDoyAdopcionText: string;
+  accionTransito: string;
+  accionTransitoText: string;
+  accionCuidado: string;
+  accionCuidadoText: string;
+  accionTransporte: string;
+  accionTransporteText: string;
+  accionEmpezar: string;
+  accionNuevo: string;
+  chipPerdidos: string;
+  chipTarda1Min: string;
+  chipComunidadCuidada: string;
+  chipComunidad: string;
+  // ── HowItWorks ───────────────────────────────────────
+  how4Steps: string;
+  howTitle: string;
+  howSub: string;
+  howStep1Title: string;
+  howStep1Text: string;
+  howStep2Title: string;
+  howStep2Text: string;
+  howStep3Title: string;
+  howStep3Text: string;
+  howStep4Title: string;
+  howStep4Text: string;
+  calcTitle: string;
+  calcSub: string;
+  calcCta: string;
+  // ── TrustSection ─────────────────────────────────────
+  trustTitle: string;
+  trustSub: string;
+  trust1Title: string;
+  trust1Text: string;
+  trust2Title: string;
+  trust2Text: string;
+  trust3Title: string;
+  trust3Text: string;
+  trust4Title: string;
+  trust4Text: string;
+  trust5Title: string;
+  trust5Text: string;
+  trust6Title: string;
+  trust6Text: string;
+  // ── Footer ───────────────────────────────────────────
+  footerSub: string;
+  footerAvailableIn: string;
+  footerAppSection: string;
+  footerComunidadSection: string;
+  footerNegociosSection: string;
+  footerTerms: string;
+  footerPrivacy: string;
+  footerMadeWith: string;
+  footerLinkInicio: string;
+  footerLinkAvisos: string;
+  footerLinkPublicar: string;
+  footerLinkBuscarFoto: string;
+  footerLinkPerdidos: string;
+  footerLinkVistos: string;
+  footerLinkAdopcion: string;
+  footerLinkTransito: string;
+  // ── Categories ───────────────────────────────────────
+  catPerdido: string;
+  catEncontrado: string;
+  catAdopcion: string;
+  catTransito: string;
+  catBuscoCuidador: string;
+  catCuidadorDisponible: string;
+  // ── AnimalCard ───────────────────────────────────────
+  cardNoName: string;
+  cardTapInfo: string;
+  cardSeePost: string;
+  cardNoPhoto: string;
+  cardStreetSighting: string;
+  cardRewardPrefix: string;
+  cardLastDay: string;
+  cardOneDayLeft: string;
+  cardDaysLeft: string;
+  cardExpired: string;
+  // ── Filters ──────────────────────────────────────────
+  filterTitle: string;
+  filterClear: string;
+  filterMyPosts: string;
+  filterType: string;
+  filterAll: string;
+  filterLostAndFound: string;
+  filterLost: string;
+  filterFound: string;
+  filterAdoption: string;
+  filterTransit: string;
+  filterCaretaker: string;
+  filterCaretakerAvail: string;
+  filterZone: string;
+  filterZonePlaceholder: string;
+  // ── Publicaciones page ───────────────────────────────
+  pubTitleAll: string;
+  pubSubAll: string;
+  pubTitleBuscar: string;
+  pubSubBuscar: string;
+  pubTitlePerdido: string;
+  pubSubPerdido: string;
+  pubTitleEncontrado: string;
+  pubSubEncontrado: string;
+  pubTitleAdopcion: string;
+  pubSubAdopcion: string;
+  pubTitleTransito: string;
+  pubSubTransito: string;
+  pubTitleCuidador: string;
+  pubSubCuidador: string;
+  pubTitleCuidadorDisp: string;
+  pubSubCuidadorDisp: string;
+  pubMyPosts: string;
+  pubLoading: string;
+  pubError: string;
+  pubEmpty: string;
+  pubEmptySub: string;
+  pubPostWord: string;
+  pubPostWordPlural: string;
+  pubSearchPlaceholder: string;
+  pubShowMore: string;
+  pubBuscarFotoTitle: string;
+  pubBuscarFotoCTA: string;
+  pubBuscarCaractTitle: string;
+  pubBuscarCaractCTA: string;
+  // ── Planes page ──────────────────────────────────────
+  plansTitle: string;
+  plansSub: string;
+  plansBack: string;
+  plansFreeLabel: string;
+  plansFreePrice: string;
+  plansFreeSub: string;
+  plansCurrentPlan: string;
+  plansGoHome: string;
+  plansProLabel: string;
+  plansProPrice: string;
+  plansProSub: string;
+  plansRecommended: string;
+  plansPerMonth: string;
+  plansActive: string;
+  plansActiveUntil: string;
+  plansLoginFirst: string;
+  plansSubscribe: string;
+  plansMpNote: string;
+  // ── Common ───────────────────────────────────────────
+  commonBack: string;
+  commonSave: string;
+  commonCancel: string;
+  commonLoading: string;
+  commonError: string;
+  commonClose: string;
+  commonRequired: string;
+  commonOptional: string;
+  commonSeeAll: string;
+  commonSeeMore: string;
+  commonRetry: string;
+  // ── Mapa page ────────────────────────────────────────
+  mapLoading: string;
+  mapLegendSeen: string;
+  mapLegendStreet: string;
+  mapLegendVecindog: string;
+  mapMyLocation: string;
+  // ── Buscar por foto page ──────────────────────────────
+  bpfBack: string;
+  bpfChip: string;
+  bpfTitle: string;
+  bpfSub: string;
+  bpfPhotoSection: string;
+  bpfRequired: string;
+  bpfUploadTap: string;
+  bpfUploadSub: string;
+  bpfGallery: string;
+  bpfTakePhoto: string;
+  bpfAnalyzingIA: string;
+  bpfIADetected: string;
+  bpfIAAutofilled: string;
+  bpfColorTitle: string;
+  bpfRazaTitle: string;
+  bpfRazaPlaceholder: string;
+  bpfSizeTitle: string;
+  bpfSizeSmall: string;
+  bpfSizeMedium: string;
+  bpfSizeLarge: string;
+  bpfAccessories: string;
+  bpfCollar: string;
+  bpfTag: string;
+  bpfYes: string;
+  bpfNo: string;
+  bpfSearchBtn: string;
+  bpfSearching: string;
+  bpfAnalyzingPhoto: string;
+  bpfBestMatch: string;
+  bpfNoMatches: string;
+  bpfNoMatchesSub: string;
+  bpfOtherPossibilities: string;
+  bpfNoPostsYet: string;
+  bpfSeeAllPosts: string;
+  bpfSeePost: string;
+  bpfWithCollar: string;
+  bpfNoCollar: string;
+  bpfWithTag: string;
+  bpfNoTag: string;
+  bpfPaywallTitle: string;
+  bpfPaywallSub: string;
+  bpfPaywallBtn: string;
+  bpfPaywallLink: string;
+  bpfSimilar: string;
 };
 
 const translations: Record<Lang, Translations> = {
+  // ═══════════════════════════════════════════════════════
+  //  ESPAÑOL
+  // ═══════════════════════════════════════════════════════
   es: {
+    // AuthModal
     welcome: 'Bienvenido a Vecindog',
     welcomeSub: 'Registrate para ver los datos de contacto de los avisos.',
     confirmEmail: 'Confirmá tu email',
@@ -130,6 +370,7 @@ const translations: Record<Lang, Translations> = {
     updatePasswordSuccess: '¡Contraseña actualizada!',
     updatePasswordSuccessSub: 'Ya podés iniciar sesión con tu nueva contraseña.',
     invalidResetLink: 'El link de recuperación es inválido o expiró. Pedí uno nuevo.',
+    // ProfileModal
     profileTitle: 'Completá tu perfil',
     profileSub: 'Necesitamos algunos datos para continuar',
     firstName: 'Nombre',
@@ -139,8 +380,251 @@ const translations: Record<Lang, Translations> = {
     province: 'Provincia',
     country: 'País',
     btnSave: 'Guardar y continuar',
+    // Navigation
+    navInicio: 'Inicio',
+    navMapa: 'Mapa',
+    navAvisos: 'Avisos',
+    navMisPerros: 'Mis perros',
+    navPublicar: 'Publicar',
+    navEnterPerfil: 'Entrar al perfil',
+    navMiPlanPro: 'Mi plan Pro',
+    navPlanes: 'Planes',
+    navMiComercio: 'Mi comercio',
+    navCambiarUbicacion: 'Cambiar ubicación',
+    navPanelAdmin: 'Panel admin',
+    navCerrarSesion: 'Cerrar sesión',
+    navDescargas: 'Descargas',
+    navInvitado: 'Invitado',
+    navModoInvitado: 'Modo invitado',
+    navSalirCrearCuenta: 'Salir y crear cuenta',
+    navSalir: 'Salir',
+    navCambiarCiudad: 'Cambiar ciudad',
+    navRedVecindog: 'Red Vecindog',
+    navPublicitate: 'Publicitate',
+    // Hero
+    heroChip: 'Red vecinal',
+    heroTitle: 'Buscá. Encontrá.',
+    heroTitleAccent: 'Adoptá.',
+    heroSub: 'La red vecinal para encontrar y adoptar',
+    heroSubBold: 'perros cerca de vos',
+    // ActionCards
+    accionBuscando: 'Estoy buscando',
+    accionBuscandoText: 'Publicá un aviso para que la comunidad te ayude a encontrarlo.',
+    accionViPerdido: 'Vi uno perdido',
+    accionViPerdidoText: 'Avisá a la comunidad para ayudarlo a volver a casa.',
+    accionDoyAdopcion: 'Doy en adopción',
+    accionDoyAdopcionText: 'Publicá un perro que necesita un nuevo hogar.',
+    accionTransito: 'En tránsito',
+    accionTransitoText: 'Lo tenés temporalmente o lo viste en la calle. La comunidad puede ayudar.',
+    accionCuidado: 'Cuidado',
+    accionCuidadoText: 'Buscá un cuidador o anotate para cuidar perros de otros vecinos.',
+    accionTransporte: 'Transporte',
+    accionTransporteText: 'Encontrá quien lleve a tu perro o anotate para transportar perros de vecinos.',
+    accionEmpezar: 'Empezar',
+    accionNuevo: 'Nuevo',
+    chipPerdidos: 'Perdidos',
+    chipTarda1Min: 'Tarda 1 minuto',
+    chipComunidadCuidada: 'Comunidad cuidada',
+    chipComunidad: 'Comunidad',
+    // HowItWorks
+    how4Steps: 'En 4 pasos',
+    howTitle: '¿Cómo funciona Vecindog?',
+    howSub: 'Tarda menos de un minuto.',
+    howStep1Title: 'Publicás',
+    howStep1Text: 'Subís fotos y los datos clave en menos de un minuto.',
+    howStep2Title: 'Vecinos lo ven',
+    howStep2Text: 'Tu aviso aparece en el tablón de tu ciudad.',
+    howStep3Title: 'Te contactan',
+    howStep3Text: 'Cuando alguien tiene una pista, te escribe por WhatsApp.',
+    howStep4Title: 'Reencuentro',
+    howStep4Text: 'O la familia ideal aparece para adoptar.',
+    calcTitle: 'Calculadora de edad canina',
+    calcSub: '¿Cuántos años tiene tu perro en años humanos?',
+    calcCta: 'Calcular ahora',
+    // TrustSection
+    trustTitle: 'Una comunidad cuidada',
+    trustSub: 'Reglas claras para que ayudar sea seguro para todos.',
+    trust1Title: 'Publicaciones por ciudad',
+    trust1Text: 'Los avisos se filtran por tu barrio y ciudad.',
+    trust2Title: 'Contacto rápido',
+    trust2Text: 'Directo por WhatsApp, sin intermediarios.',
+    trust3Title: 'No venta de animales',
+    trust3Text: 'Vecindog es solo para reunir y adoptar.',
+    trust4Title: 'Adopción responsable',
+    trust4Text: 'Recomendaciones claras para nuevas familias.',
+    trust5Title: 'Comunidad vecinal',
+    trust5Text: 'Hecho entre vecinos que se ayudan.',
+    trust6Title: 'Avisos claros',
+    trust6Text: 'Foto, barrio y datos verificables siempre.',
+    // Footer
+    footerSub: 'La red vecinal para encontrar y adoptar perros cerca de vos. Hecho entre vecinos, gratis y sin venta de animales.',
+    footerAvailableIn: 'Disponible en todo Argentina',
+    footerAppSection: 'La app',
+    footerComunidadSection: 'Comunidad',
+    footerNegociosSection: 'Negocios',
+    footerTerms: 'Términos y Condiciones',
+    footerPrivacy: 'Política de Privacidad',
+    footerMadeWith: 'Hecho con cariño en Argentina 🐾',
+    footerLinkInicio: 'Inicio',
+    footerLinkAvisos: 'Avisos',
+    footerLinkPublicar: 'Publicar',
+    footerLinkBuscarFoto: 'Buscar por foto',
+    footerLinkPerdidos: 'Perdidos',
+    footerLinkVistos: 'Vistos',
+    footerLinkAdopcion: 'En adopción',
+    footerLinkTransito: 'En tránsito',
+    // Categories
+    catPerdido: 'Perdido',
+    catEncontrado: 'Visto',
+    catAdopcion: 'En adopción',
+    catTransito: 'En tránsito',
+    catBuscoCuidador: 'Busca cuidador',
+    catCuidadorDisponible: 'Cuidador disponible',
+    // AnimalCard
+    cardNoName: 'Perro sin nombre',
+    cardTapInfo: 'Tocá para más info',
+    cardSeePost: 'Ver aviso',
+    cardNoPhoto: 'Aviso sin foto',
+    cardStreetSighting: 'Visto en la calle — necesita ayuda',
+    cardRewardPrefix: 'Recompensa $',
+    cardLastDay: 'Último día',
+    cardOneDayLeft: 'Queda 1 día',
+    cardDaysLeft: 'Quedan {n} días',
+    cardExpired: 'Plazo vencido',
+    // Filters
+    filterTitle: 'Filtros',
+    filterClear: 'Limpiar',
+    filterMyPosts: 'Mis publicaciones',
+    filterType: 'Tipo de aviso',
+    filterAll: 'Todos',
+    filterLostAndFound: 'Perdidos y vistos',
+    filterLost: 'Perdidos',
+    filterFound: 'Vistos',
+    filterAdoption: 'En adopción',
+    filterTransit: 'En tránsito',
+    filterCaretaker: 'Busca cuidador',
+    filterCaretakerAvail: 'Cuidadores disponibles',
+    filterZone: 'Zona / barrio',
+    filterZonePlaceholder: 'Centro, Villa Mitre, Palihue…',
+    // Publicaciones
+    pubTitleAll: 'Todos los avisos',
+    pubSubAll: 'Los perros publicados por los vecinos de tu ciudad.',
+    pubTitleBuscar: 'Perdidos y vistos',
+    pubSubBuscar: 'Perros perdidos y vistos cerca tuyo.',
+    pubTitlePerdido: 'Perros perdidos',
+    pubSubPerdido: 'Familias buscando a su perro. ¿Lo viste?',
+    pubTitleEncontrado: 'Perros vistos',
+    pubSubEncontrado: 'Perros vistos en la calle que buscan a su familia.',
+    pubTitleAdopcion: 'Perros en adopción',
+    pubSubAdopcion: 'Perros que buscan una familia responsable.',
+    pubTitleTransito: 'Perros en tránsito',
+    pubSubTransito: 'Perros que alguien tiene temporalmente o vio en la calle.',
+    pubTitleCuidador: 'Buscan cuidador',
+    pubSubCuidador: 'Dueños que buscan alguien de confianza para cuidar a su perro.',
+    pubTitleCuidadorDisp: 'Cuidadores disponibles',
+    pubSubCuidadorDisp: 'Vecinos disponibles para cuidar perros de la comunidad.',
+    pubMyPosts: 'Mis publicaciones',
+    pubLoading: 'Cargando avisos…',
+    pubError: 'Error al cargar los avisos.',
+    pubEmpty: 'No hay avisos todavía.',
+    pubEmptySub: 'Sé el primero en publicar.',
+    pubPostWord: 'aviso',
+    pubPostWordPlural: 'avisos',
+    pubSearchPlaceholder: 'Buscar por nombre, descripción o zona…',
+    pubShowMore: 'Ver más',
+    pubBuscarFotoTitle: 'Buscar por foto con IA',
+    pubBuscarFotoCTA: 'Subí una foto · La IA hace el matching',
+    pubBuscarCaractTitle: 'Buscar por características',
+    pubBuscarCaractCTA: 'Color, tamaño, collar, chapita…',
+    // Planes
+    plansTitle: 'Elegí tu plan',
+    plansSub: 'Vecindog es gratis para empezar. Pasate a Pro para la experiencia completa.',
+    plansBack: 'Volver',
+    plansFreeLabel: 'Gratis',
+    plansFreePrice: '$0',
+    plansFreeSub: 'Para empezar a buscar y registrar a tu perro.',
+    plansCurrentPlan: 'Plan actual',
+    plansGoHome: 'Volver al inicio',
+    plansProLabel: 'VecindogPro',
+    plansProPrice: '$1.000',
+    plansProSub: 'La experiencia completa para encontrar y cuidar a tu perro.',
+    plansRecommended: 'RECOMENDADO',
+    plansPerMonth: '/ mes',
+    plansActive: 'Plan activo',
+    plansActiveUntil: 'Plan activo hasta el',
+    plansLoginFirst: 'Iniciá sesión para suscribirte',
+    plansSubscribe: 'Suscribirme',
+    plansMpNote: 'Podés pagar con Mercado Pago (saldo, efectivo), tarjeta de débito o crédito.',
+    // Common
+    commonBack: 'Volver',
+    commonSave: 'Guardar',
+    commonCancel: 'Cancelar',
+    commonLoading: 'Cargando…',
+    commonError: 'Ocurrió un error. Intentá de nuevo.',
+    commonClose: 'Cerrar',
+    commonRequired: 'Requerido',
+    commonOptional: 'Opcional',
+    commonSeeAll: 'Ver todos',
+    commonSeeMore: 'Ver más',
+    commonRetry: 'Intentar de nuevo',
+    // Mapa
+    mapLoading: 'Cargando avisos…',
+    mapLegendSeen: 'Visto',
+    mapLegendStreet: 'En la calle',
+    mapLegendVecindog: 'Red Vecindog',
+    mapMyLocation: 'Mi ubicación',
+    // Buscar por foto
+    bpfBack: 'Volver a los avisos',
+    bpfChip: 'Búsqueda con IA',
+    bpfTitle: 'Buscar por foto',
+    bpfSub: 'Subí una foto — la IA detecta la raza, color y tamaño automáticamente.',
+    bpfPhotoSection: 'Foto del perro',
+    bpfRequired: 'Requerida',
+    bpfUploadTap: 'Tocá para subir una foto',
+    bpfUploadSub: 'La IA detecta raza, color y tamaño automáticamente',
+    bpfGallery: 'Galería',
+    bpfTakePhoto: 'Sacar foto',
+    bpfAnalyzingIA: 'Analizando con IA…',
+    bpfIADetected: 'IA detectó',
+    bpfIAAutofilled: 'Los filtros se completaron automáticamente. Podés ajustarlos abajo.',
+    bpfColorTitle: 'Color principal',
+    bpfRazaTitle: 'Raza',
+    bpfRazaPlaceholder: 'Ej: Labrador, Golden, Mestizo…',
+    bpfSizeTitle: 'Tamaño',
+    bpfSizeSmall: 'Chico',
+    bpfSizeMedium: 'Mediano',
+    bpfSizeLarge: 'Grande',
+    bpfAccessories: 'Accesorios',
+    bpfCollar: 'Collar',
+    bpfTag: 'Chapita',
+    bpfYes: 'Sí',
+    bpfNo: 'No',
+    bpfSearchBtn: 'Buscar coincidencias',
+    bpfSearching: 'Buscando…',
+    bpfAnalyzingPhoto: 'Analizando foto…',
+    bpfBestMatch: 'Mejor coincidencia',
+    bpfNoMatches: 'No encontramos coincidencias relevantes.',
+    bpfNoMatchesSub: 'Intentá ajustar los filtros o subir una foto más clara del perro.',
+    bpfOtherPossibilities: 'Otras posibilidades',
+    bpfNoPostsYet: 'No hay avisos publicados todavía.',
+    bpfSeeAllPosts: 'Ver todos los avisos',
+    bpfSeePost: 'Ver aviso',
+    bpfWithCollar: 'Con collar',
+    bpfNoCollar: 'Sin collar',
+    bpfWithTag: 'Con chapita',
+    bpfNoTag: 'Sin chapita',
+    bpfPaywallTitle: 'Búsqueda por foto',
+    bpfPaywallSub: 'Subí una foto y encontramos al perro usando IA. Función exclusiva de VecindogPro.',
+    bpfPaywallBtn: 'Ver plan Pro',
+    bpfPaywallLink: 'Ver avisos',
+    bpfSimilar: '% similar',
   },
+
+  // ═══════════════════════════════════════════════════════
+  //  ENGLISH
+  // ═══════════════════════════════════════════════════════
   en: {
+    // AuthModal
     welcome: 'Welcome to Vecindog',
     welcomeSub: 'Sign up to see contact details of listings.',
     confirmEmail: 'Confirm your email',
@@ -194,6 +678,7 @@ const translations: Record<Lang, Translations> = {
     updatePasswordSuccess: 'Password updated!',
     updatePasswordSuccessSub: 'You can now sign in with your new password.',
     invalidResetLink: 'The reset link is invalid or has expired. Request a new one.',
+    // ProfileModal
     profileTitle: 'Complete your profile',
     profileSub: 'We need some information to continue',
     firstName: 'First name',
@@ -203,8 +688,251 @@ const translations: Record<Lang, Translations> = {
     province: 'Province / State',
     country: 'Country',
     btnSave: 'Save and continue',
+    // Navigation
+    navInicio: 'Home',
+    navMapa: 'Map',
+    navAvisos: 'Listings',
+    navMisPerros: 'My dogs',
+    navPublicar: 'Post',
+    navEnterPerfil: 'My profile',
+    navMiPlanPro: 'My Pro plan',
+    navPlanes: 'Plans',
+    navMiComercio: 'My business',
+    navCambiarUbicacion: 'Change location',
+    navPanelAdmin: 'Admin panel',
+    navCerrarSesion: 'Sign out',
+    navDescargas: 'Downloads',
+    navInvitado: 'Guest',
+    navModoInvitado: 'Guest mode',
+    navSalirCrearCuenta: 'Leave and create account',
+    navSalir: 'Leave',
+    navCambiarCiudad: 'Change city',
+    navRedVecindog: 'Vecindog Network',
+    navPublicitate: 'Advertise',
+    // Hero
+    heroChip: 'Neighborhood network',
+    heroTitle: 'Search. Find.',
+    heroTitleAccent: 'Adopt.',
+    heroSub: 'The neighborhood network to find and adopt',
+    heroSubBold: 'dogs near you',
+    // ActionCards
+    accionBuscando: 'I\'m looking',
+    accionBuscandoText: 'Post a listing so the community can help you find them.',
+    accionViPerdido: 'I saw one lost',
+    accionViPerdidoText: 'Alert the community to help them get home.',
+    accionDoyAdopcion: 'Giving for adoption',
+    accionDoyAdopcionText: 'Post a dog that needs a new home.',
+    accionTransito: 'In transit',
+    accionTransitoText: 'You have them temporarily or saw them on the street. The community can help.',
+    accionCuidado: 'Dog care',
+    accionCuidadoText: 'Find a caretaker or sign up to take care of neighbors\' dogs.',
+    accionTransporte: 'Transport',
+    accionTransporteText: 'Find someone to take your dog or sign up to transport neighbors\' dogs.',
+    accionEmpezar: 'Start',
+    accionNuevo: 'New',
+    chipPerdidos: 'Lost',
+    chipTarda1Min: 'Takes 1 minute',
+    chipComunidadCuidada: 'Safe community',
+    chipComunidad: 'Community',
+    // HowItWorks
+    how4Steps: 'In 4 steps',
+    howTitle: 'How does Vecindog work?',
+    howSub: 'Takes less than a minute.',
+    howStep1Title: 'You post',
+    howStep1Text: 'Upload photos and key details in less than a minute.',
+    howStep2Title: 'Neighbors see it',
+    howStep2Text: 'Your listing appears on your city\'s board.',
+    howStep3Title: 'They contact you',
+    howStep3Text: 'When someone has a lead, they write to you via WhatsApp.',
+    howStep4Title: 'Reunion',
+    howStep4Text: 'Or the perfect family appears to adopt.',
+    calcTitle: 'Dog age calculator',
+    calcSub: 'How old is your dog in human years?',
+    calcCta: 'Calculate now',
+    // TrustSection
+    trustTitle: 'A cared-for community',
+    trustSub: 'Clear rules so that helping is safe for everyone.',
+    trust1Title: 'Listings by city',
+    trust1Text: 'Posts are filtered by your neighborhood and city.',
+    trust2Title: 'Quick contact',
+    trust2Text: 'Directly via WhatsApp, no middlemen.',
+    trust3Title: 'No animal sales',
+    trust3Text: 'Vecindog is only for reuniting and adopting.',
+    trust4Title: 'Responsible adoption',
+    trust4Text: 'Clear recommendations for new families.',
+    trust5Title: 'Neighborhood community',
+    trust5Text: 'Built by neighbors who help each other.',
+    trust6Title: 'Clear listings',
+    trust6Text: 'Photo, neighborhood and verifiable details always.',
+    // Footer
+    footerSub: 'The neighborhood network to find and adopt dogs near you. Made by neighbors, free and without animal sales.',
+    footerAvailableIn: 'Available throughout Argentina',
+    footerAppSection: 'The app',
+    footerComunidadSection: 'Community',
+    footerNegociosSection: 'Business',
+    footerTerms: 'Terms and Conditions',
+    footerPrivacy: 'Privacy Policy',
+    footerMadeWith: 'Made with love in Argentina 🐾',
+    footerLinkInicio: 'Home',
+    footerLinkAvisos: 'Listings',
+    footerLinkPublicar: 'Post',
+    footerLinkBuscarFoto: 'Search by photo',
+    footerLinkPerdidos: 'Lost',
+    footerLinkVistos: 'Found',
+    footerLinkAdopcion: 'For adoption',
+    footerLinkTransito: 'In transit',
+    // Categories
+    catPerdido: 'Lost',
+    catEncontrado: 'Found',
+    catAdopcion: 'For adoption',
+    catTransito: 'In transit',
+    catBuscoCuidador: 'Needs caretaker',
+    catCuidadorDisponible: 'Caretaker available',
+    // AnimalCard
+    cardNoName: 'Unnamed dog',
+    cardTapInfo: 'Tap for more info',
+    cardSeePost: 'See listing',
+    cardNoPhoto: 'No photo',
+    cardStreetSighting: 'Seen on the street — needs help',
+    cardRewardPrefix: 'Reward $',
+    cardLastDay: 'Last day',
+    cardOneDayLeft: '1 day left',
+    cardDaysLeft: '{n} days left',
+    cardExpired: 'Deadline passed',
+    // Filters
+    filterTitle: 'Filters',
+    filterClear: 'Clear',
+    filterMyPosts: 'My listings',
+    filterType: 'Listing type',
+    filterAll: 'All',
+    filterLostAndFound: 'Lost and found',
+    filterLost: 'Lost',
+    filterFound: 'Found',
+    filterAdoption: 'For adoption',
+    filterTransit: 'In transit',
+    filterCaretaker: 'Needs caretaker',
+    filterCaretakerAvail: 'Caretakers available',
+    filterZone: 'Zone / neighborhood',
+    filterZonePlaceholder: 'Downtown, Riverside, etc.',
+    // Publicaciones
+    pubTitleAll: 'All listings',
+    pubSubAll: 'Dogs posted by neighbors in your city.',
+    pubTitleBuscar: 'Lost and found',
+    pubSubBuscar: 'Lost and found dogs near you.',
+    pubTitlePerdido: 'Lost dogs',
+    pubSubPerdido: 'Families looking for their dog. Have you seen them?',
+    pubTitleEncontrado: 'Found dogs',
+    pubSubEncontrado: 'Dogs seen on the street looking for their family.',
+    pubTitleAdopcion: 'Dogs for adoption',
+    pubSubAdopcion: 'Dogs looking for a responsible family.',
+    pubTitleTransito: 'Dogs in transit',
+    pubSubTransito: 'Dogs someone has temporarily or saw on the street.',
+    pubTitleCuidador: 'Looking for caretaker',
+    pubSubCuidador: 'Owners looking for a trusted person to care for their dog.',
+    pubTitleCuidadorDisp: 'Caretakers available',
+    pubSubCuidadorDisp: 'Neighbors available to care for community dogs.',
+    pubMyPosts: 'My listings',
+    pubLoading: 'Loading listings…',
+    pubError: 'Error loading listings.',
+    pubEmpty: 'No listings yet.',
+    pubEmptySub: 'Be the first to post.',
+    pubPostWord: 'listing',
+    pubPostWordPlural: 'listings',
+    pubSearchPlaceholder: 'Search by name, description or area…',
+    pubShowMore: 'Show more',
+    pubBuscarFotoTitle: 'AI photo search',
+    pubBuscarFotoCTA: 'Upload a photo · AI does the matching',
+    pubBuscarCaractTitle: 'Search by characteristics',
+    pubBuscarCaractCTA: 'Color, size, collar, tag…',
+    // Planes
+    plansTitle: 'Choose your plan',
+    plansSub: 'Vecindog is free to start. Upgrade to Pro for the full experience.',
+    plansBack: 'Back',
+    plansFreeLabel: 'Free',
+    plansFreePrice: '$0',
+    plansFreeSub: 'To start searching and registering your dog.',
+    plansCurrentPlan: 'Current plan',
+    plansGoHome: 'Go to home',
+    plansProLabel: 'VecindogPro',
+    plansProPrice: '$1,000',
+    plansProSub: 'The full experience to find and care for your dog.',
+    plansRecommended: 'RECOMMENDED',
+    plansPerMonth: '/ month',
+    plansActive: 'Plan active',
+    plansActiveUntil: 'Plan active until',
+    plansLoginFirst: 'Sign in to subscribe',
+    plansSubscribe: 'Subscribe',
+    plansMpNote: 'You can pay with Mercado Pago (balance, cash), debit or credit card.',
+    // Common
+    commonBack: 'Back',
+    commonSave: 'Save',
+    commonCancel: 'Cancel',
+    commonLoading: 'Loading…',
+    commonError: 'An error occurred. Please try again.',
+    commonClose: 'Close',
+    commonRequired: 'Required',
+    commonOptional: 'Optional',
+    commonSeeAll: 'See all',
+    commonSeeMore: 'See more',
+    commonRetry: 'Try again',
+    // Mapa
+    mapLoading: 'Loading posts…',
+    mapLegendSeen: 'Seen',
+    mapLegendStreet: 'On the street',
+    mapLegendVecindog: 'Red Vecindog',
+    mapMyLocation: 'My location',
+    // Buscar por foto
+    bpfBack: 'Back to posts',
+    bpfChip: 'AI Search',
+    bpfTitle: 'Search by photo',
+    bpfSub: 'Upload a photo — AI detects breed, color and size automatically.',
+    bpfPhotoSection: 'Dog photo',
+    bpfRequired: 'Required',
+    bpfUploadTap: 'Tap to upload a photo',
+    bpfUploadSub: 'AI detects breed, color and size automatically',
+    bpfGallery: 'Gallery',
+    bpfTakePhoto: 'Take photo',
+    bpfAnalyzingIA: 'Analyzing with AI…',
+    bpfIADetected: 'AI detected',
+    bpfIAAutofilled: 'Filters were filled automatically. You can adjust them below.',
+    bpfColorTitle: 'Main color',
+    bpfRazaTitle: 'Breed',
+    bpfRazaPlaceholder: 'E.g.: Labrador, Golden, Mixed…',
+    bpfSizeTitle: 'Size',
+    bpfSizeSmall: 'Small',
+    bpfSizeMedium: 'Medium',
+    bpfSizeLarge: 'Large',
+    bpfAccessories: 'Accessories',
+    bpfCollar: 'Collar',
+    bpfTag: 'Tag',
+    bpfYes: 'Yes',
+    bpfNo: 'No',
+    bpfSearchBtn: 'Search matches',
+    bpfSearching: 'Searching…',
+    bpfAnalyzingPhoto: 'Analyzing photo…',
+    bpfBestMatch: 'Best match',
+    bpfNoMatches: 'No relevant matches found.',
+    bpfNoMatchesSub: 'Try adjusting the filters or uploading a clearer photo of the dog.',
+    bpfOtherPossibilities: 'Other possibilities',
+    bpfNoPostsYet: 'No posts published yet.',
+    bpfSeeAllPosts: 'See all posts',
+    bpfSeePost: 'See post',
+    bpfWithCollar: 'With collar',
+    bpfNoCollar: 'No collar',
+    bpfWithTag: 'With tag',
+    bpfNoTag: 'No tag',
+    bpfPaywallTitle: 'Photo search',
+    bpfPaywallSub: 'Upload a photo and we find the dog using AI. Exclusive feature of VecindogPro.',
+    bpfPaywallBtn: 'See Pro plan',
+    bpfPaywallLink: 'See posts',
+    bpfSimilar: '% match',
   },
+
+  // ═══════════════════════════════════════════════════════
+  //  PORTUGUÊS
+  // ═══════════════════════════════════════════════════════
   pt: {
+    // AuthModal
     welcome: 'Bem-vindo ao Vecindog',
     welcomeSub: 'Cadastre-se para ver os dados de contato dos anúncios.',
     confirmEmail: 'Confirme seu email',
@@ -258,6 +986,7 @@ const translations: Record<Lang, Translations> = {
     updatePasswordSuccess: 'Senha atualizada!',
     updatePasswordSuccessSub: 'Agora você pode entrar com sua nova senha.',
     invalidResetLink: 'O link de recuperação é inválido ou expirou. Solicite um novo.',
+    // ProfileModal
     profileTitle: 'Complete seu perfil',
     profileSub: 'Precisamos de alguns dados para continuar',
     firstName: 'Nome',
@@ -267,6 +996,244 @@ const translations: Record<Lang, Translations> = {
     province: 'Província / Estado',
     country: 'País',
     btnSave: 'Salvar e continuar',
+    // Navigation
+    navInicio: 'Início',
+    navMapa: 'Mapa',
+    navAvisos: 'Anúncios',
+    navMisPerros: 'Meus cães',
+    navPublicar: 'Publicar',
+    navEnterPerfil: 'Meu perfil',
+    navMiPlanPro: 'Meu plano Pro',
+    navPlanes: 'Planos',
+    navMiComercio: 'Meu negócio',
+    navCambiarUbicacion: 'Mudar localização',
+    navPanelAdmin: 'Painel admin',
+    navCerrarSesion: 'Sair',
+    navDescargas: 'Downloads',
+    navInvitado: 'Convidado',
+    navModoInvitado: 'Modo convidado',
+    navSalirCrearCuenta: 'Sair e criar conta',
+    navSalir: 'Sair',
+    navCambiarCiudad: 'Mudar cidade',
+    navRedVecindog: 'Rede Vecindog',
+    navPublicitate: 'Anuncie',
+    // Hero
+    heroChip: 'Rede de vizinhança',
+    heroTitle: 'Busque. Encontre.',
+    heroTitleAccent: 'Adote.',
+    heroSub: 'A rede de vizinhança para encontrar e adotar',
+    heroSubBold: 'cães perto de você',
+    // ActionCards
+    accionBuscando: 'Estou procurando',
+    accionBuscandoText: 'Publique um anúncio para que a comunidade ajude a encontrá-lo.',
+    accionViPerdido: 'Vi um perdido',
+    accionViPerdidoText: 'Avise a comunidade para ajudá-lo a voltar para casa.',
+    accionDoyAdopcion: 'Dou para adoção',
+    accionDoyAdopcionText: 'Publique um cão que precisa de um novo lar.',
+    accionTransito: 'Em trânsito',
+    accionTransitoText: 'Está com ele temporariamente ou o viu na rua. A comunidade pode ajudar.',
+    accionCuidado: 'Cuidado',
+    accionCuidadoText: 'Encontre um cuidador ou se cadastre para cuidar dos cães dos vizinhos.',
+    accionTransporte: 'Transporte',
+    accionTransporteText: 'Encontre quem leve seu cão ou se cadastre para transportar cães de vizinhos.',
+    accionEmpezar: 'Começar',
+    accionNuevo: 'Novo',
+    chipPerdidos: 'Perdidos',
+    chipTarda1Min: 'Leva 1 minuto',
+    chipComunidadCuidada: 'Comunidade cuidada',
+    chipComunidad: 'Comunidade',
+    // HowItWorks
+    how4Steps: 'Em 4 passos',
+    howTitle: 'Como funciona o Vecindog?',
+    howSub: 'Leva menos de um minuto.',
+    howStep1Title: 'Você publica',
+    howStep1Text: 'Sobe fotos e os dados principais em menos de um minuto.',
+    howStep2Title: 'Vizinhos veem',
+    howStep2Text: 'Seu anúncio aparece no mural da sua cidade.',
+    howStep3Title: 'Te contactam',
+    howStep3Text: 'Quando alguém tem uma pista, te escreve pelo WhatsApp.',
+    howStep4Title: 'Reencontro',
+    howStep4Text: 'Ou a família ideal aparece para adotar.',
+    calcTitle: 'Calculadora de idade canina',
+    calcSub: 'Quantos anos tem seu cão em anos humanos?',
+    calcCta: 'Calcular agora',
+    // TrustSection
+    trustTitle: 'Uma comunidade cuidada',
+    trustSub: 'Regras claras para que ajudar seja seguro para todos.',
+    trust1Title: 'Anúncios por cidade',
+    trust1Text: 'Os anúncios são filtrados pelo seu bairro e cidade.',
+    trust2Title: 'Contato rápido',
+    trust2Text: 'Direto pelo WhatsApp, sem intermediários.',
+    trust3Title: 'Sem venda de animais',
+    trust3Text: 'O Vecindog é apenas para reunir e adotar.',
+    trust4Title: 'Adoção responsável',
+    trust4Text: 'Recomendações claras para novas famílias.',
+    trust5Title: 'Comunidade de vizinhos',
+    trust5Text: 'Feito entre vizinhos que se ajudam.',
+    trust6Title: 'Anúncios claros',
+    trust6Text: 'Foto, bairro e dados verificáveis sempre.',
+    // Footer
+    footerSub: 'A rede de vizinhança para encontrar e adotar cães perto de você. Feito entre vizinhos, grátis e sem venda de animais.',
+    footerAvailableIn: 'Disponível em toda a Argentina',
+    footerAppSection: 'O app',
+    footerComunidadSection: 'Comunidade',
+    footerNegociosSection: 'Negócios',
+    footerTerms: 'Termos e Condições',
+    footerPrivacy: 'Política de Privacidade',
+    footerMadeWith: 'Feito com carinho na Argentina 🐾',
+    footerLinkInicio: 'Início',
+    footerLinkAvisos: 'Anúncios',
+    footerLinkPublicar: 'Publicar',
+    footerLinkBuscarFoto: 'Buscar por foto',
+    footerLinkPerdidos: 'Perdidos',
+    footerLinkVistos: 'Encontrados',
+    footerLinkAdopcion: 'Para adoção',
+    footerLinkTransito: 'Em trânsito',
+    // Categories
+    catPerdido: 'Perdido',
+    catEncontrado: 'Encontrado',
+    catAdopcion: 'Para adoção',
+    catTransito: 'Em trânsito',
+    catBuscoCuidador: 'Precisa de cuidador',
+    catCuidadorDisponible: 'Cuidador disponível',
+    // AnimalCard
+    cardNoName: 'Cão sem nome',
+    cardTapInfo: 'Toque para mais info',
+    cardSeePost: 'Ver anúncio',
+    cardNoPhoto: 'Anúncio sem foto',
+    cardStreetSighting: 'Visto na rua — precisa de ajuda',
+    cardRewardPrefix: 'Recompensa $',
+    cardLastDay: 'Último dia',
+    cardOneDayLeft: 'Falta 1 dia',
+    cardDaysLeft: 'Faltam {n} dias',
+    cardExpired: 'Prazo vencido',
+    // Filters
+    filterTitle: 'Filtros',
+    filterClear: 'Limpar',
+    filterMyPosts: 'Meus anúncios',
+    filterType: 'Tipo de anúncio',
+    filterAll: 'Todos',
+    filterLostAndFound: 'Perdidos e encontrados',
+    filterLost: 'Perdidos',
+    filterFound: 'Encontrados',
+    filterAdoption: 'Para adoção',
+    filterTransit: 'Em trânsito',
+    filterCaretaker: 'Precisa de cuidador',
+    filterCaretakerAvail: 'Cuidadores disponíveis',
+    filterZone: 'Zona / bairro',
+    filterZonePlaceholder: 'Centro, Vila Madalena, etc.',
+    // Publicaciones
+    pubTitleAll: 'Todos os anúncios',
+    pubSubAll: 'Cães publicados pelos vizinhos da sua cidade.',
+    pubTitleBuscar: 'Perdidos e encontrados',
+    pubSubBuscar: 'Cães perdidos e vistos perto de você.',
+    pubTitlePerdido: 'Cães perdidos',
+    pubSubPerdido: 'Famílias procurando seu cão. Você viu?',
+    pubTitleEncontrado: 'Cães encontrados',
+    pubSubEncontrado: 'Cães vistos na rua procurando sua família.',
+    pubTitleAdopcion: 'Cães para adoção',
+    pubSubAdopcion: 'Cães procurando uma família responsável.',
+    pubTitleTransito: 'Cães em trânsito',
+    pubSubTransito: 'Cães que alguém tem temporariamente ou viu na rua.',
+    pubTitleCuidador: 'Procurando cuidador',
+    pubSubCuidador: 'Donos procurando alguém de confiança para cuidar do cão.',
+    pubTitleCuidadorDisp: 'Cuidadores disponíveis',
+    pubSubCuidadorDisp: 'Vizinhos disponíveis para cuidar de cães da comunidade.',
+    pubMyPosts: 'Meus anúncios',
+    pubLoading: 'Carregando anúncios…',
+    pubError: 'Erro ao carregar os anúncios.',
+    pubEmpty: 'Nenhum anúncio ainda.',
+    pubEmptySub: 'Seja o primeiro a publicar.',
+    pubPostWord: 'anúncio',
+    pubPostWordPlural: 'anúncios',
+    pubSearchPlaceholder: 'Buscar por nome, descrição ou zona…',
+    pubShowMore: 'Ver mais',
+    pubBuscarFotoTitle: 'Busca por foto com IA',
+    pubBuscarFotoCTA: 'Suba uma foto · A IA faz o matching',
+    pubBuscarCaractTitle: 'Buscar por características',
+    pubBuscarCaractCTA: 'Cor, tamanho, coleira, plaquinha…',
+    // Planes
+    plansTitle: 'Escolha seu plano',
+    plansSub: 'O Vecindog é gratuito para começar. Atualize para Pro para a experiência completa.',
+    plansBack: 'Voltar',
+    plansFreeLabel: 'Grátis',
+    plansFreePrice: '$0',
+    plansFreeSub: 'Para começar a buscar e registrar seu cão.',
+    plansCurrentPlan: 'Plano atual',
+    plansGoHome: 'Voltar ao início',
+    plansProLabel: 'VecindogPro',
+    plansProPrice: '$1.000',
+    plansProSub: 'A experiência completa para encontrar e cuidar do seu cão.',
+    plansRecommended: 'RECOMENDADO',
+    plansPerMonth: '/ mês',
+    plansActive: 'Plano ativo',
+    plansActiveUntil: 'Plano ativo até',
+    plansLoginFirst: 'Entre para se inscrever',
+    plansSubscribe: 'Assinar',
+    plansMpNote: 'Você pode pagar com Mercado Pago (saldo, dinheiro), cartão de débito ou crédito.',
+    // Common
+    commonBack: 'Voltar',
+    commonSave: 'Salvar',
+    commonCancel: 'Cancelar',
+    commonLoading: 'Carregando…',
+    commonError: 'Ocorreu um erro. Tente novamente.',
+    commonClose: 'Fechar',
+    commonRequired: 'Obrigatório',
+    commonOptional: 'Opcional',
+    commonSeeAll: 'Ver todos',
+    commonSeeMore: 'Ver mais',
+    commonRetry: 'Tentar novamente',
+    // Mapa
+    mapLoading: 'Carregando avisos…',
+    mapLegendSeen: 'Visto',
+    mapLegendStreet: 'Na rua',
+    mapLegendVecindog: 'Red Vecindog',
+    mapMyLocation: 'Minha localização',
+    // Buscar por foto
+    bpfBack: 'Voltar aos avisos',
+    bpfChip: 'Busca com IA',
+    bpfTitle: 'Buscar por foto',
+    bpfSub: 'Envie uma foto — a IA detecta raça, cor e tamanho automaticamente.',
+    bpfPhotoSection: 'Foto do cão',
+    bpfRequired: 'Obrigatória',
+    bpfUploadTap: 'Toque para enviar uma foto',
+    bpfUploadSub: 'A IA detecta raça, cor e tamanho automaticamente',
+    bpfGallery: 'Galeria',
+    bpfTakePhoto: 'Tirar foto',
+    bpfAnalyzingIA: 'Analisando com IA…',
+    bpfIADetected: 'IA detectou',
+    bpfIAAutofilled: 'Os filtros foram preenchidos automaticamente. Você pode ajustá-los abaixo.',
+    bpfColorTitle: 'Cor principal',
+    bpfRazaTitle: 'Raça',
+    bpfRazaPlaceholder: 'Ex: Labrador, Golden, Vira-lata…',
+    bpfSizeTitle: 'Tamanho',
+    bpfSizeSmall: 'Pequeno',
+    bpfSizeMedium: 'Médio',
+    bpfSizeLarge: 'Grande',
+    bpfAccessories: 'Acessórios',
+    bpfCollar: 'Coleira',
+    bpfTag: 'Plaquinha',
+    bpfYes: 'Sim',
+    bpfNo: 'Não',
+    bpfSearchBtn: 'Buscar coincidências',
+    bpfSearching: 'Buscando…',
+    bpfAnalyzingPhoto: 'Analisando foto…',
+    bpfBestMatch: 'Melhor coincidência',
+    bpfNoMatches: 'Não encontramos coincidências relevantes.',
+    bpfNoMatchesSub: 'Tente ajustar os filtros ou enviar uma foto mais clara do cão.',
+    bpfOtherPossibilities: 'Outras possibilidades',
+    bpfNoPostsYet: 'Ainda não há avisos publicados.',
+    bpfSeeAllPosts: 'Ver todos os avisos',
+    bpfSeePost: 'Ver aviso',
+    bpfWithCollar: 'Com coleira',
+    bpfNoCollar: 'Sem coleira',
+    bpfWithTag: 'Com plaquinha',
+    bpfNoTag: 'Sem plaquinha',
+    bpfPaywallTitle: 'Busca por foto',
+    bpfPaywallSub: 'Envie uma foto e encontramos o cão usando IA. Função exclusiva do VecindogPro.',
+    bpfPaywallBtn: 'Ver plano Pro',
+    bpfPaywallLink: 'Ver avisos',
+    bpfSimilar: '% similar',
   },
 };
 

@@ -13,6 +13,7 @@ import Filters, { FILTROS_INICIALES, type FiltrosState } from '@/components/Filt
 import AdSlot from '@/components/AdSlot';
 import { useAuth } from '@/contexts/AuthContext';
 import { nombreCorto } from '@/lib/ciudades';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /** Cuántos avisos reales entre cada ad card */
 const AD_INTERVAL = 4;
@@ -23,27 +24,6 @@ const CAT_VALIDAS: FiltroCategoria[] = [
   'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito', 'busco_cuidador', 'cuidador_disponible'
 ];
 
-const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
-  todas:                'Todos los avisos',
-  buscar:               'Perdidos y vistos',
-  perdido:              'Perros perdidos',
-  encontrado:           'Perros vistos',
-  adopcion:             'Perros en adopción',
-  transito:             'Perros en tránsito',
-  busco_cuidador:       'Buscan cuidador',
-  cuidador_disponible:  'Cuidadores disponibles',
-};
-
-const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
-  todas:                'Los perros publicados por los vecinos de tu ciudad.',
-  buscar:               'Perros perdidos y vistos cerca tuyo.',
-  perdido:              'Familias buscando a su perro. ¿Lo viste?',
-  encontrado:           'Perros vistos en la calle que buscan a su familia.',
-  adopcion:             'Perros que buscan una familia responsable.',
-  transito:             'Perros que alguien tiene temporalmente o vio en la calle.',
-  busco_cuidador:       'Dueños que buscan alguien de confianza para cuidar a su perro.',
-  cuidador_disponible:  'Vecinos disponibles para cuidar perros de la comunidad.',
-};
 
 export default function PublicacionesPage() {
   const searchParams = useSearchParams();
@@ -53,6 +33,29 @@ export default function PublicacionesPage() {
   const soloParam  = searchParams.get('solo') === '1';
   const uidParam   = searchParams.get('uid') ?? '';   // para filtro admin
   const { ciudad, user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
+
+  const TITULO_CATEGORIA: Record<FiltroCategoria, string> = {
+    todas:                t.pubTitleAll,
+    buscar:               t.pubTitleBuscar,
+    perdido:              t.pubTitlePerdido,
+    encontrado:           t.pubTitleEncontrado,
+    adopcion:             t.pubTitleAdopcion,
+    transito:             t.pubTitleTransito,
+    busco_cuidador:       t.pubTitleCuidador,
+    cuidador_disponible:  t.pubTitleCuidadorDisp,
+  };
+
+  const SUBTITULO_CATEGORIA: Record<FiltroCategoria, string> = {
+    todas:                t.pubSubAll,
+    buscar:               t.pubSubBuscar,
+    perdido:              t.pubSubPerdido,
+    encontrado:           t.pubSubEncontrado,
+    adopcion:             t.pubSubAdopcion,
+    transito:             t.pubSubTransito,
+    busco_cuidador:       t.pubSubCuidador,
+    cuidador_disponible:  t.pubSubCuidadorDisp,
+  };
 
   const catInicial: FiltroCategoria =
     catParam && (CAT_VALIDAS as string[]).includes(catParam)
@@ -151,13 +154,13 @@ export default function PublicacionesPage() {
           <Dog className="h-3.5 w-3.5" /> Perros{ciudad ? ` · ${nombreCorto(ciudad)}` : ''}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-          {filtros.soloMios ? 'Mis publicaciones' : TITULO_CATEGORIA[filtros.categoria]}
+          {filtros.soloMios ? t.pubMyPosts : TITULO_CATEGORIA[filtros.categoria]}
         </h1>
         <p className="mt-1 text-ink-muted">
           {SUBTITULO_CATEGORIA[filtros.categoria]}{' '}
           {!cargando && (
             <span className="font-bold text-ink">
-              {resultados.length} aviso{resultados.length !== 1 ? 's' : ''}
+              {resultados.length} {resultados.length !== 1 ? t.pubPostWordPlural : t.pubPostWord}
             </span>
           )}
         </p>
@@ -174,9 +177,9 @@ export default function PublicacionesPage() {
             <ScanSearch className="h-5 w-5" />
           </span>
           <div className="flex-1">
-            <h2 className="font-display text-sm font-extrabold sm:text-base">Buscar por características</h2>
+            <h2 className="font-display text-sm font-extrabold sm:text-base">{t.pubBuscarCaractTitle}</h2>
             <p className="mt-0.5 text-xs text-white/80">
-              Color, tamaño, collar, chapita…
+              {t.pubBuscarCaractCTA}
             </p>
           </div>
           <ArrowRight className="hidden h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 sm:block" />
@@ -191,9 +194,9 @@ export default function PublicacionesPage() {
             <Sparkles className="h-5 w-5" />
           </span>
           <div className="flex-1">
-            <h2 className="font-display text-sm font-extrabold sm:text-base">Buscar por foto</h2>
+            <h2 className="font-display text-sm font-extrabold sm:text-base">{t.pubBuscarFotoTitle}</h2>
             <p className="mt-0.5 text-xs text-white/80">
-              Subí una foto y comparamos colores
+              {t.pubBuscarFotoCTA}
             </p>
           </div>
           <ArrowRight className="hidden h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 sm:block" />
@@ -207,7 +210,7 @@ export default function PublicacionesPage() {
           type="search"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="Buscar por nombre, zona, descripción…"
+          placeholder={t.pubSearchPlaceholder}
           className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder-ink-muted shadow-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
         />
       </div>
@@ -229,18 +232,14 @@ export default function PublicacionesPage() {
               <Dog className="h-7 w-7" />
             </div>
             <h2 className="mt-3 font-display text-xl font-extrabold text-ink">
-              {posts.length === 0
-                ? 'Todavía no hay avisos publicados'
-                : 'No hay avisos con esos filtros'}
+              {t.pubEmpty}
             </h2>
             <p className="mt-1 text-ink-muted">
-              {posts.length === 0
-                ? '¡Sé el primero en publicar un aviso!'
-                : 'Probá cambiar el tipo de aviso o ampliar la zona.'}
+              {t.pubEmptySub}
             </p>
             {posts.length === 0 && (
               <Link href="/publicar" className="btn-primary mt-4 inline-flex">
-                Publicar aviso
+                {t.navPublicar}
               </Link>
             )}
           </div>
@@ -261,14 +260,14 @@ export default function PublicacionesPage() {
             <div className="mt-8 flex flex-col items-center gap-3">
               <p className="text-sm text-ink-muted">
                 Mostrando <span className="font-bold text-ink">{visiblesSlice.length}</span> de{' '}
-                <span className="font-bold text-ink">{resultados.length}</span> aviso{resultados.length !== 1 ? 's' : ''}
+                <span className="font-bold text-ink">{resultados.length}</span> {resultados.length !== 1 ? t.pubPostWordPlural : t.pubPostWord}
               </p>
               {visibles < resultados.length && (
                 <button
                   onClick={() => setVisibles((v) => v + PAGE_SIZE)}
                   className="btn-secondary inline-flex items-center gap-2"
                 >
-                  Cargar más avisos
+                  {t.pubShowMore}
                 </button>
               )}
             </div>

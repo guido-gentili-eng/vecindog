@@ -38,13 +38,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, reason: 'usuario no coincide' }, { status: 403 });
     }
 
-    const admin = adminClient;
-
     const vencimiento = new Date();
     vencimiento.setDate(vencimiento.getDate() + 30);
     const vencimientoStr = vencimiento.toISOString().slice(0, 10);
 
-    const { error } = await admin
+    const { error } = await adminClient
       .from('profiles')
       .update({ plan: 'pro', plan_vencimiento: vencimientoStr })
       .eq('id', meta.user_id);

@@ -24,6 +24,7 @@ import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import dynamicImport from 'next/dynamic';
+import OnboardingModal from '@/components/OnboardingModal';
 const MapPinPicker = dynamicImport(() => import('@/components/MapPinPicker'), { ssr: false });
 
 /* ─── Tipos ─── */
@@ -515,6 +516,21 @@ export default function PublicarPage() {
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
+      <OnboardingModal
+        storageKey="onboarding_publicar"
+        slides={[
+          {
+            emoji: '📢',
+            titulo: 'Publicá un aviso en minutos',
+            descripcion: 'Elegí si perdiste un perro, encontraste uno, o querés darlo en adopción. Con foto, zona y datos de contacto.',
+          },
+          {
+            emoji: '🗺️',
+            titulo: 'Tu barrio lo va a ver',
+            descripcion: 'Tu aviso aparece en el mapa y en el listado. Cuantos más vecinos lo vean, más rápido se resuelve.',
+          },
+        ]}
+      />
       <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
         <ArrowLeft className="h-4 w-4" /> {t.pbrBack}
       </Link>

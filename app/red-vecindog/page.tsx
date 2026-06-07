@@ -12,6 +12,7 @@ import { buscarCiudades } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useLanguage } from '@/contexts/LanguageContext';
+import OnboardingModal from '@/components/OnboardingModal';
 
 const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
 
@@ -67,6 +68,21 @@ export default function RedVecindogPage() {
 
   return (
     <div className="py-10 md:py-14">
+      <OnboardingModal
+        storageKey="onboarding_red_vecindog"
+        slides={[
+          {
+            emoji: '🏪',
+            titulo: 'La red de comercios de tu barrio',
+            descripcion: 'Encontrá veterinarias, pet shops, peluquerías y cuidadores en Bahía Blanca. Todos en un solo mapa.',
+          },
+          {
+            emoji: '📍',
+            titulo: '¿Tenés un comercio?',
+            descripcion: 'Registrá tu local y aparecé en el mapa de Vecindog. Los dueños de perros del barrio te van a encontrar.',
+          },
+        ]}
+      />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section className="mb-16 text-center md:mb-20">

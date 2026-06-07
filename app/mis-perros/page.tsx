@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
 import { useSearchParams } from 'next/navigation';
+import OnboardingModal from '@/components/OnboardingModal';
 
 export default function MisPerrosPage() {
   const { isAuthenticated, loading: authLoading, isPro } = useAuth();
@@ -68,6 +69,21 @@ export default function MisPerrosPage() {
 
   return (
     <div className="py-8 md:py-10">
+      <OnboardingModal
+        storageKey="onboarding_mis_perros"
+        slides={[
+          {
+            emoji: '🐾',
+            titulo: 'El perfil digital de tu perro',
+            descripcion: 'Guardá la foto, raza, color y datos de salud de tu perro en un solo lugar. Siempre disponible desde tu celular.',
+          },
+          {
+            emoji: '🏷️',
+            titulo: 'Su identidad si se pierde',
+            descripcion: 'Si tu perro se pierde, tenés todo listo para publicar el aviso en segundos. También podés obtener su chapita con QR.',
+          },
+        ]}
+      />
       {amigosOpen && <AmigosPanel onClose={() => setAmigosOpen(false)} />}
 
       {/* Modal confirmación eliminar perro */}

@@ -1305,6 +1305,299 @@ export type Translations = {
   mcomLinkLabel: string;
   mcomGuardando: string;
   mcomGuardarCambios: string;
+  // mis-perros/[id]
+  mpdMisPerros: string;
+  mpdGenerarCartel: string;
+  mpdPublicarRedes: string;
+  mpdQrCollar: string;
+  mpdDiario: string;
+  mpdEditarPerfil: string;
+  mpdRegistrado: string;
+  mpdRegistradoSub: string;
+  mpdSaludable: string;
+  mpdEnTratamiento: string;
+  mpdEnRecuperacion: string;
+  mpdBannerProText: string;
+  mpdVerPro: string;
+  mpdVencidoUno: string;
+  mpdVencidosN: string;
+  mpdProximaUna: string;
+  mpdProximasN: string;
+  mpdIdentificacion: string;
+  mpdGuardarPDF: string;
+  mpdMicrochip: string;
+  mpdFechaNacLabel: string;
+  mpdEdadLabel: string;
+  mpdCiudadLabel: string;
+  mpdEsterilizadoLabel: string;
+  mpdAlergiasLabel: string;
+  mpdVetHabitual: string;
+  mpdCarnetVacunas: string;
+  mpdVacunasRegistradas: string;
+  mpdSinVacunas: string;
+  mpdEncontrarVet: string;
+  mpdRedVetSub: string;
+  mpdVerVets: string;
+  mpdAvisoActivo: string;
+  mpdAvisoActivoSub: string;
+  mpdAvisoRenovado: string;
+  mpdRenovarAviso: string;
+  mpdVerAviso: string;
+  mpdPerdiste: string;
+  mpdPerdistesSub: string;
+  mpdPublicarAviso: string;
+  mpdPerroNoEncontrado: string;
+  mpdVolverListado: string;
+  mpdEsterilizado: string;
+  // EditForm
+  mpdSubirFoto: string;
+  mpdCambiarFoto: string;
+  mpdFotoError: string;
+  mpdNombreLabel: string;
+  mpdRazaLabel: string;
+  mpdColorLabel: string;
+  mpdColorPlaceholder: string;
+  mpdSexoLabel: string;
+  mpdTamanoLabel: string;
+  mpdFechaNacFormLabel: string;
+  mpdChipPlaceholder: string;
+  mpdEsterilizadoCheck: string;
+  mpdDescripcionLabel: string;
+  mpdDescripcionPlaceholder: string;
+  mpdAlergiasCond: string;
+  mpdAlergiasPlaceholder: string;
+  mpdVetNombreLabel: string;
+  mpdVetTelefonoLabel: string;
+  mpdErrGuardar: string;
+  mpdCancelar: string;
+  mpdGuardarCambios: string;
+  mpdEliminarPerfil: string;
+  mpdEliminarConfirm: string;
+  mpdEliminarWarning: string;
+  mpdSiEliminar: string;
+  mpdEnviarCarnet: string;
+  // VacunaItem/Form
+  mpdVacunaVencida: string;
+  mpdVacunaVigente: string;
+  mpdVacunaProxima: string;
+  mpdVacunaLabel: string;
+  mpdVacunaPlaceholder: string;
+  mpdFechaReqLabel: string;
+  mpdProximaDosis: string;
+  mpdVetFormLabel: string;
+  mpdNotasLabel: string;
+  mpdVacunaErrReq: string;
+  mpdAgregarVacuna: string;
+  // Shared form
+  mpdGuardar: string;
+  mpdAgregar: string;
+  mpdEnviar: string;
+  mpdVer: string;
+  mpdEditar: string;
+  mpdCerrar: string;
+  mpdRegistrar: string;
+  mpdConfirmarSubir: string;
+  mpdErrSubir: string;
+  // AirTag
+  mpdAirTagTitle: string;
+  mpdAirTagLabel: string;
+  mpdAirTagErrReq: string;
+  mpdAirTagTip: string;
+  mpdAirTagNSerie: string;
+  mpdAirTagPerdidoTitle: string;
+  mpdAirTagPerdidoDesc: string;
+  mpdAirTagModoLink: string;
+  mpdAirTagVacio: string;
+  // Chip / Certificados
+  mpdChipCertTitle: string;
+  mpdSubirCertificado: string;
+  mpdNumeroChip: string;
+  mpdSinRegistrar: string;
+  mpdEditarBtn: string;
+  mpdAgregarBtn: string;
+  mpdChipPlaceholderForm: string;
+  mpdSinCertificados: string;
+  mpdVerBtn: string;
+  // CVI
+  mpdCVITitle: string;
+  mpdCVIPaises: string;
+  mpdCVIBuscar: string;
+  mpdCVISinDestino: string;
+  mpdCVIFuente: string;
+  // Estudios
+  mpdSubirArchivo: string;
+  mpdPorVencer: string;
+  mpdSinArchivos: string;
+  mpdCotizacionSub: string;
+  mpdCotizacionLink: string;
+  mpdTurnoRegistrado: string;
+  mpdRegistrarTurnoEco: string;
+  mpdRegistrarTurnoRad: string;
+  mpdTurnoNotaPlaceholder: string;
+  mpdRegistrarBtn: string;
+  mpdTeneTurnoEco: string;
+  mpdTeneTurnoRad: string;
+  mpdRegistraAvisamos: string;
+  // Enviar estudio modal
+  mpdEnviarEstudio: string;
+  mpdEnviarEmail: string;
+  mpdEnviarWA: string;
+  // Cotizacion lab
+  mpdCotizOk: string;
+  mpdCotizOkSub: string;
+  mpdCotizTitle: string;
+  mpdCotizSub: string;
+  mpdCotizNombreLabel: string;
+  mpdCotizEmailLabel: string;
+  mpdCotizPerroLabel: string;
+  mpdCotizRecetaLabel: string;
+  mpdCotizSubirReceta: string;
+  mpdCotizErrCampos: string;
+  mpdCotizErrEmail: string;
+  mpdCotizEnviar: string;
+  // QR Modal
+  mpdQRTitle: string;
+  mpdQRDesc: string;
+  mpdQRDescargar: string;
+  // Medicamentos
+  mpdMedicamentosTitle: string;
+  mpdMedActivos: string;
+  mpdMedLabel: string;
+  mpdMedPlaceholder: string;
+  mpdMedDosis: string;
+  mpdMedDosisPlaceholder: string;
+  mpdMedFrecuencia: string;
+  mpdMedFrecuenciaPlaceholder: string;
+  mpdMedInicio: string;
+  mpdMedFin: string;
+  mpdMedErrReq: string;
+  mpdSinMedActivos: string;
+  mpdMedDesde: string;
+  mpdMedHasta: string;
+  mpdMedAnteriores: string;
+  mpdEnviarMed: string;
+  // Historia Clínica
+  mpdHistoriaTitle: string;
+  mpdHistoriaResumen: string;
+  mpdSinDatos: string;
+  mpdHCPerfil: string;
+  mpdHCVacunas: string;
+  mpdHCAnalisis: string;
+  mpdHCRadios: string;
+  mpdHCEcos: string;
+  mpdHCDesparas: string;
+  mpdHCPeso: string;
+  mpdHCPesoMas: string;
+  mpdEnviarHistoria: string;
+  mpdEnviarHistoriaSub: string;
+  // Desparasitaciones
+  mpdDesparasTitle: string;
+  mpdDesparasRegistradas: string;
+  mpdEnviarDesparas: string;
+  mpdSinDesparas: string;
+  mpdDesparasProductoLabel: string;
+  mpdDesparasProductoPlaceholder: string;
+  mpdDesparasTipoLabel: string;
+  mpdDesparasProxima: string;
+  mpdDesparasErrReq: string;
+  // Peso
+  mpdPesoTitle: string;
+  mpdPesoRegistros: string;
+  mpdPesoRegistrar: string;
+  mpdPesoUltimo: string;
+  mpdPesoVsAnterior: string;
+  mpdPesoKgLabel: string;
+  mpdPesoErrReq: string;
+  mpdPesoEvolucion: string;
+  mpdSinPeso: string;
+  mpdEnviarPeso: string;
+  // Visitas vet
+  mpdVisitasTitle: string;
+  mpdVisitaMotivo: string;
+  mpdVisitaMotivoPlaceholder: string;
+  mpdVisitaDiagnostico: string;
+  mpdVisitaDiagPlaceholder: string;
+  mpdVisitaTratamiento: string;
+  mpdVisitaTratPlaceholder: string;
+  mpdVisitaErrReq: string;
+  mpdSinVisitas: string;
+  // Procedimientos
+  mpdProcedimientosTitle: string;
+  mpdProcDescLabel: string;
+  mpdProcDescPlaceholder: string;
+  mpdProcVetLabel: string;
+  mpdProcErrReq: string;
+  mpdSinProcedimientos: string;
+  // Dieta
+  mpdDietaTitle: string;
+  mpdDietaMarca: string;
+  mpdDietaMarcaPlaceholder: string;
+  mpdDietaCantidad: string;
+  mpdDietaCantidadPlaceholder: string;
+  mpdDietaFrecuencia: string;
+  mpdDietaFrecuenciaPlaceholder: string;
+  mpdDietaNotasLabel: string;
+  mpdDietaNotasPlaceholder: string;
+  mpdDietaAlimentoLabel: string;
+  mpdDietaRestriccionesLabel: string;
+  mpdSinDieta: string;
+  // Grooming
+  mpdGroomingTitle: string;
+  mpdGroomingConfigurar: string;
+  mpdGroomingUltimo: string;
+  mpdGroomingCadaCuantos: string;
+  mpdGroomingUltimoLabel: string;
+  mpdGroomingProximoLabel: string;
+  mpdSinGrooming: string;
+  // Galería
+  mpdGaleriaTitle: string;
+  mpdAgregarFoto: string;
+  mpdSinFotos: string;
+  // Contactos emergencia
+  mpdContactosTitle: string;
+  mpdContactoRelacion: string;
+  mpdContactoRelacionPlaceholder: string;
+  mpdContactoNotasPlaceholder: string;
+  mpdContactoErrReq: string;
+  mpdSinContactos: string;
+  // calcularEdad
+  mpdCachorro: string;
+  mpdMes: string;
+  mpdMeses: string;
+  mpdAnio: string;
+  mpdAnios: string;
+
+  // ── EncontrePerroButton ──────────────────────────────────
+  encPregunta: string;
+  encDuenio: string;
+  encAvisar: string;
+  encLlamar: string;
+  encEnviado: string;
+  encEnviadoDesc: string;
+  encLlamarTambien: string;
+  encEncontreA: string;
+  encEnviarDesc: string;
+  encMensaje: string;
+  encTelefono: string;
+  encEnviando: string;
+  encAvisarBtn: string;
+  encErrEnviar: string;
+
+  // ── PrintButton ──────────────────────────────────────────
+  hpbImprimir: string;
+
+  // ── NovedadesComercio / ReviewsComercio ──────────────────
+  revNovedades: string;
+  revReviews: string;
+  revSinReviews: string;
+  revPrimero: string;
+  revEditarReview: string;
+  revEscribirReview: string;
+  revGracias: string;
+  revOpinion: string;
+  revPlaceholder: string;
+  revPublicar: string;
+  revErrReview: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -2594,6 +2887,275 @@ const translations: Record<Lang, Translations> = {
     mcomLinkLabel: 'Sitio web / Instagram / WhatsApp (opcional)',
     mcomGuardando: 'Guardando...',
     mcomGuardarCambios: 'Guardar cambios',
+    // mis-perros/[id]
+    mpdMisPerros: 'Mis perros',
+    mpdGenerarCartel: 'Generar cartel',
+    mpdPublicarRedes: 'Publicar en Redes Sociales',
+    mpdQrCollar: 'QR Collar',
+    mpdDiario: 'Diario',
+    mpdEditarPerfil: 'Editar perfil',
+    mpdRegistrado: '¡{nombre} está registrado!',
+    mpdRegistradoSub: 'Si algún día se pierde, ya tenés toda su info guardada. También podés publicar un aviso desde Perdidos.',
+    mpdSaludable: '💚 Saludable',
+    mpdEnTratamiento: '🟡 En tratamiento',
+    mpdEnRecuperacion: '🔵 En recuperación',
+    mpdBannerProText: 'Identificación, vacunas y estudios son funciones de VecindogPro',
+    mpdVerPro: 'Ver Pro',
+    mpdVencidoUno: 'Vencido/a: {nombre}',
+    mpdVencidosN: '{n} vencidos/as: {lista}',
+    mpdProximaUna: '{nombre} vence en los próximos 30 días',
+    mpdProximasN: '{n} vencen en los próximos 30 días: {lista}',
+    mpdIdentificacion: 'Identificación',
+    mpdGuardarPDF: 'Guardar / Enviar PDF',
+    mpdMicrochip: 'Microchip',
+    mpdFechaNacLabel: 'Fecha de nac.',
+    mpdEdadLabel: 'Edad',
+    mpdCiudadLabel: 'Ciudad',
+    mpdEsterilizadoLabel: 'Esterilizado/a',
+    mpdAlergiasLabel: 'Alergias / condiciones',
+    mpdVetHabitual: 'Veterinario habitual',
+    mpdCarnetVacunas: 'Carnet de vacunas',
+    mpdVacunasRegistradas: '{n} registrada{s}',
+    mpdSinVacunas: 'No hay vacunas registradas.',
+    mpdEncontrarVet: 'Encontrá un veterinario',
+    mpdRedVetSub: 'Clínicas y vets en la Red Vecindog',
+    mpdVerVets: 'Ver vets →',
+    mpdAvisoActivo: 'Aviso activo — en búsqueda',
+    mpdAvisoActivoSub: 'Ya hay un aviso publicado para {nombre}. ¿Lo seguís buscando? Renovalo para que aparezca primero.',
+    mpdAvisoRenovado: '¡Aviso renovado!',
+    mpdRenovarAviso: '¿Seguís buscando? Renovar aviso',
+    mpdVerAviso: 'Ver aviso',
+    mpdPerdiste: '¿Perdiste a {nombre}?',
+    mpdPerdistesSub: 'Publicá un aviso ahora con toda esta información para que los vecinos te ayuden.',
+    mpdPublicarAviso: 'Publicar aviso de búsqueda',
+    mpdPerroNoEncontrado: 'Perro no encontrado',
+    mpdVolverListado: 'Volver',
+    mpdEsterilizado: 'Esterilizado/a',
+    mpdSubirFoto: 'Subir foto',
+    mpdCambiarFoto: 'Cambiar foto',
+    mpdFotoError: 'La foto debe pesar menos de 5 MB.',
+    mpdNombreLabel: 'Nombre',
+    mpdRazaLabel: 'Raza',
+    mpdColorLabel: 'Color',
+    mpdColorPlaceholder: 'Negro, marrón…',
+    mpdSexoLabel: 'Sexo',
+    mpdTamanoLabel: 'Tamaño',
+    mpdFechaNacFormLabel: 'Fecha de nacimiento',
+    mpdChipPlaceholder: 'Nº de chip',
+    mpdEsterilizadoCheck: 'Esterilizado/a',
+    mpdDescripcionLabel: 'Descripción',
+    mpdDescripcionPlaceholder: 'Marcas especiales, comportamiento…',
+    mpdAlergiasCond: 'Alergias / condiciones especiales',
+    mpdAlergiasPlaceholder: 'Alérgico a X, condición crónica, dieta especial…',
+    mpdVetNombreLabel: 'Nombre / clínica',
+    mpdVetTelefonoLabel: 'Teléfono',
+    mpdErrGuardar: 'No se pudo guardar. Intentá de nuevo.',
+    mpdCancelar: 'Cancelar',
+    mpdGuardarCambios: 'Guardar cambios',
+    mpdEliminarPerfil: 'Eliminar perfil de {nombre}',
+    mpdEliminarConfirm: '¿Eliminar a {nombre}?',
+    mpdEliminarWarning: 'Esta acción es irreversible. Se borrará el perfil, las vacunas y todos los archivos de {nombre}.',
+    mpdSiEliminar: 'Sí, eliminar',
+    mpdEnviarCarnet: 'Enviar carnet de vacunas',
+    mpdVacunaVencida: 'Vencida',
+    mpdVacunaVigente: 'Vigente',
+    mpdVacunaProxima: 'Próxima:',
+    mpdVacunaLabel: 'Vacuna',
+    mpdVacunaPlaceholder: 'Séxtuple, Antirrábica…',
+    mpdFechaReqLabel: 'Fecha',
+    mpdProximaDosis: 'Próxima dosis',
+    mpdVetFormLabel: 'Veterinario',
+    mpdNotasLabel: 'Notas',
+    mpdVacunaErrReq: 'Nombre y fecha son obligatorios.',
+    mpdAgregarVacuna: 'Agregar vacuna',
+    mpdGuardar: 'Guardar',
+    mpdAgregar: '+ Agregar',
+    mpdEnviar: 'Enviar',
+    mpdVer: 'Ver',
+    mpdEditar: 'Editar',
+    mpdCerrar: 'Cerrar',
+    mpdRegistrar: 'Registrar',
+    mpdConfirmarSubir: 'Confirmar y subir',
+    mpdErrSubir: 'No se pudo subir el archivo. Verificá tu conexión e intentá de nuevo.',
+    mpdAirTagTitle: 'AirTag de Apple',
+    mpdAirTagLabel: 'Número de serie del AirTag',
+    mpdAirTagErrReq: 'Ingresá el número de serie.',
+    mpdAirTagTip: 'Lo encontrás en Ajustes → Apple ID → Buscar → tu AirTag, o en la caja.',
+    mpdAirTagNSerie: 'N° de serie',
+    mpdAirTagPerdidoTitle: '💡 Si se perdió tu perro',
+    mpdAirTagPerdidoDesc: 'Activá el Modo Perdido en la app Buscar de tu iPhone. Así cualquier iPhone cercano que detecte el AirTag te manda su ubicación automáticamente.',
+    mpdAirTagModoLink: 'Cómo activar Modo Perdido',
+    mpdAirTagVacio: 'No hay AirTag registrado.',
+    mpdChipCertTitle: 'Certificado de Chip',
+    mpdSubirCertificado: 'Subir certificado',
+    mpdNumeroChip: 'Número de chip',
+    mpdSinRegistrar: 'Sin registrar',
+    mpdEditarBtn: 'Editar',
+    mpdAgregarBtn: 'Agregar',
+    mpdChipPlaceholderForm: 'Nº de chip (15 dígitos)',
+    mpdSinCertificados: 'No hay certificados subidos.',
+    mpdVerBtn: 'Ver',
+    mpdCVITitle: 'Certificado CVI',
+    mpdCVIPaises: 'Consultá los requisitos por país',
+    mpdCVIBuscar: 'Buscar país de destino…',
+    mpdCVISinDestino: 'No se encontró ese destino.',
+    mpdCVIFuente: 'Fuente: SENASA · Los requisitos pueden cambiar sin previo aviso.',
+    mpdSubirArchivo: 'Subir archivo',
+    mpdPorVencer: 'Por vencer',
+    mpdSinArchivos: 'No hay archivos subidos.',
+    mpdCotizacionSub: '¿Necesitás una cotización?',
+    mpdCotizacionLink: 'Solicitá aquí',
+    mpdTurnoRegistrado: 'Turno registrado',
+    mpdRegistrarTurnoEco: 'Registrar turno de ecografía',
+    mpdRegistrarTurnoRad: 'Registrar turno de radiografía',
+    mpdTurnoNotaPlaceholder: 'Nota opcional (ej: Dr. García, Clínica San Roque)',
+    mpdRegistrarBtn: 'Registrar',
+    mpdTeneTurnoEco: '¿Tenés turno de ecografía?',
+    mpdTeneTurnoRad: '¿Tenés turno de radiografía?',
+    mpdRegistraAvisamos: 'Registrá y te avisamos',
+    mpdEnviarEstudio: 'Enviar estudio',
+    mpdEnviarEmail: 'Enviar por email',
+    mpdEnviarWA: 'Enviar por WhatsApp',
+    mpdCotizOk: '¡Solicitud enviada!',
+    mpdCotizOkSub: 'Nos contactaremos con vos a la brevedad para darte la cotización.',
+    mpdCotizTitle: 'Solicitar cotización',
+    mpdCotizSub: 'Análisis de laboratorio para tu perro',
+    mpdCotizNombreLabel: 'Nombre y Apellido',
+    mpdCotizEmailLabel: 'Email',
+    mpdCotizPerroLabel: 'Nombre del perro',
+    mpdCotizRecetaLabel: 'Receta del veterinario',
+    mpdCotizSubirReceta: 'Subir receta del veterinario',
+    mpdCotizErrCampos: 'Completá todos los campos requeridos.',
+    mpdCotizErrEmail: 'Ingresá un email válido.',
+    mpdCotizEnviar: 'Enviar solicitud',
+    mpdQRTitle: 'QR para el collar',
+    mpdQRDesc: 'Imprimilo y colgalo del collar de {nombre}. Si se pierde, cualquiera puede escanearlo.',
+    mpdQRDescargar: 'Descargar PNG',
+    mpdMedicamentosTitle: 'Medicamentos',
+    mpdMedActivos: '{n} activo{s}',
+    mpdMedLabel: 'Medicamento',
+    mpdMedPlaceholder: 'Ej: Tramadol, Amoxicilina',
+    mpdMedDosis: 'Dosis',
+    mpdMedDosisPlaceholder: 'Ej: 5mg',
+    mpdMedFrecuencia: 'Frecuencia',
+    mpdMedFrecuenciaPlaceholder: 'Ej: Cada 8hs',
+    mpdMedInicio: 'Inicio',
+    mpdMedFin: 'Fin (opcional)',
+    mpdMedErrReq: 'Ingresá al menos el nombre y la fecha de inicio.',
+    mpdSinMedActivos: 'No hay medicamentos activos.',
+    mpdMedDesde: 'Desde',
+    mpdMedHasta: 'hasta',
+    mpdMedAnteriores: 'Anteriores',
+    mpdEnviarMed: 'Enviar medicamentos',
+    mpdHistoriaTitle: 'Historia Clínica',
+    mpdHistoriaResumen: 'resumen completo',
+    mpdSinDatos: 'Sin datos',
+    mpdHCPerfil: 'Perfil',
+    mpdHCVacunas: 'Carnet de Vacunas',
+    mpdHCAnalisis: 'Análisis de Laboratorio',
+    mpdHCRadios: 'Radiografías',
+    mpdHCEcos: 'Ecografías',
+    mpdHCDesparas: 'Desparasitaciones',
+    mpdHCPeso: 'Historial de Peso',
+    mpdHCPesoMas: '+ {n} registros anteriores',
+    mpdEnviarHistoria: 'Enviar Historia Clínica',
+    mpdEnviarHistoriaSub: 'El destinatario puede verla sin cuenta',
+    mpdDesparasTitle: 'Desparasitaciones',
+    mpdDesparasRegistradas: '{n} registrada{s}',
+    mpdEnviarDesparas: 'Enviar desparasitaciones',
+    mpdSinDesparas: 'No hay desparasitaciones registradas.',
+    mpdDesparasProductoLabel: 'Producto',
+    mpdDesparasProductoPlaceholder: 'NexGard, Frontline…',
+    mpdDesparasTipoLabel: 'Tipo',
+    mpdDesparasProxima: 'Próxima aplicación',
+    mpdDesparasErrReq: 'Producto y fecha son obligatorios.',
+    mpdPesoTitle: 'Historial de peso',
+    mpdPesoRegistros: '{n} registro{s}',
+    mpdPesoRegistrar: '+ Registrar',
+    mpdPesoUltimo: 'Último peso',
+    mpdPesoVsAnterior: 'vs anterior',
+    mpdPesoKgLabel: 'Peso (kg)',
+    mpdPesoErrReq: 'Ingresá una fecha y un peso válido.',
+    mpdPesoEvolucion: 'Evolución',
+    mpdSinPeso: 'No hay registros de peso.',
+    mpdEnviarPeso: 'Enviar historial de peso',
+    mpdVisitasTitle: 'Visitas al veterinario',
+    mpdVisitaMotivo: 'Motivo',
+    mpdVisitaMotivoPlaceholder: 'Control de rutina, fiebre, etc.',
+    mpdVisitaDiagnostico: 'Diagnóstico',
+    mpdVisitaDiagPlaceholder: 'Gastroenteritis, dermatitis, etc.',
+    mpdVisitaTratamiento: 'Tratamiento',
+    mpdVisitaTratPlaceholder: 'Antibiótico 5 días, reposo, etc.',
+    mpdVisitaErrReq: 'Fecha y motivo son obligatorios.',
+    mpdSinVisitas: 'No hay visitas registradas.',
+    mpdProcedimientosTitle: 'Procedimientos y cirugías',
+    mpdProcDescLabel: 'Descripción',
+    mpdProcDescPlaceholder: 'Castración, limpieza dental, etc.',
+    mpdProcVetLabel: 'Veterinario / Clínica',
+    mpdProcErrReq: 'Fecha y descripción son obligatorias.',
+    mpdSinProcedimientos: 'No hay procedimientos registrados.',
+    mpdDietaTitle: 'Dieta y alimentación',
+    mpdDietaMarca: 'Marca / alimento',
+    mpdDietaMarcaPlaceholder: 'Royal Canin, Purina, etc.',
+    mpdDietaCantidad: 'Cantidad',
+    mpdDietaCantidadPlaceholder: '250g por comida',
+    mpdDietaFrecuencia: 'Frecuencia',
+    mpdDietaFrecuenciaPlaceholder: '2 veces al día',
+    mpdDietaNotasLabel: 'Notas / restricciones',
+    mpdDietaNotasPlaceholder: 'Sin pollo, bajo en sodio...',
+    mpdDietaAlimentoLabel: 'Alimento',
+    mpdDietaRestriccionesLabel: 'Restricciones / notas',
+    mpdSinDieta: 'No hay información de dieta cargada.',
+    mpdGroomingTitle: 'Baño y peluquería',
+    mpdGroomingConfigurar: 'Configurar',
+    mpdGroomingUltimo: 'Último baño/peluquería',
+    mpdGroomingCadaCuantos: 'Cada cuántos días',
+    mpdGroomingUltimoLabel: 'Último',
+    mpdGroomingProximoLabel: 'Próximo',
+    mpdSinGrooming: 'Configurá el recordatorio de baño y peluquería.',
+    mpdGaleriaTitle: 'Galería de fotos',
+    mpdAgregarFoto: 'Agregar foto',
+    mpdSinFotos: 'No hay fotos en la galería.',
+    mpdContactosTitle: 'Contactos de emergencia',
+    mpdContactoRelacion: 'Relación',
+    mpdContactoRelacionPlaceholder: 'Paseador, familiar, etc.',
+    mpdContactoNotasPlaceholder: 'Solo para emergencias, etc.',
+    mpdContactoErrReq: 'Nombre y teléfono son obligatorios.',
+    mpdSinContactos: 'No hay contactos de emergencia cargados.',
+    mpdCachorro: 'Cachorro',
+    mpdMes: 'mes',
+    mpdMeses: 'meses',
+    mpdAnio: 'año',
+    mpdAnios: 'años',
+
+    encPregunta: '¿Encontraste a este perro?',
+    encDuenio: 'Dueño: {nombre}',
+    encAvisar: 'Avisarle al dueño que lo encontré',
+    encLlamar: 'Llamar al dueño: {tel}',
+    encEnviado: '¡Aviso enviado!',
+    encEnviadoDesc: 'Le avisamos al dueño de {nombre} que lo encontraste.',
+    encLlamarTambien: 'También podés llamar al {tel}.',
+    encEncontreA: 'Encontré a {nombre}',
+    encEnviarDesc: 'Le avisamos al dueño por email y notificación.',
+    encMensaje: 'Mensaje (opcional)',
+    encTelefono: 'Tu teléfono (opcional)',
+    encEnviando: 'Enviando...',
+    encAvisarBtn: 'Avisar al dueño',
+    encErrEnviar: 'No se pudo enviar el aviso. Intentá de nuevo.',
+
+    hpbImprimir: 'Imprimir / Exportar PDF',
+
+    revNovedades: 'Novedades y Ofertas',
+    revReviews: 'Reviews',
+    revSinReviews: 'Todavía no hay reviews',
+    revPrimero: 'Sé el primero en valorar {nombre}.',
+    revEditarReview: 'Editar mi review',
+    revEscribirReview: 'Escribir review',
+    revGracias: '¡Gracias por tu review!',
+    revOpinion: 'Tu opinión',
+    revPlaceholder: 'Contanos tu experiencia (opcional)...',
+    revPublicar: 'Publicar review',
+    revErrReview: 'No se pudo guardar la review. Intentá de nuevo.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -3882,6 +4444,275 @@ const translations: Record<Lang, Translations> = {
     mcomLinkLabel: 'Website / Instagram / WhatsApp (optional)',
     mcomGuardando: 'Saving...',
     mcomGuardarCambios: 'Save changes',
+    // mis-perros/[id]
+    mpdMisPerros: 'My dogs',
+    mpdGenerarCartel: 'Generate poster',
+    mpdPublicarRedes: 'Share on Social Media',
+    mpdQrCollar: 'QR Collar',
+    mpdDiario: 'Journal',
+    mpdEditarPerfil: 'Edit profile',
+    mpdRegistrado: '{nombre} is registered!',
+    mpdRegistradoSub: 'If they ever get lost, all their info is saved. You can also post a listing from Lost pets.',
+    mpdSaludable: '💚 Healthy',
+    mpdEnTratamiento: '🟡 Under treatment',
+    mpdEnRecuperacion: '🔵 Recovering',
+    mpdBannerProText: 'Identification, vaccines and records are VecindogPro features',
+    mpdVerPro: 'See Pro',
+    mpdVencidoUno: 'Expired: {nombre}',
+    mpdVencidosN: '{n} expired: {lista}',
+    mpdProximaUna: '{nombre} expires in the next 30 days',
+    mpdProximasN: '{n} expire in the next 30 days: {lista}',
+    mpdIdentificacion: 'Identification',
+    mpdGuardarPDF: 'Save / Send PDF',
+    mpdMicrochip: 'Microchip',
+    mpdFechaNacLabel: 'Date of birth',
+    mpdEdadLabel: 'Age',
+    mpdCiudadLabel: 'City',
+    mpdEsterilizadoLabel: 'Neutered/Spayed',
+    mpdAlergiasLabel: 'Allergies / conditions',
+    mpdVetHabitual: 'Regular vet',
+    mpdCarnetVacunas: 'Vaccination record',
+    mpdVacunasRegistradas: '{n} registered',
+    mpdSinVacunas: 'No vaccines registered.',
+    mpdEncontrarVet: 'Find a vet',
+    mpdRedVetSub: 'Clinics and vets in the Vecindog Network',
+    mpdVerVets: 'See vets →',
+    mpdAvisoActivo: 'Active listing — searching',
+    mpdAvisoActivoSub: 'There is an active listing for {nombre}. Still looking? Renew it so it appears first.',
+    mpdAvisoRenovado: 'Listing renewed!',
+    mpdRenovarAviso: 'Still searching? Renew listing',
+    mpdVerAviso: 'View listing',
+    mpdPerdiste: 'Did you lose {nombre}?',
+    mpdPerdistesSub: 'Post a listing now with all this information so neighbors can help you.',
+    mpdPublicarAviso: 'Post search listing',
+    mpdPerroNoEncontrado: 'Dog not found',
+    mpdVolverListado: 'Back',
+    mpdEsterilizado: 'Neutered/Spayed',
+    mpdSubirFoto: 'Upload photo',
+    mpdCambiarFoto: 'Change photo',
+    mpdFotoError: 'Photo must be under 5 MB.',
+    mpdNombreLabel: 'Name',
+    mpdRazaLabel: 'Breed',
+    mpdColorLabel: 'Color',
+    mpdColorPlaceholder: 'Black, brown…',
+    mpdSexoLabel: 'Sex',
+    mpdTamanoLabel: 'Size',
+    mpdFechaNacFormLabel: 'Date of birth',
+    mpdChipPlaceholder: 'Chip no.',
+    mpdEsterilizadoCheck: 'Neutered/Spayed',
+    mpdDescripcionLabel: 'Description',
+    mpdDescripcionPlaceholder: 'Special markings, behavior…',
+    mpdAlergiasCond: 'Allergies / special conditions',
+    mpdAlergiasPlaceholder: 'Allergic to X, chronic condition, special diet…',
+    mpdVetNombreLabel: 'Name / clinic',
+    mpdVetTelefonoLabel: 'Phone',
+    mpdErrGuardar: "Couldn't save. Please try again.",
+    mpdCancelar: 'Cancel',
+    mpdGuardarCambios: 'Save changes',
+    mpdEliminarPerfil: 'Delete {nombre}\'s profile',
+    mpdEliminarConfirm: 'Delete {nombre}?',
+    mpdEliminarWarning: 'This action is irreversible. The profile, vaccines and all files for {nombre} will be deleted.',
+    mpdSiEliminar: 'Yes, delete',
+    mpdEnviarCarnet: 'Send vaccination record',
+    mpdVacunaVencida: 'Expired',
+    mpdVacunaVigente: 'Active',
+    mpdVacunaProxima: 'Next:',
+    mpdVacunaLabel: 'Vaccine',
+    mpdVacunaPlaceholder: 'Sextuple, Rabies…',
+    mpdFechaReqLabel: 'Date',
+    mpdProximaDosis: 'Next dose',
+    mpdVetFormLabel: 'Vet',
+    mpdNotasLabel: 'Notes',
+    mpdVacunaErrReq: 'Name and date are required.',
+    mpdAgregarVacuna: 'Add vaccine',
+    mpdGuardar: 'Save',
+    mpdAgregar: '+ Add',
+    mpdEnviar: 'Send',
+    mpdVer: 'View',
+    mpdEditar: 'Edit',
+    mpdCerrar: 'Close',
+    mpdRegistrar: 'Register',
+    mpdConfirmarSubir: 'Confirm & upload',
+    mpdErrSubir: "Couldn't upload the file. Check your connection and try again.",
+    mpdAirTagTitle: 'Apple AirTag',
+    mpdAirTagLabel: 'AirTag serial number',
+    mpdAirTagErrReq: 'Enter the serial number.',
+    mpdAirTagTip: 'Find it in Settings → Apple ID → Find My → your AirTag, or on the box.',
+    mpdAirTagNSerie: 'Serial no.',
+    mpdAirTagPerdidoTitle: '💡 If your dog is lost',
+    mpdAirTagPerdidoDesc: 'Enable Lost Mode in the Find My app on your iPhone. Any nearby iPhone that detects the AirTag will automatically send you its location.',
+    mpdAirTagModoLink: 'How to enable Lost Mode',
+    mpdAirTagVacio: 'No AirTag registered.',
+    mpdChipCertTitle: 'Chip Certificate',
+    mpdSubirCertificado: 'Upload certificate',
+    mpdNumeroChip: 'Chip number',
+    mpdSinRegistrar: 'Not registered',
+    mpdEditarBtn: 'Edit',
+    mpdAgregarBtn: 'Add',
+    mpdChipPlaceholderForm: 'Chip no. (15 digits)',
+    mpdSinCertificados: 'No certificates uploaded.',
+    mpdVerBtn: 'View',
+    mpdCVITitle: 'CVI Certificate',
+    mpdCVIPaises: 'Check requirements by country',
+    mpdCVIBuscar: 'Search destination country…',
+    mpdCVISinDestino: 'Destination not found.',
+    mpdCVIFuente: 'Source: SENASA · Requirements may change without notice.',
+    mpdSubirArchivo: 'Upload file',
+    mpdPorVencer: 'Expiring soon',
+    mpdSinArchivos: 'No files uploaded.',
+    mpdCotizacionSub: 'Need a quote?',
+    mpdCotizacionLink: 'Request here',
+    mpdTurnoRegistrado: 'Appointment registered',
+    mpdRegistrarTurnoEco: 'Register ultrasound appointment',
+    mpdRegistrarTurnoRad: 'Register X-ray appointment',
+    mpdTurnoNotaPlaceholder: 'Optional note (e.g. Dr. García, San Roque Clinic)',
+    mpdRegistrarBtn: 'Register',
+    mpdTeneTurnoEco: 'Do you have an ultrasound appointment?',
+    mpdTeneTurnoRad: 'Do you have an X-ray appointment?',
+    mpdRegistraAvisamos: "Register and we'll remind you",
+    mpdEnviarEstudio: 'Send study',
+    mpdEnviarEmail: 'Send by email',
+    mpdEnviarWA: 'Send via WhatsApp',
+    mpdCotizOk: 'Request sent!',
+    mpdCotizOkSub: "We'll contact you shortly with the quote.",
+    mpdCotizTitle: 'Request a quote',
+    mpdCotizSub: 'Lab tests for your dog',
+    mpdCotizNombreLabel: 'Full name',
+    mpdCotizEmailLabel: 'Email',
+    mpdCotizPerroLabel: "Dog's name",
+    mpdCotizRecetaLabel: "Vet's prescription",
+    mpdCotizSubirReceta: "Upload vet's prescription",
+    mpdCotizErrCampos: 'Please fill in all required fields.',
+    mpdCotizErrEmail: 'Enter a valid email.',
+    mpdCotizEnviar: 'Send request',
+    mpdQRTitle: 'QR for the collar',
+    mpdQRDesc: 'Print it and hang it on {nombre}\'s collar. If lost, anyone can scan it.',
+    mpdQRDescargar: 'Download PNG',
+    mpdMedicamentosTitle: 'Medications',
+    mpdMedActivos: '{n} active',
+    mpdMedLabel: 'Medication',
+    mpdMedPlaceholder: 'E.g. Tramadol, Amoxicillin',
+    mpdMedDosis: 'Dose',
+    mpdMedDosisPlaceholder: 'E.g. 5mg',
+    mpdMedFrecuencia: 'Frequency',
+    mpdMedFrecuenciaPlaceholder: 'E.g. Every 8h',
+    mpdMedInicio: 'Start',
+    mpdMedFin: 'End (optional)',
+    mpdMedErrReq: 'Enter at least the name and start date.',
+    mpdSinMedActivos: 'No active medications.',
+    mpdMedDesde: 'From',
+    mpdMedHasta: 'to',
+    mpdMedAnteriores: 'Previous',
+    mpdEnviarMed: 'Send medications',
+    mpdHistoriaTitle: 'Medical Record',
+    mpdHistoriaResumen: 'full summary',
+    mpdSinDatos: 'No data',
+    mpdHCPerfil: 'Profile',
+    mpdHCVacunas: 'Vaccination Record',
+    mpdHCAnalisis: 'Lab Tests',
+    mpdHCRadios: 'X-rays',
+    mpdHCEcos: 'Ultrasounds',
+    mpdHCDesparas: 'Dewormings',
+    mpdHCPeso: 'Weight History',
+    mpdHCPesoMas: '+ {n} earlier records',
+    mpdEnviarHistoria: 'Send Medical Record',
+    mpdEnviarHistoriaSub: 'The recipient can view it without an account',
+    mpdDesparasTitle: 'Dewormings',
+    mpdDesparasRegistradas: '{n} registered',
+    mpdEnviarDesparas: 'Send dewormings',
+    mpdSinDesparas: 'No dewormings registered.',
+    mpdDesparasProductoLabel: 'Product',
+    mpdDesparasProductoPlaceholder: 'NexGard, Frontline…',
+    mpdDesparasTipoLabel: 'Type',
+    mpdDesparasProxima: 'Next application',
+    mpdDesparasErrReq: 'Product and date are required.',
+    mpdPesoTitle: 'Weight history',
+    mpdPesoRegistros: '{n} record{s}',
+    mpdPesoRegistrar: '+ Record',
+    mpdPesoUltimo: 'Latest weight',
+    mpdPesoVsAnterior: 'vs previous',
+    mpdPesoKgLabel: 'Weight (kg)',
+    mpdPesoErrReq: 'Enter a valid date and weight.',
+    mpdPesoEvolucion: 'Trend',
+    mpdSinPeso: 'No weight records.',
+    mpdEnviarPeso: 'Send weight history',
+    mpdVisitasTitle: 'Vet visits',
+    mpdVisitaMotivo: 'Reason',
+    mpdVisitaMotivoPlaceholder: 'Routine check, fever, etc.',
+    mpdVisitaDiagnostico: 'Diagnosis',
+    mpdVisitaDiagPlaceholder: 'Gastroenteritis, dermatitis, etc.',
+    mpdVisitaTratamiento: 'Treatment',
+    mpdVisitaTratPlaceholder: 'Antibiotic 5 days, rest, etc.',
+    mpdVisitaErrReq: 'Date and reason are required.',
+    mpdSinVisitas: 'No visits registered.',
+    mpdProcedimientosTitle: 'Procedures & surgeries',
+    mpdProcDescLabel: 'Description',
+    mpdProcDescPlaceholder: 'Neutering, dental cleaning, etc.',
+    mpdProcVetLabel: 'Vet / Clinic',
+    mpdProcErrReq: 'Date and description are required.',
+    mpdSinProcedimientos: 'No procedures registered.',
+    mpdDietaTitle: 'Diet & feeding',
+    mpdDietaMarca: 'Brand / food',
+    mpdDietaMarcaPlaceholder: 'Royal Canin, Purina, etc.',
+    mpdDietaCantidad: 'Amount',
+    mpdDietaCantidadPlaceholder: '250g per meal',
+    mpdDietaFrecuencia: 'Frequency',
+    mpdDietaFrecuenciaPlaceholder: 'Twice a day',
+    mpdDietaNotasLabel: 'Notes / restrictions',
+    mpdDietaNotasPlaceholder: 'No chicken, low sodium...',
+    mpdDietaAlimentoLabel: 'Food',
+    mpdDietaRestriccionesLabel: 'Restrictions / notes',
+    mpdSinDieta: 'No diet information loaded.',
+    mpdGroomingTitle: 'Bath & grooming',
+    mpdGroomingConfigurar: 'Configure',
+    mpdGroomingUltimo: 'Last bath/grooming',
+    mpdGroomingCadaCuantos: 'Every how many days',
+    mpdGroomingUltimoLabel: 'Last',
+    mpdGroomingProximoLabel: 'Next',
+    mpdSinGrooming: 'Set up your bath & grooming reminder.',
+    mpdGaleriaTitle: 'Photo gallery',
+    mpdAgregarFoto: 'Add photo',
+    mpdSinFotos: 'No photos in the gallery.',
+    mpdContactosTitle: 'Emergency contacts',
+    mpdContactoRelacion: 'Relationship',
+    mpdContactoRelacionPlaceholder: 'Walker, family member, etc.',
+    mpdContactoNotasPlaceholder: 'For emergencies only, etc.',
+    mpdContactoErrReq: 'Name and phone are required.',
+    mpdSinContactos: 'No emergency contacts loaded.',
+    mpdCachorro: 'Puppy',
+    mpdMes: 'month',
+    mpdMeses: 'months',
+    mpdAnio: 'year',
+    mpdAnios: 'years',
+
+    encPregunta: 'Did you find this dog?',
+    encDuenio: 'Owner: {nombre}',
+    encAvisar: 'Notify the owner that I found the dog',
+    encLlamar: 'Call the owner: {tel}',
+    encEnviado: 'Notice sent!',
+    encEnviadoDesc: 'We notified the owner of {nombre} that you found the dog.',
+    encLlamarTambien: 'You can also call {tel}.',
+    encEncontreA: 'I found {nombre}',
+    encEnviarDesc: 'We will notify the owner by email and notification.',
+    encMensaje: 'Message (optional)',
+    encTelefono: 'Your phone (optional)',
+    encEnviando: 'Sending...',
+    encAvisarBtn: 'Notify the owner',
+    encErrEnviar: 'Could not send the notice. Please try again.',
+
+    hpbImprimir: 'Print / Export PDF',
+
+    revNovedades: 'News & Offers',
+    revReviews: 'Reviews',
+    revSinReviews: 'No reviews yet',
+    revPrimero: 'Be the first to review {nombre}.',
+    revEditarReview: 'Edit my review',
+    revEscribirReview: 'Write a review',
+    revGracias: 'Thanks for your review!',
+    revOpinion: 'Your opinion',
+    revPlaceholder: 'Tell us about your experience (optional)...',
+    revPublicar: 'Post review',
+    revErrReview: 'Could not save the review. Please try again.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -5170,6 +6001,275 @@ const translations: Record<Lang, Translations> = {
     mcomLinkLabel: 'Site / Instagram / WhatsApp (opcional)',
     mcomGuardando: 'Salvando...',
     mcomGuardarCambios: 'Salvar alterações',
+    // mis-perros/[id]
+    mpdMisPerros: 'Meus cachorros',
+    mpdGenerarCartel: 'Gerar cartaz',
+    mpdPublicarRedes: 'Publicar nas Redes Sociais',
+    mpdQrCollar: 'QR Coleira',
+    mpdDiario: 'Diário',
+    mpdEditarPerfil: 'Editar perfil',
+    mpdRegistrado: '{nombre} está registrado!',
+    mpdRegistradoSub: 'Se algum dia ele se perder, todas as informações estão salvas. Você também pode publicar um aviso em Cachorros perdidos.',
+    mpdSaludable: '💚 Saudável',
+    mpdEnTratamiento: '🟡 Em tratamento',
+    mpdEnRecuperacion: '🔵 Em recuperação',
+    mpdBannerProText: 'Identificação, vacinas e estudos são funções do VecindogPro',
+    mpdVerPro: 'Ver Pro',
+    mpdVencidoUno: 'Vencido/a: {nombre}',
+    mpdVencidosN: '{n} vencidos/as: {lista}',
+    mpdProximaUna: '{nombre} vence nos próximos 30 dias',
+    mpdProximasN: '{n} vencem nos próximos 30 dias: {lista}',
+    mpdIdentificacion: 'Identificação',
+    mpdGuardarPDF: 'Salvar / Enviar PDF',
+    mpdMicrochip: 'Microchip',
+    mpdFechaNacLabel: 'Data de nasc.',
+    mpdEdadLabel: 'Idade',
+    mpdCiudadLabel: 'Cidade',
+    mpdEsterilizadoLabel: 'Castrado/a',
+    mpdAlergiasLabel: 'Alergias / condições',
+    mpdVetHabitual: 'Veterinário habitual',
+    mpdCarnetVacunas: 'Carteira de vacinação',
+    mpdVacunasRegistradas: '{n} registrada{s}',
+    mpdSinVacunas: 'Nenhuma vacina registrada.',
+    mpdEncontrarVet: 'Encontre um veterinário',
+    mpdRedVetSub: 'Clínicas e vets na Rede Vecindog',
+    mpdVerVets: 'Ver vets →',
+    mpdAvisoActivo: 'Aviso ativo — em busca',
+    mpdAvisoActivoSub: 'Há um aviso ativo para {nombre}. Ainda procurando? Renove para que apareça primeiro.',
+    mpdAvisoRenovado: 'Aviso renovado!',
+    mpdRenovarAviso: 'Ainda procurando? Renovar aviso',
+    mpdVerAviso: 'Ver aviso',
+    mpdPerdiste: 'Você perdeu {nombre}?',
+    mpdPerdistesSub: 'Publique um aviso agora com todas essas informações para que vizinhos possam ajudar.',
+    mpdPublicarAviso: 'Publicar aviso de busca',
+    mpdPerroNoEncontrado: 'Cachorro não encontrado',
+    mpdVolverListado: 'Voltar',
+    mpdEsterilizado: 'Castrado/a',
+    mpdSubirFoto: 'Enviar foto',
+    mpdCambiarFoto: 'Mudar foto',
+    mpdFotoError: 'A foto deve ter menos de 5 MB.',
+    mpdNombreLabel: 'Nome',
+    mpdRazaLabel: 'Raça',
+    mpdColorLabel: 'Cor',
+    mpdColorPlaceholder: 'Preto, marrom…',
+    mpdSexoLabel: 'Sexo',
+    mpdTamanoLabel: 'Porte',
+    mpdFechaNacFormLabel: 'Data de nascimento',
+    mpdChipPlaceholder: 'Nº do chip',
+    mpdEsterilizadoCheck: 'Castrado/a',
+    mpdDescripcionLabel: 'Descrição',
+    mpdDescripcionPlaceholder: 'Marcas especiais, comportamento…',
+    mpdAlergiasCond: 'Alergias / condições especiais',
+    mpdAlergiasPlaceholder: 'Alérgico a X, condição crônica, dieta especial…',
+    mpdVetNombreLabel: 'Nome / clínica',
+    mpdVetTelefonoLabel: 'Telefone',
+    mpdErrGuardar: 'Não foi possível salvar. Tente novamente.',
+    mpdCancelar: 'Cancelar',
+    mpdGuardarCambios: 'Salvar alterações',
+    mpdEliminarPerfil: 'Excluir perfil de {nombre}',
+    mpdEliminarConfirm: 'Excluir {nombre}?',
+    mpdEliminarWarning: 'Esta ação é irreversível. O perfil, vacinas e todos os arquivos de {nombre} serão excluídos.',
+    mpdSiEliminar: 'Sim, excluir',
+    mpdEnviarCarnet: 'Enviar carteira de vacinação',
+    mpdVacunaVencida: 'Vencida',
+    mpdVacunaVigente: 'Vigente',
+    mpdVacunaProxima: 'Próxima:',
+    mpdVacunaLabel: 'Vacina',
+    mpdVacunaPlaceholder: 'Sêxtupla, Raiva…',
+    mpdFechaReqLabel: 'Data',
+    mpdProximaDosis: 'Próxima dose',
+    mpdVetFormLabel: 'Veterinário',
+    mpdNotasLabel: 'Notas',
+    mpdVacunaErrReq: 'Nome e data são obrigatórios.',
+    mpdAgregarVacuna: 'Adicionar vacina',
+    mpdGuardar: 'Salvar',
+    mpdAgregar: '+ Adicionar',
+    mpdEnviar: 'Enviar',
+    mpdVer: 'Ver',
+    mpdEditar: 'Editar',
+    mpdCerrar: 'Fechar',
+    mpdRegistrar: 'Registrar',
+    mpdConfirmarSubir: 'Confirmar e enviar',
+    mpdErrSubir: 'Não foi possível enviar o arquivo. Verifique a conexão e tente novamente.',
+    mpdAirTagTitle: 'Apple AirTag',
+    mpdAirTagLabel: 'Número de série do AirTag',
+    mpdAirTagErrReq: 'Digite o número de série.',
+    mpdAirTagTip: 'Encontre em Ajustes → Apple ID → Buscar → seu AirTag, ou na caixa.',
+    mpdAirTagNSerie: 'Nº de série',
+    mpdAirTagPerdidoTitle: '💡 Se o seu cachorro se perder',
+    mpdAirTagPerdidoDesc: 'Ative o Modo Perdido no app Buscar do seu iPhone. Qualquer iPhone próximo que detectar o AirTag enviará automaticamente a localização para você.',
+    mpdAirTagModoLink: 'Como ativar o Modo Perdido',
+    mpdAirTagVacio: 'Nenhum AirTag registrado.',
+    mpdChipCertTitle: 'Certificado de Chip',
+    mpdSubirCertificado: 'Enviar certificado',
+    mpdNumeroChip: 'Número do chip',
+    mpdSinRegistrar: 'Não registrado',
+    mpdEditarBtn: 'Editar',
+    mpdAgregarBtn: 'Adicionar',
+    mpdChipPlaceholderForm: 'Nº do chip (15 dígitos)',
+    mpdSinCertificados: 'Nenhum certificado enviado.',
+    mpdVerBtn: 'Ver',
+    mpdCVITitle: 'Certificado CVI',
+    mpdCVIPaises: 'Consulte os requisitos por país',
+    mpdCVIBuscar: 'Pesquisar país de destino…',
+    mpdCVISinDestino: 'Destino não encontrado.',
+    mpdCVIFuente: 'Fonte: SENASA · Os requisitos podem mudar sem aviso.',
+    mpdSubirArchivo: 'Enviar arquivo',
+    mpdPorVencer: 'Prestes a vencer',
+    mpdSinArchivos: 'Nenhum arquivo enviado.',
+    mpdCotizacionSub: 'Precisa de um orçamento?',
+    mpdCotizacionLink: 'Solicite aqui',
+    mpdTurnoRegistrado: 'Consulta registrada',
+    mpdRegistrarTurnoEco: 'Registrar consulta de ultrassom',
+    mpdRegistrarTurnoRad: 'Registrar consulta de raio-x',
+    mpdTurnoNotaPlaceholder: 'Nota opcional (ex.: Dr. García, Clínica São Roque)',
+    mpdRegistrarBtn: 'Registrar',
+    mpdTeneTurnoEco: 'Você tem consulta de ultrassom?',
+    mpdTeneTurnoRad: 'Você tem consulta de raio-x?',
+    mpdRegistraAvisamos: 'Registre e avisamos você',
+    mpdEnviarEstudio: 'Enviar exame',
+    mpdEnviarEmail: 'Enviar por e-mail',
+    mpdEnviarWA: 'Enviar via WhatsApp',
+    mpdCotizOk: 'Solicitação enviada!',
+    mpdCotizOkSub: 'Entraremos em contato em breve com o orçamento.',
+    mpdCotizTitle: 'Solicitar orçamento',
+    mpdCotizSub: 'Exames laboratoriais para o seu cachorro',
+    mpdCotizNombreLabel: 'Nome completo',
+    mpdCotizEmailLabel: 'E-mail',
+    mpdCotizPerroLabel: 'Nome do cachorro',
+    mpdCotizRecetaLabel: 'Receita do veterinário',
+    mpdCotizSubirReceta: 'Enviar receita do veterinário',
+    mpdCotizErrCampos: 'Por favor, preencha todos os campos obrigatórios.',
+    mpdCotizErrEmail: 'Digite um e-mail válido.',
+    mpdCotizEnviar: 'Enviar solicitação',
+    mpdQRTitle: 'QR para a coleira',
+    mpdQRDesc: 'Imprima e coloque na coleira de {nombre}. Se ele se perder, qualquer pessoa pode escanear.',
+    mpdQRDescargar: 'Baixar PNG',
+    mpdMedicamentosTitle: 'Medicamentos',
+    mpdMedActivos: '{n} ativo{s}',
+    mpdMedLabel: 'Medicamento',
+    mpdMedPlaceholder: 'Ex.: Tramadol, Amoxicilina',
+    mpdMedDosis: 'Dose',
+    mpdMedDosisPlaceholder: 'Ex.: 5mg',
+    mpdMedFrecuencia: 'Frequência',
+    mpdMedFrecuenciaPlaceholder: 'Ex.: A cada 8h',
+    mpdMedInicio: 'Início',
+    mpdMedFin: 'Fim (opcional)',
+    mpdMedErrReq: 'Informe pelo menos o nome e a data de início.',
+    mpdSinMedActivos: 'Nenhum medicamento ativo.',
+    mpdMedDesde: 'De',
+    mpdMedHasta: 'até',
+    mpdMedAnteriores: 'Anteriores',
+    mpdEnviarMed: 'Enviar medicamentos',
+    mpdHistoriaTitle: 'Prontuário Médico',
+    mpdHistoriaResumen: 'resumo completo',
+    mpdSinDatos: 'Sem dados',
+    mpdHCPerfil: 'Perfil',
+    mpdHCVacunas: 'Carteira de Vacinação',
+    mpdHCAnalisis: 'Análises',
+    mpdHCRadios: 'Raios-x',
+    mpdHCEcos: 'Ultrassons',
+    mpdHCDesparas: 'Desparasitações',
+    mpdHCPeso: 'Histórico de Peso',
+    mpdHCPesoMas: '+ {n} registros anteriores',
+    mpdEnviarHistoria: 'Enviar Prontuário',
+    mpdEnviarHistoriaSub: 'O destinatário pode visualizá-lo sem criar conta',
+    mpdDesparasTitle: 'Desparasitações',
+    mpdDesparasRegistradas: '{n} registrada{s}',
+    mpdEnviarDesparas: 'Enviar desparasitações',
+    mpdSinDesparas: 'Nenhuma desparasitação registrada.',
+    mpdDesparasProductoLabel: 'Produto',
+    mpdDesparasProductoPlaceholder: 'NexGard, Frontline…',
+    mpdDesparasTipoLabel: 'Tipo',
+    mpdDesparasProxima: 'Próxima aplicação',
+    mpdDesparasErrReq: 'Produto e data são obrigatórios.',
+    mpdPesoTitle: 'Histórico de peso',
+    mpdPesoRegistros: '{n} registro{s}',
+    mpdPesoRegistrar: '+ Registrar',
+    mpdPesoUltimo: 'Último peso',
+    mpdPesoVsAnterior: 'vs anterior',
+    mpdPesoKgLabel: 'Peso (kg)',
+    mpdPesoErrReq: 'Informe uma data e peso válidos.',
+    mpdPesoEvolucion: 'Evolução',
+    mpdSinPeso: 'Nenhum registro de peso.',
+    mpdEnviarPeso: 'Enviar histórico de peso',
+    mpdVisitasTitle: 'Visitas ao veterinário',
+    mpdVisitaMotivo: 'Motivo',
+    mpdVisitaMotivoPlaceholder: 'Consulta de rotina, febre, etc.',
+    mpdVisitaDiagnostico: 'Diagnóstico',
+    mpdVisitaDiagPlaceholder: 'Gastroenterite, dermatite, etc.',
+    mpdVisitaTratamiento: 'Tratamento',
+    mpdVisitaTratPlaceholder: 'Antibiótico 5 dias, repouso, etc.',
+    mpdVisitaErrReq: 'Data e motivo são obrigatórios.',
+    mpdSinVisitas: 'Nenhuma visita registrada.',
+    mpdProcedimientosTitle: 'Procedimentos e cirurgias',
+    mpdProcDescLabel: 'Descrição',
+    mpdProcDescPlaceholder: 'Castração, limpeza dental, etc.',
+    mpdProcVetLabel: 'Veterinário / Clínica',
+    mpdProcErrReq: 'Data e descrição são obrigatórios.',
+    mpdSinProcedimientos: 'Nenhum procedimento registrado.',
+    mpdDietaTitle: 'Dieta e alimentação',
+    mpdDietaMarca: 'Marca / ração',
+    mpdDietaMarcaPlaceholder: 'Royal Canin, Purina, etc.',
+    mpdDietaCantidad: 'Quantidade',
+    mpdDietaCantidadPlaceholder: '250g por refeição',
+    mpdDietaFrecuencia: 'Frequência',
+    mpdDietaFrecuenciaPlaceholder: 'Duas vezes ao dia',
+    mpdDietaNotasLabel: 'Notas / restrições',
+    mpdDietaNotasPlaceholder: 'Sem frango, baixo sódio...',
+    mpdDietaAlimentoLabel: 'Alimento',
+    mpdDietaRestriccionesLabel: 'Restrições / notas',
+    mpdSinDieta: 'Nenhuma informação de dieta carregada.',
+    mpdGroomingTitle: 'Banho e tosa',
+    mpdGroomingConfigurar: 'Configurar',
+    mpdGroomingUltimo: 'Último banho/tosa',
+    mpdGroomingCadaCuantos: 'A cada quantos dias',
+    mpdGroomingUltimoLabel: 'Último',
+    mpdGroomingProximoLabel: 'Próximo',
+    mpdSinGrooming: 'Configure seu lembrete de banho e tosa.',
+    mpdGaleriaTitle: 'Galeria de fotos',
+    mpdAgregarFoto: 'Adicionar foto',
+    mpdSinFotos: 'Nenhuma foto na galeria.',
+    mpdContactosTitle: 'Contatos de emergência',
+    mpdContactoRelacion: 'Relação',
+    mpdContactoRelacionPlaceholder: 'Passeador, familiar, etc.',
+    mpdContactoNotasPlaceholder: 'Apenas para emergências, etc.',
+    mpdContactoErrReq: 'Nome e telefone são obrigatórios.',
+    mpdSinContactos: 'Nenhum contato de emergência carregado.',
+    mpdCachorro: 'Filhote',
+    mpdMes: 'mês',
+    mpdMeses: 'meses',
+    mpdAnio: 'ano',
+    mpdAnios: 'anos',
+
+    encPregunta: 'Você encontrou este cachorro?',
+    encDuenio: 'Dono: {nombre}',
+    encAvisar: 'Avisar o dono que encontrei o cachorro',
+    encLlamar: 'Ligar para o dono: {tel}',
+    encEnviado: 'Aviso enviado!',
+    encEnviadoDesc: 'Avisamos o dono de {nombre} que você encontrou o cachorro.',
+    encLlamarTambien: 'Você também pode ligar para {tel}.',
+    encEncontreA: 'Encontrei {nombre}',
+    encEnviarDesc: 'Vamos notificar o dono por e-mail e notificação.',
+    encMensaje: 'Mensagem (opcional)',
+    encTelefono: 'Seu telefone (opcional)',
+    encEnviando: 'Enviando...',
+    encAvisarBtn: 'Avisar o dono',
+    encErrEnviar: 'Não foi possível enviar o aviso. Tente novamente.',
+
+    hpbImprimir: 'Imprimir / Exportar PDF',
+
+    revNovedades: 'Novidades e Ofertas',
+    revReviews: 'Avaliações',
+    revSinReviews: 'Ainda não há avaliações',
+    revPrimero: 'Seja o primeiro a avaliar {nombre}.',
+    revEditarReview: 'Editar minha avaliação',
+    revEscribirReview: 'Escrever avaliação',
+    revGracias: 'Obrigado pela sua avaliação!',
+    revOpinion: 'Sua opinião',
+    revPlaceholder: 'Conte-nos sua experiência (opcional)...',
+    revPublicar: 'Publicar avaliação',
+    revErrReview: 'Não foi possível salvar a avaliação. Tente novamente.',
   },
 };
 

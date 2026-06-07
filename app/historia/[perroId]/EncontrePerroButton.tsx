@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Phone, MapPin, CheckCircle2, Loader2, MessageCircle, X } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Props {
   perroId: string;
@@ -18,6 +19,7 @@ export default function EncontrePerroButton({
   nombreDuenio,
   telefonoDuenio,
 }: Props) {
+  const { t } = useLanguage();
   const [open, setOpen]       = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [contacto, setContacto] = useState('');
@@ -37,7 +39,7 @@ export default function EncontrePerroButton({
       if (!res.ok) throw new Error('Error al enviar');
       setEnviado(true);
     } catch {
-      setError('No se pudo enviar el aviso. Intentá de nuevo.');
+      setError(t.encErrEnviar);
     } finally {
       setLoading(false);
     }
@@ -55,9 +57,9 @@ export default function EncontrePerroButton({
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-2xl">🐾</div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wide opacity-75">¿Encontraste a este perro?</p>
+            <p className="text-xs font-bold uppercase tracking-wide opacity-75">{t.encPregunta}</p>
             <p className="font-display text-lg font-black">{perroNombre}</p>
-            <p className="text-xs opacity-75">Dueño: {nombreDuenio}</p>
+            <p className="text-xs opacity-75">{t.encDuenio.replace('{nombre}', nombreDuenio)}</p>
           </div>
         </div>
 
@@ -68,7 +70,7 @@ export default function EncontrePerroButton({
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#3F8B5C] transition active:scale-95"
           >
             <MessageCircle className="h-4 w-4" />
-            Avisarle al dueño que lo encontré
+            {t.encAvisar}
           </button>
 
           {/* Teléfono del dueño (si tiene) */}
@@ -78,7 +80,7 @@ export default function EncontrePerroButton({
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-bold text-white transition active:scale-95"
             >
               <Phone className="h-4 w-4" />
-              Llamar al dueño: {telefonoDuenio}
+              {t.encLlamar.replace('{tel}', telefonoDuenio)}
             </a>
           )}
         </div>
@@ -96,24 +98,24 @@ export default function EncontrePerroButton({
             {enviado ? (
               <div className="py-4 text-center">
                 <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-[#3F8B5C]" />
-                <h2 className="font-display text-xl font-black text-ink">¡Aviso enviado!</h2>
+                <h2 className="font-display text-xl font-black text-ink">{t.encEnviado}</h2>
                 <p className="mt-2 text-sm text-ink-muted">
-                  Le avisamos al dueño de {perroNombre} que lo encontraste.
-                  {telefonoDuenio && ` También podés llamar al ${telefonoDuenio}.`}
+                  {t.encEnviadoDesc.replace('{nombre}', perroNombre)}
+                  {telefonoDuenio && ` ${t.encLlamarTambien.replace('{tel}', telefonoDuenio)}`}
                 </p>
                 <button
                   onClick={() => setOpen(false)}
                   className="mt-5 w-full rounded-2xl bg-[#3F8B5C] py-3 text-sm font-bold text-white"
                 >
-                  Cerrar
+                  {t.mpdCerrar}
                 </button>
               </div>
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <h2 className="font-display text-xl font-black text-ink">Encontré a {perroNombre}</h2>
-                    <p className="text-sm text-ink-muted">Le avisamos al dueño por email y notificación.</p>
+                    <h2 className="font-display text-xl font-black text-ink">{t.encEncontreA.replace('{nombre}', perroNombre)}</h2>
+                    <p className="text-sm text-ink-muted">{t.encEnviarDesc}</p>
                   </div>
                   <button onClick={() => setOpen(false)} className="rounded-full p-1.5 text-ink-muted hover:bg-black/5">
                     <X className="h-5 w-5" />
@@ -123,12 +125,12 @@ export default function EncontrePerroButton({
                 <div className="space-y-3">
                   <div>
                     <label className="mb-1 block text-xs font-bold text-ink-muted uppercase tracking-wide">
-                      Mensaje (opcional)
+                      {t.encMensaje}
                     </label>
                     <textarea
                       value={mensaje}
                       onChange={(e) => setMensaje(e.target.value)}
-                      placeholder={`Ej: Encontré a ${perroNombre} en el parque San Martín, está bien.`}
+                      placeholder={`Ej: ${t.encEncontreA.replace('{nombre}', perroNombre)}...`}
                       rows={3}
                       className="w-full rounded-2xl border border-black/10 bg-[#f8f5f0] px-4 py-3 text-sm text-ink placeholder-ink-muted/50 focus:border-[#3F8B5C] focus:outline-none resize-none"
                     />
@@ -136,7 +138,7 @@ export default function EncontrePerroButton({
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-ink-muted uppercase tracking-wide">
-                      Tu teléfono (opcional)
+                      {t.encTelefono}
                     </label>
                     <div className="flex items-center gap-2 rounded-2xl border border-black/10 bg-[#f8f5f0] px-4 py-3">
                       <Phone className="h-4 w-4 shrink-0 text-ink-muted" />
@@ -160,9 +162,9 @@ export default function EncontrePerroButton({
                     className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3F8B5C] py-3.5 text-sm font-bold text-white disabled:opacity-60 transition active:scale-95"
                   >
                     {loading ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
+                      <><Loader2 className="h-4 w-4 animate-spin" /> {t.encEnviando}</>
                     ) : (
-                      <><MapPin className="h-4 w-4" /> Avisar al dueño</>
+                      <><MapPin className="h-4 w-4" /> {t.encAvisarBtn}</>
                     )}
                   </button>
                 </div>

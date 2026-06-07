@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Megaphone } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Novedad {
   id: string;
@@ -16,6 +17,7 @@ function fmtFecha(iso: string) {
 }
 
 export default function NovedadesComercio({ adId }: { adId: string }) {
+  const { t } = useLanguage();
   const [novedades, setNovedades] = useState<Novedad[]>([]);
   const [cargando, setCargando] = useState(true);
 
@@ -32,7 +34,7 @@ export default function NovedadesComercio({ adId }: { adId: string }) {
     <div className="mb-5 rounded-[20px] bg-white border border-black/5 overflow-hidden">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-black/5">
         <Megaphone className="h-4 w-4 text-brand-primary" />
-        <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">Novedades y Ofertas</h2>
+        <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">{t.revNovedades}</h2>
       </div>
       <div className="divide-y divide-black/5">
         {novedades.map((n) => (

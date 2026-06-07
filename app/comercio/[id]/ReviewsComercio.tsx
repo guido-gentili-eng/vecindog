@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Star, Loader2, CheckCircle2, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Review {
   id: string;
@@ -34,6 +35,7 @@ function fmtFecha(iso: string) {
 }
 
 export default function ReviewsComercio({ adId, nombreComercio }: Props) {
+  const { t } = useLanguage();
   const [reviews,     setReviews]     = useState<Review[]>([]);
   const [promedio,    setPromedio]    = useState(0);
   const [total,       setTotal]       = useState(0);
@@ -95,7 +97,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
       await cargar();
       setTimeout(() => { setModalOpen(false); setEnviado(false); }, 1500);
     } catch {
-      setError('No se pudo guardar la review. Intentá de nuevo.');
+      setError(t.revErrReview);
     } finally {
       setEnviando(false);
     }
@@ -107,7 +109,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
       <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
         <div className="flex items-center gap-3">
           <div>
-            <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">Reviews</h2>
+            <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">{t.revReviews}</h2>
             {total > 0 && (
               <div className="flex items-center gap-2 mt-0.5">
                 <Estrellas n={Math.round(promedio)} />
@@ -122,7 +124,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
             onClick={() => setModalOpen(true)}
             className="rounded-2xl bg-brand-primary/10 px-4 py-2 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
           >
-            {miReview ? 'Editar mi review' : 'Escribir review'}
+            {miReview ? t.revEditarReview : t.revEscribirReview}
           </button>
         )}
       </div>
@@ -136,8 +138,8 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
         ) : reviews.length === 0 ? (
           <div className="px-5 py-8 text-center">
             <p className="text-2xl mb-2">⭐</p>
-            <p className="text-sm font-bold text-ink">Todavía no hay reviews</p>
-            <p className="text-xs text-ink-muted mt-1">Sé el primero en valorar {nombreComercio}.</p>
+            <p className="text-sm font-bold text-ink">{t.revSinReviews}</p>
+            <p className="text-xs text-ink-muted mt-1">{t.revPrimero.replace('{nombre}', nombreComercio)}</p>
           </div>
         ) : (
           reviews.map((r) => {
@@ -181,13 +183,13 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
             {enviado ? (
               <div className="py-4 text-center">
                 <CheckCircle2 className="mx-auto mb-3 h-12 w-12 text-[#3F8B5C]" />
-                <p className="font-display text-xl font-black text-ink">¡Gracias por tu review!</p>
+                <p className="font-display text-xl font-black text-ink">{t.revGracias}</p>
               </div>
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <h2 className="font-display text-xl font-black text-ink">Tu opinión</h2>
+                    <h2 className="font-display text-xl font-black text-ink">{t.revOpinion}</h2>
                     <p className="text-sm text-ink-muted">{nombreComercio}</p>
                   </div>
                   <button onClick={() => setModalOpen(false)} className="rounded-full p-1.5 text-ink-muted hover:bg-black/5">
@@ -214,7 +216,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
                   <textarea
                     value={comentario}
                     onChange={(e) => setComentario(e.target.value)}
-                    placeholder="Contanos tu experiencia (opcional)..."
+                    placeholder={t.revPlaceholder}
                     rows={3}
                     className="w-full resize-none rounded-2xl border border-black/10 bg-[#f8f5f0] px-4 py-3 text-sm text-ink placeholder-ink-muted/50 focus:border-brand-primary focus:outline-none"
                   />
@@ -227,7 +229,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
                   disabled={!estrellas || enviando}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3.5 text-sm font-bold text-white disabled:opacity-40"
                 >
-                  {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Publicar review'}
+                  {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : t.revPublicar}
                 </button>
               </>
             )}

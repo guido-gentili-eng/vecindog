@@ -7,11 +7,13 @@ import Link from 'next/link';
 import { Plus, Dog, Syringe, ChevronRight, Trash2, Loader2, AlertCircle, Heart, Users, Lock, Sparkles } from 'lucide-react';
 import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
 import { useSearchParams } from 'next/navigation';
 
 export default function MisPerrosPage() {
   const { isAuthenticated, loading: authLoading, isPro } = useAuth();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const vieneDeResuelto = searchParams.get('resuelto') === '1';
   const [perros,       setPerros]       = useState<Perro[]>([]);
@@ -27,9 +29,9 @@ export default function MisPerrosPage() {
     if (!isAuthenticated) { setCargando(false); return; }
     listarMisPerros()
       .then(setPerros)
-      .catch(() => setError('No pudimos cargar tus perros.'))
+      .catch(() => setError(t.mpLoadError))
       .finally(() => setCargando(false));
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, t.mpLoadError]);
 
   async function handleConfirmEliminar() {
     if (!eliminarTarget) return;
@@ -40,7 +42,7 @@ export default function MisPerrosPage() {
       setPerros((prev) => prev.filter((p) => p.id !== eliminarTarget.id));
       setEliminarTarget(null);
     } catch {
-      setEliminarError('No se pudo eliminar. Intentá de nuevo.');
+      setEliminarError(t.mpDeleteError);
     } finally {
       setEliminando(false);
     }
@@ -58,8 +60,8 @@ export default function MisPerrosPage() {
   if (!isAuthenticated) {
     return (
       <div className="py-12 text-center">
-        <p className="text-ink-muted">Iniciá sesión para ver tus perros.</p>
-        <Link href="/" className="btn-primary mt-4 inline-flex">Ir al inicio</Link>
+        <p className="text-ink-muted">{t.mpNotAuth}</p>
+        <Link href="/" className="btn-primary mt-4 inline-flex">{t.mpGoHome}</Link>
       </div>
     );
   }
@@ -75,17 +77,17 @@ export default function MisPerrosPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bad/10 mx-auto mb-4">
               <Trash2 className="h-6 w-6 text-bad" />
             </div>
-            <h2 className="font-display text-lg font-black text-ink text-center">¿Eliminás a {eliminarTarget.nombre}?</h2>
-            <p className="mt-1 text-sm text-ink-muted text-center">Esta acción no se puede deshacer.</p>
+            <h2 className="font-display text-lg font-black text-ink text-center">{t.mpDeleteTitle}{eliminarTarget.nombre}?</h2>
+            <p className="mt-1 text-sm text-ink-muted text-center">{t.mpDeleteSub}</p>
             {eliminarError && <p className="mt-2 text-xs font-semibold text-bad text-center">{eliminarError}</p>}
             <div className="mt-5 flex gap-2">
               <button type="button" onClick={handleConfirmEliminar} disabled={eliminando}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-bad py-3 text-sm font-bold text-white transition hover:bg-bad/90 disabled:opacity-60">
-                {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> Eliminar</>}
+                {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> {t.mpDeleteBtn}</>}
               </button>
               <button type="button" onClick={() => setEliminarTarget(null)} disabled={eliminando}
                 className="flex-1 rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-                Cancelar
+                {t.mpCancel}
               </button>
             </div>
           </div>
@@ -96,13 +98,13 @@ export default function MisPerrosPage() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-            <Dog className="h-3.5 w-3.5" /> Mis perros
+            <Dog className="h-3.5 w-3.5" /> {t.mpChip}
           </span>
           <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink md:text-4xl">
-            Tu familia canina
+            {t.mpTitle}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
-            Guardá los datos de tus perros. Si alguno se pierde, ya tenés todo listo.
+            {t.mpSub}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -112,28 +114,28 @@ export default function MisPerrosPage() {
               onClick={() => setAmigosOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-primary hover:bg-brand-primary/5"
             >
-              <Users className="h-4 w-4" /> Amigos
+              <Users className="h-4 w-4" /> {t.mpFriends}
             </button>
           ) : (
             <Link href="/planes"
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-brand-primary/30 hover:text-brand-primary"
               title="Función Pro"
             >
-              <Lock className="h-3.5 w-3.5" /> Amigos
+              <Lock className="h-3.5 w-3.5" /> {t.mpFriends}
             </Link>
           )}
           {(!isPro && perros.length >= 1) ? (
             <Link href="/planes"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-black/5 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
             >
-              <Lock className="h-4 w-4" /> Agregar perro
+              <Lock className="h-4 w-4" /> {t.mpAddDog}
             </Link>
           ) : (
             <Link
               href="/mis-perros/nuevo"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90"
             >
-              <Plus className="h-4 w-4" /> Agregar perro
+              <Plus className="h-4 w-4" /> {t.mpAddDog}
             </Link>
           )}
         </div>
@@ -144,14 +146,13 @@ export default function MisPerrosPage() {
         <div className="mb-5 flex items-start gap-3 rounded-2xl bg-good/10 p-4 ring-1 ring-good/20">
           <Heart className="h-5 w-5 shrink-0 fill-current text-good mt-0.5" />
           <div>
-            <p className="font-bold text-good">¡El aviso se marcó como resuelto! 🎉</p>
+            <p className="font-bold text-good">{t.mpResolvedTitle}</p>
             <p className="mt-0.5 text-sm text-ink-muted">
-              El aviso ya no aparece en la lista. <strong>Los perfiles de acá no se borran</strong> — si alguno se vuelve a perder, entrá a su perfil y reportalo de nuevo con un click.
+              {t.mpResolvedSub}
             </p>
           </div>
         </div>
       )}
-
 
       {error && (
         <div className="mb-4 flex items-center gap-2 rounded-2xl bg-bad/10 p-4 text-sm font-semibold text-bad">
@@ -166,16 +167,16 @@ export default function MisPerrosPage() {
             <Dog className="h-9 w-9" />
           </div>
           <h2 className="mt-4 font-display text-xl font-extrabold text-ink">
-            Todavía no registraste ningún perro
+            {t.mpEmptyTitle}
           </h2>
           <p className="mx-auto mt-2 max-w-sm text-sm text-ink-muted">
-            Guardá sus datos, fotos y vacunas. Si algún día se pierde, ya vas a tener todo listo para buscarlo.
+            {t.mpEmptySub}
           </p>
           <Link
             href="/mis-perros/nuevo"
             className="btn-primary mt-6 inline-flex gap-2"
           >
-            <Plus className="h-4 w-4" /> Registrar mi perro
+            <Plus className="h-4 w-4" /> {t.mpRegisterDog}
           </Link>
         </div>
       ) : (
@@ -190,7 +191,7 @@ export default function MisPerrosPage() {
               className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-black/10 p-6 text-center text-ink-muted transition hover:border-brand-primary hover:text-brand-primary"
             >
               <Plus className="h-7 w-7" />
-              <span className="text-sm font-bold">Agregar otro perro</span>
+              <span className="text-sm font-bold">{t.mpAddAnother}</span>
             </Link>
           ) : (
             <Link
@@ -198,9 +199,9 @@ export default function MisPerrosPage() {
               className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-black/10 p-6 text-center text-ink-muted transition hover:border-brand-primary/30"
             >
               <Lock className="h-7 w-7" />
-              <span className="text-sm font-bold">Más perros con Pro</span>
+              <span className="text-sm font-bold">{t.mpMoreWithPro}</span>
               <span className="flex items-center gap-1 text-xs text-brand-primary font-bold">
-                <Sparkles className="h-3.5 w-3.5" /> Ver planes
+                <Sparkles className="h-3.5 w-3.5" /> {t.mpSeePlans}
               </span>
             </Link>
           )}
@@ -218,8 +219,9 @@ function PerroCard({
   perro: Perro;
   onEliminar: (id: string, nombre: string) => void;
 }) {
+  const { t } = useLanguage();
   const vacunasCount = perro.vacunas?.length ?? 0;
-  const edad = perro.fecha_nac ? calcularEdad(perro.fecha_nac) : null;
+  const edad = perro.fecha_nac ? calcularEdad(perro.fecha_nac, t) : null;
 
   return (
     <div className="card overflow-hidden p-0">
@@ -268,7 +270,7 @@ function PerroCard({
         <div className="mt-3 flex items-center gap-3 text-xs text-ink-muted">
           <span className="flex items-center gap-1">
             <Syringe className="h-3.5 w-3.5 text-brand-primary/60" />
-            {vacunasCount} {vacunasCount === 1 ? 'vacuna' : 'vacunas'}
+            {vacunasCount} {vacunasCount === 1 ? t.mpVaccine : t.mpVaccines}
           </span>
           {perro.chip && (
             <span className="truncate font-mono text-[10px]">Chip: {perro.chip}</span>
@@ -280,20 +282,20 @@ function PerroCard({
           href={`/mis-perros/${perro.id}`}
           className="mt-3 flex items-center justify-between rounded-xl bg-brand-cream px-3 py-2 text-xs font-bold text-ink transition hover:bg-brand-primary/10 hover:text-brand-primary"
         >
-          Ver perfil completo <ChevronRight className="h-3.5 w-3.5" />
+          {t.mpSeeProfile} <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </div>
   );
 }
 
-function calcularEdad(fechaNac: string): string {
+function calcularEdad(fechaNac: string, t: { mpPuppy: string; mpMonth: string; mpMonths: string; mpYear: string; mpYears: string }): string {
   const hoy  = new Date();
   const nac  = new Date(fechaNac);
   const años = hoy.getFullYear() - nac.getFullYear();
   const meses = hoy.getMonth() - nac.getMonth() + años * 12;
-  if (meses < 1)  return 'Cachorro';
-  if (meses < 12) return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+  if (meses < 1)  return t.mpPuppy;
+  if (meses < 12) return `${meses} ${meses === 1 ? t.mpMonth : t.mpMonths}`;
   const a = Math.floor(meses / 12);
-  return `${a} ${a === 1 ? 'año' : 'años'}`;
+  return `${a} ${a === 1 ? t.mpYear : t.mpYears}`;
 }

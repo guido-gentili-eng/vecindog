@@ -7,10 +7,12 @@ import { Car, Phone, MapPin, Calendar, ChevronRight, User, Star, ArrowLeft } fro
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function TransportePage() {
   const router   = useRouter();
   const { user } = useAuth();
+  const { t }    = useLanguage();
   const [transportadores, setTransportadores] = useState<Post[]>([]);
   const [promedios, setPromedios] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
@@ -20,13 +22,11 @@ export default function TransportePage() {
       const posts = await listarPostsCuidado('transportador_disponible');
       if (!posts.length) { setCargando(false); return; }
 
-      // Traer todos los ratings de estos transportadores en una sola query
       const { data: ratings } = await supabase
         .from('transportador_ratings')
         .select('transportador_post_id, estrellas')
         .in('transportador_post_id', posts.map((p) => p.id));
 
-      // Calcular promedio por post
       const mapa: Record<string, { suma: number; total: number }> = {};
       for (const r of ratings ?? []) {
         if (!mapa[r.transportador_post_id]) mapa[r.transportador_post_id] = { suma: 0, total: 0 };
@@ -39,7 +39,6 @@ export default function TransportePage() {
       }
       setPromedios(promediosCalc);
 
-      // Ordenar: primero los que tienen calificación (mayor primero), luego los sin calificación
       posts.sort((a, b) => (promediosCalc[b.id] ?? -1) - (promediosCalc[a.id] ?? -1));
       setTransportadores(posts);
       setCargando(false);
@@ -57,20 +56,18 @@ export default function TransportePage() {
 
       <button type="button" onClick={() => router.back()}
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-        <ArrowLeft className="h-4 w-4" /> Volver
+        <ArrowLeft className="h-4 w-4" /> {t.transpBack}
       </button>
 
       {/* Hero */}
       <div className="mb-10 text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
-          <Car className="h-3.5 w-3.5" /> Transporte de perros
+          <Car className="h-3.5 w-3.5" /> {t.transpChip}
         </span>
-        <h1 className="mt-3 font-display text-4xl font-black text-ink">Transporte de perros</h1>
-        <p className="mt-3 text-ink-muted">
-          Encontrá un vecino de confianza para transportar a tu perro, o anotate para ayudar a otros.
-        </p>
+        <h1 className="mt-3 font-display text-4xl font-black text-ink">{t.transpTitle}</h1>
+        <p className="mt-3 text-ink-muted">{t.transpSub}</p>
         <p className="mt-3 rounded-xl bg-red-100 px-4 py-2.5 text-sm font-bold text-red-700">
-          🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.
+          {t.transpWarning}
         </p>
       </div>
 
@@ -84,12 +81,10 @@ export default function TransportePage() {
             <Car className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="font-display text-xl font-extrabold leading-tight">Quiero transportar perros</h2>
-            <p className="mt-1 text-sm text-white/80">
-              Anotate como transportador disponible para ayudar a vecinos que lo necesiten.
-            </p>
+            <h2 className="font-display text-xl font-extrabold leading-tight">{t.transpCTATitle}</h2>
+            <p className="mt-1 text-sm text-white/80">{t.transpCTASub}</p>
             <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
-              Registrarme <ChevronRight className="h-3.5 w-3.5" />
+              {t.transpCTABtn} <ChevronRight className="h-3.5 w-3.5" />
             </span>
           </div>
         </div>
@@ -97,7 +92,7 @@ export default function TransportePage() {
 
       {/* Listado */}
       <h3 className="mb-3 font-display text-base font-black text-ink flex items-center gap-2">
-        <Car className="h-4 w-4 text-blue-700" /> Transportadores disponibles
+        <Car className="h-4 w-4 text-blue-700" /> {t.transpHeader}
         {transportadores.length > 0 && (
           <span className="ml-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">
             {transportadores.length}
@@ -111,8 +106,7 @@ export default function TransportePage() {
         </div>
       ) : transportadores.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50 px-5 py-6 text-center text-sm text-blue-600">
-          Todavía no hay transportadores.{' '}
-          <Link href="/transporte/quiero-transportar" className="font-bold underline">¡Sé el primero!</Link>
+          {t.transpEmpty}
         </div>
       ) : (
         <div className="space-y-3">
@@ -126,6 +120,7 @@ export default function TransportePage() {
 }
 
 function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post; promedio?: number; mio: boolean; onResolver: () => void }) {
+  const { t } = useLanguage();
   const foto = p.images?.[0];
 
   return (
@@ -143,7 +138,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <p className="font-display text-base font-extrabold text-ink truncate">
-            {p.nombre ?? 'Transportador disponible'}
+            {p.nombre ?? t.transpLabel}
           </p>
           {mio && (
             <button
@@ -151,7 +146,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
               onClick={onResolver}
               className="shrink-0 rounded-xl bg-bad/10 px-2.5 py-1 text-xs font-bold text-bad transition hover:bg-bad/20"
             >
-              Dar de baja
+              {t.transpDeactivate}
             </button>
           )}
         </div>
@@ -182,7 +177,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
           href={`/transporte/transportador/${p.id}`}
           className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
         >
-          <Star className="h-3 w-3" /> Ver perfil y calificaciones
+          <Star className="h-3 w-3" /> {t.transpSeeProfile}
         </Link>
       </div>
 
@@ -192,7 +187,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
           target="_blank"
           rel="noopener noreferrer"
           className="shrink-0 self-center rounded-2xl bg-blue-600 p-2.5 text-white transition hover:bg-blue-700"
-          title="Contactar por WhatsApp"
+          title="WhatsApp"
         >
           <Phone className="h-4 w-4" />
         </a>

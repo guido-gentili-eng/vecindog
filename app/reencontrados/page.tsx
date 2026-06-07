@@ -6,14 +6,10 @@ import {
   Heart, MapPin, Calendar, ImageIcon, ArrowLeft, Loader2, Dog,
 } from 'lucide-react';
 import { listarPostsResueltos, type Post } from '@/lib/posts';
-
-const ETIQUETA_RESUELTO: Record<string, string> = {
-  perdido:    '🏠 Volvió a casa',
-  encontrado: '🏠 Volvió a casa',
-  adopcion:   '❤️ Fue adoptado',
-};
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ReencontradosPage() {
+  const { t } = useLanguage();
   const [posts,    setPosts]    = useState<Post[]>([]);
   const [cargando, setCargando] = useState(true);
 
@@ -23,25 +19,31 @@ export default function ReencontradosPage() {
       .finally(() => setCargando(false));
   }, []);
 
+  const etiquetaResuelto: Record<string, string> = {
+    perdido:    t.reLabelHome,
+    encontrado: t.reLabelHome,
+    adopcion:   t.reLabelAdopted,
+  };
+
   return (
     <div className="py-8 md:py-10">
       <Link
         href="/"
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
       >
-        <ArrowLeft className="h-4 w-4" /> Volver al inicio
+        <ArrowLeft className="h-4 w-4" /> {t.reBack}
       </Link>
 
       {/* Header */}
       <header className="mb-8">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fde8e8] px-3 py-1 text-xs font-bold text-[#c0392b]">
-          <Heart className="h-3.5 w-3.5 fill-current" /> Historias reales
+          <Heart className="h-3.5 w-3.5 fill-current" /> {t.reChip}
         </span>
         <h1 className="mt-3 font-display text-4xl font-black tracking-tight text-ink">
-          Volvieron a casa 🏠
+          {t.reTitle}
         </h1>
         <p className="mt-2 max-w-xl text-ink-muted">
-          Cada historia acá es una familia que volvió a estar completa. Gracias a vecinos como vos que se tomaron un minuto para ayudar.
+          {t.reSub}
         </p>
 
         {/* Contador */}
@@ -51,7 +53,7 @@ export default function ReencontradosPage() {
             <div>
               <p className="font-display text-2xl font-black text-good">{posts.length}</p>
               <p className="text-xs font-bold text-good/80">
-                perro{posts.length !== 1 ? 's' : ''} reencontrado{posts.length !== 1 ? 's' : ''}
+                {posts.length === 1 ? t.reDogSingular : t.reDogPlural}
               </p>
             </div>
           </div>
@@ -69,19 +71,19 @@ export default function ReencontradosPage() {
             <Dog className="h-7 w-7" />
           </div>
           <h2 className="mt-4 font-display text-xl font-extrabold text-ink">
-            Todavía no hay historias
+            {t.reEmpty}
           </h2>
           <p className="mt-2 text-ink-muted">
-            Cuando un aviso se resuelva, va a aparecer acá. ¡Ayudá a que pase!
+            {t.reEmptySub}
           </p>
           <Link href="/publicaciones" className="btn-primary mt-5 inline-flex">
-            Ver avisos activos
+            {t.reActiveListings}
           </Link>
         </div>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <HistoriaCardGrande key={post.id} post={post} />
+            <HistoriaCardGrande key={post.id} post={post} etiquetas={etiquetaResuelto} labelDefault={t.reLabelDefault} />
           ))}
         </div>
       )}
@@ -90,17 +92,17 @@ export default function ReencontradosPage() {
       {!cargando && posts.length > 0 && (
         <div className="mt-12 rounded-2xl bg-brand-primary/5 p-8 text-center">
           <p className="font-display text-xl font-extrabold text-ink">
-            ¿Perdiste o encontraste un perro?
+            {t.reCtaTitle}
           </p>
           <p className="mt-1 text-sm text-ink-muted">
-            La comunidad de Vecindog puede ayudarte.
+            {t.reCtaSub}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <Link href="/publicar?cat=perdido" className="btn-primary">
-              Perdí a mi perro
+              {t.reLostBtn}
             </Link>
             <Link href="/publicar?cat=encontrado" className="btn-secondary">
-              Encontré un perro
+              {t.reFoundBtn}
             </Link>
           </div>
         </div>
@@ -109,7 +111,7 @@ export default function ReencontradosPage() {
   );
 }
 
-function HistoriaCardGrande({ post }: { post: Post }) {
+function HistoriaCardGrande({ post, etiquetas, labelDefault }: { post: Post; etiquetas: Record<string, string>; labelDefault: string }) {
   return (
     <Link
       href={`/publicaciones/${post.id}`}
@@ -133,7 +135,7 @@ function HistoriaCardGrande({ post }: { post: Post }) {
         {/* Badge */}
         <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-good px-2.5 py-1 text-xs font-extrabold text-white shadow">
           <Heart className="h-3.5 w-3.5 fill-current" />
-          {ETIQUETA_RESUELTO[post.categoria] ?? '🏠 Reencontrado'}
+          {etiquetas[post.categoria] ?? labelDefault}
         </span>
       </div>
 

@@ -309,6 +309,115 @@ export type Translations = {
   bpfPaywallBtn: string;
   bpfPaywallLink: string;
   bpfSimilar: string;
+  // ── Mis Perros page ──────────────────────────────────
+  mpChip: string;
+  mpTitle: string;
+  mpSub: string;
+  mpFriends: string;
+  mpAddDog: string;
+  mpAddAnother: string;
+  mpMoreWithPro: string;
+  mpSeePlans: string;
+  mpSeeProfile: string;
+  mpDeleteTitle: string;
+  mpDeleteSub: string;
+  mpDeleteBtn: string;
+  mpCancel: string;
+  mpDeleteError: string;
+  mpLoadError: string;
+  mpNotAuth: string;
+  mpGoHome: string;
+  mpResolvedTitle: string;
+  mpResolvedSub: string;
+  mpEmptyTitle: string;
+  mpEmptySub: string;
+  mpRegisterDog: string;
+  mpVaccine: string;
+  mpVaccines: string;
+  mpPuppy: string;
+  mpMonth: string;
+  mpMonths: string;
+  mpYear: string;
+  mpYears: string;
+  // ── Reencontrados page ────────────────────────────────
+  reBack: string;
+  reChip: string;
+  reTitle: string;
+  reSub: string;
+  reDogSingular: string;
+  reDogPlural: string;
+  reEmpty: string;
+  reEmptySub: string;
+  reActiveListings: string;
+  reCtaTitle: string;
+  reCtaSub: string;
+  reLostBtn: string;
+  reFoundBtn: string;
+  reLabelHome: string;
+  reLabelAdopted: string;
+  reLabelDefault: string;
+  // ── Cuidado page ─────────────────────────────────────
+  cuidadoBack: string;
+  cuidadoChip: string;
+  cuidadoTitle: string;
+  cuidadoSub: string;
+  cuidadoWarning: string;
+  cuidadoSeekTitle: string;
+  cuidadoSeekSub: string;
+  cuidadoSeekBtn: string;
+  cuidadoSeekHeader: string;
+  cuidadoSeekEmpty: string;
+  cuidadoCareTitle: string;
+  cuidadoCareSub: string;
+  cuidadoCareBtn: string;
+  cuidadoCareHeader: string;
+  cuidadoCareEmpty: string;
+  cuidadoDeactivate: string;
+  cuidadoSeeProfile: string;
+  cuidadoCuidadorLabel: string;
+  cuidadoBuscarLabel: string;
+  // ── Transporte page ───────────────────────────────────
+  transpBack: string;
+  transpChip: string;
+  transpTitle: string;
+  transpSub: string;
+  transpWarning: string;
+  transpCTATitle: string;
+  transpCTASub: string;
+  transpCTABtn: string;
+  transpHeader: string;
+  transpEmpty: string;
+  transpDeactivate: string;
+  transpSeeProfile: string;
+  transpLabel: string;
+  // ── Calculadora page ──────────────────────────────────
+  calcBack: string;
+  calcChip: string;
+  calcYearsLabel: string;
+  calcMonthsLabel: string;
+  calcSizeLabel: string;
+  calcSmall: string;
+  calcSmallDesc: string;
+  calcMedium: string;
+  calcMediumDesc: string;
+  calcLarge: string;
+  calcLargeDesc: string;
+  calcEquivalent: string;
+  calcHumanYears: string;
+  calcStageLabel: string;
+  calcPuppy: string;
+  calcPuppyText: string;
+  calcJuvenil: string;
+  calcJuvenilText: string;
+  calcAdult: string;
+  calcAdultText: string;
+  calcSenior: string;
+  calcSeniorText: string;
+  calcElder: string;
+  calcElderText: string;
+  calcFormula: string;
+  calcEmpty: string;
+  calcNote: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -618,6 +727,115 @@ const translations: Record<Lang, Translations> = {
     bpfPaywallBtn: 'Ver plan Pro',
     bpfPaywallLink: 'Ver avisos',
     bpfSimilar: '% similar',
+    // Mis Perros
+    mpChip: 'Mis perros',
+    mpTitle: 'Tu familia canina',
+    mpSub: 'Guardá los datos de tus perros. Si alguno se pierde, ya tenés todo listo.',
+    mpFriends: 'Amigos',
+    mpAddDog: 'Agregar perro',
+    mpAddAnother: 'Agregar otro perro',
+    mpMoreWithPro: 'Más perros con Pro',
+    mpSeePlans: 'Ver planes',
+    mpSeeProfile: 'Ver perfil completo',
+    mpDeleteTitle: '¿Eliminás a ',
+    mpDeleteSub: 'Esta acción no se puede deshacer.',
+    mpDeleteBtn: 'Eliminar',
+    mpCancel: 'Cancelar',
+    mpDeleteError: 'No se pudo eliminar. Intentá de nuevo.',
+    mpLoadError: 'No pudimos cargar tus perros.',
+    mpNotAuth: 'Iniciá sesión para ver tus perros.',
+    mpGoHome: 'Ir al inicio',
+    mpResolvedTitle: '¡El aviso se marcó como resuelto! 🎉',
+    mpResolvedSub: 'El aviso ya no aparece en la lista. Los perfiles de acá no se borran — si alguno se vuelve a perder, entrá a su perfil y reportalo de nuevo con un click.',
+    mpEmptyTitle: 'Todavía no registraste ningún perro',
+    mpEmptySub: 'Guardá sus datos, fotos y vacunas. Si algún día se pierde, ya vas a tener todo listo para buscarlo.',
+    mpRegisterDog: 'Registrar mi perro',
+    mpVaccine: 'vacuna',
+    mpVaccines: 'vacunas',
+    mpPuppy: 'Cachorro',
+    mpMonth: 'mes',
+    mpMonths: 'meses',
+    mpYear: 'año',
+    mpYears: 'años',
+    // Reencontrados
+    reBack: 'Volver al inicio',
+    reChip: 'Historias reales',
+    reTitle: 'Volvieron a casa 🏠',
+    reSub: 'Cada historia acá es una familia que volvió a estar completa. Gracias a vecinos como vos que se tomaron un minuto para ayudar.',
+    reDogSingular: 'perro reencontrado',
+    reDogPlural: 'perros reencontrados',
+    reEmpty: 'Todavía no hay historias',
+    reEmptySub: 'Cuando un aviso se resuelva, va a aparecer acá. ¡Ayudá a que pase!',
+    reActiveListings: 'Ver avisos activos',
+    reCtaTitle: '¿Perdiste o encontraste un perro?',
+    reCtaSub: 'La comunidad de Vecindog puede ayudarte.',
+    reLostBtn: 'Perdí a mi perro',
+    reFoundBtn: 'Encontré un perro',
+    reLabelHome: '🏠 Volvió a casa',
+    reLabelAdopted: '❤️ Fue adoptado',
+    reLabelDefault: '🏠 Reencontrado',
+    // Cuidado
+    cuidadoBack: 'Volver',
+    cuidadoChip: 'Cuidado de perros',
+    cuidadoTitle: 'Cuidado de perros',
+    cuidadoSub: 'Encontrá un vecino de confianza para cuidar a tu perro, o anotate para cuidar perros de la comunidad.',
+    cuidadoWarning: '🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.',
+    cuidadoSeekTitle: 'Busco cuidador',
+    cuidadoSeekSub: 'Publicá un aviso con los datos de tu perro y encontrá a alguien que lo cuide.',
+    cuidadoSeekBtn: 'Publicar pedido',
+    cuidadoSeekHeader: 'Buscan cuidador',
+    cuidadoSeekEmpty: 'Todavía no hay avisos. ¡Publicá el primero!',
+    cuidadoCareTitle: 'Quiero cuidar',
+    cuidadoCareSub: 'Anotate como cuidador disponible para ayudar a vecinos que lo necesiten.',
+    cuidadoCareBtn: 'Registrarme',
+    cuidadoCareHeader: 'Cuidadores disponibles',
+    cuidadoCareEmpty: 'Todavía no hay cuidadores. ¡Sé el primero!',
+    cuidadoDeactivate: 'Dar de baja',
+    cuidadoSeeProfile: 'Ver perfil y calificaciones',
+    cuidadoCuidadorLabel: 'Cuidador disponible',
+    cuidadoBuscarLabel: 'Busca cuidador',
+    // Transporte
+    transpBack: 'Volver',
+    transpChip: 'Transporte de perros',
+    transpTitle: 'Transporte de perros',
+    transpSub: 'Encontrá un vecino de confianza para transportar a tu perro, o anotate para ayudar a otros.',
+    transpWarning: '🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.',
+    transpCTATitle: 'Quiero transportar perros',
+    transpCTASub: 'Anotate como transportador disponible para ayudar a vecinos que lo necesiten.',
+    transpCTABtn: 'Registrarme',
+    transpHeader: 'Transportadores disponibles',
+    transpEmpty: 'Todavía no hay transportadores. ¡Sé el primero!',
+    transpDeactivate: 'Dar de baja',
+    transpSeeProfile: 'Ver perfil y calificaciones',
+    transpLabel: 'Transportador disponible',
+    // Calculadora
+    calcBack: 'Volver al inicio',
+    calcChip: 'Herramienta gratuita',
+    calcYearsLabel: 'Años',
+    calcMonthsLabel: 'Meses adicionales',
+    calcSizeLabel: 'Tamaño del perro',
+    calcSmall: 'Pequeño',
+    calcSmallDesc: 'menos de 10 kg',
+    calcMedium: 'Mediano',
+    calcMediumDesc: '10 – 25 kg',
+    calcLarge: 'Grande',
+    calcLargeDesc: 'más de 25 kg',
+    calcEquivalent: 'Tu perro equivale a',
+    calcHumanYears: 'años humanos',
+    calcStageLabel: 'Etapa',
+    calcPuppy: 'Cachorro',
+    calcPuppyText: 'Todavía está descubriendo el mundo. ¡Todo es nuevo y emocionante!',
+    calcJuvenil: 'Juvenil',
+    calcJuvenilText: 'Lleno de energía y curiosidad. Es la etapa perfecta para el entrenamiento.',
+    calcAdult: 'Adulto',
+    calcAdultText: 'En su mejor momento: equilibrado, leal y con mucho amor para dar.',
+    calcSenior: 'Senior',
+    calcSeniorText: 'Con la experiencia de años vividos. Merece mimos y cuidados especiales.',
+    calcElder: 'Anciano',
+    calcElderText: 'Un veterano lleno de sabiduría y amor incondicional. ¡Un tesoro!',
+    calcFormula: 'Fórmula aplicada para perro',
+    calcEmpty: 'Ingresá la edad de tu perro para ver el resultado.',
+    calcNote: 'Esta calculadora es orientativa. Para un seguimiento preciso de la salud de tu perro, consultá siempre a tu veterinario de confianza.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -926,6 +1144,115 @@ const translations: Record<Lang, Translations> = {
     bpfPaywallBtn: 'See Pro plan',
     bpfPaywallLink: 'See posts',
     bpfSimilar: '% match',
+    // Mis Perros
+    mpChip: 'My dogs',
+    mpTitle: 'Your canine family',
+    mpSub: 'Save your dogs\' info. If one goes missing, you\'ll have everything ready.',
+    mpFriends: 'Friends',
+    mpAddDog: 'Add dog',
+    mpAddAnother: 'Add another dog',
+    mpMoreWithPro: 'More dogs with Pro',
+    mpSeePlans: 'See plans',
+    mpSeeProfile: 'See full profile',
+    mpDeleteTitle: 'Delete ',
+    mpDeleteSub: 'This action cannot be undone.',
+    mpDeleteBtn: 'Delete',
+    mpCancel: 'Cancel',
+    mpDeleteError: 'Could not delete. Please try again.',
+    mpLoadError: 'Could not load your dogs.',
+    mpNotAuth: 'Sign in to see your dogs.',
+    mpGoHome: 'Go home',
+    mpResolvedTitle: 'Post marked as resolved! 🎉',
+    mpResolvedSub: 'The post no longer appears in the list. Profiles here are not deleted — if one goes missing again, open its profile and report it with one click.',
+    mpEmptyTitle: 'You haven\'t registered any dogs yet',
+    mpEmptySub: 'Save their info, photos and vaccines. If they ever go missing, you\'ll have everything ready to find them.',
+    mpRegisterDog: 'Register my dog',
+    mpVaccine: 'vaccine',
+    mpVaccines: 'vaccines',
+    mpPuppy: 'Puppy',
+    mpMonth: 'month',
+    mpMonths: 'months',
+    mpYear: 'year',
+    mpYears: 'years',
+    // Reencontrados
+    reBack: 'Back to home',
+    reChip: 'Real stories',
+    reTitle: 'They came home 🏠',
+    reSub: 'Every story here is a family made whole again. Thanks to neighbours like you who took a minute to help.',
+    reDogSingular: 'dog reunited',
+    reDogPlural: 'dogs reunited',
+    reEmpty: 'No stories yet',
+    reEmptySub: 'When a post is resolved, it will appear here. Help make it happen!',
+    reActiveListings: 'See active posts',
+    reCtaTitle: 'Did you lose or find a dog?',
+    reCtaSub: 'The Vecindog community can help you.',
+    reLostBtn: 'I lost my dog',
+    reFoundBtn: 'I found a dog',
+    reLabelHome: '🏠 Came home',
+    reLabelAdopted: '❤️ Was adopted',
+    reLabelDefault: '🏠 Reunited',
+    // Cuidado
+    cuidadoBack: 'Back',
+    cuidadoChip: 'Dog care',
+    cuidadoTitle: 'Dog care',
+    cuidadoSub: 'Find a trusted neighbour to look after your dog, or sign up to care for dogs in the community.',
+    cuidadoWarning: '🚫 Neighbour exchanges only — offering commercial services in this section is prohibited.',
+    cuidadoSeekTitle: 'Looking for a carer',
+    cuidadoSeekSub: 'Post a listing with your dog\'s details and find someone to care for them.',
+    cuidadoSeekBtn: 'Post request',
+    cuidadoSeekHeader: 'Looking for a carer',
+    cuidadoSeekEmpty: 'No posts yet. Be the first to post!',
+    cuidadoCareTitle: 'I want to care',
+    cuidadoCareSub: 'Sign up as an available carer to help neighbours in need.',
+    cuidadoCareBtn: 'Sign up',
+    cuidadoCareHeader: 'Available carers',
+    cuidadoCareEmpty: 'No carers yet. Be the first!',
+    cuidadoDeactivate: 'Deactivate',
+    cuidadoSeeProfile: 'See profile and ratings',
+    cuidadoCuidadorLabel: 'Available carer',
+    cuidadoBuscarLabel: 'Looking for carer',
+    // Transporte
+    transpBack: 'Back',
+    transpChip: 'Dog transport',
+    transpTitle: 'Dog transport',
+    transpSub: 'Find a trusted neighbour to transport your dog, or sign up to help others.',
+    transpWarning: '🚫 Neighbour exchanges only — offering commercial services in this section is prohibited.',
+    transpCTATitle: 'I want to transport dogs',
+    transpCTASub: 'Sign up as an available transporter to help neighbours in need.',
+    transpCTABtn: 'Sign up',
+    transpHeader: 'Available transporters',
+    transpEmpty: 'No transporters yet. Be the first!',
+    transpDeactivate: 'Deactivate',
+    transpSeeProfile: 'See profile and ratings',
+    transpLabel: 'Available transporter',
+    // Calculadora
+    calcBack: 'Back to home',
+    calcChip: 'Free tool',
+    calcYearsLabel: 'Years',
+    calcMonthsLabel: 'Additional months',
+    calcSizeLabel: 'Dog size',
+    calcSmall: 'Small',
+    calcSmallDesc: 'under 10 kg',
+    calcMedium: 'Medium',
+    calcMediumDesc: '10 – 25 kg',
+    calcLarge: 'Large',
+    calcLargeDesc: 'over 25 kg',
+    calcEquivalent: 'Your dog is equivalent to',
+    calcHumanYears: 'human years',
+    calcStageLabel: 'Stage',
+    calcPuppy: 'Puppy',
+    calcPuppyText: 'Still discovering the world. Everything is new and exciting!',
+    calcJuvenil: 'Juvenile',
+    calcJuvenilText: 'Full of energy and curiosity. The perfect stage for training.',
+    calcAdult: 'Adult',
+    calcAdultText: 'At their best: balanced, loyal and with lots of love to give.',
+    calcSenior: 'Senior',
+    calcSeniorText: 'With years of experience. Deserves extra pampering and care.',
+    calcElder: 'Elder',
+    calcElderText: 'A veteran full of wisdom and unconditional love. A treasure!',
+    calcFormula: 'Formula applied for',
+    calcEmpty: 'Enter your dog\'s age to see the result.',
+    calcNote: 'This calculator is a guide. For precise health monitoring, always consult your vet.',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1234,6 +1561,115 @@ const translations: Record<Lang, Translations> = {
     bpfPaywallBtn: 'Ver plano Pro',
     bpfPaywallLink: 'Ver avisos',
     bpfSimilar: '% similar',
+    // Mis Perros
+    mpChip: 'Meus cachorros',
+    mpTitle: 'Sua família canina',
+    mpSub: 'Salve os dados dos seus cachorros. Se algum se perder, você já tem tudo pronto.',
+    mpFriends: 'Amigos',
+    mpAddDog: 'Adicionar cachorro',
+    mpAddAnother: 'Adicionar outro cachorro',
+    mpMoreWithPro: 'Mais cachorros com Pro',
+    mpSeePlans: 'Ver planos',
+    mpSeeProfile: 'Ver perfil completo',
+    mpDeleteTitle: 'Excluir ',
+    mpDeleteSub: 'Esta ação não pode ser desfeita.',
+    mpDeleteBtn: 'Excluir',
+    mpCancel: 'Cancelar',
+    mpDeleteError: 'Não foi possível excluir. Tente novamente.',
+    mpLoadError: 'Não foi possível carregar seus cachorros.',
+    mpNotAuth: 'Faça login para ver seus cachorros.',
+    mpGoHome: 'Ir ao início',
+    mpResolvedTitle: 'Aviso marcado como resolvido! 🎉',
+    mpResolvedSub: 'O aviso não aparece mais na lista. Os perfis aqui não são excluídos — se algum se perder novamente, acesse o perfil e reporte com um clique.',
+    mpEmptyTitle: 'Você ainda não registrou nenhum cachorro',
+    mpEmptySub: 'Salve dados, fotos e vacinas. Se algum dia se perder, você já terá tudo pronto para encontrá-lo.',
+    mpRegisterDog: 'Registrar meu cachorro',
+    mpVaccine: 'vacina',
+    mpVaccines: 'vacinas',
+    mpPuppy: 'Filhote',
+    mpMonth: 'mês',
+    mpMonths: 'meses',
+    mpYear: 'ano',
+    mpYears: 'anos',
+    // Reencontrados
+    reBack: 'Voltar ao início',
+    reChip: 'Histórias reais',
+    reTitle: 'Voltaram para casa 🏠',
+    reSub: 'Cada história aqui é uma família que voltou a ficar completa. Obrigado a vizinhos como você que tiraram um minuto para ajudar.',
+    reDogSingular: 'cão reencontrado',
+    reDogPlural: 'cães reencontrados',
+    reEmpty: 'Ainda não há histórias',
+    reEmptySub: 'Quando um aviso for resolvido, aparecerá aqui. Ajude a fazer isso acontecer!',
+    reActiveListings: 'Ver avisos ativos',
+    reCtaTitle: 'Perdeu ou encontrou um cão?',
+    reCtaSub: 'A comunidade Vecindog pode ajudá-lo.',
+    reLostBtn: 'Perdi meu cão',
+    reFoundBtn: 'Encontrei um cão',
+    reLabelHome: '🏠 Voltou para casa',
+    reLabelAdopted: '❤️ Foi adotado',
+    reLabelDefault: '🏠 Reencontrado',
+    // Cuidado
+    cuidadoBack: 'Voltar',
+    cuidadoChip: 'Cuidado de cães',
+    cuidadoTitle: 'Cuidado de cães',
+    cuidadoSub: 'Encontre um vizinho de confiança para cuidar do seu cão, ou cadastre-se para cuidar de cães da comunidade.',
+    cuidadoWarning: '🚫 Apenas trocas entre vizinhos — é proibido cobrar ou oferecer serviços comerciais nesta seção.',
+    cuidadoSeekTitle: 'Procuro cuidador',
+    cuidadoSeekSub: 'Publique um aviso com os dados do seu cão e encontre alguém para cuidar dele.',
+    cuidadoSeekBtn: 'Publicar pedido',
+    cuidadoSeekHeader: 'Procuram cuidador',
+    cuidadoSeekEmpty: 'Ainda não há avisos. Seja o primeiro a publicar!',
+    cuidadoCareTitle: 'Quero cuidar',
+    cuidadoCareSub: 'Cadastre-se como cuidador disponível para ajudar vizinhos que precisam.',
+    cuidadoCareBtn: 'Cadastrar-me',
+    cuidadoCareHeader: 'Cuidadores disponíveis',
+    cuidadoCareEmpty: 'Ainda não há cuidadores. Seja o primeiro!',
+    cuidadoDeactivate: 'Desativar',
+    cuidadoSeeProfile: 'Ver perfil e avaliações',
+    cuidadoCuidadorLabel: 'Cuidador disponível',
+    cuidadoBuscarLabel: 'Procura cuidador',
+    // Transporte
+    transpBack: 'Voltar',
+    transpChip: 'Transporte de cães',
+    transpTitle: 'Transporte de cães',
+    transpSub: 'Encontre um vizinho de confiança para transportar seu cão, ou cadastre-se para ajudar outros.',
+    transpWarning: '🚫 Apenas trocas entre vizinhos — é proibido cobrar ou oferecer serviços comerciais nesta seção.',
+    transpCTATitle: 'Quero transportar cães',
+    transpCTASub: 'Cadastre-se como transportador disponível para ajudar vizinhos que precisam.',
+    transpCTABtn: 'Cadastrar-me',
+    transpHeader: 'Transportadores disponíveis',
+    transpEmpty: 'Ainda não há transportadores. Seja o primeiro!',
+    transpDeactivate: 'Desativar',
+    transpSeeProfile: 'Ver perfil e avaliações',
+    transpLabel: 'Transportador disponível',
+    // Calculadora
+    calcBack: 'Voltar ao início',
+    calcChip: 'Ferramenta gratuita',
+    calcYearsLabel: 'Anos',
+    calcMonthsLabel: 'Meses adicionais',
+    calcSizeLabel: 'Tamanho do cão',
+    calcSmall: 'Pequeno',
+    calcSmallDesc: 'menos de 10 kg',
+    calcMedium: 'Médio',
+    calcMediumDesc: '10 – 25 kg',
+    calcLarge: 'Grande',
+    calcLargeDesc: 'mais de 25 kg',
+    calcEquivalent: 'Seu cão equivale a',
+    calcHumanYears: 'anos humanos',
+    calcStageLabel: 'Fase',
+    calcPuppy: 'Filhote',
+    calcPuppyText: 'Ainda descobrindo o mundo. Tudo é novo e emocionante!',
+    calcJuvenil: 'Juvenil',
+    calcJuvenilText: 'Cheio de energia e curiosidade. A fase perfeita para o treinamento.',
+    calcAdult: 'Adulto',
+    calcAdultText: 'No seu melhor momento: equilibrado, leal e com muito amor para dar.',
+    calcSenior: 'Sênior',
+    calcSeniorText: 'Com a experiência de anos vividos. Merece mimos e cuidados especiais.',
+    calcElder: 'Idoso',
+    calcElderText: 'Um veterano cheio de sabedoria e amor incondicional. Um tesouro!',
+    calcFormula: 'Fórmula aplicada para cão',
+    calcEmpty: 'Insira a idade do seu cão para ver o resultado.',
+    calcNote: 'Esta calculadora é orientativa. Para acompanhamento preciso da saúde do seu cão, consulte sempre seu veterinário.',
   },
 };
 

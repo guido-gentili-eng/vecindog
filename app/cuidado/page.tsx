@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 import { HandHeart, Search, Phone, MapPin, Calendar, ChevronRight, User, Star, ArrowLeft } from 'lucide-react';
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CuidadoPage() {
   const router   = useRouter();
   const { user } = useAuth();
+  const { t }    = useLanguage();
   const [buscadores, setBuscadores] = useState<Post[]>([]);
   const [cuidadores, setCuidadores] = useState<Post[]>([]);
   const [cargando, setCargando]     = useState(true);
@@ -35,27 +37,25 @@ export default function CuidadoPage() {
 
       <button type="button" onClick={() => router.back()}
         className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-        <ArrowLeft className="h-4 w-4" /> Volver
+        <ArrowLeft className="h-4 w-4" /> {t.cuidadoBack}
       </button>
 
       {/* Hero */}
       <div className="mb-10 text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-100 px-3 py-1 text-xs font-bold text-teal-700">
-          <HandHeart className="h-3.5 w-3.5" /> Cuidado de perros
+          <HandHeart className="h-3.5 w-3.5" /> {t.cuidadoChip}
         </span>
-        <h1 className="mt-3 font-display text-4xl font-black text-ink">Cuidado de perros</h1>
-        <p className="mt-3 text-ink-muted">
-          Encontrá un vecino de confianza para cuidar a tu perro, o anotate para cuidar perros de la comunidad.
-        </p>
+        <h1 className="mt-3 font-display text-4xl font-black text-ink">{t.cuidadoTitle}</h1>
+        <p className="mt-3 text-ink-muted">{t.cuidadoSub}</p>
         <p className="mt-3 rounded-xl bg-red-100 px-4 py-2.5 text-sm font-bold text-red-700">
-          🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.
+          {t.cuidadoWarning}
         </p>
       </div>
 
-      {/* Grid 2 columnas: izquierda = busco cuidador, derecha = quiero cuidar */}
+      {/* Grid 2 columnas */}
       <div className="grid gap-6 md:grid-cols-2 md:items-start">
 
-        {/* ── Columna izquierda: Busco cuidador ── */}
+        {/* ── Busco cuidador ── */}
         <div>
           <Link
             href="/cuidado/busco-cuidador"
@@ -66,19 +66,17 @@ export default function CuidadoPage() {
                 <Search className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="font-display text-xl font-extrabold leading-tight">Busco cuidador</h2>
-                <p className="mt-1 text-sm text-white/80">
-                  Publicá un aviso con los datos de tu perro y encontrá a alguien que lo cuide.
-                </p>
+                <h2 className="font-display text-xl font-extrabold leading-tight">{t.cuidadoSeekTitle}</h2>
+                <p className="mt-1 text-sm text-white/80">{t.cuidadoSeekSub}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
-                  Publicar pedido <ChevronRight className="h-3.5 w-3.5" />
+                  {t.cuidadoSeekBtn} <ChevronRight className="h-3.5 w-3.5" />
                 </span>
               </div>
             </div>
           </Link>
 
           <h3 className="mb-3 font-display text-base font-black text-ink flex items-center gap-2">
-            <Search className="h-4 w-4 text-teal-600" /> Buscan cuidador
+            <Search className="h-4 w-4 text-teal-600" /> {t.cuidadoSeekHeader}
             {buscadores.length > 0 && (
               <span className="ml-1 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-700">
                 {buscadores.length}
@@ -91,8 +89,10 @@ export default function CuidadoPage() {
             </div>
           ) : buscadores.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-5 py-6 text-center text-sm text-teal-600">
-              Todavía no hay avisos.{' '}
-              <Link href="/cuidado/busco-cuidador" className="font-bold underline">¡Publicá el primero!</Link>
+              {t.cuidadoSeekEmpty.split('¡')[0].split('!')[0]}{' '}
+              <Link href="/cuidado/busco-cuidador" className="font-bold underline">
+                {t.cuidadoSeekEmpty.includes('¡') ? '¡' : ''}{t.cuidadoSeekEmpty.split(/[¡!]/)[1] ?? ''}
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">
@@ -103,7 +103,7 @@ export default function CuidadoPage() {
           )}
         </div>
 
-        {/* ── Columna derecha: Quiero cuidar ── */}
+        {/* ── Quiero cuidar ── */}
         <div>
           <Link
             href="/cuidado/quiero-cuidar"
@@ -114,19 +114,17 @@ export default function CuidadoPage() {
                 <HandHeart className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="font-display text-xl font-extrabold leading-tight">Quiero cuidar</h2>
-                <p className="mt-1 text-sm text-white/80">
-                  Anotate como cuidador disponible para ayudar a vecinos que lo necesiten.
-                </p>
+                <h2 className="font-display text-xl font-extrabold leading-tight">{t.cuidadoCareTitle}</h2>
+                <p className="mt-1 text-sm text-white/80">{t.cuidadoCareSub}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold opacity-80 transition group-hover:gap-2 group-hover:opacity-100">
-                  Registrarme <ChevronRight className="h-3.5 w-3.5" />
+                  {t.cuidadoCareBtn} <ChevronRight className="h-3.5 w-3.5" />
                 </span>
               </div>
             </div>
           </Link>
 
           <h3 className="mb-3 font-display text-base font-black text-ink flex items-center gap-2">
-            <HandHeart className="h-4 w-4 text-teal-700" /> Cuidadores disponibles
+            <HandHeart className="h-4 w-4 text-teal-700" /> {t.cuidadoCareHeader}
             {cuidadores.length > 0 && (
               <span className="ml-1 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-700">
                 {cuidadores.length}
@@ -139,8 +137,7 @@ export default function CuidadoPage() {
             </div>
           ) : cuidadores.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-teal-200 bg-teal-50 px-5 py-6 text-center text-sm text-teal-600">
-              Todavía no hay cuidadores.{' '}
-              <Link href="/cuidado/quiero-cuidar" className="font-bold underline">¡Sé el primero!</Link>
+              {t.cuidadoCareEmpty}
             </div>
           ) : (
             <div className="space-y-3">
@@ -158,12 +155,12 @@ export default function CuidadoPage() {
 
 /* ── Card de post de cuidado ── */
 function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolean; onResolver: () => void }) {
+  const { t } = useLanguage();
   const esCuidador = p.categoria === 'cuidador_disponible';
   const foto = p.images?.[0];
 
   return (
     <div className="card flex gap-4 p-4">
-      {/* Foto o avatar */}
       <div className="shrink-0">
         {foto ? (
           <img src={foto} alt={p.nombre ?? ''} className="h-16 w-16 rounded-2xl object-cover" />
@@ -179,7 +176,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <p className="font-display text-base font-extrabold text-ink truncate">
-            {p.nombre ?? (esCuidador ? 'Cuidador disponible' : 'Busca cuidador')}
+            {p.nombre ?? (esCuidador ? t.cuidadoCuidadorLabel : t.cuidadoBuscarLabel)}
           </p>
           {mio && (
             <button
@@ -187,7 +184,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
               onClick={onResolver}
               className="shrink-0 rounded-xl bg-bad/10 px-2.5 py-1 text-xs font-bold text-bad transition hover:bg-bad/20"
             >
-              Dar de baja
+              {t.cuidadoDeactivate}
             </button>
           )}
         </div>
@@ -205,13 +202,12 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
           )}
         </div>
 
-        {/* Ver perfil (solo cuidadores) */}
         {esCuidador && (
           <Link
             href={`/cuidado/cuidador/${p.id}`}
             className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:underline"
           >
-            <Star className="h-3 w-3" /> Ver perfil y calificaciones
+            <Star className="h-3 w-3" /> {t.cuidadoSeeProfile}
           </Link>
         )}
       </div>
@@ -222,7 +218,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
           target="_blank"
           rel="noopener noreferrer"
           className="shrink-0 self-center rounded-2xl bg-teal-600 p-2.5 text-white transition hover:bg-teal-700"
-          title="Contactar por WhatsApp"
+          title="WhatsApp"
         >
           <Phone className="h-4 w-4" />
         </a>

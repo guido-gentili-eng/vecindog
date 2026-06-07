@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Loader2, Store, Phone, MapPin, Clock,
   ExternalLink, Edit3, CheckCircle2, AlertCircle, Plus, Trash2, Megaphone,
-  Star, Eye, X, Upload,
+  Star, Eye, X, Upload, BarChart2, TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -245,6 +245,8 @@ export default function MiComercioPage() {
           </div>
         </div>
 
+        <StatsPanel adId={comercio.id} />
+
         <NovedadesPanel adId={comercio.id} novedades={novedades} onRefresh={cargar} />
 
       </div>
@@ -255,6 +257,93 @@ export default function MiComercioPage() {
           onClose={() => setEditando(false)}
           onSaved={() => { setEditando(false); cargar(); }}
         />
+      )}
+    </div>
+  );
+}
+
+interface Stats {
+  vistas_30d: number;
+  vistas_7d: number;
+  clicks_telefono_30d: number;
+  clicks_mapa_30d: number;
+  clicks_link_30d: number;
+  vistas_por_dia: { fecha: string; total: number }[];
+}
+
+function StatsPanel({ adId }: { adId: string }) {
+  const { t } = useLanguage();
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`/api/comercio-stats?ad_id=${adId}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) setStats(await res.json());
+    })();
+  }, [adId]);
+
+  const maxVista = stats ? Math.max(...stats.vistas_por_dia.map((d) => d.total), 1) : 1;
+
+  return (
+    <div className="rounded-[20px] bg-white border border-black/5 overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-4 border-b border-black/5">
+        <BarChart2 className="h-4 w-4 text-brand-primary" />
+        <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">{t.mcomStatsTitle}</h2>
+      </div>
+
+      {!stats ? (
+        <p className="px-5 py-5 text-sm text-ink-muted text-center">{t.mcomStatsCargando}</p>
+      ) : (
+        <div className="px-5 py-4 space-y-4">
+
+          {/* Métrica principal: visitas */}
+          <div className="flex items-end gap-4">
+            <div>
+              <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">{t.mcomStatsVistas30}</p>
+              <p className="font-display text-4xl font-black text-brand-primary leading-none mt-0.5">{stats.vistas_30d}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <TrendingUp className="h-3.5 w-3.5 text-good" />
+                <span className="text-xs font-bold text-good">{stats.vistas_7d} {t.mcomStatsVistas7.toLowerCase()}</span>
+              </div>
+            </div>
+
+            {/* Mini sparkline */}
+            <div className="flex-1 flex items-end gap-0.5 h-12">
+              {stats.vistas_por_dia.map(({ fecha, total }) => (
+                <div
+                  key={fecha}
+                  title={`${fecha}: ${total}`}
+                  className="flex-1 rounded-t-sm bg-brand-primary/20 transition-all"
+                  style={{ height: `${Math.max((total / maxVista) * 100, 4)}%` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Grid de clicks */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-2xl bg-[#f5f0eb] px-3 py-2.5 text-center">
+              <Phone className="mx-auto h-4 w-4 text-brand-primary mb-1" />
+              <p className="font-black text-lg text-ink leading-none">{stats.clicks_telefono_30d}</p>
+              <p className="text-[10px] font-bold text-ink-muted mt-0.5 uppercase tracking-wide leading-tight">{t.mcomStatsTelefono}</p>
+            </div>
+            <div className="rounded-2xl bg-[#f5f0eb] px-3 py-2.5 text-center">
+              <MapPin className="mx-auto h-4 w-4 text-brand-primary mb-1" />
+              <p className="font-black text-lg text-ink leading-none">{stats.clicks_mapa_30d}</p>
+              <p className="text-[10px] font-bold text-ink-muted mt-0.5 uppercase tracking-wide leading-tight">{t.mcomStatsMapa}</p>
+            </div>
+            <div className="rounded-2xl bg-[#f5f0eb] px-3 py-2.5 text-center">
+              <ExternalLink className="mx-auto h-4 w-4 text-brand-primary mb-1" />
+              <p className="font-black text-lg text-ink leading-none">{stats.clicks_link_30d}</p>
+              <p className="text-[10px] font-bold text-ink-muted mt-0.5 uppercase tracking-wide leading-tight">{t.mcomStatsLink}</p>
+            </div>
+          </div>
+
+        </div>
       )}
     </div>
   );

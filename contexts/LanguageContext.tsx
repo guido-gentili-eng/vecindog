@@ -1278,6 +1278,13 @@ export type Translations = {
   mcomReviews: string;
   mcomVence: string;
   mcomEditar: string;
+  mcomStatsTitle: string;
+  mcomStatsVistas30: string;
+  mcomStatsVistas7: string;
+  mcomStatsTelefono: string;
+  mcomStatsMapa: string;
+  mcomStatsLink: string;
+  mcomStatsCargando: string;
   mcomNovedadesTitle: string;
   mcomNueva: string;
   mcomNovTituloPlaceholder: string;
@@ -2860,6 +2867,13 @@ const translations: Record<Lang, Translations> = {
     mcomReviews: 'Reviews',
     mcomVence: 'Vence',
     mcomEditar: 'Editar datos del comercio',
+    mcomStatsTitle: 'Estadísticas (últimos 30 días)',
+    mcomStatsVistas30: 'Visitas',
+    mcomStatsVistas7: 'Esta semana',
+    mcomStatsTelefono: 'Clicks teléfono',
+    mcomStatsMapa: 'Clicks mapa',
+    mcomStatsLink: 'Clicks link',
+    mcomStatsCargando: 'Cargando estadísticas…',
     mcomNovedadesTitle: 'Novedades y Ofertas',
     mcomNueva: 'Nueva',
     mcomNovTituloPlaceholder: 'Título de la novedad (ej: Promoción de baño + corte)',
@@ -4417,6 +4431,13 @@ const translations: Record<Lang, Translations> = {
     mcomReviews: 'Reviews',
     mcomVence: 'Expires',
     mcomEditar: 'Edit business details',
+    mcomStatsTitle: 'Statistics (last 30 days)',
+    mcomStatsVistas30: 'Visits',
+    mcomStatsVistas7: 'This week',
+    mcomStatsTelefono: 'Phone clicks',
+    mcomStatsMapa: 'Map clicks',
+    mcomStatsLink: 'Link clicks',
+    mcomStatsCargando: 'Loading statistics…',
     mcomNovedadesTitle: 'News & Offers',
     mcomNueva: 'New',
     mcomNovTituloPlaceholder: 'Post title (e.g. Bath + cut promotion)',
@@ -5974,6 +5995,13 @@ const translations: Record<Lang, Translations> = {
     mcomReviews: 'Avaliações',
     mcomVence: 'Vence',
     mcomEditar: 'Editar dados do comércio',
+    mcomStatsTitle: 'Estatísticas (últimos 30 dias)',
+    mcomStatsVistas30: 'Visitas',
+    mcomStatsVistas7: 'Esta semana',
+    mcomStatsTelefono: 'Cliques no telefone',
+    mcomStatsMapa: 'Cliques no mapa',
+    mcomStatsLink: 'Cliques no link',
+    mcomStatsCargando: 'Carregando estatísticas…',
     mcomNovedadesTitle: 'Novidades e Ofertas',
     mcomNueva: 'Nova',
     mcomNovTituloPlaceholder: 'Título da novidade (ex: Promoção banho + tosa)',

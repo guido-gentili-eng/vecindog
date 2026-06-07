@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Phone, MapPin, Clock, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import ReviewsComercio from './ReviewsComercio';
 import NovedadesComercio from './NovedadesComercio';
+import TrackComercio from './TrackComercio';
 
 interface Props { params: { id: string } }
 
@@ -97,47 +98,24 @@ export default async function PerfilComercioPage({ params }: Props) {
               <p className="mt-3 text-sm text-ink leading-relaxed">{comercio.descripcion_comercio}</p>
             )}
 
-            {/* Datos de contacto */}
-            <div className="mt-4 space-y-2">
-              {comercio.telefono_comercio && (
-                <a
-                  href={`tel:${comercio.telefono_comercio}`}
-                  className="flex items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10"
-                >
-                  <Phone className="h-4 w-4 shrink-0 text-brand-primary" />
-                  {comercio.telefono_comercio}
-                </a>
-              )}
+            {/* Horario (estático, sin tracking) */}
+            {(comercio.horario_apertura || comercio.horario_cierre) && (
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm text-ink">
+                <Clock className="h-4 w-4 shrink-0 text-brand-primary" />
+                <span>
+                  {comercio.dias_atencion && <span className="font-semibold">{comercio.dias_atencion} · </span>}
+                  {comercio.horario_apertura} – {comercio.horario_cierre}
+                </span>
+              </div>
+            )}
 
-              {comercio.direccion_comercio && (
-                <div className="flex items-start gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm text-ink">
-                  <MapPin className="h-4 w-4 shrink-0 text-brand-primary mt-0.5" />
-                  <span>{comercio.direccion_comercio}</span>
-                </div>
-              )}
-
-              {(comercio.horario_apertura || comercio.horario_cierre) && (
-                <div className="flex items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm text-ink">
-                  <Clock className="h-4 w-4 shrink-0 text-brand-primary" />
-                  <span>
-                    {comercio.dias_atencion && <span className="font-semibold">{comercio.dias_atencion} · </span>}
-                    {comercio.horario_apertura} – {comercio.horario_cierre}
-                  </span>
-                </div>
-              )}
-
-              {comercio.href && !comercio.href.startsWith('tel:') && comercio.href !== 'https://www.mivecindog.com.ar' && (
-                <a
-                  href={comercio.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/10"
-                >
-                  <ExternalLink className="h-4 w-4 shrink-0" />
-                  Visitar sitio / perfil
-                </a>
-              )}
-            </div>
+            {/* Contacto + tracking */}
+            <TrackComercio
+              adId={params.id}
+              telefono={comercio.telefono_comercio}
+              direccion={comercio.direccion_comercio}
+              href={comercio.href}
+            />
           </div>
         </div>
 

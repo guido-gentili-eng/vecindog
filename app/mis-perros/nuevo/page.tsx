@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { listarMisPerros } from '@/lib/perros';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   crearPerro, subirFotoPerro, VACUNAS_COMUNES, VACUNA_VACIA,
   type PerroInput, type VacunaInput,
@@ -16,7 +17,6 @@ import {
 import { COLORES_PERRO } from '@/lib/mockData';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 
-/* ─── Tipos internos ─── */
 interface FotoPreview { file: File; preview: string; }
 
 const FORM_INICIAL: PerroInput = {
@@ -26,13 +26,13 @@ const FORM_INICIAL: PerroInput = {
   estado_salud: '', dieta_marca: '', dieta_cantidad: '', dieta_frecuencia: '', dieta_notas: '',
 };
 
-/* ─── Constantes ─── */
 const MAX_FOTOS = 5;
 const ACCEPT    = 'image/jpeg,image/png,image/webp';
 
 export default function NuevoPerroPage() {
   const router = useRouter();
   const { isAuthenticated, isPro } = useAuth();
+  const { t } = useLanguage();
 
   const [form,       setForm]       = useState<PerroInput>(FORM_INICIAL);
   const [fotos,      setFotos]      = useState<FotoPreview[]>([]);
@@ -48,23 +48,21 @@ export default function NuevoPerroPage() {
       if (lista.length >= 1) setBloqueado(true);
     }).catch(() => {});
   }, [isAuthenticated, isPro]);
-  const fileRef   = useRef<HTMLInputElement>(null);
+  const fileRef     = useRef<HTMLInputElement>(null);
   const previewsRef = useRef<string[]>([]);
 
-  /* ─── Helpers form ─── */
   function campo<K extends keyof PerroInput>(k: K, v: PerroInput[K]) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  /* ─── Fotos ─── */
   function onFotos(e: React.ChangeEvent<HTMLInputElement>) {
     setErrorFoto('');
     const files = Array.from(e.target.files ?? []);
     const nuevas: FotoPreview[] = [];
     for (const file of files) {
-      if (!file.type.startsWith('image/')) { setErrorFoto('Solo se permiten imágenes.'); continue; }
-      if (file.size > 5 * 1024 * 1024) { setErrorFoto('Cada foto debe pesar menos de 5 MB.'); continue; }
-      if (fotos.length + nuevas.length >= MAX_FOTOS) { setErrorFoto(`Máximo ${MAX_FOTOS} fotos.`); break; }
+      if (!file.type.startsWith('image/')) { setErrorFoto(t.mpnFotoErrImagen); continue; }
+      if (file.size > 5 * 1024 * 1024) { setErrorFoto(t.mpnFotoErrTamano); continue; }
+      if (fotos.length + nuevas.length >= MAX_FOTOS) { setErrorFoto(t.mpnFotoErrMax.replace('{max}', String(MAX_FOTOS))); break; }
       const url = URL.createObjectURL(file);
       previewsRef.current.push(url);
       nuevas.push({ file, preview: url });
@@ -80,19 +78,16 @@ export default function NuevoPerroPage() {
     });
   }
 
-  /* ─── Vacunas ─── */
   function agregarVacuna() { setVacunas((v) => [...v, { ...VACUNA_VACIA }]); }
   function quitarVacuna(i: number) { setVacunas((v) => v.filter((_, idx) => idx !== i)); }
   function campoVacuna<K extends keyof VacunaInput>(i: number, k: K, v: VacunaInput[K]) {
     setVacunas((prev) => prev.map((vac, idx) => idx === i ? { ...vac, [k]: v } : vac));
   }
 
-  /* ─── Submit ─── */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.nombre.trim()) { setError('El nombre es obligatorio.'); return; }
+    if (!form.nombre.trim()) { setError(t.mpnErrNombre); return; }
 
-    // Re-verificar límite de perros al momento del submit (evita race condition)
     if (!isPro) {
       const lista = await listarMisPerros().catch(() => [] as Awaited<ReturnType<typeof listarMisPerros>>);
       if (lista.length >= 1) { setBloqueado(true); return; }
@@ -102,16 +97,13 @@ export default function NuevoPerroPage() {
     setLoading(true);
 
     try {
-      // 1. Subir fotos
       let fotoUrl = '';
       for (let i = 0; i < fotos.length; i++) {
         const url = await subirFotoPerro(fotos[i].file);
-        if (i === 0) fotoUrl = url; // primera foto = principal
+        if (i === 0) fotoUrl = url;
       }
 
-      // 2. Crear perro + vacunas
       const id = await crearPerro({ ...form, foto_url: fotoUrl }, vacunas);
-
       router.push(`/mis-perros/${id}?nuevo=1`);
     } catch (err: unknown) {
       const msg =
@@ -133,7 +125,7 @@ export default function NuevoPerroPage() {
   if (!isAuthenticated) {
     return (
       <div className="py-12 text-center">
-        <p className="text-ink-muted">Iniciá sesión para registrar tu perro.</p>
+        <p className="text-ink-muted">{t.mpnLoginSub}</p>
       </div>
     );
   }
@@ -145,18 +137,16 @@ export default function NuevoPerroPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
             <Lock className="h-8 w-8 text-brand-primary" />
           </div>
-          <h2 className="mt-5 font-display text-xl font-black text-ink">Límite del plan Gratis</h2>
-          <p className="mt-2 text-sm text-ink-muted">
-            Con el plan Gratis podés registrar <strong>1 perro</strong>. Pasate a VecindogPro para perros ilimitados.
-          </p>
+          <h2 className="mt-5 font-display text-xl font-black text-ink">{t.mpnLimiteTitle}</h2>
+          <p className="mt-2 text-sm text-ink-muted">{t.mpnLimiteSub}</p>
           <div className="mt-6 space-y-2">
             <Link href="/planes"
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
-              <Sparkles className="h-4 w-4" /> Ver plan Pro
+              <Sparkles className="h-4 w-4" /> {t.mpnVerPro}
             </Link>
             <Link href="/mis-perros"
               className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-              Volver a Mis perros
+              {t.mpnVolverLista}
             </Link>
           </div>
         </div>
@@ -166,33 +156,28 @@ export default function NuevoPerroPage() {
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
-      {/* Header */}
       <div className="mb-6">
         <button
           type="button"
           onClick={() => router.back()}
           className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted transition hover:text-ink"
         >
-          <ChevronLeft className="h-4 w-4" /> Volver
+          <ChevronLeft className="h-4 w-4" /> {t.mpnVolver}
         </button>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-          <Dog className="h-3.5 w-3.5" /> Nuevo perro
+          <Dog className="h-3.5 w-3.5" /> {t.mpnNuevoChip}
         </span>
         <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-ink">
-          Registrá a tu perro
+          {t.mpnTitle}
         </h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Guardá todos sus datos. Si algún día se pierde, ya tenés todo listo.
-        </p>
+        <p className="mt-1 text-sm text-ink-muted">{t.mpnSub}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* ── Sección 1: Datos básicos ── */}
-        <Section titulo="Datos básicos">
-          {/* Nombre */}
+        <Section titulo={t.mpnSecDatos} icono="datos">
           <div>
-            <label className="label">Nombre <span className="text-bad">*</span></label>
+            <label className="label">{t.mpnNombre} <span className="text-bad">*</span></label>
             <input
               className="field w-full"
               placeholder="Ej: Fido, Luna, Thor…"
@@ -203,20 +188,18 @@ export default function NuevoPerroPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Raza */}
             <div>
-              <label className="label">Raza</label>
+              <label className="label">{t.mpnRaza}</label>
               <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
             </div>
-            {/* Color */}
             <div>
-              <label className="label">Color principal</label>
+              <label className="label">{t.mpnColor}</label>
               <select
                 className="field w-full"
                 value={form.color}
                 onChange={(e) => campo('color', e.target.value)}
               >
-                <option value="">Seleccioná un color</option>
+                <option value="">{t.mpnColorPh}</option>
                 {COLORES_PERRO.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -225,9 +208,8 @@ export default function NuevoPerroPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Sexo */}
             <div>
-              <label className="label">Sexo</label>
+              <label className="label">{t.mpnSexo}</label>
               <div className="flex gap-2">
                 {(['macho', 'hembra'] as const).map((s) => (
                   <button
@@ -240,28 +222,27 @@ export default function NuevoPerroPage() {
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
                     }`}
                   >
-                    {s}
+                    {s === 'macho' ? t.mpnSexoMacho : t.mpnSexoHembra}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Tamaño */}
             <div>
-              <label className="label">Tamaño</label>
+              <label className="label">{t.mpnTamano}</label>
               <div className="flex gap-1">
-                {([['pequeño','S'], ['mediano','M'], ['grande','L']] as const).map(([t, l]) => (
+                {([['pequeño','S'], ['mediano','M'], ['grande','L']] as const).map(([tam, lbl]) => (
                   <button
-                    key={t}
+                    key={tam}
                     type="button"
-                    onClick={() => campo('tamano', form.tamano === t ? '' : t)}
+                    onClick={() => campo('tamano', form.tamano === tam ? '' : tam)}
                     className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
-                      form.tamano === t
+                      form.tamano === tam
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
                     }`}
                   >
-                    {l}
+                    {lbl}
                   </button>
                 ))}
               </div>
@@ -269,9 +250,8 @@ export default function NuevoPerroPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Fecha nacimiento */}
             <div>
-              <label className="label">Fecha de nacimiento</label>
+              <label className="label">{t.mpnFechaNac}</label>
               <input
                 type="date"
                 className="field w-full"
@@ -280,9 +260,8 @@ export default function NuevoPerroPage() {
                 onChange={(e) => campo('fecha_nac', e.target.value)}
               />
             </div>
-            {/* Chip */}
             <div>
-              <label className="label">N° de microchip</label>
+              <label className="label">{t.mpnChip}</label>
               <input
                 className="field w-full font-mono"
                 placeholder="15 dígitos"
@@ -292,7 +271,6 @@ export default function NuevoPerroPage() {
             </div>
           </div>
 
-          {/* Esterilizado */}
           <label className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-black/10 p-4 transition hover:border-brand-primary/40">
             <input
               type="checkbox"
@@ -300,53 +278,45 @@ export default function NuevoPerroPage() {
               checked={form.esterilizado}
               onChange={(e) => campo('esterilizado', e.target.checked)}
             />
-            <span className="text-sm font-semibold text-ink">
-              Está esterilizado/a (castrado o ligado)
-            </span>
+            <span className="text-sm font-semibold text-ink">{t.mpnEsterilizado}</span>
           </label>
 
-          {/* Descripción */}
           <div>
-            <label className="label">Descripción / características</label>
+            <label className="label">{t.mpnDescripcion}</label>
             <textarea
               className="field w-full resize-none"
               rows={3}
-              placeholder="Marcas especiales, manchas, cicatrices, collar habitual, comportamiento…"
+              placeholder={t.mpnDescripcionPh}
               value={form.descripcion}
               onChange={(e) => campo('descripcion', e.target.value)}
             />
           </div>
 
-          {/* Alergias */}
           <div>
-            <label className="label">Alergias / condiciones especiales</label>
+            <label className="label">{t.mpnAlergias}</label>
             <textarea
               className="field w-full resize-none"
               rows={2}
-              placeholder="Alérgico a X antibiótico, condición crónica, dieta especial…"
+              placeholder={t.mpnAlergiasPh}
               value={form.alergias}
               onChange={(e) => campo('alergias', e.target.value)}
             />
-            <p className="mt-1 text-xs text-ink-muted">Se mostrará en la identificación del perro.</p>
+            <p className="mt-1 text-xs text-ink-muted">{t.mpnAlergiasInfo}</p>
           </div>
 
-          {/* Dirección */}
           <div>
-            <label className="label">Dirección de tu casa</label>
+            <label className="label">{t.mpnDireccion}</label>
             <input
               className="field w-full"
-              placeholder="Ej: Av. Alem 1200, Villa Mitre"
+              placeholder={t.mpnDireccionPh}
               value={form.direccion}
               onChange={(e) => campo('direccion', e.target.value)}
             />
-            <p className="mt-1 text-xs text-ink-muted">
-              Si algún día lo perdés, se usará para completar el aviso automáticamente.
-            </p>
+            <p className="mt-1 text-xs text-ink-muted">{t.mpnDireccionInfo}</p>
           </div>
         </Section>
 
-        {/* ── Sección 2: Fotos ── */}
-        <Section titulo="Fotos" descripcion={`Subí hasta ${MAX_FOTOS} fotos. La primera será la principal.`}>
+        <Section titulo={t.mpnSecFotos} icono="fotos" descripcion={t.mpnSecFotosSub.replace('{max}', String(MAX_FOTOS))}>
           {fotos.length > 0 && (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {fotos.map((f, i) => (
@@ -355,7 +325,7 @@ export default function NuevoPerroPage() {
                   <img src={f.preview} alt="" className="h-full w-full object-cover" />
                   {i === 0 && (
                     <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
-                      Principal
+                      {t.mpnFotoPrincipal}
                     </span>
                   )}
                   <button
@@ -386,8 +356,8 @@ export default function NuevoPerroPage() {
               className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 py-8 text-ink-muted transition hover:border-brand-primary hover:text-brand-primary"
             >
               <ImagePlus className="h-8 w-8" />
-              <span className="text-sm font-bold">Subir fotos</span>
-              <span className="text-xs">JPG, PNG o WebP · Máx. 5 MB c/u</span>
+              <span className="text-sm font-bold">{t.mpnFotoSubir}</span>
+              <span className="text-xs">{t.mpnFotoFormato}</span>
             </button>
           )}
 
@@ -407,21 +377,20 @@ export default function NuevoPerroPage() {
           />
         </Section>
 
-        {/* ── Sección 3: Veterinario ── */}
-        <Section titulo="Veterinario habitual">
-          <p className="text-xs text-ink-muted -mt-2">Opcional. Útil si el perro se pierde y alguien lo encuentra.</p>
+        <Section titulo={t.mpnSecVet} icono="vet">
+          <p className="text-xs text-ink-muted -mt-2">{t.mpnSecVetOpcional}</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Nombre / clínica</label>
+              <label className="label">{t.mpnVetNombre}</label>
               <input
                 className="field w-full"
-                placeholder="Dr. García / Clínica Mascotas"
+                placeholder={t.mpnVetNombrePh}
                 value={form.vet_nombre}
                 onChange={(e) => campo('vet_nombre', e.target.value)}
               />
             </div>
             <div>
-              <label className="label">Teléfono</label>
+              <label className="label">{t.mpnVetTel}</label>
               <input
                 className="field w-full"
                 placeholder="+54 11 XXXX-XXXX"
@@ -432,15 +401,9 @@ export default function NuevoPerroPage() {
           </div>
         </Section>
 
-        {/* ── Sección 4: Vacunas ── */}
-        <Section
-          titulo="Carnet de vacunas"
-          descripcion="Agregá todas las vacunas que tenga registradas."
-        >
+        <Section titulo={t.mpnSecVacunas} icono="vacunas" descripcion={t.mpnSecVacunasSub}>
           {vacunas.length === 0 ? (
-            <p className="text-sm text-ink-muted">
-              Todavía no agregaste vacunas.
-            </p>
+            <p className="text-sm text-ink-muted">{t.mpnVacunaSinVacunas}</p>
           ) : (
             <div className="space-y-4">
               {vacunas.map((v, i) => (
@@ -450,6 +413,15 @@ export default function NuevoPerroPage() {
                   index={i}
                   onChange={campoVacuna}
                   onQuitar={quitarVacuna}
+                  labelNum={t.mpnVacunaNum.replace('{n}', String(i + 1))}
+                  labelNombre={t.mpnVacunaNombre}
+                  labelFecha={t.mpnVacunaFecha}
+                  labelVet={t.mpnVacunaVet}
+                  labelProxima={t.mpnVacunaProxima}
+                  labelNotas={t.mpnVacunaNotas}
+                  labelNombrePh={t.mpnVacunaNombrePh}
+                  labelVetPh={t.mpnVacunaVetPh}
+                  labelNotasPh={t.mpnVacunaNotasPh}
                 />
               ))}
             </div>
@@ -461,27 +433,25 @@ export default function NuevoPerroPage() {
             className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-black/10 px-4 py-3 text-sm font-bold text-ink-muted transition hover:border-brand-primary hover:text-brand-primary"
           >
             <Plus className="h-4 w-4" />
-            Agregar vacuna
+            {t.mpnVacunaAgregar}
           </button>
         </Section>
 
-        {/* Error general */}
         {error && (
           <div className="flex items-start gap-2 rounded-2xl bg-bad/10 p-4 text-sm font-semibold text-bad">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
           </div>
         )}
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
           className="btn-primary w-full gap-2 disabled:opacity-60"
         >
           {loading ? (
-            <><Loader2 className="h-5 w-5 animate-spin" /> Guardando…</>
+            <><Loader2 className="h-5 w-5 animate-spin" /> {t.mpnGuardando}</>
           ) : (
-            <><CheckCircle2 className="h-5 w-5" /> Guardar perfil de {form.nombre || 'mi perro'}</>
+            <><CheckCircle2 className="h-5 w-5" /> {t.mpnGuardar.replace('{nombre}', form.nombre || 'mi perro')}</>
           )}
         </button>
       </form>
@@ -489,20 +459,18 @@ export default function NuevoPerroPage() {
   );
 }
 
-/* ── Sub-componentes ── */
-
 function Section({
-  titulo, descripcion, children,
+  titulo, icono, descripcion, children,
 }: {
-  titulo: string; descripcion?: string; children: React.ReactNode;
+  titulo: string; icono: 'datos' | 'fotos' | 'vet' | 'vacunas'; descripcion?: string; children: React.ReactNode;
 }) {
   return (
     <div className="card p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-2">
-        {titulo === 'Carnet de vacunas'   && <Syringe      className="h-4 w-4 text-brand-primary" />}
-        {titulo === 'Fotos'             && <ImagePlus    className="h-4 w-4 text-brand-primary" />}
-        {titulo === 'Datos básicos'     && <Dog          className="h-4 w-4 text-brand-primary" />}
-        {titulo === 'Veterinario habitual' && <Stethoscope className="h-4 w-4 text-brand-primary" />}
+        {icono === 'vacunas' && <Syringe      className="h-4 w-4 text-brand-primary" />}
+        {icono === 'fotos'   && <ImagePlus    className="h-4 w-4 text-brand-primary" />}
+        {icono === 'datos'   && <Dog          className="h-4 w-4 text-brand-primary" />}
+        {icono === 'vet'     && <Stethoscope  className="h-4 w-4 text-brand-primary" />}
         <h2 className="font-display text-base font-extrabold text-ink">{titulo}</h2>
       </div>
       {descripcion && (
@@ -515,16 +483,27 @@ function Section({
 
 function VacunaRow({
   vacuna, index, onChange, onQuitar,
+  labelNum, labelNombre, labelFecha, labelVet, labelProxima, labelNotas,
+  labelNombrePh, labelVetPh, labelNotasPh,
 }: {
   vacuna: VacunaInput;
   index: number;
   onChange: <K extends keyof VacunaInput>(i: number, k: K, v: VacunaInput[K]) => void;
   onQuitar: (i: number) => void;
+  labelNum: string;
+  labelNombre: string;
+  labelFecha: string;
+  labelVet: string;
+  labelProxima: string;
+  labelNotas: string;
+  labelNombrePh: string;
+  labelVetPh: string;
+  labelNotasPh: string;
 }) {
   return (
     <div className="rounded-2xl bg-brand-cream p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-bold text-ink-muted">Vacuna #{index + 1}</span>
+        <span className="text-xs font-bold text-ink-muted">{labelNum}</span>
         <button
           type="button"
           onClick={() => onQuitar(index)}
@@ -534,13 +513,12 @@ function VacunaRow({
         </button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        {/* Nombre con sugerencias */}
         <div>
-          <label className="label">Nombre <span className="text-bad">*</span></label>
+          <label className="label">{labelNombre} <span className="text-bad">*</span></label>
           <input
             list={`vac-list-${index}`}
             className="field w-full"
-            placeholder="Séxtuple, Antirrábica…"
+            placeholder={labelNombrePh}
             value={vacuna.nombre}
             onChange={(e) => onChange(index, 'nombre', e.target.value)}
           />
@@ -549,9 +527,8 @@ function VacunaRow({
           </datalist>
         </div>
 
-        {/* Fecha */}
         <div>
-          <label className="label">Fecha <span className="text-bad">*</span></label>
+          <label className="label">{labelFecha} <span className="text-bad">*</span></label>
           <input
             type="date"
             className="field w-full"
@@ -561,20 +538,18 @@ function VacunaRow({
           />
         </div>
 
-        {/* Veterinario */}
         <div>
-          <label className="label">Veterinario/a</label>
+          <label className="label">{labelVet}</label>
           <input
             className="field w-full"
-            placeholder="Nombre o clínica"
+            placeholder={labelVetPh}
             value={vacuna.veterinario}
             onChange={(e) => onChange(index, 'veterinario', e.target.value)}
           />
         </div>
 
-        {/* Próxima dosis */}
         <div>
-          <label className="label">Próxima dosis</label>
+          <label className="label">{labelProxima}</label>
           <input
             type="date"
             className="field w-full"
@@ -584,12 +559,11 @@ function VacunaRow({
           />
         </div>
 
-        {/* Notas */}
         <div className="sm:col-span-2">
-          <label className="label">Notas</label>
+          <label className="label">{labelNotas}</label>
           <input
             className="field w-full"
-            placeholder="Lote, observaciones del veterinario…"
+            placeholder={labelNotasPh}
             value={vacuna.notas}
             onChange={(e) => onChange(index, 'notas', e.target.value)}
           />

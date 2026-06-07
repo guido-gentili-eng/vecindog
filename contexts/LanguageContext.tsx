@@ -1161,6 +1161,112 @@ export type Translations = {
   histPasoIg: string;
   histPasoFb: string;
   histDescargar: string;
+  // mis-perros/nuevo
+  mpnVolver: string;
+  mpnNuevoChip: string;
+  mpnTitle: string;
+  mpnSub: string;
+  mpnLoginSub: string;
+  mpnLimiteTitle: string;
+  mpnLimiteSub: string;
+  mpnVerPro: string;
+  mpnVolverLista: string;
+  mpnErrNombre: string;
+  mpnGuardando: string;
+  mpnGuardar: string;
+  mpnSecDatos: string;
+  mpnSecFotos: string;
+  mpnSecFotosSub: string;
+  mpnSecVet: string;
+  mpnSecVetOpcional: string;
+  mpnSecVacunas: string;
+  mpnSecVacunasSub: string;
+  mpnNombre: string;
+  mpnRaza: string;
+  mpnColor: string;
+  mpnColorPh: string;
+  mpnSexo: string;
+  mpnSexoMacho: string;
+  mpnSexoHembra: string;
+  mpnTamano: string;
+  mpnFechaNac: string;
+  mpnChip: string;
+  mpnEsterilizado: string;
+  mpnDescripcion: string;
+  mpnDescripcionPh: string;
+  mpnAlergias: string;
+  mpnAlergiasPh: string;
+  mpnAlergiasInfo: string;
+  mpnDireccion: string;
+  mpnDireccionPh: string;
+  mpnDireccionInfo: string;
+  mpnFotoSubir: string;
+  mpnFotoFormato: string;
+  mpnFotoErrImagen: string;
+  mpnFotoErrTamano: string;
+  mpnFotoErrMax: string;
+  mpnFotoPrincipal: string;
+  mpnVetNombre: string;
+  mpnVetNombrePh: string;
+  mpnVetTel: string;
+  mpnVacunaAgregar: string;
+  mpnVacunaNum: string;
+  mpnVacunaNombre: string;
+  mpnVacunaFecha: string;
+  mpnVacunaVet: string;
+  mpnVacunaProxima: string;
+  mpnVacunaNotas: string;
+  mpnVacunaNombrePh: string;
+  mpnVacunaVetPh: string;
+  mpnVacunaNotasPh: string;
+  mpnVacunaSinVacunas: string;
+  // publicitate landing
+  publVolver: string;
+  publHeroChip: string;
+  publHeroTitle: string;
+  publHeroSub: string;
+  publHeroWa: string;
+  publHeroMail: string;
+  publFormatosTitle: string;
+  publFormatosSub: string;
+  publPreciosTitle: string;
+  publPreciosSub: string;
+  publMasElegido: string;
+  publPrecioEspecial: string;
+  publPorQueTitle: string;
+  publPorQueSub: string;
+  publPorQueChip: string;
+  publFaqTitle: string;
+  publCtaTitle: string;
+  publCtaSub: string;
+  publModalFotolabel: string;
+  publModalFotoCambiar: string;
+  publModalFotoSubir: string;
+  publModalLogoLabel: string;
+  publModalLogoCambiar: string;
+  publModalLogoSubir: string;
+  publModalNegocioLabel: string;
+  publModalTaglineLabel: string;
+  publModalLinkLabel: string;
+  publModalLinkInfo: string;
+  publModalCtaLabel: string;
+  publModalContactoLabel: string;
+  publModalEmailLabel: string;
+  publModalTelLabel: string;
+  publModalErrFotoTam: string;
+  publModalErrLogoTam: string;
+  publModalErrNegocio: string;
+  publModalErrEmail: string;
+  publModalErrLink: string;
+  publModalErrLinkFmt: string;
+  publModalErrTel: string;
+  publModalPagandoCon: string;
+  publModalPagar: string;
+  publVistaPrevia: string;
+  publStats0label: string;
+  publStats1label: string;
+  publStats2label: string;
+  publStats3label: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -2308,6 +2414,110 @@ const translations: Record<Lang, Translations> = {
     histPasoIg: 'Abrí Instagram → ➕ Nueva historia → elegí la imagen',
     histPasoFb: 'Abrí Facebook → ➕ Nueva historia → elegí la imagen',
     histDescargar: 'Solo descargar imagen',
+    mpnVolver: 'Volver',
+    mpnNuevoChip: 'Nuevo perro',
+    mpnTitle: 'Registrá a tu perro',
+    mpnSub: 'Guardá todos sus datos. Si algún día se pierde, ya tenés todo listo.',
+    mpnLoginSub: 'Iniciá sesión para registrar tu perro.',
+    mpnLimiteTitle: 'Límite del plan Gratis',
+    mpnLimiteSub: 'Con el plan Gratis podés registrar 1 perro. Pasate a VecindogPro para perros ilimitados.',
+    mpnVerPro: 'Ver plan Pro',
+    mpnVolverLista: 'Volver a Mis perros',
+    mpnErrNombre: 'El nombre es obligatorio.',
+    mpnGuardando: 'Guardando…',
+    mpnGuardar: 'Guardar perfil de {nombre}',
+    mpnSecDatos: 'Datos básicos',
+    mpnSecFotos: 'Fotos',
+    mpnSecFotosSub: 'Subí hasta {max} fotos. La primera será la principal.',
+    mpnSecVet: 'Veterinario habitual',
+    mpnSecVetOpcional: 'Opcional. Útil si el perro se pierde y alguien lo encuentra.',
+    mpnSecVacunas: 'Carnet de vacunas',
+    mpnSecVacunasSub: 'Agregá todas las vacunas que tenga registradas.',
+    mpnNombre: 'Nombre',
+    mpnRaza: 'Raza',
+    mpnColor: 'Color principal',
+    mpnColorPh: 'Seleccioná un color',
+    mpnSexo: 'Sexo',
+    mpnSexoMacho: 'macho',
+    mpnSexoHembra: 'hembra',
+    mpnTamano: 'Tamaño',
+    mpnFechaNac: 'Fecha de nacimiento',
+    mpnChip: 'N° de microchip',
+    mpnEsterilizado: 'Está esterilizado/a (castrado o ligado)',
+    mpnDescripcion: 'Descripción / características',
+    mpnDescripcionPh: 'Marcas especiales, manchas, cicatrices, collar habitual, comportamiento…',
+    mpnAlergias: 'Alergias / condiciones especiales',
+    mpnAlergiasPh: 'Alérgico a X antibiótico, condición crónica, dieta especial…',
+    mpnAlergiasInfo: 'Se mostrará en la identificación del perro.',
+    mpnDireccion: 'Dirección de tu casa',
+    mpnDireccionPh: 'Ej: Av. Alem 1200, Villa Mitre',
+    mpnDireccionInfo: 'Si algún día lo perdés, se usará para completar el aviso automáticamente.',
+    mpnFotoSubir: 'Subir fotos',
+    mpnFotoFormato: 'JPG, PNG o WebP · Máx. 5 MB c/u',
+    mpnFotoErrImagen: 'Solo se permiten imágenes.',
+    mpnFotoErrTamano: 'Cada foto debe pesar menos de 5 MB.',
+    mpnFotoErrMax: 'Máximo {max} fotos.',
+    mpnFotoPrincipal: 'Principal',
+    mpnVetNombre: 'Nombre / clínica',
+    mpnVetNombrePh: 'Dr. García / Clínica Mascotas',
+    mpnVetTel: 'Teléfono',
+    mpnVacunaAgregar: 'Agregar vacuna',
+    mpnVacunaNum: 'Vacuna #{n}',
+    mpnVacunaNombre: 'Nombre',
+    mpnVacunaFecha: 'Fecha',
+    mpnVacunaVet: 'Veterinario/a',
+    mpnVacunaProxima: 'Próxima dosis',
+    mpnVacunaNotas: 'Notas',
+    mpnVacunaNombrePh: 'Séxtuple, Antirrábica…',
+    mpnVacunaVetPh: 'Nombre o clínica',
+    mpnVacunaNotasPh: 'Lote, observaciones del veterinario…',
+    mpnVacunaSinVacunas: 'Todavía no agregaste vacunas.',
+    publVolver: 'Volver',
+    publHeroChip: 'Para negocios locales',
+    publHeroTitle: 'Llegá a quienes ya cuidan a sus mascotas',
+    publHeroSub: 'Vecindog conecta a dueños de perros de toda Argentina cuando más lo necesitan. Mostrá tu negocio en el momento exacto.',
+    publHeroWa: 'Hablar por WhatsApp',
+    publHeroMail: 'Escribir por email',
+    publFormatosTitle: 'Formatos disponibles',
+    publFormatosSub: 'Así se ve tu negocio en Vecindog. Cada formato está diseñado para un momento distinto.',
+    publPreciosTitle: 'Planes simples, sin letra chica',
+    publPreciosSub: 'Mes a mes. Sin contrato. Cancelás cuando querés.',
+    publMasElegido: '★ Más elegido',
+    publPrecioEspecial: '¿Necesitás algo especial? {link} y armamos un plan a medida.',
+    publPorQueTitle: 'Publicidad con contexto, no con algoritmos',
+    publPorQueSub: 'Los usuarios de Vecindog ya están pensando en sus mascotas cuando ven tu anuncio. No compite con redes sociales ni con publicidad genérica — aparecés cuando más importa.',
+    publPorQueChip: 'Por qué Vecindog',
+    publFaqTitle: 'Preguntas frecuentes',
+    publCtaTitle: '¿Listo para llegar a más clientes?',
+    publCtaSub: 'Escribinos y activamos tu campaña en menos de 24 horas.',
+    publModalFotolabel: 'Logo o foto del negocio',
+    publModalFotoCambiar: 'Cambiar imagen',
+    publModalFotoSubir: 'Subir logo o foto',
+    publModalLogoLabel: 'Logo cuadrado',
+    publModalLogoCambiar: 'Cambiar logo',
+    publModalLogoSubir: 'Subir logo cuadrado',
+    publModalNegocioLabel: 'Nombre del negocio',
+    publModalTaglineLabel: 'Descripción corta (tagline)',
+    publModalLinkLabel: 'Link del negocio',
+    publModalLinkInfo: 'Web, Instagram, WhatsApp — adonde van los clicks',
+    publModalCtaLabel: 'Texto del botón',
+    publModalContactoLabel: 'Tus datos de contacto',
+    publModalEmailLabel: 'Email',
+    publModalTelLabel: 'Teléfono / WhatsApp',
+    publModalErrFotoTam: 'La imagen debe pesar menos de 5 MB.',
+    publModalErrLogoTam: 'El logo debe pesar menos de 5 MB.',
+    publModalErrNegocio: 'Ingresá el nombre de tu negocio.',
+    publModalErrEmail: 'Ingresá tu email.',
+    publModalErrLink: 'Ingresá el link de tu negocio.',
+    publModalErrLinkFmt: 'El link debe ser una URL válida. Ejemplo: https://instagram.com/tunegocio',
+    publModalErrTel: 'El teléfono debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
+    publModalPagandoCon: 'Serás redirigido a Mercado Pago. Tu anuncio se activa automáticamente al confirmar el pago.',
+    publModalPagar: 'Ir a pagar con Mercado Pago',
+    publVistaPrevia: 'Vista previa',
+    publStats0label: 'Vecinos activos',
+    publStats1label: 'Argentina',
+    publStats2label: 'Orgánico · sin bots',
+    publStats3label: 'A dueños de mascotas',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -3454,6 +3664,110 @@ const translations: Record<Lang, Translations> = {
     histPasoIg: 'Open Instagram → ➕ New story → pick the image',
     histPasoFb: 'Open Facebook → ➕ New story → pick the image',
     histDescargar: 'Just download the image',
+    mpnVolver: 'Back',
+    mpnNuevoChip: 'New dog',
+    mpnTitle: 'Register your dog',
+    mpnSub: 'Save all their info. If they ever get lost, you\'ll have everything ready.',
+    mpnLoginSub: 'Sign in to register your dog.',
+    mpnLimiteTitle: 'Free plan limit',
+    mpnLimiteSub: 'With the Free plan you can register 1 dog. Upgrade to VecindogPro for unlimited dogs.',
+    mpnVerPro: 'View Pro plan',
+    mpnVolverLista: 'Back to My dogs',
+    mpnErrNombre: 'Name is required.',
+    mpnGuardando: 'Saving…',
+    mpnGuardar: 'Save {nombre}\'s profile',
+    mpnSecDatos: 'Basic info',
+    mpnSecFotos: 'Photos',
+    mpnSecFotosSub: 'Upload up to {max} photos. The first will be the main one.',
+    mpnSecVet: 'Regular vet',
+    mpnSecVetOpcional: 'Optional. Useful if the dog gets lost and someone finds them.',
+    mpnSecVacunas: 'Vaccination record',
+    mpnSecVacunasSub: 'Add all the vaccines on record.',
+    mpnNombre: 'Name',
+    mpnRaza: 'Breed',
+    mpnColor: 'Main color',
+    mpnColorPh: 'Select a color',
+    mpnSexo: 'Sex',
+    mpnSexoMacho: 'male',
+    mpnSexoHembra: 'female',
+    mpnTamano: 'Size',
+    mpnFechaNac: 'Date of birth',
+    mpnChip: 'Microchip number',
+    mpnEsterilizado: 'Is spayed/neutered',
+    mpnDescripcion: 'Description / characteristics',
+    mpnDescripcionPh: 'Special marks, spots, scars, usual collar, behavior…',
+    mpnAlergias: 'Allergies / special conditions',
+    mpnAlergiasPh: 'Allergic to X antibiotic, chronic condition, special diet…',
+    mpnAlergiasInfo: 'Will be shown on the dog\'s ID card.',
+    mpnDireccion: 'Your home address',
+    mpnDireccionPh: 'e.g. 123 Main St, Springfield',
+    mpnDireccionInfo: 'If they ever get lost, this will be used to auto-fill the alert.',
+    mpnFotoSubir: 'Upload photos',
+    mpnFotoFormato: 'JPG, PNG or WebP · Max 5 MB each',
+    mpnFotoErrImagen: 'Only image files are allowed.',
+    mpnFotoErrTamano: 'Each photo must be under 5 MB.',
+    mpnFotoErrMax: 'Maximum {max} photos.',
+    mpnFotoPrincipal: 'Main',
+    mpnVetNombre: 'Name / clinic',
+    mpnVetNombrePh: 'Dr. Smith / Pet Clinic',
+    mpnVetTel: 'Phone',
+    mpnVacunaAgregar: 'Add vaccine',
+    mpnVacunaNum: 'Vaccine #{n}',
+    mpnVacunaNombre: 'Name',
+    mpnVacunaFecha: 'Date',
+    mpnVacunaVet: 'Vet',
+    mpnVacunaProxima: 'Next dose',
+    mpnVacunaNotas: 'Notes',
+    mpnVacunaNombrePh: 'Rabies, Distemper…',
+    mpnVacunaVetPh: 'Name or clinic',
+    mpnVacunaNotasPh: 'Batch, vet observations…',
+    mpnVacunaSinVacunas: 'No vaccines added yet.',
+    publVolver: 'Back',
+    publHeroChip: 'For local businesses',
+    publHeroTitle: 'Reach dog owners when it matters most',
+    publHeroSub: 'Vecindog connects dog owners across Argentina when they need help most. Show your business at the right moment.',
+    publHeroWa: 'Chat on WhatsApp',
+    publHeroMail: 'Send an email',
+    publFormatosTitle: 'Available formats',
+    publFormatosSub: 'Here\'s how your business looks in Vecindog. Each format targets a different moment.',
+    publPreciosTitle: 'Simple plans, no hidden fees',
+    publPreciosSub: 'Month to month. No contract. Cancel anytime.',
+    publMasElegido: '★ Most popular',
+    publPrecioEspecial: 'Need something special? {link} and we\'ll build a custom plan.',
+    publPorQueTitle: 'Ads with context, not algorithms',
+    publPorQueSub: 'Vecindog users are already thinking about their pets when they see your ad. No competition with social media or generic ads — you appear when it matters.',
+    publPorQueChip: 'Why Vecindog',
+    publFaqTitle: 'Frequently asked questions',
+    publCtaTitle: 'Ready to reach more customers?',
+    publCtaSub: 'Message us and we\'ll activate your campaign within 24 hours.',
+    publModalFotolabel: 'Logo or business photo',
+    publModalFotoCambiar: 'Change image',
+    publModalFotoSubir: 'Upload logo or photo',
+    publModalLogoLabel: 'Square logo',
+    publModalLogoCambiar: 'Change logo',
+    publModalLogoSubir: 'Upload square logo',
+    publModalNegocioLabel: 'Business name',
+    publModalTaglineLabel: 'Short description (tagline)',
+    publModalLinkLabel: 'Business link',
+    publModalLinkInfo: 'Website, Instagram, WhatsApp — where clicks go',
+    publModalCtaLabel: 'Button text',
+    publModalContactoLabel: 'Your contact info',
+    publModalEmailLabel: 'Email',
+    publModalTelLabel: 'Phone / WhatsApp',
+    publModalErrFotoTam: 'Image must be under 5 MB.',
+    publModalErrLogoTam: 'Logo must be under 5 MB.',
+    publModalErrNegocio: 'Enter your business name.',
+    publModalErrEmail: 'Enter your email.',
+    publModalErrLink: 'Enter your business link.',
+    publModalErrLinkFmt: 'Link must be a valid URL. Example: https://instagram.com/yourbusiness',
+    publModalErrTel: 'Phone must have at least 10 digits. Example: +1 555 123 4567',
+    publModalPagandoCon: 'You\'ll be redirected to Mercado Pago. Your ad activates automatically after payment.',
+    publModalPagar: 'Pay with Mercado Pago',
+    publVistaPrevia: 'Preview',
+    publStats0label: 'Active neighbors',
+    publStats1label: 'Argentina',
+    publStats2label: 'Organic · no bots',
+    publStats3label: 'Dog owners',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -4600,6 +4914,110 @@ const translations: Record<Lang, Translations> = {
     histPasoIg: 'Abra o Instagram → ➕ Nova história → escolha a imagem',
     histPasoFb: 'Abra o Facebook → ➕ Nova história → escolha a imagem',
     histDescargar: 'Apenas baixar a imagem',
+    mpnVolver: 'Voltar',
+    mpnNuevoChip: 'Novo cachorro',
+    mpnTitle: 'Cadastre seu cachorro',
+    mpnSub: 'Salve todos os dados. Se um dia ele se perder, você já terá tudo pronto.',
+    mpnLoginSub: 'Entre para cadastrar seu cachorro.',
+    mpnLimiteTitle: 'Limite do plano Grátis',
+    mpnLimiteSub: 'Com o plano Grátis você pode cadastrar 1 cachorro. Mude para o VecindogPro para cachorros ilimitados.',
+    mpnVerPro: 'Ver plano Pro',
+    mpnVolverLista: 'Voltar a Meus cachorros',
+    mpnErrNombre: 'O nome é obrigatório.',
+    mpnGuardando: 'Salvando…',
+    mpnGuardar: 'Salvar perfil de {nombre}',
+    mpnSecDatos: 'Dados básicos',
+    mpnSecFotos: 'Fotos',
+    mpnSecFotosSub: 'Envie até {max} fotos. A primeira será a principal.',
+    mpnSecVet: 'Veterinário habitual',
+    mpnSecVetOpcional: 'Opcional. Útil se o cachorro se perder e alguém encontrar.',
+    mpnSecVacunas: 'Carteira de vacinação',
+    mpnSecVacunasSub: 'Adicione todas as vacinas registradas.',
+    mpnNombre: 'Nome',
+    mpnRaza: 'Raça',
+    mpnColor: 'Cor principal',
+    mpnColorPh: 'Selecione uma cor',
+    mpnSexo: 'Sexo',
+    mpnSexoMacho: 'macho',
+    mpnSexoHembra: 'fêmea',
+    mpnTamano: 'Porte',
+    mpnFechaNac: 'Data de nascimento',
+    mpnChip: 'N° do microchip',
+    mpnEsterilizado: 'É castrado/a',
+    mpnDescripcion: 'Descrição / características',
+    mpnDescripcionPh: 'Marcas especiais, manchas, cicatrizes, coleira habitual, comportamento…',
+    mpnAlergias: 'Alergias / condições especiais',
+    mpnAlergiasPh: 'Alérgico a X antibiótico, condição crônica, dieta especial…',
+    mpnAlergiasInfo: 'Será exibido na identificação do cachorro.',
+    mpnDireccion: 'Endereço da sua casa',
+    mpnDireccionPh: 'Ex: Rua das Flores 123, São Paulo',
+    mpnDireccionInfo: 'Se ele se perder, será usado para preencher o aviso automaticamente.',
+    mpnFotoSubir: 'Enviar fotos',
+    mpnFotoFormato: 'JPG, PNG ou WebP · Máx. 5 MB cada',
+    mpnFotoErrImagen: 'Apenas imagens são permitidas.',
+    mpnFotoErrTamano: 'Cada foto deve ter menos de 5 MB.',
+    mpnFotoErrMax: 'Máximo de {max} fotos.',
+    mpnFotoPrincipal: 'Principal',
+    mpnVetNombre: 'Nome / clínica',
+    mpnVetNombrePh: 'Dr. Silva / Clínica Pet',
+    mpnVetTel: 'Telefone',
+    mpnVacunaAgregar: 'Adicionar vacina',
+    mpnVacunaNum: 'Vacina #{n}',
+    mpnVacunaNombre: 'Nome',
+    mpnVacunaFecha: 'Data',
+    mpnVacunaVet: 'Veterinário/a',
+    mpnVacunaProxima: 'Próxima dose',
+    mpnVacunaNotas: 'Observações',
+    mpnVacunaNombrePh: 'Antirrábica, Múltipla…',
+    mpnVacunaVetPh: 'Nome ou clínica',
+    mpnVacunaNotasPh: 'Lote, observações do veterinário…',
+    mpnVacunaSinVacunas: 'Nenhuma vacina adicionada ainda.',
+    publVolver: 'Voltar',
+    publHeroChip: 'Para negócios locais',
+    publHeroTitle: 'Alcance quem já cuida dos seus pets',
+    publHeroSub: 'Vecindog conecta donos de cachorros em toda a Argentina quando mais precisam. Mostre seu negócio no momento certo.',
+    publHeroWa: 'Falar pelo WhatsApp',
+    publHeroMail: 'Enviar por email',
+    publFormatosTitle: 'Formatos disponíveis',
+    publFormatosSub: 'Veja como seu negócio aparece no Vecindog. Cada formato é pensado para um momento diferente.',
+    publPreciosTitle: 'Planos simples, sem letras miúdas',
+    publPreciosSub: 'Mês a mês. Sem contrato. Cancele quando quiser.',
+    publMasElegido: '★ Mais escolhido',
+    publPrecioEspecial: 'Precisa de algo especial? {link} e criamos um plano personalizado.',
+    publPorQueTitle: 'Publicidade com contexto, não com algoritmos',
+    publPorQueSub: 'Os usuários do Vecindog já estão pensando em seus pets quando veem seu anúncio. Sem competir com redes sociais ou publicidade genérica — você aparece quando importa.',
+    publPorQueChip: 'Por que Vecindog',
+    publFaqTitle: 'Perguntas frequentes',
+    publCtaTitle: 'Pronto para alcançar mais clientes?',
+    publCtaSub: 'Fale com a gente e ativamos sua campanha em menos de 24 horas.',
+    publModalFotolabel: 'Logo ou foto do negócio',
+    publModalFotoCambiar: 'Trocar imagem',
+    publModalFotoSubir: 'Enviar logo ou foto',
+    publModalLogoLabel: 'Logo quadrado',
+    publModalLogoCambiar: 'Trocar logo',
+    publModalLogoSubir: 'Enviar logo quadrado',
+    publModalNegocioLabel: 'Nome do negócio',
+    publModalTaglineLabel: 'Descrição curta (tagline)',
+    publModalLinkLabel: 'Link do negócio',
+    publModalLinkInfo: 'Site, Instagram, WhatsApp — para onde vão os cliques',
+    publModalCtaLabel: 'Texto do botão',
+    publModalContactoLabel: 'Seus dados de contato',
+    publModalEmailLabel: 'Email',
+    publModalTelLabel: 'Telefone / WhatsApp',
+    publModalErrFotoTam: 'A imagem deve ter menos de 5 MB.',
+    publModalErrLogoTam: 'O logo deve ter menos de 5 MB.',
+    publModalErrNegocio: 'Informe o nome do seu negócio.',
+    publModalErrEmail: 'Informe seu email.',
+    publModalErrLink: 'Informe o link do seu negócio.',
+    publModalErrLinkFmt: 'O link deve ser uma URL válida. Exemplo: https://instagram.com/seunegocio',
+    publModalErrTel: 'O telefone deve ter pelo menos 10 dígitos.',
+    publModalPagandoCon: 'Você será redirecionado ao Mercado Pago. Seu anúncio é ativado automaticamente após o pagamento.',
+    publModalPagar: 'Pagar com Mercado Pago',
+    publVistaPrevia: 'Pré-visualização',
+    publStats0label: 'Vizinhos ativos',
+    publStats1label: 'Argentina',
+    publStats2label: 'Orgânico · sem bots',
+    publStats3label: 'Donos de pets',
   },
 };
 

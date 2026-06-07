@@ -12,8 +12,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { subirImagenAd, type Ad } from '@/lib/ads';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-/* ── helpers ── */
 function fmtFecha(iso: string | null) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -36,7 +36,6 @@ const DIAS_OPCIONES = [
   'Lunes, miércoles y viernes', 'Martes, jueves y sábado',
 ];
 
-/* ── Novedad type ── */
 interface Novedad {
   id: string;
   titulo: string;
@@ -45,10 +44,10 @@ interface Novedad {
   created_at: string;
 }
 
-/* ── Página principal ── */
 export default function MiComercioPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [comercio,  setComercio]  = useState<Ad | null>(null);
   const [cargando,  setCargando]  = useState(true);
@@ -106,15 +105,13 @@ export default function MiComercioPage() {
       <div className="min-h-screen bg-[#f5f0eb] py-12 px-4">
         <div className="mx-auto max-w-md text-center">
           <Store className="mx-auto mb-4 h-14 w-14 text-ink-muted/30" />
-          <h1 className="font-display text-2xl font-black text-ink">No tenés un comercio registrado</h1>
-          <p className="mt-2 text-sm text-ink-muted">
-            Unite a la Red Vecindog y aparecé en el mapa de dueños de mascotas.
-          </p>
+          <h1 className="font-display text-2xl font-black text-ink">{t.mcomSinComercioTitle}</h1>
+          <p className="mt-2 text-sm text-ink-muted">{t.mcomSinComercioSub}</p>
           <Link
             href="/red-vecindog"
             className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-brand-primary px-6 py-3 font-bold text-white"
           >
-            <Store className="h-4 w-4" /> Registrar mi comercio
+            <Store className="h-4 w-4" /> {t.mcomRegistrar}
           </Link>
         </div>
       </div>
@@ -127,18 +124,17 @@ export default function MiComercioPage() {
 
         <div className="flex items-center justify-between">
           <Link href="/mi-perfil" className="inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-            <ArrowLeft className="h-4 w-4" /> Mi perfil
+            <ArrowLeft className="h-4 w-4" /> {t.mcomVolver}
           </Link>
           <Link
             href={`/comercio/${comercio.id}`}
             target="_blank"
             className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary/10 px-4 py-2 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"
           >
-            <Eye className="h-3.5 w-3.5" /> Ver perfil público
+            <Eye className="h-3.5 w-3.5" /> {t.mcomVerPerfil}
           </Link>
         </div>
 
-        {/* Header del comercio */}
         <div className="rounded-[24px] bg-white border border-black/5 overflow-hidden">
           {comercio.imagen_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -151,14 +147,13 @@ export default function MiComercioPage() {
                 {comercio.subtitulo && <p className="text-sm text-ink-muted">{comercio.subtitulo}</p>}
               </div>
               <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${comercio.activo ? 'bg-good/15 text-good' : 'bg-bad/15 text-bad'}`}>
-                {comercio.activo ? 'Activo' : 'Pendiente activación'}
+                {comercio.activo ? t.mcomActivo : t.mcomPendiente}
               </span>
             </div>
 
-            {/* Estadísticas */}
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-[#f5f0eb] px-4 py-3">
-                <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">Reviews</p>
+                <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">{t.mcomReviews}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Star className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
                   <span className="font-bold text-ink">{reviews.promedio > 0 ? reviews.promedio.toFixed(1) : '—'}</span>
@@ -166,7 +161,7 @@ export default function MiComercioPage() {
                 </div>
               </div>
               <div className="rounded-2xl bg-[#f5f0eb] px-4 py-3">
-                <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">Vence</p>
+                <p className="text-xs font-bold text-ink-muted uppercase tracking-wide">{t.mcomVence}</p>
                 <p className="mt-1 font-bold text-ink">{fmtFecha(comercio.fecha_fin)}</p>
               </div>
             </div>
@@ -175,17 +170,15 @@ export default function MiComercioPage() {
               onClick={() => setEditando(true)}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-primary/20 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/5"
             >
-              <Edit3 className="h-4 w-4" /> Editar datos del comercio
+              <Edit3 className="h-4 w-4" /> {t.mcomEditar}
             </button>
           </div>
         </div>
 
-        {/* Novedades */}
         <NovedadesPanel adId={comercio.id} novedades={novedades} onRefresh={cargar} />
 
       </div>
 
-      {/* Modal de edición */}
       {editando && (
         <EditarComercioModal
           comercio={comercio}
@@ -197,13 +190,13 @@ export default function MiComercioPage() {
   );
 }
 
-/* ── Panel de novedades ── */
 function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedades: Novedad[]; onRefresh: () => void }) {
-  const [creando, setCreando]    = useState(false);
-  const [titulo, setTitulo]      = useState('');
-  const [texto, setTexto]        = useState('');
-  const [loading, setLoading]    = useState(false);
-  const [error, setError]        = useState('');
+  const { t } = useLanguage();
+  const [creando, setCreando] = useState(false);
+  const [titulo,  setTitulo]  = useState('');
+  const [texto,   setTexto]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState('');
 
   async function handlePublicar() {
     if (!titulo.trim() || loading) return;
@@ -222,7 +215,7 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
       setTitulo(''); setTexto(''); setCreando(false);
       onRefresh();
     } catch {
-      setError('No se pudo publicar la novedad.');
+      setError(t.mcomNovError);
     } finally {
       setLoading(false);
     }
@@ -242,13 +235,13 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
       <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
         <div className="flex items-center gap-2">
           <Megaphone className="h-4 w-4 text-brand-primary" />
-          <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">Novedades y Ofertas</h2>
+          <h2 className="font-display text-sm font-extrabold text-ink uppercase tracking-wide">{t.mcomNovedadesTitle}</h2>
         </div>
         <button
           onClick={() => setCreando((v) => !v)}
           className="inline-flex items-center gap-1 rounded-2xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary"
         >
-          <Plus className="h-3.5 w-3.5" /> Nueva
+          <Plus className="h-3.5 w-3.5" /> {t.mcomNueva}
         </button>
       </div>
 
@@ -257,13 +250,13 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
           <input
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Título de la novedad (ej: Promoción de baño + corte)"
+            placeholder={t.mcomNovTituloPlaceholder}
             className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm focus:border-brand-primary focus:outline-none"
           />
           <textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Descripción (opcional)"
+            placeholder={t.mcomNovDescPlaceholder}
             rows={2}
             className="w-full resize-none rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm focus:border-brand-primary focus:outline-none"
           />
@@ -274,10 +267,10 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
               disabled={!titulo.trim() || loading}
               className="flex-1 rounded-2xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-40"
             >
-              {loading ? 'Publicando...' : 'Publicar'}
+              {loading ? t.mcomPublicando : t.mcomPublicar}
             </button>
             <button onClick={() => setCreando(false)} className="rounded-2xl bg-black/5 px-4 text-sm font-bold text-ink">
-              Cancelar
+              {t.mcomCancelar}
             </button>
           </div>
         </div>
@@ -285,9 +278,7 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
 
       <div className="divide-y divide-black/5">
         {novedades.length === 0 ? (
-          <p className="px-5 py-6 text-center text-sm text-ink-muted">
-            Publicá novedades, ofertas o turnos disponibles para que los clientes las vean.
-          </p>
+          <p className="px-5 py-6 text-center text-sm text-ink-muted">{t.mcomNovVacia}</p>
         ) : (
           novedades.map((n) => (
             <div key={n.id} className="flex items-start gap-3 px-5 py-3">
@@ -309,7 +300,6 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
   );
 }
 
-/* ── Modal de edición ── */
 function EditarComercioModal({
   comercio,
   onClose,
@@ -319,6 +309,7 @@ function EditarComercioModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useLanguage();
   const [nombre,      setNombre]      = useState(comercio.titulo ?? '');
   const [telefono,    setTelefono]    = useState(comercio.telefono_comercio ?? '');
   const [direccion,   setDireccion]   = useState(comercio.direccion_comercio ?? '');
@@ -400,21 +391,20 @@ function EditarComercioModal({
         {ok ? (
           <div className="py-8 text-center">
             <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-[#3F8B5C]" />
-            <p className="font-display text-xl font-black text-ink">¡Datos actualizados!</p>
+            <p className="font-display text-xl font-black text-ink">{t.mcomDatosActualizados}</p>
           </div>
         ) : (
           <>
             <div className="mb-6 flex items-center justify-between sticky top-0 bg-white py-2">
-              <h2 className="font-display text-xl font-black text-ink">Editar comercio</h2>
+              <h2 className="font-display text-xl font-black text-ink">{t.mcomEditarTitle}</h2>
               <button onClick={onClose} className="rounded-full p-1.5 text-ink-muted hover:bg-black/5">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              {/* Foto */}
               <div>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">Foto del comercio</label>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">{t.mcomFotoLabel}</label>
                 <div className="relative h-36 w-full overflow-hidden rounded-2xl border-2 border-dashed border-black/10 bg-[#f5f0eb]">
                   {fotoPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -422,45 +412,40 @@ function EditarComercioModal({
                   ) : (
                     <div className="flex h-full items-center justify-center flex-col gap-2 text-ink-muted">
                       <Upload className="h-6 w-6" />
-                      <p className="text-xs">Subir foto</p>
+                      <p className="text-xs">{t.mcomSubirFoto}</p>
                     </div>
                   )}
                   <input type="file" accept="image/*" onChange={handleFoto} className="absolute inset-0 cursor-pointer opacity-0" />
                 </div>
               </div>
 
-              {/* Nombre */}
-              <Field label="Nombre del comercio *">
+              <Field label={t.mcomNombreLabel}>
                 <input value={nombre} onChange={(e) => setNombre(e.target.value)} className="field" />
               </Field>
 
-              {/* Categoría */}
-              <Field label="Categoría *">
+              <Field label={t.mcomCategoriaLabel}>
                 <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="field">
-                  <option value="">Seleccioná una categoría</option>
+                  <option value="">{t.mcomCategoriaPlaceholder}</option>
                   {CATEGORIAS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </Field>
 
-              {/* Teléfono */}
-              <Field label="Teléfono de contacto *">
+              <Field label={t.mcomTelefonoLabel}>
                 <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} className="field" />
               </Field>
 
-              {/* Descripción */}
-              <Field label="Descripción (opcional)">
+              <Field label={t.mcomDescripcionLabel}>
                 <textarea
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={2}
                   maxLength={200}
                   className="field resize-none"
-                  placeholder="Describí brevemente tus servicios"
+                  placeholder={t.mcomDescripcionPlaceholder}
                 />
               </Field>
 
-              {/* Dirección */}
-              <Field label="Dirección">
+              <Field label={t.mcomDireccionLabel}>
                 <AddressAutocomplete
                   value={direccion}
                   onChange={setDireccion}
@@ -470,26 +455,23 @@ function EditarComercioModal({
                 />
               </Field>
 
-              {/* Horarios */}
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Apertura">
+                <Field label={t.mcomApertura}>
                   <input type="time" value={apertura} onChange={(e) => setApertura(e.target.value)} className="field" />
                 </Field>
-                <Field label="Cierre">
+                <Field label={t.mcomCierre}>
                   <input type="time" value={cierre} onChange={(e) => setCierre(e.target.value)} className="field" />
                 </Field>
               </div>
 
-              {/* Días */}
-              <Field label="Días de atención">
+              <Field label={t.mcomDiasLabel}>
                 <select value={dias} onChange={(e) => setDias(e.target.value)} className="field">
-                  <option value="">Seleccioná los días</option>
+                  <option value="">{t.mcomDiasPlaceholder}</option>
                   {DIAS_OPCIONES.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </Field>
 
-              {/* Link */}
-              <Field label="Sitio web / Instagram / WhatsApp (opcional)">
+              <Field label={t.mcomLinkLabel}>
                 <input type="url" value={link} onChange={(e) => setLink(e.target.value)} className="field" placeholder="https://instagram.com/tucomercio" />
               </Field>
 
@@ -505,7 +487,7 @@ function EditarComercioModal({
                 disabled={!nombre.trim() || loading}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3.5 text-sm font-bold text-white disabled:opacity-40"
               >
-                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : 'Guardar cambios'}
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> {t.mcomGuardando}</> : t.mcomGuardarCambios}
               </button>
             </div>
           </>

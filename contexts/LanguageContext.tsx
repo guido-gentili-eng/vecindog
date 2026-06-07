@@ -1267,6 +1267,44 @@ export type Translations = {
   publStats1label: string;
   publStats2label: string;
   publStats3label: string;
+  // mi-comercio
+  mcomVolver: string;
+  mcomVerPerfil: string;
+  mcomSinComercioTitle: string;
+  mcomSinComercioSub: string;
+  mcomRegistrar: string;
+  mcomActivo: string;
+  mcomPendiente: string;
+  mcomReviews: string;
+  mcomVence: string;
+  mcomEditar: string;
+  mcomNovedadesTitle: string;
+  mcomNueva: string;
+  mcomNovTituloPlaceholder: string;
+  mcomNovDescPlaceholder: string;
+  mcomNovError: string;
+  mcomPublicando: string;
+  mcomPublicar: string;
+  mcomCancelar: string;
+  mcomNovVacia: string;
+  mcomDatosActualizados: string;
+  mcomEditarTitle: string;
+  mcomFotoLabel: string;
+  mcomSubirFoto: string;
+  mcomNombreLabel: string;
+  mcomCategoriaLabel: string;
+  mcomCategoriaPlaceholder: string;
+  mcomTelefonoLabel: string;
+  mcomDescripcionLabel: string;
+  mcomDescripcionPlaceholder: string;
+  mcomDireccionLabel: string;
+  mcomApertura: string;
+  mcomCierre: string;
+  mcomDiasLabel: string;
+  mcomDiasPlaceholder: string;
+  mcomLinkLabel: string;
+  mcomGuardando: string;
+  mcomGuardarCambios: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -2518,6 +2556,44 @@ const translations: Record<Lang, Translations> = {
     publStats1label: 'Argentina',
     publStats2label: 'Orgánico · sin bots',
     publStats3label: 'A dueños de mascotas',
+    // mi-comercio
+    mcomVolver: 'Mi perfil',
+    mcomVerPerfil: 'Ver perfil público',
+    mcomSinComercioTitle: 'No tenés un comercio registrado',
+    mcomSinComercioSub: 'Unite a la Red Vecindog y aparecé en el mapa de dueños de mascotas.',
+    mcomRegistrar: 'Registrar mi comercio',
+    mcomActivo: 'Activo',
+    mcomPendiente: 'Pendiente activación',
+    mcomReviews: 'Reviews',
+    mcomVence: 'Vence',
+    mcomEditar: 'Editar datos del comercio',
+    mcomNovedadesTitle: 'Novedades y Ofertas',
+    mcomNueva: 'Nueva',
+    mcomNovTituloPlaceholder: 'Título de la novedad (ej: Promoción de baño + corte)',
+    mcomNovDescPlaceholder: 'Descripción (opcional)',
+    mcomNovError: 'No se pudo publicar la novedad.',
+    mcomPublicando: 'Publicando...',
+    mcomPublicar: 'Publicar',
+    mcomCancelar: 'Cancelar',
+    mcomNovVacia: 'Publicá novedades, ofertas o turnos disponibles para que los clientes las vean.',
+    mcomDatosActualizados: '¡Datos actualizados!',
+    mcomEditarTitle: 'Editar comercio',
+    mcomFotoLabel: 'Foto del comercio',
+    mcomSubirFoto: 'Subir foto',
+    mcomNombreLabel: 'Nombre del comercio *',
+    mcomCategoriaLabel: 'Categoría *',
+    mcomCategoriaPlaceholder: 'Seleccioná una categoría',
+    mcomTelefonoLabel: 'Teléfono de contacto *',
+    mcomDescripcionLabel: 'Descripción (opcional)',
+    mcomDescripcionPlaceholder: 'Describí brevemente tus servicios',
+    mcomDireccionLabel: 'Dirección',
+    mcomApertura: 'Apertura',
+    mcomCierre: 'Cierre',
+    mcomDiasLabel: 'Días de atención',
+    mcomDiasPlaceholder: 'Seleccioná los días',
+    mcomLinkLabel: 'Sitio web / Instagram / WhatsApp (opcional)',
+    mcomGuardando: 'Guardando...',
+    mcomGuardarCambios: 'Guardar cambios',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -3768,6 +3844,44 @@ const translations: Record<Lang, Translations> = {
     publStats1label: 'Argentina',
     publStats2label: 'Organic · no bots',
     publStats3label: 'Dog owners',
+    // mi-comercio
+    mcomVolver: 'My profile',
+    mcomVerPerfil: 'View public profile',
+    mcomSinComercioTitle: "You don't have a registered business",
+    mcomSinComercioSub: 'Join the Vecindog Network and appear on the pet owners map.',
+    mcomRegistrar: 'Register my business',
+    mcomActivo: 'Active',
+    mcomPendiente: 'Pending activation',
+    mcomReviews: 'Reviews',
+    mcomVence: 'Expires',
+    mcomEditar: 'Edit business details',
+    mcomNovedadesTitle: 'News & Offers',
+    mcomNueva: 'New',
+    mcomNovTituloPlaceholder: 'Post title (e.g. Bath + cut promotion)',
+    mcomNovDescPlaceholder: 'Description (optional)',
+    mcomNovError: 'Could not publish the post.',
+    mcomPublicando: 'Publishing...',
+    mcomPublicar: 'Publish',
+    mcomCancelar: 'Cancel',
+    mcomNovVacia: 'Post news, offers or available appointments so customers can see them.',
+    mcomDatosActualizados: 'Details updated!',
+    mcomEditarTitle: 'Edit business',
+    mcomFotoLabel: 'Business photo',
+    mcomSubirFoto: 'Upload photo',
+    mcomNombreLabel: 'Business name *',
+    mcomCategoriaLabel: 'Category *',
+    mcomCategoriaPlaceholder: 'Select a category',
+    mcomTelefonoLabel: 'Contact phone *',
+    mcomDescripcionLabel: 'Description (optional)',
+    mcomDescripcionPlaceholder: 'Briefly describe your services',
+    mcomDireccionLabel: 'Address',
+    mcomApertura: 'Opening',
+    mcomCierre: 'Closing',
+    mcomDiasLabel: 'Opening days',
+    mcomDiasPlaceholder: 'Select days',
+    mcomLinkLabel: 'Website / Instagram / WhatsApp (optional)',
+    mcomGuardando: 'Saving...',
+    mcomGuardarCambios: 'Save changes',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -5018,6 +5132,44 @@ const translations: Record<Lang, Translations> = {
     publStats1label: 'Argentina',
     publStats2label: 'Orgânico · sem bots',
     publStats3label: 'Donos de pets',
+    // mi-comercio
+    mcomVolver: 'Meu perfil',
+    mcomVerPerfil: 'Ver perfil público',
+    mcomSinComercioTitle: 'Você não tem um comércio registrado',
+    mcomSinComercioSub: 'Entre na Rede Vecindog e apareça no mapa de donos de pets.',
+    mcomRegistrar: 'Registrar meu comércio',
+    mcomActivo: 'Ativo',
+    mcomPendiente: 'Aguardando ativação',
+    mcomReviews: 'Avaliações',
+    mcomVence: 'Vence',
+    mcomEditar: 'Editar dados do comércio',
+    mcomNovedadesTitle: 'Novidades e Ofertas',
+    mcomNueva: 'Nova',
+    mcomNovTituloPlaceholder: 'Título da novidade (ex: Promoção banho + tosa)',
+    mcomNovDescPlaceholder: 'Descrição (opcional)',
+    mcomNovError: 'Não foi possível publicar a novidade.',
+    mcomPublicando: 'Publicando...',
+    mcomPublicar: 'Publicar',
+    mcomCancelar: 'Cancelar',
+    mcomNovVacia: 'Publique novidades, ofertas ou horários disponíveis para que os clientes vejam.',
+    mcomDatosActualizados: 'Dados atualizados!',
+    mcomEditarTitle: 'Editar comércio',
+    mcomFotoLabel: 'Foto do comércio',
+    mcomSubirFoto: 'Enviar foto',
+    mcomNombreLabel: 'Nome do comércio *',
+    mcomCategoriaLabel: 'Categoria *',
+    mcomCategoriaPlaceholder: 'Selecione uma categoria',
+    mcomTelefonoLabel: 'Telefone de contato *',
+    mcomDescripcionLabel: 'Descrição (opcional)',
+    mcomDescripcionPlaceholder: 'Descreva brevemente seus serviços',
+    mcomDireccionLabel: 'Endereço',
+    mcomApertura: 'Abertura',
+    mcomCierre: 'Fechamento',
+    mcomDiasLabel: 'Dias de atendimento',
+    mcomDiasPlaceholder: 'Selecione os dias',
+    mcomLinkLabel: 'Site / Instagram / WhatsApp (opcional)',
+    mcomGuardando: 'Salvando...',
+    mcomGuardarCambios: 'Salvar alterações',
   },
 };
 

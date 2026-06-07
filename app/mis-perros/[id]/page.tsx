@@ -66,6 +66,7 @@ import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function PerroDetallePage() {
   const { id }        = useParams<{ id: string }>();
@@ -73,6 +74,7 @@ export default function PerroDetallePage() {
   const searchParams  = useSearchParams();
   const esNuevo       = searchParams.get('nuevo') === '1';
   const { ciudad, profile, isPro } = useAuth();
+  const { t } = useLanguage();
 
   const [perro,             setPerro]             = useState<Perro | null>(null);
   const [postActivo,        setPostActivo]        = useState<Post | null | undefined>(undefined);
@@ -323,12 +325,12 @@ export default function PerroDetallePage() {
   if (!perro) return (
     <div className="py-12 text-center">
       <AlertCircle className="mx-auto h-8 w-8 text-bad" />
-      <p className="mt-3 font-bold text-ink">Perro no encontrado</p>
-      <Link href="/mis-perros" className="btn-primary mt-4 inline-flex">Volver</Link>
+      <p className="mt-3 font-bold text-ink">{t.mpdPerroNoEncontrado}</p>
+      <Link href="/mis-perros" className="btn-primary mt-4 inline-flex">{t.mpdVolverListado}</Link>
     </div>
   );
 
-  const edad = perro.fecha_nac ? calcularEdad(perro.fecha_nac) : null;
+  const edad = perro.fecha_nac ? calcularEdad(perro.fecha_nac, t) : null;
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
@@ -337,7 +339,7 @@ export default function PerroDetallePage() {
           href="/mis-perros"
           className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted transition hover:text-ink"
         >
-          <ChevronLeft className="h-4 w-4" /> Mis perros
+          <ChevronLeft className="h-4 w-4" /> {t.mpdMisPerros}
         </Link>
         {!editando && (
           <div className="flex gap-2">
@@ -346,7 +348,7 @@ export default function PerroDetallePage() {
                 href={`/mis-perros/${id}/cartel`}
                 className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
               >
-                <FileText className="h-3.5 w-3.5" /> Generar cartel
+                <FileText className="h-3.5 w-3.5" /> {t.mpdGenerarCartel}
               </Link>
             )}
             <Link
@@ -354,27 +356,27 @@ export default function PerroDetallePage() {
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
               style={{ borderColor: '#e6683c', color: '#e6683c' }}
             >
-              <Share2 className="h-3.5 w-3.5" /> Publicar en Redes Sociales
+              <Share2 className="h-3.5 w-3.5" /> {t.mpdPublicarRedes}
             </Link>
             <button
               type="button"
               onClick={() => setShowQR(true)}
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
             >
-              <QrCode className="h-3.5 w-3.5" /> QR Collar
+              <QrCode className="h-3.5 w-3.5" /> {t.mpdQrCollar}
             </button>
             <Link
               href={`/mis-perros/${perro.id}/timeline`}
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-black/10 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
             >
-              <Activity className="h-3.5 w-3.5" /> Diario
+              <Activity className="h-3.5 w-3.5" /> {t.mpdDiario}
             </Link>
             <button
               type="button"
               onClick={() => setEditando(true)}
               className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-brand-primary/30 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10"
             >
-              <Pencil className="h-3.5 w-3.5" /> Editar perfil
+              <Pencil className="h-3.5 w-3.5" /> {t.mpdEditarPerfil}
             </button>
           </div>
         )}
@@ -384,11 +386,8 @@ export default function PerroDetallePage() {
         <div className="mb-5 flex items-start gap-3 rounded-2xl bg-good/10 p-4">
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-good" />
           <div>
-            <p className="font-bold text-ink">¡{perro.nombre} está registrado!</p>
-            <p className="text-sm text-ink-muted">
-              Si algún día se pierde, ya tenés toda su info guardada. También podés publicar un aviso desde{' '}
-              <Link href="/publicar?cat=perdido" className="font-bold text-brand-primary underline">Perdidos</Link>.
-            </p>
+            <p className="font-bold text-ink">{t.mpdRegistrado.replace('{nombre}', perro.nombre)}</p>
+            <p className="text-sm text-ink-muted">{t.mpdRegistradoSub}</p>
           </div>
         </div>
       )}
@@ -431,7 +430,7 @@ export default function PerroDetallePage() {
                 {perro.sexo         && <Chip className="capitalize">{perro.sexo}</Chip>}
                 {perro.tamano       && <Chip className="capitalize">{perro.tamano}</Chip>}
                 {edad               && <Chip>{edad}</Chip>}
-                {perro.esterilizado && <Chip className="text-good">Esterilizado/a</Chip>}
+                {perro.esterilizado && <Chip className="text-good">{t.mpdEsterilizado}</Chip>}
               </div>
               {/* Estado de salud rápido */}
               <div className="mt-2 flex gap-1.5 flex-wrap">
@@ -442,7 +441,7 @@ export default function PerroDetallePage() {
                         ? e === 'saludable' ? 'bg-good text-white' : e === 'en_tratamiento' ? 'bg-amber-400 text-white' : 'bg-blue-400 text-white'
                         : 'bg-black/5 text-ink-muted hover:bg-black/10'
                     }`}>
-                    {e === 'saludable' ? '💚 Saludable' : e === 'en_tratamiento' ? '🟡 En tratamiento' : '🔵 En recuperación'}
+                    {e === 'saludable' ? t.mpdSaludable : e === 'en_tratamiento' ? t.mpdEnTratamiento : t.mpdEnRecuperacion}
                   </button>
                 ))}
               </div>
@@ -457,13 +456,11 @@ export default function PerroDetallePage() {
             <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 shrink-0 text-brand-primary" />
-                <p className="text-xs font-bold text-ink">
-                  Identificación, vacunas y estudios son funciones de <span className="text-brand-primary">VecindogPro</span>
-                </p>
+                <p className="text-xs font-bold text-ink">{t.mpdBannerProText}</p>
               </div>
               <Link href="/planes"
                 className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:opacity-90">
-                <Sparkles className="h-3 w-3" /> Ver Pro
+                <Sparkles className="h-3 w-3" /> {t.mpdVerPro}
               </Link>
             </div>
           )}
@@ -488,8 +485,8 @@ export default function PerroDetallePage() {
                     <AlertCircle className="h-4 w-4 text-bad shrink-0 mt-0.5" />
                     <p className="text-sm font-bold text-bad">
                       {vencidas.length === 1
-                        ? <>Vencido/a: <span className="font-extrabold">{vencidas[0]}</span></>
-                        : <>{vencidas.length} vencidos/as: {vencidas.join(', ')}</>}
+                        ? t.mpdVencidoUno.replace('{nombre}', vencidas[0])
+                        : t.mpdVencidosN.replace('{n}', String(vencidas.length)).replace('{lista}', vencidas.join(', '))}
                     </p>
                   </div>
                 )}
@@ -498,8 +495,8 @@ export default function PerroDetallePage() {
                     <CalendarDays className="h-4 w-4 text-[#7a4f00] shrink-0 mt-0.5" />
                     <p className="text-sm font-bold text-[#7a4f00]">
                       {proximas.length === 1
-                        ? <><span className="font-extrabold">{proximas[0]}</span> vence en los próximos 30 días</>
-                        : <>{proximas.length} vencen en los próximos 30 días: {proximas.join(', ')}</>}
+                        ? t.mpdProximaUna.replace('{nombre}', proximas[0])
+                        : t.mpdProximasN.replace('{n}', String(proximas.length)).replace('{lista}', proximas.join(', '))}
                     </p>
                   </div>
                 )}
@@ -511,7 +508,7 @@ export default function PerroDetallePage() {
           <div className="card mb-5 p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-                <Cpu className="h-4 w-4 text-brand-primary" /> Identificación
+                <Cpu className="h-4 w-4 text-brand-primary" /> {t.mpdIdentificacion}
               </h2>
               {isPro ? (
                 <Link
@@ -519,28 +516,28 @@ export default function PerroDetallePage() {
                   target="_blank"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
                 >
-                  <Download className="h-3.5 w-3.5" /> Guardar / Enviar PDF
+                  <Download className="h-3.5 w-3.5" /> {t.mpdGuardarPDF}
                 </Link>
               ) : (
                 <Link href="/planes"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
                 >
-                  <Lock className="h-3.5 w-3.5" /> Guardar / Enviar PDF
+                  <Lock className="h-3.5 w-3.5" /> {t.mpdGuardarPDF}
                 </Link>
               )}
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-              <DataItem label="Microchip"      value={perro.chip      || '—'} mono />
-              <DataItem label="Fecha de nac."  value={perro.fecha_nac ? formatFecha(perro.fecha_nac) : '—'} />
-              <DataItem label="Edad"           value={edad            || '—'} />
-              <DataItem label="Ciudad"         value={ciudad ? nombreCorto(ciudad) : '—'} />
-              <DataItem label="Esterilizado/a" value={perro.esterilizado ? 'Sí' : 'No'} />
+              <DataItem label={t.mpdMicrochip}        value={perro.chip      || '—'} mono />
+              <DataItem label={t.mpdFechaNacLabel}   value={perro.fecha_nac ? formatFecha(perro.fecha_nac) : '—'} />
+              <DataItem label={t.mpdEdadLabel}        value={edad            || '—'} />
+              <DataItem label={t.mpdCiudadLabel}      value={ciudad ? nombreCorto(ciudad) : '—'} />
+              <DataItem label={t.mpdEsterilizadoLabel} value={perro.esterilizado ? 'Sí' : 'No'} />
             </dl>
             {perro.alergias && (
               <div className="mt-3 flex items-start gap-2 rounded-xl border border-bad/25 bg-bad/6 px-3 py-2">
                 <AlertCircle className="h-4 w-4 shrink-0 text-bad mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-bad">Alergias / condiciones</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-bad">{t.mpdAlergiasLabel}</p>
                   <p className="text-sm font-semibold text-ink">{perro.alergias}</p>
                 </div>
               </div>
@@ -551,7 +548,7 @@ export default function PerroDetallePage() {
           {(perro.vet_nombre || perro.vet_telefono) && (
             <div className="card mb-5 p-5">
               <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink mb-3">
-                <Stethoscope className="h-4 w-4 text-brand-primary" /> Veterinario habitual
+                <Stethoscope className="h-4 w-4 text-brand-primary" /> {t.mpdVetHabitual}
               </h2>
               <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-cream p-3.5">
                 <div className="flex items-center gap-3">
@@ -580,10 +577,10 @@ export default function PerroDetallePage() {
           <div className="card p-5 mb-5">
             <div className="mb-4 flex items-center gap-2">
               <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-                <Syringe className="h-4 w-4 text-brand-primary" /> Carnet de vacunas
+                <Syringe className="h-4 w-4 text-brand-primary" /> {t.mpdCarnetVacunas}
                 {vacunas.length > 0 && (
                   <span className="rounded-full bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
-                    {vacunas.length} registrada{vacunas.length > 1 ? 's' : ''}
+                    {t.mpdVacunasRegistradas.replace('{n}', String(vacunas.length)).replace('{s}', vacunas.length > 1 ? 's' : '')}
                   </span>
                 )}
               </h2>
@@ -600,7 +597,7 @@ export default function PerroDetallePage() {
                     onClick={() => { setAgregandoVacuna(true); setEditandoVacunaId(null); }}
                     className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"
                   >
-                    + Agregar
+                    {t.mpdAgregar}
                   </button>
                 </div>
               ) : (
@@ -630,7 +627,7 @@ export default function PerroDetallePage() {
             )}
 
             {vacunas.length === 0 && !agregandoVacuna ? (
-              <p className="text-sm text-ink-muted">No hay vacunas registradas.</p>
+              <p className="text-sm text-ink-muted">{t.mpdSinVacunas}</p>
             ) : (
               <div className="space-y-3">
                 {vacunas.map((v) =>
@@ -857,15 +854,15 @@ export default function PerroDetallePage() {
                 <Store className="h-5 w-5 text-teal-600" />
               </div>
               <div>
-                <p className="text-sm font-bold text-ink">Encontrá un veterinario</p>
-                <p className="text-xs text-ink-muted">Clínicas y vets en la Red Vecindog</p>
+                <p className="text-sm font-bold text-ink">{t.mpdEncontrarVet}</p>
+                <p className="text-xs text-ink-muted">{t.mpdRedVetSub}</p>
               </div>
             </div>
             <Link
               href="/red-vecindog/veterinaria"
               className="shrink-0 rounded-2xl bg-teal-50 px-3 py-2 text-xs font-bold text-teal-700 transition hover:bg-teal-100"
             >
-              Ver vets →
+              {t.mpdVerVets}
             </Link>
           </div>
 
@@ -887,15 +884,15 @@ export default function PerroDetallePage() {
               <div className="mt-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-5 ring-1 ring-amber-200">
                 <div className="flex items-center gap-2 mb-1">
                   <Search className="h-4 w-4 text-amber-600" />
-                  <p className="text-sm font-bold text-ink">Aviso activo — en búsqueda</p>
+                  <p className="text-sm font-bold text-ink">{t.mpdAvisoActivo}</p>
                 </div>
                 <p className="text-xs text-ink-muted mb-3">
-                  Ya hay un aviso publicado para {perro.nombre}. ¿Lo seguís buscando? Renovalo para que aparezca primero.
+                  {t.mpdAvisoActivoSub.replace('{nombre}', perro.nombre)}
                 </p>
                 <div className="flex gap-2">
                   {renovado ? (
                     <span className="inline-flex items-center gap-1.5 rounded-2xl bg-good/15 px-4 py-2 text-sm font-bold text-good">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> ¡Aviso renovado!
+                      <CheckCircle2 className="h-3.5 w-3.5" /> {t.mpdAvisoRenovado}
                     </span>
                   ) : (
                     <button
@@ -907,29 +904,27 @@ export default function PerroDetallePage() {
                       {renovando
                         ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         : <RefreshCw className="h-3.5 w-3.5" />}
-                      ¿Seguís buscando? Renovar aviso
+                      {t.mpdRenovarAviso}
                     </button>
                   )}
                   <Link
                     href={`/publicaciones/${postActivo.id}`}
                     className="inline-flex items-center gap-1 rounded-2xl border-2 border-amber-200 px-4 py-2 text-sm font-bold text-amber-700 transition hover:bg-amber-50"
                   >
-                    Ver aviso
+                    {t.mpdVerAviso}
                   </Link>
                 </div>
               </div>
             ) : (
               /* Sin aviso activo */
               <div className="mt-6 rounded-2xl bg-gradient-to-br from-brand-coral/10 to-brand-coral/5 p-5 ring-1 ring-brand-coral/20">
-                <p className="text-sm font-bold text-ink">¿Perdiste a {perro.nombre}?</p>
-                <p className="mt-0.5 text-xs text-ink-muted">
-                  Publicá un aviso ahora con toda esta información para que los vecinos te ayuden.
-                </p>
+                <p className="text-sm font-bold text-ink">{t.mpdPerdiste.replace('{nombre}', perro.nombre)}</p>
+                <p className="mt-0.5 text-xs text-ink-muted">{t.mpdPerdistesSub}</p>
                 <Link
                   href={`/publicar?cat=perdido&perro=${perro.id}`}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-coral-dark"
                 >
-                  <MapPin className="h-3.5 w-3.5" /> Publicar aviso de búsqueda
+                  <MapPin className="h-3.5 w-3.5" /> {t.mpdPublicarAviso}
                 </Link>
               </div>
             )
@@ -953,6 +948,7 @@ function EditForm({
   onDelete: () => Promise<void>;
 }) {
   const { isPro } = useAuth();
+  const { t } = useLanguage();
   const [form, setForm] = useState<PerroInput>({
     nombre:           perro.nombre,
     raza:             perro.raza             ?? '',
@@ -999,7 +995,7 @@ function EditForm({
   function onFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError('La foto debe pesar menos de 5 MB.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError(t.mpdFotoError); return; }
     setFotoFile(file);
     setFotoPreview(URL.createObjectURL(file));
     setError('');
@@ -1015,7 +1011,7 @@ function EditForm({
       await actualizarPerro(perro.id, { ...form, foto_url: fotoUrl });
       onSave({ ...perro, ...form, tamano: form.tamano || null, sexo: form.sexo || null, foto_url: fotoUrl, estado_salud: form.estado_salud || null } as Perro);
     } catch {
-      setError('No se pudo guardar. Intentá de nuevo.');
+      setError(t.mpdErrGuardar);
       setSaving(false);
     }
   }
@@ -1034,11 +1030,11 @@ function EditForm({
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-brand-primary/40">
               <ImagePlus className="h-12 w-12" />
-              <span className="text-sm font-bold">Subir foto</span>
+              <span className="text-sm font-bold">{t.mpdSubirFoto}</span>
             </div>
           )}
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-xl bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
-            <ImagePlus className="h-3.5 w-3.5" /> Cambiar foto
+            <ImagePlus className="h-3.5 w-3.5" /> {t.mpdCambiarFoto}
           </div>
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFoto} />
@@ -1047,26 +1043,26 @@ function EditForm({
       {/* Campos */}
       <div className="card space-y-4 p-5">
         <div>
-          <label className="label">Nombre <span className="text-bad">*</span></label>
+          <label className="label">{t.mpdNombreLabel} <span className="text-bad">*</span></label>
           <input className="field w-full" value={form.nombre} required
             onChange={(e) => campo('nombre', e.target.value)} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Raza</label>
+            <label className="label">{t.mpdRazaLabel}</label>
             <RazaAutocomplete value={form.raza} onChange={(v) => campo('raza', v)} />
           </div>
           <div>
-            <label className="label">Color</label>
-            <input className="field w-full" value={form.color} placeholder="Negro, marrón…"
+            <label className="label">{t.mpdColorLabel}</label>
+            <input className="field w-full" value={form.color} placeholder={t.mpdColorPlaceholder}
               onChange={(e) => campo('color', e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Sexo</label>
+            <label className="label">{t.mpdSexoLabel}</label>
             <div className="flex gap-2">
               {(['macho', 'hembra'] as const).map((s) => (
                 <button key={s} type="button"
@@ -1078,7 +1074,7 @@ function EditForm({
             </div>
           </div>
           <div>
-            <label className="label">Tamaño</label>
+            <label className="label">{t.mpdTamanoLabel}</label>
             <div className="flex gap-1">
               {([['pequeño','S'], ['mediano','M'], ['grande','L']] as const).map(([t, l]) => (
                 <button key={t} type="button"
@@ -1093,7 +1089,7 @@ function EditForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Fecha de nacimiento</label>
+            <label className="label">{t.mpdFechaNacFormLabel}</label>
             <input type="date" className="field w-full" value={form.fecha_nac}
               onChange={(e) => campo('fecha_nac', e.target.value)} />
           </div>
@@ -1102,7 +1098,7 @@ function EditForm({
               Microchip
               {!isPro && <Link href="/planes" className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-primary/60 hover:text-brand-primary"><Lock className="h-2.5 w-2.5" /> Pro</Link>}
             </label>
-            <input className="field w-full font-mono disabled:opacity-50 disabled:cursor-not-allowed" value={form.chip} placeholder="Nº de chip"
+            <input className="field w-full font-mono disabled:opacity-50 disabled:cursor-not-allowed" value={form.chip} placeholder={t.mpdChipPlaceholder}
               disabled={!isPro}
               onChange={(e) => campo('chip', e.target.value)} />
           </div>
@@ -1112,22 +1108,22 @@ function EditForm({
           <input type="checkbox" id="edit-ester" checked={form.esterilizado}
             onChange={(e) => campo('esterilizado', e.target.checked)}
             className="h-4 w-4 accent-brand-primary" />
-          <label htmlFor="edit-ester" className="text-sm font-semibold text-ink">Esterilizado/a</label>
+          <label htmlFor="edit-ester" className="text-sm font-semibold text-ink">{t.mpdEsterilizadoCheck}</label>
         </div>
 
         <div>
-          <label className="label">Descripción</label>
+          <label className="label">{t.mpdDescripcionLabel}</label>
           <textarea className="field w-full" rows={3} value={form.descripcion}
-            placeholder="Marcas especiales, comportamiento…"
+            placeholder={t.mpdDescripcionPlaceholder}
             onChange={(e) => campo('descripcion', e.target.value)} />
         </div>
 
         <div>
           <label className="label flex items-center gap-1.5">
-            <AlertCircle className="h-3.5 w-3.5 text-bad/70" /> Alergias / condiciones especiales
+            <AlertCircle className="h-3.5 w-3.5 text-bad/70" /> {t.mpdAlergiasCond}
           </label>
           <textarea className="field w-full" rows={2} value={form.alergias}
-            placeholder="Alérgico a X, condición crónica, dieta especial…"
+            placeholder={t.mpdAlergiasPlaceholder}
             onChange={(e) => campo('alergias', e.target.value)} />
         </div>
       </div>
@@ -1135,17 +1131,17 @@ function EditForm({
       {/* Veterinario */}
       <div className="card space-y-4 p-5">
         <h3 className="flex items-center gap-2 font-display text-sm font-extrabold text-ink">
-          <Stethoscope className="h-4 w-4 text-brand-primary" /> Veterinario habitual
+          <Stethoscope className="h-4 w-4 text-brand-primary" /> {t.mpdVetHabitual}
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Nombre / clínica</label>
+            <label className="label">{t.mpdVetNombreLabel}</label>
             <input className="field w-full" value={form.vet_nombre}
               placeholder="Dr. García / Clínica Mascotas"
               onChange={(e) => campo('vet_nombre', e.target.value)} />
           </div>
           <div>
-            <label className="label">Teléfono</label>
+            <label className="label">{t.mpdVetTelefonoLabel}</label>
             <input className="field w-full" value={form.vet_telefono}
               placeholder="+54 11 XXXX-XXXX"
               onChange={(e) => campo('vet_telefono', e.target.value)} />
@@ -1162,11 +1158,11 @@ function EditForm({
       <div className="flex gap-3">
         <button type="button" onClick={onCancel}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad">
-          <X className="h-4 w-4" /> Cancelar
+          <X className="h-4 w-4" /> {t.mpdCancelar}
         </button>
         <button type="submit" disabled={saving}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white shadow-soft transition hover:opacity-90 disabled:opacity-60">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Guardar cambios</>}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {t.mpdGuardarCambios}</>}
         </button>
       </div>
 
@@ -1177,13 +1173,13 @@ function EditForm({
           onClick={() => setConfirmEliminar(true)}
           className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-bad/20 py-2.5 text-sm font-bold text-bad/50 transition hover:border-bad/40 hover:text-bad"
         >
-          <Trash2 className="h-4 w-4" /> Eliminar perfil de {perro.nombre}
+          <Trash2 className="h-4 w-4" /> {t.mpdEliminarPerfil.replace('{nombre}', perro.nombre)}
         </button>
       ) : (
         <div className="rounded-2xl border border-bad/25 bg-bad/5 p-4 space-y-3">
-          <p className="text-sm font-extrabold text-bad">¿Eliminar a {perro.nombre}?</p>
+          <p className="text-sm font-extrabold text-bad">{t.mpdEliminarConfirm.replace('{nombre}', perro.nombre)}</p>
           <p className="text-xs text-ink-muted leading-relaxed">
-            Esta acción es irreversible. Se borrará el perfil, las vacunas y todos los archivos de {perro.nombre}.
+            {t.mpdEliminarWarning.replace(/{nombre}/g, perro.nombre)}
           </p>
           <div className="flex gap-2">
             <button
@@ -1192,7 +1188,7 @@ function EditForm({
               onClick={handleEliminar}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-bad py-2.5 text-sm font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
             >
-              {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> Sí, eliminar</>}
+              {eliminando ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4" /> {t.mpdSiEliminar}</>}
             </button>
             <button
               type="button"
@@ -1232,6 +1228,7 @@ function VacunaItem({ vacuna, onEdit, onDelete }: {
   onEdit:   () => void;
   onDelete: () => void;
 }) {
+  const { t } = useLanguage();
   const proxima = vacuna.proxima ? new Date(vacuna.proxima) : null;
   const vencida  = proxima && proxima < new Date();
   return (
@@ -1241,7 +1238,7 @@ function VacunaItem({ vacuna, onEdit, onDelete }: {
         <div className="flex items-center gap-1.5 shrink-0">
           {proxima && (
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${vencida ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
-              {vencida ? 'Vencida' : 'Vigente'}
+              {vencida ? t.mpdVacunaVencida : t.mpdVacunaVigente}
             </span>
           )}
           <button type="button" onClick={onEdit}
@@ -1257,7 +1254,7 @@ function VacunaItem({ vacuna, onEdit, onDelete }: {
       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
         <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {formatFecha(vacuna.fecha)}</span>
         {vacuna.veterinario && <span>{vacuna.veterinario}</span>}
-        {proxima && <span className={vencida ? 'font-bold text-bad' : ''}>Próxima: {formatFecha(vacuna.proxima)}</span>}
+        {proxima && <span className={vencida ? 'font-bold text-bad' : ''}>{t.mpdVacunaProxima} {formatFecha(vacuna.proxima)}</span>}
       </div>
       {vacuna.notas && <p className="mt-1 text-[11px] text-ink-muted/70 italic">{vacuna.notas}</p>}
     </div>
@@ -1276,6 +1273,7 @@ function VacunaForm({ inicial, onSave, onCancel }: {
     proxima:     inicial?.proxima     ?? '',
     notas:       inicial?.notas       ?? '',
   });
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState('');
 
@@ -1285,7 +1283,7 @@ function VacunaForm({ inicial, onSave, onCancel }: {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.nombre || !form.fecha) { setError('Nombre y fecha son obligatorios.'); return; }
+    if (!form.nombre || !form.fecha) { setError(t.mpdVacunaErrReq); return; }
     setSaving(true);
     setError('');
     try {
@@ -1299,11 +1297,11 @@ function VacunaForm({ inicial, onSave, onCancel }: {
   return (
     <form onSubmit={handleSave} className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3 mb-3">
       <div>
-        <label className="label text-xs">Vacuna <span className="text-bad">*</span></label>
+        <label className="label text-xs">{t.mpdVacunaLabel} <span className="text-bad">*</span></label>
         <input
           list="vacunas-comunes"
           className="field w-full text-sm"
-          placeholder="Séxtuple, Antirrábica…"
+          placeholder={t.mpdVacunaPlaceholder}
           value={form.nombre}
           onChange={(e) => campo('nombre', e.target.value)}
           required
@@ -1315,25 +1313,25 @@ function VacunaForm({ inicial, onSave, onCancel }: {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+          <label className="label text-xs">{t.mpdFechaReqLabel} <span className="text-bad">*</span></label>
           <input type="date" className="field w-full text-sm" value={form.fecha}
             onChange={(e) => campo('fecha', e.target.value)} required />
         </div>
         <div>
-          <label className="label text-xs">Próxima dosis</label>
+          <label className="label text-xs">{t.mpdProximaDosis}</label>
           <input type="date" className="field w-full text-sm" value={form.proxima}
             onChange={(e) => campo('proxima', e.target.value)} />
         </div>
       </div>
 
       <div>
-        <label className="label text-xs">Veterinario</label>
+        <label className="label text-xs">{t.mpdVetFormLabel}</label>
         <input className="field w-full text-sm" placeholder="Dr. García…" value={form.veterinario}
           onChange={(e) => campo('veterinario', e.target.value)} />
       </div>
 
       <div>
-        <label className="label text-xs">Notas</label>
+        <label className="label text-xs">{t.mpdNotasLabel}</label>
         <input className="field w-full text-sm" placeholder="Observaciones…" value={form.notas}
           onChange={(e) => campo('notas', e.target.value)} />
       </div>
@@ -1347,11 +1345,11 @@ function VacunaForm({ inicial, onSave, onCancel }: {
       <div className="flex gap-2">
         <button type="submit" disabled={saving}
           className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? 'Guardar cambios' : 'Agregar vacuna'}</>}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? t.mpdGuardarCambios : t.mpdAgregarVacuna}</>}
         </button>
         <button type="button" onClick={onCancel} disabled={saving}
           className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
-          Cancelar
+          {t.mpdCancelar}
         </button>
       </div>
     </form>
@@ -1368,6 +1366,7 @@ function AirTagSection({
   onDelete: (id: string) => void;
   locked?:  boolean;
 }) {
+  const { t } = useLanguage();
   const [agregando, setAgregando] = useState(false);
   const [serial,    setSerial]    = useState('');
   const [saving,    setSaving]    = useState(false);
@@ -1375,7 +1374,7 @@ function AirTagSection({
 
   async function handleGuardar(e: React.FormEvent) {
     e.preventDefault();
-    if (!serial.trim()) { setError('Ingresá el número de serie.'); return; }
+    if (!serial.trim()) { setError(t.mpdAirTagErrReq); return; }
     setSaving(true);
     setError('');
     try {
@@ -1401,7 +1400,7 @@ function AirTagSection({
     <div className="card p-5 mb-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <span className="text-base">📍</span> AirTag de Apple
+          <span className="text-base">📍</span> {t.mpdAirTagTitle}
           {airtags.length > 0 && (
             <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
               {airtags.length}
@@ -1424,7 +1423,7 @@ function AirTagSection({
       {agregando && (
         <form onSubmit={handleGuardar} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div>
-            <label className="label text-xs">Número de serie del AirTag <span className="text-bad">*</span></label>
+            <label className="label text-xs">{t.mpdAirTagLabel} <span className="text-bad">*</span></label>
             <input
               className="field w-full font-mono text-sm"
               placeholder="Ej: XXXXXXXX"
@@ -1432,9 +1431,7 @@ function AirTagSection({
               onChange={(e) => setSerial(e.target.value)}
               autoFocus
             />
-            <p className="mt-1 text-[11px] text-ink-muted">
-              Lo encontrás en Ajustes → Apple ID → Buscar → tu AirTag, o en la caja.
-            </p>
+            <p className="mt-1 text-[11px] text-ink-muted">{t.mpdAirTagTip}</p>
           </div>
           {error && (
             <p className="flex items-center gap-1.5 text-xs font-semibold text-bad">
@@ -1444,11 +1441,11 @@ function AirTagSection({
           <div className="flex gap-2">
             <button type="submit" disabled={saving}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdGuardar}</>}
             </button>
             <button type="button" onClick={() => { setAgregando(false); setSerial(''); setError(''); }} disabled={saving}
               className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
-              Cancelar
+              {t.mpdCancelar}
             </button>
           </div>
         </form>
@@ -1456,14 +1453,14 @@ function AirTagSection({
 
       {/* Lista de AirTags */}
       {airtags.length === 0 && !agregando ? (
-        <p className="text-sm text-ink-muted">No hay AirTag registrado.</p>
+        <p className="text-sm text-ink-muted">{t.mpdAirTagVacio}</p>
       ) : (
         <div className="space-y-3">
           {airtags.map((a) => (
             <div key={a.id} className="rounded-2xl bg-brand-cream p-3.5">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">N° de serie</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdAirTagNSerie}</p>
                   <p className="mt-0.5 font-mono text-sm font-bold text-ink">{a.nombre}</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -1488,17 +1485,15 @@ function AirTagSection({
 
       {/* Tip modo perdido */}
       <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3">
-        <p className="text-xs font-bold text-amber-700 mb-1">💡 Si se perdió tu perro</p>
-        <p className="text-xs text-amber-600 leading-relaxed">
-          Activá el <strong>Modo Perdido</strong> en la app Buscar de tu iPhone. Así cualquier iPhone cercano que detecte el AirTag te manda su ubicación automáticamente.
-        </p>
+        <p className="text-xs font-bold text-amber-700 mb-1">{t.mpdAirTagPerdidoTitle}</p>
+        <p className="text-xs text-amber-600 leading-relaxed">{t.mpdAirTagPerdidoDesc}</p>
         <a
           href="https://support.apple.com/es-ar/HT212331"
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline"
         >
-          <Globe className="h-3 w-3" /> Cómo activar Modo Perdido
+          <Globe className="h-3 w-3" /> {t.mpdAirTagModoLink}
         </a>
       </div>
     </div>
@@ -1518,6 +1513,7 @@ function ChipCertificadoSection({
   onChipUpdate:  (chip: string) => void;
   locked?:       boolean;
 }) {
+  const { t } = useLanguage();
   const fileRef                       = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -1533,7 +1529,7 @@ function ChipCertificadoSection({
       await onSubir(pendingFile);
       setPendingFile(null);
     } catch {
-      setUploadError('No se pudo subir el archivo. Verificá tu conexión e intentá de nuevo.');
+      setUploadError(t.mpdErrSubir);
     }
   }
 
@@ -1556,7 +1552,7 @@ function ChipCertificadoSection({
     <div className="card p-5 mb-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Cpu className="h-4 w-4 text-brand-primary" /> Certificado de Chip
+          <Cpu className="h-4 w-4 text-brand-primary" /> {t.mpdChipCertTitle}
           {estudios.length > 0 && (
             <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
               {estudios.length}
@@ -1574,7 +1570,7 @@ function ChipCertificadoSection({
             disabled={subiendo}
             className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
           >
-            <Upload className="h-3.5 w-3.5" /> Subir certificado
+            <Upload className="h-3.5 w-3.5" /> {t.mpdSubirCertificado}
           </button>
         )}
         <input
@@ -1596,13 +1592,13 @@ function ChipCertificadoSection({
           /* Sin Pro: solo lectura con candado */
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdNumeroChip}</p>
               <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
-                {perro.chip || 'Sin registrar'}
+                {perro.chip || t.mpdSinRegistrar}
               </p>
             </div>
             <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-2.5 py-1.5 text-xs font-bold text-brand-primary/60 shrink-0 transition hover:bg-brand-primary/20 hover:text-brand-primary">
-              <Lock className="h-3 w-3" /> Editar
+              <Lock className="h-3 w-3" /> {t.mpdEditarBtn}
             </Link>
           </div>
         ) : editandoChip ? (
@@ -1610,32 +1606,32 @@ function ChipCertificadoSection({
           <form onSubmit={handleSaveChip} className="flex items-center gap-2">
             <input
               className="field flex-1 font-mono text-sm"
-              placeholder="Nº de chip (15 dígitos)"
+              placeholder={t.mpdChipPlaceholderForm}
               value={chip}
               onChange={(e) => setChip(e.target.value)}
               autoFocus
             />
             <button type="submit" disabled={savingChip}
               className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-60 shrink-0">
-              {savingChip ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5" /> Guardar</>}
+              {savingChip ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5" /> {t.mpdGuardar}</>}
             </button>
             <button type="button" onClick={() => { setEditandoChip(false); setChip(perro.chip ?? ''); }}
               className="rounded-xl border-2 border-black/10 px-3 py-2 text-xs font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad shrink-0">
-              Cancelar
+              {t.mpdCancelar}
             </button>
           </form>
         ) : (
           /* Pro + display */
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Número de chip</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdNumeroChip}</p>
               <p className={`mt-0.5 font-mono text-sm font-bold ${perro.chip ? 'text-ink' : 'text-ink-muted/50'}`}>
-                {perro.chip || 'Sin registrar'}
+                {perro.chip || t.mpdSinRegistrar}
               </p>
             </div>
             <button type="button" onClick={() => setEditandoChip(true)}
               className="inline-flex items-center gap-1 rounded-xl bg-black/5 px-3 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-brand-primary/10 hover:text-brand-primary shrink-0">
-              <Pencil className="h-3 w-3" /> {perro.chip ? 'Editar' : 'Agregar'}
+              <Pencil className="h-3 w-3" /> {perro.chip ? t.mpdEditarBtn : t.mpdAgregarBtn}
             </button>
           </div>
         )}
@@ -1664,7 +1660,7 @@ function ChipCertificadoSection({
           <div className="mt-3 flex gap-2">
             <button type="button" onClick={confirmarSubida} disabled={subiendo}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60">
-              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdConfirmarSubir}</>}
             </button>
             <button type="button" onClick={() => { setPendingFile(null); setUploadError(''); }} disabled={subiendo}
               className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
@@ -1676,7 +1672,7 @@ function ChipCertificadoSection({
 
       {/* Lista de certificados */}
       {estudios.length === 0 && !pendingFile ? (
-        <p className="text-sm text-ink-muted">No hay certificados subidos.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinCertificados}</p>
       ) : estudios.length > 0 ? (
         <div className="space-y-2">
           {estudios.map((e) => (
@@ -1855,6 +1851,7 @@ function CVISection({
   onEliminar: (id: string) => void;
   locked?:    boolean;
 }) {
+  const { t } = useLanguage();
   const fileRef                       = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -1877,7 +1874,7 @@ function CVISection({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Globe className="h-4 w-4 text-brand-primary" /> Certificado CVI
+          <Globe className="h-4 w-4 text-brand-primary" /> {t.mpdCVITitle}
           {estudios.length > 0 && (
             <span className="ml-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
               {estudios.length}
@@ -1894,7 +1891,7 @@ function CVISection({
               onClick={() => { setUploadError(''); fileRef.current?.click(); }}
               disabled={subiendo}
               className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60">
-              <Upload className="h-3.5 w-3.5" /> Subir certificado
+              <Upload className="h-3.5 w-3.5" /> {t.mpdSubirCertificado}
             </button>
             <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden"
               onChange={(e) => {
@@ -1911,7 +1908,7 @@ function CVISection({
         <Link href="/planes" className="mb-4 flex w-full items-center justify-between rounded-2xl border border-black/10 bg-black/5 px-4 py-3 text-sm font-bold text-ink-muted/50 transition hover:bg-brand-primary/5 hover:text-brand-primary/70">
           <span className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
-            Consultá los requisitos por país
+            {t.mpdCVIPaises}
           </span>
           <Lock className="h-4 w-4" />
         </Link>
@@ -1923,7 +1920,7 @@ function CVISection({
       >
         <span className="flex items-center gap-2">
           <Globe className="h-4 w-4" />
-          Consultá los requisitos por país
+          {t.mpdCVIPaises}
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${requisitosOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -1932,7 +1929,7 @@ function CVISection({
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Buscar país de destino…"
+            placeholder={t.mpdCVIBuscar}
             value={paisExpandido ?? ''}
             onChange={(e) => setPaisExpandido(e.target.value || null)}
             className="field w-full mb-3 text-sm"
@@ -1960,12 +1957,10 @@ function CVISection({
             {CVI_PAISES.filter((p) =>
               !paisExpandido || p.nombre.toLowerCase().includes(paisExpandido.toLowerCase())
             ).length === 0 && (
-              <p className="px-4 py-3 text-sm text-ink-muted">No se encontró ese destino.</p>
+              <p className="px-4 py-3 text-sm text-ink-muted">{t.mpdCVISinDestino}</p>
             )}
           </div>
-          <p className="mt-2 text-[11px] text-ink-muted">
-            Fuente: SENASA · Los requisitos pueden cambiar sin previo aviso.
-          </p>
+          <p className="mt-2 text-[11px] text-ink-muted">{t.mpdCVIFuente}</p>
         </div>
       )}
       </>}
@@ -1988,7 +1983,7 @@ function CVISection({
           <div className="mt-3 flex gap-2">
             <button type="button" onClick={confirmarSubida} disabled={subiendo}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60">
-              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdConfirmarSubir}</>}
             </button>
             <button type="button" onClick={() => { setPendingFile(null); setUploadError(''); }} disabled={subiendo}
               className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
@@ -2000,7 +1995,7 @@ function CVISection({
 
       {/* Lista de certificados */}
       {estudios.length === 0 && !pendingFile ? (
-        <p className="text-sm text-ink-muted">No hay certificados subidos.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinCertificados}</p>
       ) : estudios.length > 0 ? (
         <div className="space-y-2">
           {estudios.map((e) => (
@@ -2054,6 +2049,7 @@ function EstudiosSection({
   onRegistrarTurno?:  (fecha: string, nota: string) => Promise<void>;
   onEliminarTurno?:   (id: string) => void;
 }) {
+  const { t } = useLanguage();
   const fileRef                         = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile]   = useState<File | null>(null);
   const [uploadError, setUploadError]   = useState('');
@@ -2099,12 +2095,12 @@ function EstudiosSection({
           )}
           {vencido && (
             <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-bad/10 px-2 py-0.5 text-[10px] font-bold text-bad">
-              <TriangleAlert className="h-2.5 w-2.5" /> Vencido
+              <TriangleAlert className="h-2.5 w-2.5" /> {t.mpdVacunaVencida}
             </span>
           )}
           {porVencer && (
             <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-              <Clock className="h-2.5 w-2.5" /> Por vencer
+              <Clock className="h-2.5 w-2.5" /> {t.mpdPorVencer}
             </span>
           )}
         </h2>
@@ -2119,7 +2115,7 @@ function EstudiosSection({
             disabled={subiendo}
             className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20 disabled:opacity-60"
           >
-            <Upload className="h-3.5 w-3.5" /> Subir archivo
+            <Upload className="h-3.5 w-3.5" /> {t.mpdSubirArchivo}
           </button>
         )}
         <input
@@ -2157,7 +2153,7 @@ function EstudiosSection({
               disabled={subiendo}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
             >
-              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Confirmar y subir</>}
+              {subiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdConfirmarSubir}</>}
             </button>
             <button
               type="button"
@@ -2172,7 +2168,7 @@ function EstudiosSection({
       )}
 
       {estudios.length === 0 && !pendingFile ? (
-        <p className="text-sm text-ink-muted">No hay archivos subidos.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinArchivos}</p>
       ) : estudios.length > 0 ? (
         <div className="space-y-2">
           {estudios.map((e) => (
@@ -2206,14 +2202,14 @@ function EstudiosSection({
           <div className="flex items-center justify-between rounded-2xl bg-brand-cream px-4 py-3">
             <div className="flex items-center gap-2">
               <FlaskConical className="h-4 w-4 shrink-0 text-brand-primary/60" />
-              <p className="text-sm text-ink-muted">¿Necesitás una cotización?</p>
+              <p className="text-sm text-ink-muted">{t.mpdCotizacionSub}</p>
             </div>
             <button
               type="button"
               onClick={() => setShowCotizacionModal(true)}
               className="ml-3 shrink-0 text-xs font-bold text-brand-primary hover:underline"
             >
-              Solicitá aquí
+              {t.mpdCotizacionLink}
             </button>
           </div>
           {showCotizacionModal && (
@@ -2229,7 +2225,7 @@ function EstudiosSection({
             <div className="flex items-center gap-3 rounded-2xl bg-green-50 px-4 py-3">
               <CalendarDays className="h-4 w-4 shrink-0 text-green-600" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-green-700">Turno registrado</p>
+                <p className="text-xs font-bold text-green-700">{t.mpdTurnoRegistrado}</p>
                 <p className="text-sm font-semibold text-ink">{formatFecha(turno.fecha)}</p>
                 {turno.nota && <p className="text-xs text-ink-muted">{turno.nota}</p>}
               </div>
@@ -2246,7 +2242,7 @@ function EstudiosSection({
             /* Formulario para registrar turno */
             <div className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4">
               <p className="mb-3 text-sm font-bold text-ink">
-                Registrar turno de {tipo === 'ecografia' ? 'ecografía' : 'radiografía'}
+                {tipo === 'ecografia' ? t.mpdRegistrarTurnoEco : t.mpdRegistrarTurnoRad}
               </p>
               <div className="space-y-2">
                 <input
@@ -2259,7 +2255,7 @@ function EstudiosSection({
                   type="text"
                   value={turnoNota}
                   onChange={(e) => setTurnoNota(e.target.value)}
-                  placeholder="Nota opcional (ej: Dr. García, Clínica San Roque)"
+                  placeholder={t.mpdTurnoNotaPlaceholder}
                   className="w-full rounded-xl border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-ink placeholder:text-ink-muted/50 focus:border-brand-primary focus:outline-none"
                 />
               </div>
@@ -2291,7 +2287,7 @@ function EstudiosSection({
                 >
                   {guardandoTurno
                     ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <><CalendarDays className="h-4 w-4" /> Registrar</>}
+                    : <><CalendarDays className="h-4 w-4" /> {t.mpdRegistrarBtn}</>}
                 </button>
                 <button
                   type="button"
@@ -2308,7 +2304,7 @@ function EstudiosSection({
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 shrink-0 text-brand-primary/60" />
                 <p className="text-sm text-ink-muted">
-                  ¿Tenés turno de {tipo === 'ecografia' ? 'ecografía' : 'radiografía'}?
+                  {tipo === 'ecografia' ? t.mpdTeneTurnoEco : t.mpdTeneTurnoRad}
                 </p>
               </div>
               <button
@@ -2316,7 +2312,7 @@ function EstudiosSection({
                 onClick={() => setShowTurnoForm(true)}
                 className="ml-3 shrink-0 text-xs font-bold text-brand-primary hover:underline"
               >
-                Registrá y te avisamos
+                {t.mpdRegistraAvisamos}
               </button>
             </div>
           )}
@@ -2334,14 +2330,15 @@ function EnviarEstudioModal({
   perroNombre:  string;
   onClose:      () => void;
 }) {
+  const { t } = useLanguage();
   const [email,  setEmail]  = useState('');
   const [copied, setCopied] = useState(false);
 
-  const texto = `Estudio de ${perroNombre} — ${estudio.nombre}\n${estudio.archivo_url}`;
+  const texto = `${t.mpdEnviarEstudio} — ${perroNombre} — ${estudio.nombre}\n${estudio.archivo_url}`;
 
   function enviarEmail() {
-    const subject = encodeURIComponent(`Estudio de ${perroNombre}: ${estudio.nombre}`);
-    const body    = encodeURIComponent(`Hola,\n\nTe comparto el estudio "${estudio.nombre}" de ${perroNombre}:\n${estudio.archivo_url}`);
+    const subject = encodeURIComponent(`${t.mpdEnviarEstudio}: ${estudio.nombre} — ${perroNombre}`);
+    const body    = encodeURIComponent(`${estudio.nombre} — ${perroNombre}:\n${estudio.archivo_url}`);
     const to      = encodeURIComponent(email.trim());
     window.open(`mailto:${to}?subject=${subject}&body=${body}`, '_blank');
   }
@@ -2364,7 +2361,7 @@ function EnviarEstudioModal({
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
 
         <div className="mb-5">
-          <h2 className="font-display text-xl font-black text-ink">Enviar estudio</h2>
+          <h2 className="font-display text-xl font-black text-ink">{t.mpdEnviarEstudio}</h2>
           <p className="mt-1 text-sm text-ink-muted truncate">{estudio.nombre}</p>
         </div>
 
@@ -2380,7 +2377,7 @@ function EnviarEstudioModal({
         {/* Email */}
         <div className="mb-3">
           <label className="label mb-1 flex items-center gap-1.5">
-            <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+            <Mail className="h-3.5 w-3.5 text-brand-primary" /> {t.mpdEnviarEmail}
           </label>
           <div className="flex gap-2">
             <input
@@ -2396,7 +2393,7 @@ function EnviarEstudioModal({
               disabled={!email.trim()}
               className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40"
             >
-              Enviar
+              {t.mpdEnviar}
             </button>
           </div>
         </div>
@@ -2410,12 +2407,12 @@ function EnviarEstudioModal({
         {/* WhatsApp */}
         <button type="button" onClick={enviarWhatsApp}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
-          <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+          <MessageCircle className="h-4 w-4" /> {t.mpdEnviarWA}
         </button>
 
         <button type="button" onClick={onClose}
           className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
-          Cancelar
+          {t.mpdCancelar}
         </button>
       </div>
     </div>
@@ -2497,6 +2494,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
   const [email,          setEmail]          = useState('');
   const [nombrePerro,    setNombrePerro]    = useState('');
   const [recetaFile,     setRecetaFile]     = useState<File | null>(null);
+  const { t } = useLanguage();
   const [enviando,       setEnviando]       = useState(false);
   const [error,          setError]          = useState('');
   const [exito,          setExito]          = useState(false);
@@ -2504,11 +2502,11 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
 
   async function handleSubmit() {
     if (!nombreApellido.trim() || !email.trim() || !nombrePerro.trim()) {
-      setError('Completá todos los campos requeridos.');
+      setError(t.mpdCotizErrCampos);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('Ingresá un email válido.');
+      setError(t.mpdCotizErrEmail);
       return;
     }
 
@@ -2557,29 +2555,27 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
               <CheckCircle2 className="h-8 w-8 text-good" />
             </div>
             <div>
-              <h2 className="font-display text-xl font-black text-ink">¡Solicitud enviada!</h2>
-              <p className="mt-2 text-sm text-ink-muted">
-                Nos contactaremos con vos a la brevedad para darte la cotización.
-              </p>
+              <h2 className="font-display text-xl font-black text-ink">{t.mpdCotizOk}</h2>
+              <p className="mt-2 text-sm text-ink-muted">{t.mpdCotizOkSub}</p>
             </div>
             <button
               type="button"
               onClick={onClose}
               className="mt-2 w-full rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:bg-brand-primary/90"
             >
-              Cerrar
+              {t.mpdCerrar}
             </button>
           </div>
         ) : (
           <>
             <div className="mb-5">
-              <h2 className="font-display text-xl font-black text-ink">Solicitar cotización</h2>
-              <p className="mt-1 text-sm text-ink-muted">Análisis de laboratorio para tu perro</p>
+              <h2 className="font-display text-xl font-black text-ink">{t.mpdCotizTitle}</h2>
+              <p className="mt-1 text-sm text-ink-muted">{t.mpdCotizSub}</p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-bold text-ink-muted">Nombre y Apellido *</label>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">{t.mpdCotizNombreLabel} *</label>
                 <input
                   type="text"
                   value={nombreApellido}
@@ -2590,7 +2586,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-ink-muted">Email *</label>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">{t.mpdCotizEmailLabel} *</label>
                 <input
                   type="email"
                   value={email}
@@ -2601,7 +2597,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-ink-muted">Nombre del perro *</label>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">{t.mpdCotizPerroLabel} *</label>
                 <input
                   type="text"
                   value={nombrePerro}
@@ -2612,7 +2608,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-ink-muted">Receta del veterinario</label>
+                <label className="mb-1 block text-xs font-bold text-ink-muted">{t.mpdCotizRecetaLabel}</label>
                 {recetaFile ? (
                   <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 px-4 py-2.5">
                     <FileText className="h-4 w-4 shrink-0 text-brand-primary" />
@@ -2627,7 +2623,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
                     onClick={() => fileRef.current?.click()}
                     className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-black/10 px-4 py-3 text-sm font-semibold text-ink-muted transition hover:border-brand-primary/40 hover:text-brand-primary"
                   >
-                    <Upload className="h-4 w-4" /> Subir receta del veterinario
+                    <Upload className="h-4 w-4" /> {t.mpdCotizSubirReceta}
                   </button>
                 )}
                 <input
@@ -2659,7 +2655,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
               >
                 {enviando
                   ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <><Send className="h-4 w-4" /> Enviar solicitud</>}
+                  : <><Send className="h-4 w-4" /> {t.mpdCotizEnviar}</>}
               </button>
               <button
                 type="button"
@@ -2679,6 +2675,7 @@ function CotizacionLabModal({ onClose }: { onClose: () => void }) {
 
 /* ── Modal QR para el collar ── */
 function QRModal({ perroId, perroNombre, onClose }: { perroId: string; perroNombre: string; onClose: () => void }) {
+  const { t } = useLanguage();
   const [qrDataUrl, setQrDataUrl] = useState('');
   const url = `https://www.mivecindog.com.ar/historia/${perroId}`;
 
@@ -2704,9 +2701,9 @@ function QRModal({ perroId, perroNombre, onClose }: { perroId: string; perroNomb
       <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
         <div className="mb-5 text-center">
-          <h2 className="font-display text-xl font-black text-ink">QR para el collar</h2>
+          <h2 className="font-display text-xl font-black text-ink">{t.mpdQRTitle}</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Imprimilo y colgalo del collar de {perroNombre}. Si se pierde, cualquiera puede escanearlo.
+            {t.mpdQRDesc.replace('{nombre}', perroNombre)}
           </p>
         </div>
         <div className="flex justify-center mb-5">
@@ -2727,14 +2724,14 @@ function QRModal({ perroId, perroNombre, onClose }: { perroId: string; perroNomb
             disabled={!qrDataUrl}
             className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40"
           >
-            <Download className="h-4 w-4" /> Descargar PNG
+            <Download className="h-4 w-4" /> {t.mpdQRDescargar}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="rounded-2xl border-2 border-black/10 px-4 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20"
           >
-            Cerrar
+            {t.mpdCerrar}
           </button>
         </div>
       </div>
@@ -2762,12 +2759,13 @@ function MedicamentosSection({
     fecha_fin: '', notas: '',
   });
 
+  const { t } = useLanguage();
   const activos    = medicamentos.filter((m) => m.activo);
   const anteriores = medicamentos.filter((m) => !m.activo);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.nombre.trim() || !form.fecha_inicio) { setError('Ingresá al menos el nombre y la fecha de inicio.'); return; }
+    if (!form.nombre.trim() || !form.fecha_inicio) { setError(t.mpdMedErrReq); return; }
     setSaving(true); setError('');
     try {
       await onAgregar({
@@ -2783,7 +2781,7 @@ function MedicamentosSection({
       setForm({ nombre: '', dosis: '', frecuencia: '', fecha_inicio: new Date().toISOString().slice(0, 10), fecha_fin: '', notas: '' });
       setAgregando(false);
     } catch {
-      setError('No se pudo guardar. Intentá de nuevo.');
+      setError(t.mpdErrGuardar);
     } finally {
       setSaving(false);
     }
@@ -2793,10 +2791,10 @@ function MedicamentosSection({
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Pill className="h-4 w-4 text-brand-primary" /> Medicamentos
+          <Pill className="h-4 w-4 text-brand-primary" /> {t.mpdMedicamentosTitle}
           {activos.length > 0 && (
             <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
-              {activos.length} activo{activos.length !== 1 ? 's' : ''}
+              {t.mpdMedActivos.replace('{n}', String(activos.length))}
             </span>
           )}
         </h2>
@@ -2809,12 +2807,12 @@ function MedicamentosSection({
             {activos.length > 0 && (
               <button type="button" onClick={() => setShowEnviar(true)}
                 className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
-                <Send className="h-3 w-3" /> Enviar
+                <Send className="h-3 w-3" /> {t.mpdEnviar}
               </button>
             )}
             <button type="button" onClick={() => setAgregando((v) => !v)}
               className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-              {agregando ? <X className="h-3 w-3" /> : <>+ Agregar</>}
+              {agregando ? <X className="h-3 w-3" /> : <>+ {t.mpdAgregar}</>}
             </button>
           </div>
         )}
@@ -2822,12 +2820,12 @@ function MedicamentosSection({
 
       {showEnviar && (
         <EnviarTextoModal
-          titulo="Enviar medicamentos"
-          subtitulo={`${perroNombre ?? ''} · ${activos.length} medicamento${activos.length !== 1 ? 's' : ''} activo${activos.length !== 1 ? 's' : ''}`}
+          titulo={t.mpdEnviarMed}
+          subtitulo={`${perroNombre ?? ''} · ${t.mpdMedActivos.replace('{n}', String(activos.length))}`}
           texto={[
-            `💊 Medicamentos activos de ${perroNombre ?? 'mi perro'} 🐾`,
+            `💊 ${t.mpdEnviarMed} — ${perroNombre ?? ''} 🐾`,
             '',
-            ...activos.map((m) => `• ${m.nombre}${m.dosis ? ` — ${m.dosis}` : ''}${m.frecuencia ? ` (${m.frecuencia})` : ''}\n  Desde ${formatFecha(m.fecha_inicio)}${m.fecha_fin ? ` hasta ${formatFecha(m.fecha_fin)}` : ''}${m.notas ? `\n  📝 ${m.notas}` : ''}`),
+            ...activos.map((m) => `• ${m.nombre}${m.dosis ? ` — ${m.dosis}` : ''}${m.frecuencia ? ` (${m.frecuencia})` : ''}\n  ${t.mpdMedDesde} ${formatFecha(m.fecha_inicio)}${m.fecha_fin ? ` ${t.mpdMedHasta} ${formatFecha(m.fecha_fin)}` : ''}${m.notas ? `\n  📝 ${m.notas}` : ''}`),
           ].join('\n')}
           onClose={() => setShowEnviar(false)}
         />
@@ -2838,33 +2836,33 @@ function MedicamentosSection({
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="label text-xs">Medicamento <span className="text-bad">*</span></label>
-              <input className="field w-full text-sm" placeholder="Ej: Tramadol, Amoxicilina" value={form.nombre}
+              <label className="label text-xs">{t.mpdMedLabel} <span className="text-bad">*</span></label>
+              <input className="field w-full text-sm" placeholder={t.mpdMedPlaceholder} value={form.nombre}
                 onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} required />
             </div>
             <div>
-              <label className="label text-xs">Dosis</label>
-              <input className="field w-full text-sm" placeholder="Ej: 5mg" value={form.dosis}
+              <label className="label text-xs">{t.mpdMedDosis}</label>
+              <input className="field w-full text-sm" placeholder={t.mpdMedDosisPlaceholder} value={form.dosis}
                 onChange={(e) => setForm((f) => ({ ...f, dosis: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-xs">Frecuencia</label>
-              <input className="field w-full text-sm" placeholder="Ej: Cada 8hs" value={form.frecuencia}
+              <label className="label text-xs">{t.mpdMedFrecuencia}</label>
+              <input className="field w-full text-sm" placeholder={t.mpdMedFrecuenciaPlaceholder} value={form.frecuencia}
                 onChange={(e) => setForm((f) => ({ ...f, frecuencia: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-xs">Inicio <span className="text-bad">*</span></label>
+              <label className="label text-xs">{t.mpdMedInicio} <span className="text-bad">*</span></label>
               <input type="date" className="field w-full text-sm" value={form.fecha_inicio}
                 onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))} required />
             </div>
             <div>
-              <label className="label text-xs">Fin (opcional)</label>
+              <label className="label text-xs">{t.mpdMedFin}</label>
               <input type="date" className="field w-full text-sm" value={form.fecha_fin}
                 onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))} />
             </div>
             <div className="col-span-2">
-              <label className="label text-xs">Notas</label>
-              <input className="field w-full text-sm" placeholder="Ej: Dar con comida" value={form.notas}
+              <label className="label text-xs">{t.mpdNotasLabel}</label>
+              <input className="field w-full text-sm" placeholder={t.mpdMedPlaceholder} value={form.notas}
                 onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))} />
             </div>
           </div>
@@ -2876,11 +2874,11 @@ function MedicamentosSection({
           <div className="flex gap-2">
             <button type="submit" disabled={saving}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdGuardar}</>}
             </button>
             <button type="button" onClick={() => { setAgregando(false); setError(''); }}
               className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad">
-              Cancelar
+              {t.mpdCancelar}
             </button>
           </div>
         </form>
@@ -2888,7 +2886,7 @@ function MedicamentosSection({
 
       {/* Lista activos */}
       {activos.length === 0 && !agregando ? (
-        <p className="text-sm text-ink-muted">No hay medicamentos activos.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinMedActivos}</p>
       ) : activos.length > 0 ? (
         <div className="space-y-2">
           {activos.map((m) => (
@@ -2900,7 +2898,7 @@ function MedicamentosSection({
                   <p className="text-xs text-ink-muted">{[m.dosis, m.frecuencia].filter(Boolean).join(' · ')}</p>
                 )}
                 <p className="text-xs text-ink-muted">
-                  Desde {formatFecha(m.fecha_inicio)}{m.fecha_fin ? ` hasta ${formatFecha(m.fecha_fin)}` : ''}
+                  {t.mpdMedDesde} {formatFecha(m.fecha_inicio)}{m.fecha_fin ? ` ${t.mpdMedHasta} ${formatFecha(m.fecha_fin)}` : ''}
                 </p>
                 {m.notas && <p className="text-[11px] text-ink-muted italic mt-0.5">{m.notas}</p>}
               </div>
@@ -2916,7 +2914,7 @@ function MedicamentosSection({
       {/* Anteriores */}
       {anteriores.length > 0 && (
         <div className="mt-3 border-t border-black/5 pt-3">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted">Anteriores</p>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdMedAnteriores}</p>
           <div className="space-y-1.5">
             {anteriores.map((m) => (
               <div key={m.id} className="flex items-center gap-2 rounded-xl px-3 py-2 bg-black/3">
@@ -2946,18 +2944,19 @@ function HistoriaClinica({
   ciudad:             string | null;
   edad:               string | null;
 }) {
+  const { t } = useLanguage();
   const labs   = estudios.filter((e) => e.tipo === 'laboratorio');
   const radios = estudios.filter((e) => e.tipo === 'radiografia');
   const ecos   = estudios.filter((e) => e.tipo === 'ecografia');
   const [enviarOpen, setEnviarOpen] = useState(false);
 
   const url     = `https://www.mivecindog.com.ar/historia/${perro.id}`;
-  const texto   = encodeURIComponent(`Historia Clínica de ${perro.nombre} 🐾\n${url}`);
+  const texto   = encodeURIComponent(`${t.mpdHistoriaTitle} — ${perro.nombre} 🐾\n${url}`);
   const waLink  = `https://wa.me/?text=${texto}`;
 
   function enviarEmail(email: string) {
-    const subject = encodeURIComponent(`Historia Clínica de ${perro.nombre}`);
-    const body    = encodeURIComponent(`Hola,\n\nTe comparto la historia clínica de ${perro.nombre}:\n${url}`);
+    const subject = encodeURIComponent(`${t.mpdHistoriaTitle} — ${perro.nombre}`);
+    const body    = encodeURIComponent(`${t.mpdHistoriaTitle} — ${perro.nombre}:\n${url}`);
     window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`, '_blank');
   }
 
@@ -2970,8 +2969,8 @@ function HistoriaClinica({
             <FileText className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="font-display text-base font-extrabold text-ink">Historia Clínica</h2>
-            <p className="text-[11px] text-ink-muted">{perro.nombre} · resumen completo</p>
+            <h2 className="font-display text-base font-extrabold text-ink">{t.mpdHistoriaTitle}</h2>
+            <p className="text-[11px] text-ink-muted">{perro.nombre} · {t.mpdHistoriaResumen}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -2987,7 +2986,7 @@ function HistoriaClinica({
             onClick={() => setEnviarOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-primary/90 shrink-0"
           >
-            <Send className="h-3.5 w-3.5" /> Enviar
+            <Send className="h-3.5 w-3.5" /> {t.mpdEnviar}
           </button>
         </div>
       </div>
@@ -3005,17 +3004,17 @@ function HistoriaClinica({
       <div className="space-y-4">
 
         {/* ── Perfil ── */}
-        <HCSection titulo="Perfil" lleno>
+        <HCSection titulo={t.mpdHCPerfil} lleno>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
             {[
-              ['Raza',      perro.raza],
-              ['Color',     perro.color],
-              ['Sexo',      perro.sexo],
-              ['Tamaño',    perro.tamano],
-              ['Microchip', perro.chip],
-              ['Edad',      edad],
-              ['Ciudad',    ciudad],
-              ['Esterilizado', perro.esterilizado ? 'Sí' : null],
+              [t.mpdRazaLabel,      perro.raza],
+              [t.mpdColorLabel,     perro.color],
+              [t.mpdSexoLabel,      perro.sexo],
+              [t.mpdTamanoLabel,    perro.tamano],
+              [t.mpdMicrochip,      perro.chip],
+              [t.mpdEdadLabel,      edad],
+              [t.mpdCiudadLabel,    ciudad],
+              [t.mpdEsterilizadoLabel, perro.esterilizado ? '✓' : null],
             ].filter(([, v]) => v).map(([label, value]) => (
               <div key={label as string}>
                 <span className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{label}</span>
@@ -3031,7 +3030,7 @@ function HistoriaClinica({
         </HCSection>
 
         {/* ── Vacunas ── */}
-        <HCSection titulo="Carnet de Vacunas" lleno={vacunas.length > 0}>
+        <HCSection titulo={t.mpdHCVacunas} lleno={vacunas.length > 0}>
           {vacunas.length > 0 ? (
             <div className="space-y-1.5">
               {vacunas.map((v) => (
@@ -3045,28 +3044,28 @@ function HistoriaClinica({
         </HCSection>
 
         {/* ── Análisis ── */}
-        <HCSection titulo="Análisis de Laboratorio" lleno={labs.length > 0}>
+        <HCSection titulo={t.mpdHCAnalisis} lleno={labs.length > 0}>
           {labs.length > 0 ? (
             <EstudiosList estudios={labs} />
           ) : null}
         </HCSection>
 
         {/* ── Radiografías ── */}
-        <HCSection titulo="Radiografías" lleno={radios.length > 0}>
+        <HCSection titulo={t.mpdHCRadios} lleno={radios.length > 0}>
           {radios.length > 0 ? (
             <EstudiosList estudios={radios} />
           ) : null}
         </HCSection>
 
         {/* ── Ecografías ── */}
-        <HCSection titulo="Ecografías" lleno={ecos.length > 0}>
+        <HCSection titulo={t.mpdHCEcos} lleno={ecos.length > 0}>
           {ecos.length > 0 ? (
             <EstudiosList estudios={ecos} />
           ) : null}
         </HCSection>
 
         {/* ── Desparasitaciones ── */}
-        <HCSection titulo="Desparasitaciones" lleno={desparasitaciones.length > 0}>
+        <HCSection titulo={t.mpdHCDesparas} lleno={desparasitaciones.length > 0}>
           {desparasitaciones.length > 0 ? (
             <div className="space-y-1.5">
               {desparasitaciones.map((d) => (
@@ -3080,7 +3079,7 @@ function HistoriaClinica({
         </HCSection>
 
         {/* ── Peso ── */}
-        <HCSection titulo="Historial de Peso" lleno={pesos.length > 0}>
+        <HCSection titulo={t.mpdHCPeso} lleno={pesos.length > 0}>
           {pesos.length > 0 ? (
             <div className="space-y-1.5">
               {pesos.slice(0, 5).map((p) => (
@@ -3090,7 +3089,7 @@ function HistoriaClinica({
                 </div>
               ))}
               {pesos.length > 5 && (
-                <p className="text-xs text-ink-muted">+ {pesos.length - 5} registros anteriores</p>
+                <p className="text-xs text-ink-muted">{t.mpdHCPesoMas.replace('{n}', String(pesos.length - 5))}</p>
               )}
             </div>
           ) : null}
@@ -3108,13 +3107,14 @@ function HCSection({
   lleno:    boolean;
   children?: React.ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <div className={`rounded-2xl border ${lleno ? 'border-brand-primary/15 bg-brand-cream/40' : 'border-black/5 bg-black/2'} p-3`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">{titulo}</span>
         {!lleno && (
           <span className="flex items-center gap-0.5 text-[11px] font-bold text-ink-muted/40">
-            <X className="h-3.5 w-3.5" /> Sin datos
+            <X className="h-3.5 w-3.5" /> {t.mpdSinDatos}
           </span>
         )}
       </div>
@@ -3150,6 +3150,7 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
   onEnviarEmail: (email: string) => void;
   onClose:       () => void;
 }) {
+  const { t } = useLanguage();
   const [email,  setEmail]  = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -3169,8 +3170,8 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
 
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-xl font-black text-ink">Enviar Historia Clínica</h2>
-            <p className="mt-0.5 text-xs text-ink-muted">El destinatario puede verla sin cuenta</p>
+            <h2 className="font-display text-xl font-black text-ink">{t.mpdEnviarHistoria}</h2>
+            <p className="mt-0.5 text-xs text-ink-muted">{t.mpdEnviarHistoriaSub}</p>
           </div>
           <button type="button" onClick={onClose}
             className="rounded-xl p-1.5 text-ink-muted hover:bg-brand-cream">
@@ -3190,7 +3191,7 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
         {/* Email */}
         <div className="mb-3">
           <label className="label mb-1 flex items-center gap-1.5 text-xs font-bold text-ink-muted">
-            <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+            <Mail className="h-3.5 w-3.5 text-brand-primary" /> {t.mpdEnviarEmail}
           </label>
           <div className="flex gap-2">
             <input
@@ -3206,7 +3207,7 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
               disabled={!email.trim()}
               className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40"
             >
-              Enviar
+              {t.mpdEnviar}
             </button>
           </div>
         </div>
@@ -3220,12 +3221,12 @@ function EnviarHistoriaModal({ url, waLink, onEnviarEmail, onClose }: {
         {/* WhatsApp */}
         <a href={waLink} target="_blank" rel="noopener noreferrer"
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
-          <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+          <MessageCircle className="h-4 w-4" /> {t.mpdEnviarWA}
         </a>
 
         <button type="button" onClick={onClose}
           className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
-          Cancelar
+          {t.mpdCancelar}
         </button>
       </div>
     </div>
@@ -3255,16 +3256,17 @@ function DesparasitacionesSection({
     externa: 'bg-good/10 text-good',
     ambas:   'bg-brand-primary/10 text-brand-primary',
   };
+  const { t } = useLanguage();
   const [showEnviar, setShowEnviar] = useState(false);
 
   return (
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center gap-2">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Bug className="h-4 w-4 text-brand-primary" /> Desparasitaciones
+          <Bug className="h-4 w-4 text-brand-primary" /> {t.mpdDesparasTitle}
           {desparasitaciones.length > 0 && (
             <span className="rounded-full bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
-              {desparasitaciones.length} registrada{desparasitaciones.length !== 1 ? 's' : ''}
+              {t.mpdDesparasRegistradas.replace('{n}', String(desparasitaciones.length))}
             </span>
           )}
         </h2>
@@ -3277,12 +3279,12 @@ function DesparasitacionesSection({
             {desparasitaciones.length > 0 && (
               <button type="button" onClick={() => setShowEnviar(true)}
                 className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
-                <Send className="h-3 w-3" /> Enviar
+                <Send className="h-3 w-3" /> {t.mpdEnviar}
               </button>
             )}
           <button type="button" onClick={() => onSetAgregando(true)}
             className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-            + Agregar
+            + {t.mpdAgregar}
           </button>
           </div>
         )}
@@ -3290,12 +3292,12 @@ function DesparasitacionesSection({
 
       {showEnviar && (
         <EnviarTextoModal
-          titulo="Enviar desparasitaciones"
-          subtitulo={`${perroNombre ?? ''} · ${desparasitaciones.length} registro${desparasitaciones.length !== 1 ? 's' : ''}`}
+          titulo={t.mpdEnviarDesparas}
+          subtitulo={`${perroNombre ?? ''} · ${t.mpdDesparasRegistradas.replace('{n}', String(desparasitaciones.length))}`}
           texto={[
-            `🐛 Desparasitaciones de ${perroNombre ?? 'mi perro'} 🐾`,
+            `🐛 ${t.mpdEnviarDesparas} — ${perroNombre ?? ''} 🐾`,
             '',
-            ...desparasitaciones.map((d) => `• ${d.producto} (${d.tipo}) — ${formatFecha(d.fecha)}${d.proxima ? ` | próxima: ${formatFecha(d.proxima)}` : ''}`),
+            ...desparasitaciones.map((d) => `• ${d.producto} (${d.tipo}) — ${formatFecha(d.fecha)}${d.proxima ? ` | ${t.mpdDesparasProxima}: ${formatFecha(d.proxima)}` : ''}`),
           ].join('\n')}
           onClose={() => setShowEnviar(false)}
         />
@@ -3306,7 +3308,7 @@ function DesparasitacionesSection({
       )}
 
       {desparasitaciones.length === 0 && !agregando ? (
-        <p className="text-sm text-ink-muted">No hay desparasitaciones registradas.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinDesparas}</p>
       ) : (
         <div className="space-y-3">
           {desparasitaciones.map((d) =>
@@ -3327,7 +3329,7 @@ function DesparasitacionesSection({
                     </span>
                     {d.proxima && (
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${new Date(d.proxima) < new Date() ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
-                        {new Date(d.proxima) < new Date() ? 'Vencida' : 'Vigente'}
+                        {new Date(d.proxima) < new Date() ? t.mpdVacunaVencida : t.mpdVacunaVigente}
                       </span>
                     )}
                   </div>
@@ -3347,7 +3349,7 @@ function DesparasitacionesSection({
                   {d.veterinario && <span>{d.veterinario}</span>}
                   {d.proxima && (
                     <span className={new Date(d.proxima) < new Date() ? 'font-bold text-bad' : ''}>
-                      Próxima: {formatFecha(d.proxima)}
+                      {t.mpdDesparasProxima}: {formatFecha(d.proxima)}
                     </span>
                   )}
                 </div>
@@ -3374,6 +3376,7 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
     veterinario: inicial?.veterinario ?? '',
     notas:       inicial?.notas       ?? '',
   });
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState('');
 
@@ -3383,10 +3386,10 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.producto || !form.fecha) { setError('Producto y fecha son obligatorios.'); return; }
+    if (!form.producto || !form.fecha) { setError(t.mpdDesparasErrReq); return; }
     setSaving(true); setError('');
     try { await onSave(form); }
-    catch { setError('No se pudo guardar. Intentá de nuevo.'); setSaving(false); }
+    catch { setError(t.mpdErrGuardar); setSaving(false); }
   }
 
   const TIPOS: { v: DesparasitacionInput['tipo']; l: string }[] = [
@@ -3398,16 +3401,16 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
   return (
     <form onSubmit={handleSave} className="rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3 mb-3">
       <div>
-        <label className="label text-xs">Producto <span className="text-bad">*</span></label>
+        <label className="label text-xs">{t.mpdDesparasProductoLabel} <span className="text-bad">*</span></label>
         <input list="productos-comunes" className="field w-full text-sm"
-          placeholder="NexGard, Frontline…" value={form.producto}
+          placeholder={t.mpdDesparasProductoPlaceholder} value={form.producto}
           onChange={(e) => campo('producto', e.target.value)} required />
         <datalist id="productos-comunes">
           {PRODUCTOS_COMUNES.map((p) => <option key={p} value={p} />)}
         </datalist>
       </div>
       <div>
-        <label className="label text-xs">Tipo</label>
+        <label className="label text-xs">{t.mpdDesparasTipoLabel}</label>
         <div className="flex gap-2">
           {TIPOS.map(({ v, l }) => (
             <button key={v} type="button" onClick={() => campo('tipo', v)}
@@ -3419,23 +3422,23 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+          <label className="label text-xs">{t.mpdFechaReqLabel} <span className="text-bad">*</span></label>
           <input type="date" className="field w-full text-sm" value={form.fecha}
             onChange={(e) => campo('fecha', e.target.value)} required />
         </div>
         <div>
-          <label className="label text-xs">Próxima aplicación</label>
+          <label className="label text-xs">{t.mpdDesparasProxima}</label>
           <input type="date" className="field w-full text-sm" value={form.proxima}
             onChange={(e) => campo('proxima', e.target.value)} />
         </div>
       </div>
       <div>
-        <label className="label text-xs">Veterinario</label>
+        <label className="label text-xs">{t.mpdVetFormLabel}</label>
         <input className="field w-full text-sm" placeholder="Dr. García…" value={form.veterinario}
           onChange={(e) => campo('veterinario', e.target.value)} />
       </div>
       <div>
-        <label className="label text-xs">Notas</label>
+        <label className="label text-xs">{t.mpdNotasLabel}</label>
         <input className="field w-full text-sm" placeholder="Observaciones…" value={form.notas}
           onChange={(e) => campo('notas', e.target.value)} />
       </div>
@@ -3447,11 +3450,11 @@ function DesparasitacionForm({ inicial, onSave, onCancel }: {
       <div className="flex gap-2">
         <button type="submit" disabled={saving}
           className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? 'Guardar cambios' : 'Agregar'}</>}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {inicial ? t.mpdGuardarCambios : t.mpdAgregar}</>}
         </button>
         <button type="button" onClick={onCancel} disabled={saving}
           className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad disabled:opacity-60">
-          Cancelar
+          {t.mpdCancelar}
         </button>
       </div>
     </form>
@@ -3473,6 +3476,7 @@ function PesoSection({
   const [form,        setForm]        = useState<{ fecha: string; valor_kg: string; notas: string }>({
     fecha: new Date().toISOString().slice(0, 10), valor_kg: '', notas: '',
   });
+  const { t } = useLanguage();
   const [saving,      setSaving]      = useState(false);
   const [error,       setError]       = useState('');
   const [showEnviar,  setShowEnviar]  = useState(false);
@@ -3485,13 +3489,13 @@ function PesoSection({
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     const kg = parseFloat(form.valor_kg.replace(',', '.'));
-    if (!form.fecha || isNaN(kg) || kg <= 0) { setError('Ingresá una fecha y un peso válido.'); return; }
+    if (!form.fecha || isNaN(kg) || kg <= 0) { setError(t.mpdPesoErrReq); return; }
     setSaving(true); setError('');
     try {
       await onAgregar({ fecha: form.fecha, valor_kg: kg, notas: form.notas });
       setForm({ fecha: new Date().toISOString().slice(0, 10), valor_kg: '', notas: '' });
     } catch {
-      setError('No se pudo guardar. Intentá de nuevo.');
+      setError(t.mpdErrGuardar);
     } finally {
       setSaving(false);
     }
@@ -3501,10 +3505,10 @@ function PesoSection({
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center gap-2">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Scale className="h-4 w-4 text-brand-primary" /> Historial de peso
+          <Scale className="h-4 w-4 text-brand-primary" /> {t.mpdPesoTitle}
           {pesos.length > 0 && (
             <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">
-              {pesos.length} registro{pesos.length !== 1 ? 's' : ''}
+              {t.mpdPesoRegistros.replace('{n}', String(pesos.length))}
             </span>
           )}
         </h2>
@@ -3517,12 +3521,12 @@ function PesoSection({
             {pesos.length > 0 && (
               <button type="button" onClick={() => setShowEnviar(true)}
                 className="inline-flex items-center gap-1 rounded-xl bg-brand-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-primary/90">
-                <Send className="h-3 w-3" /> Enviar
+                <Send className="h-3 w-3" /> {t.mpdEnviar}
               </button>
             )}
             <button type="button" onClick={() => onSetAgregando(!agregando)}
               className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-              {agregando ? <X className="h-3 w-3" /> : <>+ Registrar</>}
+              {agregando ? <X className="h-3 w-3" /> : <>+ {t.mpdPesoRegistrar}</>}
             </button>
           </div>
         )}
@@ -3532,7 +3536,7 @@ function PesoSection({
       {ultimo && !agregando && (
         <div className="mb-4 flex items-center gap-4 rounded-2xl bg-brand-cream p-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Último peso</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdPesoUltimo}</p>
             <p className="mt-0.5 font-display text-3xl font-black text-ink">
               {ultimo.valor_kg} <span className="text-base font-bold text-ink-muted">kg</span>
             </p>
@@ -3543,7 +3547,7 @@ function PesoSection({
             const color = diff > 0 ? 'text-bad' : diff < 0 ? 'text-good' : 'text-ink-muted';
             return (
               <div className={`ml-auto text-right ${color}`}>
-                <p className="text-xs font-bold">vs anterior</p>
+                <p className="text-xs font-bold">{t.mpdPesoVsAnterior}</p>
                 <p className="font-bold">{diff > 0 ? '+' : ''}{diff.toFixed(2)} kg</p>
               </div>
             );
@@ -3556,20 +3560,20 @@ function PesoSection({
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label text-xs">Fecha <span className="text-bad">*</span></label>
+              <label className="label text-xs">{t.mpdFechaReqLabel} <span className="text-bad">*</span></label>
               <input type="date" className="field w-full text-sm" value={form.fecha}
                 max={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setForm((f) => ({ ...f, fecha: e.target.value }))} required />
             </div>
             <div>
-              <label className="label text-xs">Peso (kg) <span className="text-bad">*</span></label>
+              <label className="label text-xs">{t.mpdPesoKgLabel} <span className="text-bad">*</span></label>
               <input className="field w-full text-sm" placeholder="Ej: 12.5" value={form.valor_kg}
                 inputMode="decimal"
                 onChange={(e) => setForm((f) => ({ ...f, valor_kg: e.target.value }))} required />
             </div>
           </div>
           <div>
-            <label className="label text-xs">Notas</label>
+            <label className="label text-xs">{t.mpdNotasLabel}</label>
             <input className="field w-full text-sm" placeholder="Ej: control de rutina" value={form.notas}
               onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))} />
           </div>
@@ -3581,11 +3585,11 @@ function PesoSection({
           <div className="flex gap-2">
             <button type="submit" disabled={saving}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Guardar</>}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> {t.mpdGuardar}</>}
             </button>
             <button type="button" onClick={() => { onSetAgregando(false); setError(''); }}
               className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/40 hover:text-bad">
-              Cancelar
+              {t.mpdCancelar}
             </button>
           </div>
         </form>
@@ -3608,7 +3612,7 @@ function PesoSection({
           <div className="mb-4 rounded-2xl bg-brand-cream p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <TrendingUp className="h-3.5 w-3.5 text-brand-primary" />
-              <span className="text-xs font-bold text-ink-muted">Evolución</span>
+              <span className="text-xs font-bold text-ink-muted">{t.mpdPesoEvolucion}</span>
             </div>
             <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 48 }}>
               <polyline points={pts} fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -3628,7 +3632,7 @@ function PesoSection({
 
       {/* Historial visual */}
       {pesos.length === 0 && !agregando ? (
-        <p className="text-sm text-ink-muted">No hay registros de peso.</p>
+        <p className="text-sm text-ink-muted">{t.mpdSinPeso}</p>
       ) : pesos.length > 0 ? (
         <div className="space-y-2">
           {pesos.map((p) => (
@@ -3659,13 +3663,13 @@ function PesoSection({
       {/* Modal enviar historial de peso */}
       {showEnviar && (() => {
         const texto = [
-          `⚖️ Historial de peso de ${perroNombre ?? 'mi perro'} 🐾`,
+          `⚖️ ${t.mpdEnviarPeso} — ${perroNombre ?? ''} 🐾`,
           '',
           ...pesos.map((p) => `📅 ${formatFecha(p.fecha)} — ${p.valor_kg} kg${p.notas ? ` (${p.notas})` : ''}`),
         ].join('\n');
 
         function enviarEmail() {
-          const s = encodeURIComponent(`Historial de peso de ${perroNombre ?? 'mi perro'}`);
+          const s = encodeURIComponent(`${t.mpdEnviarPeso} — ${perroNombre ?? ''}`);
           const b = encodeURIComponent(texto);
           window.open(`mailto:${encodeURIComponent(emailDest.trim())}?subject=${s}&body=${b}`, '_blank');
         }
@@ -3684,8 +3688,8 @@ function PesoSection({
             <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-8 pt-7 shadow-2xl sm:rounded-[32px]">
               <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
               <div className="mb-5">
-                <h2 className="font-display text-xl font-black text-ink">Enviar historial de peso</h2>
-                <p className="mt-1 text-sm text-ink-muted">{perroNombre} · {pesos.length} registro{pesos.length !== 1 ? 's' : ''}</p>
+                <h2 className="font-display text-xl font-black text-ink">{t.mpdEnviarPeso}</h2>
+                <p className="mt-1 text-sm text-ink-muted">{perroNombre} · {t.mpdPesoRegistros.replace('{n}', String(pesos.length))}</p>
               </div>
               {/* Copiar */}
               <button type="button" onClick={copiar}
@@ -3696,7 +3700,7 @@ function PesoSection({
               {/* Email */}
               <div className="mb-3">
                 <label className="label mb-1 flex items-center gap-1.5 text-xs">
-                  <Mail className="h-3.5 w-3.5 text-brand-primary" /> Enviar por email
+                  <Mail className="h-3.5 w-3.5 text-brand-primary" /> {t.mpdEnviarEmail}
                 </label>
                 <div className="flex gap-2">
                   <input type="email" placeholder="destinatario@email.com" value={emailDest}
@@ -3704,7 +3708,7 @@ function PesoSection({
                     className="field flex-1 text-sm" />
                   <button type="button" onClick={enviarEmail} disabled={!emailDest.trim()}
                     className="rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-primary/90 disabled:opacity-40">
-                    Enviar
+                    {t.mpdEnviar}
                   </button>
                 </div>
               </div>
@@ -3715,11 +3719,11 @@ function PesoSection({
               </div>
               <button type="button" onClick={enviarWA}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:bg-[#1ebe5d]">
-                <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+                <MessageCircle className="h-4 w-4" /> {t.mpdEnviarWA}
               </button>
               <button type="button" onClick={() => setShowEnviar(false)}
                 className="mt-3 w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-black/20">
-                Cancelar
+                {t.mpdCancelar}
               </button>
             </div>
           </div>
@@ -3736,6 +3740,7 @@ function VisitasVetSection({ visitas, onAgregar, onEliminar, locked }: {
   onEliminar: (id: string) => Promise<void>;
   locked?:    boolean;
 }) {
+  const { t } = useLanguage();
   const [agregando, setAgregando] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -3744,10 +3749,10 @@ function VisitasVetSection({ visitas, onAgregar, onEliminar, locked }: {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.fecha || !form.motivo.trim()) { setError('Fecha y motivo son obligatorios.'); return; }
+    if (!form.fecha || !form.motivo.trim()) { setError(t.mpdVisitaErrReq); return; }
     setSaving(true); setError('');
     try { await onAgregar(form); setForm(empty); setAgregando(false); }
-    catch { setError('No se pudo guardar.'); }
+    catch { setError(t.mpdErrGuardar); }
     finally { setSaving(false); }
   }
 
@@ -3755,30 +3760,30 @@ function VisitasVetSection({ visitas, onAgregar, onEliminar, locked }: {
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <ClipboardList className="h-4 w-4 text-brand-primary" /> Visitas al veterinario
+          <ClipboardList className="h-4 w-4 text-brand-primary" /> {t.mpdVisitasTitle}
           {visitas.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{visitas.length}</span>}
         </h2>
         {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20"><Sparkles className="h-3 w-3" /> VecindogPro</Link>
-          : <button type="button" onClick={() => setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ Registrar</>}</button>}
+          : <button type="button" onClick={() => setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ {t.mpdRegistrar}</>}</button>}
       </div>
       {agregando && (
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label text-xs">Fecha *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
-            <div><label className="label text-xs">Veterinario</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdFechaReqLabel} *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
+            <div><label className="label text-xs">{t.mpdVetFormLabel}</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
           </div>
-          <div><label className="label text-xs">Motivo *</label><input className="field w-full text-sm" placeholder="Control de rutina, fiebre, etc." value={form.motivo} onChange={(e)=>setForm(f=>({...f,motivo:e.target.value}))} required /></div>
-          <div><label className="label text-xs">Diagnóstico</label><input className="field w-full text-sm" placeholder="Gastroenteritis, dermatitis, etc." value={form.diagnostico} onChange={(e)=>setForm(f=>({...f,diagnostico:e.target.value}))} /></div>
-          <div><label className="label text-xs">Tratamiento</label><input className="field w-full text-sm" placeholder="Antibiótico 5 días, reposo, etc." value={form.tratamiento} onChange={(e)=>setForm(f=>({...f,tratamiento:e.target.value}))} /></div>
-          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Observaciones adicionales" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdVisitaMotivo} *</label><input className="field w-full text-sm" placeholder={t.mpdVisitaMotivoPlaceholder} value={form.motivo} onChange={(e)=>setForm(f=>({...f,motivo:e.target.value}))} required /></div>
+          <div><label className="label text-xs">{t.mpdVisitaDiagnostico}</label><input className="field w-full text-sm" placeholder={t.mpdVisitaDiagPlaceholder} value={form.diagnostico} onChange={(e)=>setForm(f=>({...f,diagnostico:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdVisitaTratamiento}</label><input className="field w-full text-sm" placeholder={t.mpdVisitaTratPlaceholder} value={form.tratamiento} onChange={(e)=>setForm(f=>({...f,tratamiento:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdNotasLabel}</label><input className="field w-full text-sm" placeholder="Observaciones adicionales" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
           {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving ? <Loader2 className="h-4 w-4 animate-spin"/> : <><Check className="h-4 w-4"/> Guardar</>}</button>
-            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving ? <Loader2 className="h-4 w-4 animate-spin"/> : <><Check className="h-4 w-4"/> {t.mpdGuardar}</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">{t.mpdCancelar}</button>
           </div>
         </form>
       )}
-      {visitas.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay visitas registradas.</p>
+      {visitas.length === 0 && !agregando ? <p className="text-sm text-ink-muted">{t.mpdSinVisitas}</p>
         : <div className="space-y-2">{visitas.map((v) => (
           <div key={v.id} className="rounded-2xl bg-brand-cream px-4 py-3">
             <div className="flex items-start justify-between gap-2">
@@ -3807,6 +3812,7 @@ function ProcedimientosSection({ procedimientos, onAgregar, onEliminar, locked }
   onEliminar:     (id: string) => Promise<void>;
   locked?:        boolean;
 }) {
+  const { t } = useLanguage();
   const [agregando, setAgregando] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -3815,10 +3821,10 @@ function ProcedimientosSection({ procedimientos, onAgregar, onEliminar, locked }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.fecha || !form.descripcion.trim()) { setError('Fecha y descripción son obligatorias.'); return; }
+    if (!form.fecha || !form.descripcion.trim()) { setError(t.mpdProcErrReq); return; }
     setSaving(true); setError('');
     try { await onAgregar(form); setForm(empty); setAgregando(false); }
-    catch { setError('No se pudo guardar.'); }
+    catch { setError(t.mpdErrGuardar); }
     finally { setSaving(false); }
   }
 
@@ -3826,33 +3832,33 @@ function ProcedimientosSection({ procedimientos, onAgregar, onEliminar, locked }
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <StethoscopeIcon className="h-4 w-4 text-brand-primary" /> Procedimientos y cirugías
+          <StethoscopeIcon className="h-4 w-4 text-brand-primary" /> {t.mpdProcedimientosTitle}
           {procedimientos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{procedimientos.length}</span>}
         </h2>
         {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
-          : <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ Registrar</>}</button>}
+          : <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando ? <X className="h-3 w-3"/> : <>+ {t.mpdRegistrar}</>}</button>}
       </div>
       {agregando && (
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label text-xs">Fecha *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
-            <div><label className="label text-xs">Tipo</label>
+            <div><label className="label text-xs">{t.mpdFechaReqLabel} *</label><input type="date" className="field w-full text-sm" value={form.fecha} onChange={(e)=>setForm(f=>({...f,fecha:e.target.value}))} required /></div>
+            <div><label className="label text-xs">{t.mpdDesparasTipoLabel}</label>
               <select className="field w-full text-sm" value={form.tipo} onChange={(e)=>setForm(f=>({...f,tipo:e.target.value}))}>
-                {TIPOS_PROCEDIMIENTO.map((t)=><option key={t}>{t}</option>)}
+                {TIPOS_PROCEDIMIENTO.map((tp)=><option key={tp}>{tp}</option>)}
               </select>
             </div>
           </div>
-          <div><label className="label text-xs">Descripción *</label><input className="field w-full text-sm" placeholder="Castración, limpieza dental, etc." value={form.descripcion} onChange={(e)=>setForm(f=>({...f,descripcion:e.target.value}))} required /></div>
-          <div><label className="label text-xs">Veterinario / Clínica</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
-          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Observaciones" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdProcDescLabel} *</label><input className="field w-full text-sm" placeholder={t.mpdProcDescPlaceholder} value={form.descripcion} onChange={(e)=>setForm(f=>({...f,descripcion:e.target.value}))} required /></div>
+          <div><label className="label text-xs">{t.mpdProcVetLabel}</label><input className="field w-full text-sm" placeholder="Dr. García" value={form.vet_nombre} onChange={(e)=>setForm(f=>({...f,vet_nombre:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdNotasLabel}</label><input className="field w-full text-sm" placeholder="Observaciones" value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
           {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/>Guardar</>}</button>
-            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/>{t.mpdGuardar}</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">{t.mpdCancelar}</button>
           </div>
         </form>
       )}
-      {procedimientos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay procedimientos registrados.</p>
+      {procedimientos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">{t.mpdSinProcedimientos}</p>
         : <div className="space-y-2">{procedimientos.map((p) => (
           <div key={p.id} className="flex items-start gap-3 rounded-2xl bg-brand-cream px-4 py-3">
             <div className="flex-1 min-w-0">
@@ -3877,6 +3883,7 @@ function DietaSection({ perro, onGuardar, locked }: {
   onGuardar: (d: { dieta_marca: string; dieta_cantidad: string; dieta_frecuencia: string; dieta_notas: string }) => Promise<void>;
   locked?:   boolean;
 }) {
+  const { t } = useLanguage();
   const [editando, setEditando] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ dieta_marca: perro.dieta_marca??'', dieta_cantidad: perro.dieta_cantidad??'', dieta_frecuencia: perro.dieta_frecuencia??'', dieta_notas: perro.dieta_notas??'' });
@@ -3895,32 +3902,32 @@ function DietaSection({ perro, onGuardar, locked }: {
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <UtensilsCrossed className="h-4 w-4 text-brand-primary" /> Dieta y alimentación
+          <UtensilsCrossed className="h-4 w-4 text-brand-primary" /> {t.mpdDietaTitle}
         </h2>
         {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
-          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> Editar</>}</button>}
+          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> {t.mpdEditar}</>}</button>}
       </div>
       {editando ? (
         <form onSubmit={handleSave} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label text-xs">Marca / alimento</label><input className="field w-full text-sm" placeholder="Royal Canin, Purina, etc." value={form.dieta_marca} onChange={(e)=>setForm(f=>({...f,dieta_marca:e.target.value}))} /></div>
-            <div><label className="label text-xs">Cantidad</label><input className="field w-full text-sm" placeholder="250g por comida" value={form.dieta_cantidad} onChange={(e)=>setForm(f=>({...f,dieta_cantidad:e.target.value}))} /></div>
-            <div><label className="label text-xs">Frecuencia</label><input className="field w-full text-sm" placeholder="2 veces al día" value={form.dieta_frecuencia} onChange={(e)=>setForm(f=>({...f,dieta_frecuencia:e.target.value}))} /></div>
-            <div><label className="label text-xs">Notas / restricciones</label><input className="field w-full text-sm" placeholder="Sin pollo, bajo en sodio..." value={form.dieta_notas} onChange={(e)=>setForm(f=>({...f,dieta_notas:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdDietaAlimentoLabel}</label><input className="field w-full text-sm" placeholder={t.mpdDietaMarcaPlaceholder} value={form.dieta_marca} onChange={(e)=>setForm(f=>({...f,dieta_marca:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdDietaCantidad}</label><input className="field w-full text-sm" placeholder={t.mpdDietaCantidadPlaceholder} value={form.dieta_cantidad} onChange={(e)=>setForm(f=>({...f,dieta_cantidad:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdDietaFrecuencia}</label><input className="field w-full text-sm" placeholder={t.mpdDietaFrecuenciaPlaceholder} value={form.dieta_frecuencia} onChange={(e)=>setForm(f=>({...f,dieta_frecuencia:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdDietaNotasLabel}</label><input className="field w-full text-sm" placeholder={t.mpdDietaNotasPlaceholder} value={form.dieta_notas} onChange={(e)=>setForm(f=>({...f,dieta_notas:e.target.value}))} /></div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
-            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">Cancelar</button>
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> {t.mpdGuardar}</>}</button>
+            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">{t.mpdCancelar}</button>
           </div>
         </form>
       ) : tieneDieta ? (
         <div className="grid grid-cols-2 gap-3">
-          {perro.dieta_marca      && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Alimento</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_marca}</p></div>}
-          {perro.dieta_cantidad   && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Cantidad</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_cantidad}</p></div>}
-          {perro.dieta_frecuencia && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Frecuencia</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_frecuencia}</p></div>}
-          {perro.dieta_notas      && <div className="rounded-2xl bg-brand-cream p-3 col-span-2"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Restricciones / notas</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_notas}</p></div>}
+          {perro.dieta_marca      && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdDietaAlimentoLabel}</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_marca}</p></div>}
+          {perro.dieta_cantidad   && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdDietaCantidad}</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_cantidad}</p></div>}
+          {perro.dieta_frecuencia && <div className="rounded-2xl bg-brand-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdDietaFrecuencia}</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_frecuencia}</p></div>}
+          {perro.dieta_notas      && <div className="rounded-2xl bg-brand-cream p-3 col-span-2"><p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdDietaRestriccionesLabel}</p><p className="text-sm font-semibold text-ink mt-0.5">{perro.dieta_notas}</p></div>}
         </div>
-      ) : <p className="text-sm text-ink-muted">No hay información de dieta cargada.</p>}
+      ) : <p className="text-sm text-ink-muted">{t.mpdSinDieta}</p>}
     </div>
   );
 }
@@ -3932,6 +3939,7 @@ function GroomingSection({ perroId, grooming, onGuardar, locked }: {
   onGuardar: (d: Omit<Grooming,'id'|'created_at'>) => Promise<void>;
   locked?:   boolean;
 }) {
+  const { t } = useLanguage();
   const [editando, setEditando] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ultima_fecha: new Date().toISOString().slice(0,10), frecuencia_dias: 30, tipo: 'ambos' as TipoGrooming, notas:'' });
@@ -3962,54 +3970,54 @@ function GroomingSection({ perroId, grooming, onGuardar, locked }: {
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Scissors className="h-4 w-4 text-brand-primary" /> Baño y peluquería
+          <Scissors className="h-4 w-4 text-brand-primary" /> {t.mpdGroomingTitle}
         </h2>
         {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
-          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> {grooming?'Editar':'Configurar'}</>}</button>}
+          : <button type="button" onClick={()=>setEditando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{editando?<X className="h-3 w-3"/>:<><Pencil className="h-3 w-3"/> {grooming?t.mpdEditar:t.mpdGroomingConfigurar}</>}</button>}
       </div>
       {editando ? (
         <form onSubmit={handleSave} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label text-xs">Último baño/peluquería</label><input type="date" className="field w-full text-sm" value={form.ultima_fecha} onChange={(e)=>setForm(f=>({...f,ultima_fecha:e.target.value}))} /></div>
-            <div><label className="label text-xs">Cada cuántos días</label><input type="number" min={1} max={365} className="field w-full text-sm" value={form.frecuencia_dias} onChange={(e)=>setForm(f=>({...f,frecuencia_dias:+e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdGroomingUltimoLabel}</label><input type="date" className="field w-full text-sm" value={form.ultima_fecha} onChange={(e)=>setForm(f=>({...f,ultima_fecha:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdGroomingCadaCuantos}</label><input type="number" min={1} max={365} className="field w-full text-sm" value={form.frecuencia_dias} onChange={(e)=>setForm(f=>({...f,frecuencia_dias:+e.target.value}))} /></div>
           </div>
           <div>
-            <label className="label text-xs">Tipo</label>
-            <div className="flex gap-2 mt-1">{TIPOS.map((t)=>(
-              <button key={t} type="button" onClick={()=>setForm(f=>({...f,tipo:t}))}
-                className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${form.tipo===t?'bg-brand-primary text-white':'bg-brand-cream text-ink-muted hover:bg-brand-primary/10'}`}>
-                {t}
+            <label className="label text-xs">{t.mpdDesparasTipoLabel}</label>
+            <div className="flex gap-2 mt-1">{TIPOS.map((tp)=>(
+              <button key={tp} type="button" onClick={()=>setForm(f=>({...f,tipo:tp}))}
+                className={`flex-1 rounded-xl py-2 text-xs font-bold capitalize transition ${form.tipo===tp?'bg-brand-primary text-white':'bg-brand-cream text-ink-muted hover:bg-brand-primary/10'}`}>
+                {tp}
               </button>
             ))}</div>
           </div>
-          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Peluquería Canina Mia, corte de pelo..." value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdNotasLabel}</label><input className="field w-full text-sm" placeholder="Peluquería Canina Mia, corte de pelo..." value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
-            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">Cancelar</button>
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> {t.mpdGuardar}</>}</button>
+            <button type="button" onClick={()=>setEditando(false)} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted">{t.mpdCancelar}</button>
           </div>
         </form>
       ) : grooming ? (
         <div className="space-y-3">
           <div className="flex gap-3">
             <div className="flex-1 rounded-2xl bg-brand-cream p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Último</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdGroomingUltimo}</p>
               <p className="text-sm font-semibold text-ink mt-0.5">{formatFecha(grooming.ultima_fecha)}</p>
             </div>
             <div className={`flex-1 rounded-2xl p-3 ${diasRestantes !== null && diasRestantes <= 0 ? 'bg-bad/10' : diasRestantes !== null && diasRestantes <= 5 ? 'bg-amber-50' : 'bg-brand-cream'}`}>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">Próximo</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{t.mpdGroomingProximoLabel}</p>
               <p className={`text-sm font-semibold mt-0.5 ${diasRestantes !== null && diasRestantes <= 0 ? 'text-bad' : 'text-ink'}`}>
                 {proximaFecha ? formatFecha(proximaFecha) : '—'}
-                {diasRestantes !== null && <span className="ml-1 text-xs">({diasRestantes <= 0 ? 'Vencido' : `en ${diasRestantes}d`})</span>}
+                {diasRestantes !== null && <span className="ml-1 text-xs">({diasRestantes <= 0 ? t.mpdVacunaVencida : `en ${diasRestantes}d`})</span>}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-ink-muted">
             <Scissors className="h-3.5 w-3.5 shrink-0 text-brand-primary/60" />
-            <span className="capitalize">{grooming.tipo}</span> · cada {grooming.frecuencia_dias} días
+            <span className="capitalize">{grooming.tipo}</span> · {t.mpdGroomingCadaCuantos.toLowerCase()} {grooming.frecuencia_dias}
             {grooming.notas && <span>· {grooming.notas}</span>}
           </div>
         </div>
-      ) : <p className="text-sm text-ink-muted">Configurá el recordatorio de baño y peluquería.</p>}
+      ) : <p className="text-sm text-ink-muted">{t.mpdSinGrooming}</p>}
     </div>
   );
 }
@@ -4021,6 +4029,7 @@ function GaleriaSection({ fotos, onAgregar, onEliminar, locked }: {
   onEliminar: (id: string) => Promise<void>;
   locked?:    boolean;
 }) {
+  const { t } = useLanguage();
   const fileRef = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
 
@@ -4037,14 +4046,14 @@ function GaleriaSection({ fotos, onAgregar, onEliminar, locked }: {
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <Camera className="h-4 w-4 text-brand-primary" /> Galería de fotos
+          <Camera className="h-4 w-4 text-brand-primary" /> {t.mpdGaleriaTitle}
           {fotos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{fotos.length}</span>}
         </h2>
         {locked ? <Link href="/planes" className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20"><Sparkles className="h-3 w-3"/> VecindogPro</Link>
-          : <button type="button" onClick={()=>fileRef.current?.click()} disabled={subiendo} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20 disabled:opacity-60">{subiendo?<Loader2 className="h-3 w-3 animate-spin"/>:<><ImageIcon className="h-3 w-3"/> Agregar foto</>}</button>}
+          : <button type="button" onClick={()=>fileRef.current?.click()} disabled={subiendo} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20 disabled:opacity-60">{subiendo?<Loader2 className="h-3 w-3 animate-spin"/>:<><ImageIcon className="h-3 w-3"/> {t.mpdAgregarFoto}</>}</button>}
       </div>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      {fotos.length === 0 ? <p className="text-sm text-ink-muted">No hay fotos en la galería.</p>
+      {fotos.length === 0 ? <p className="text-sm text-ink-muted">{t.mpdSinFotos}</p>
         : <div className="grid grid-cols-3 gap-2">{fotos.map((f) => (
           <div key={f.id} className="relative group aspect-square">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -4069,6 +4078,7 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
   onAgregar:  (i: ContactoInput) => Promise<void>;
   onEliminar: (id: string) => Promise<void>;
 }) {
+  const { t } = useLanguage();
   const [agregando, setAgregando] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -4077,10 +4087,10 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.nombre.trim() || !form.telefono.trim()) { setError('Nombre y teléfono son obligatorios.'); return; }
+    if (!form.nombre.trim() || !form.telefono.trim()) { setError(t.mpdContactoErrReq); return; }
     setSaving(true); setError('');
     try { await onAgregar(form); setForm(empty); setAgregando(false); }
-    catch { setError('No se pudo guardar.'); }
+    catch { setError(t.mpdErrGuardar); }
     finally { setSaving(false); }
   }
 
@@ -4088,27 +4098,27 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
     <div className="card p-5 mb-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-base font-extrabold text-ink">
-          <PhoneCall className="h-4 w-4 text-brand-primary" /> Contactos de emergencia
+          <PhoneCall className="h-4 w-4 text-brand-primary" /> {t.mpdContactosTitle}
           {contactos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{contactos.length}</span>}
         </h2>
-        <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando?<X className="h-3 w-3"/>:<>+ Agregar</>}</button>
+        <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando?<X className="h-3 w-3"/>:<>+ {t.mpdAgregar}</>}</button>
       </div>
       {agregando && (
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label text-xs">Nombre *</label><input className="field w-full text-sm" placeholder="María García" value={form.nombre} onChange={(e)=>setForm(f=>({...f,nombre:e.target.value}))} required /></div>
-            <div><label className="label text-xs">Relación</label><input className="field w-full text-sm" placeholder="Paseador, familiar, etc." value={form.relacion} onChange={(e)=>setForm(f=>({...f,relacion:e.target.value}))} /></div>
+            <div><label className="label text-xs">{t.mpdNombreLabel} *</label><input className="field w-full text-sm" placeholder="María García" value={form.nombre} onChange={(e)=>setForm(f=>({...f,nombre:e.target.value}))} required /></div>
+            <div><label className="label text-xs">{t.mpdContactoRelacion}</label><input className="field w-full text-sm" placeholder={t.mpdContactoRelacionPlaceholder} value={form.relacion} onChange={(e)=>setForm(f=>({...f,relacion:e.target.value}))} /></div>
           </div>
-          <div><label className="label text-xs">Teléfono *</label><input type="tel" className="field w-full text-sm" placeholder="+54 9 11 1234-5678" value={form.telefono} onChange={(e)=>setForm(f=>({...f,telefono:e.target.value}))} required /></div>
-          <div><label className="label text-xs">Notas</label><input className="field w-full text-sm" placeholder="Solo para emergencias, etc." value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
+          <div><label className="label text-xs">{t.mpdVetTelefonoLabel} *</label><input type="tel" className="field w-full text-sm" placeholder="+54 9 11 1234-5678" value={form.telefono} onChange={(e)=>setForm(f=>({...f,telefono:e.target.value}))} required /></div>
+          <div><label className="label text-xs">{t.mpdNotasLabel}</label><input className="field w-full text-sm" placeholder={t.mpdContactoNotasPlaceholder} value={form.notas} onChange={(e)=>setForm(f=>({...f,notas:e.target.value}))} /></div>
           {error && <p className="flex items-center gap-1.5 text-xs font-semibold text-bad"><AlertCircle className="h-3.5 w-3.5 shrink-0"/>{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> Guardar</>}</button>
-            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">Cancelar</button>
+            <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving?<Loader2 className="h-4 w-4 animate-spin"/>:<><Check className="h-4 w-4"/> {t.mpdGuardar}</>}</button>
+            <button type="button" onClick={()=>{setAgregando(false);setError('');}} className="rounded-xl border-2 border-black/10 px-4 py-2.5 text-sm font-bold text-ink-muted hover:border-bad/40 hover:text-bad">{t.mpdCancelar}</button>
           </div>
         </form>
       )}
-      {contactos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">No hay contactos de emergencia cargados.</p>
+      {contactos.length === 0 && !agregando ? <p className="text-sm text-ink-muted">{t.mpdSinContactos}</p>
         : <div className="space-y-2">{contactos.map((c) => (
           <div key={c.id} className="flex items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
@@ -4130,14 +4140,14 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
   );
 }
 
-function calcularEdad(fechaNac: string): string {
+function calcularEdad(fechaNac: string, t: { mpdCachorro: string; mpdMes: string; mpdMeses: string; mpdAnio: string; mpdAnios: string }): string {
   const hoy   = new Date();
   const nac   = new Date(fechaNac);
   const meses = (hoy.getFullYear() - nac.getFullYear()) * 12 + (hoy.getMonth() - nac.getMonth());
-  if (meses < 1)  return 'Cachorro';
-  if (meses < 12) return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+  if (meses < 1)  return t.mpdCachorro;
+  if (meses < 12) return `${meses} ${meses === 1 ? t.mpdMes : t.mpdMeses}`;
   const a = Math.floor(meses / 12);
-  return `${a} ${a === 1 ? 'año' : 'años'}`;
+  return `${a} ${a === 1 ? t.mpdAnio : t.mpdAnios}`;
 }
 
 function formatFecha(iso: string): string {

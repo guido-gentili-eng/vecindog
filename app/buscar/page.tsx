@@ -110,7 +110,7 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
 
   if (f.sexo !== 'ns' && !excluir) {
     max += 10;
-    const sexoPost = (post as unknown as Record<string, string | undefined>).sexo;
+    const sexoPost = post.sexo ?? undefined;
     if (sexoPost) {
       if (norm(sexoPost) === f.sexo) {
         score += 10;

@@ -28,6 +28,7 @@ export interface Post {
   estado:      'activo' | 'resuelto';
   lat:         number | null;
   lng:         number | null;
+  sexo?:                  string | null;
   situacion_transito?:    'tengo' | 'calle' | null;
   fecha_limite_transito?: string | null;
 }

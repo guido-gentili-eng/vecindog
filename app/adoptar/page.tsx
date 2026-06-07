@@ -174,7 +174,7 @@ export default function AdoptarPage() {
     const f = form;
     if (!f.nombre.trim())    return t.adpErrNombre;
     if (!f.dni.trim())       return t.adpErrDni;
-    if (!f.edad.trim())      return t.adpErrEdad;
+    if (!f.edad.trim() || isNaN(parseInt(f.edad))) return t.adpErrEdad;
     if (!f.telefono.trim())  return t.adpErrTelefono;
     if (!f.email.trim())     return t.adpErrEmail;
     if (!f.direccion.trim()) return t.adpErrDireccion;

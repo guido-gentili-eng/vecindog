@@ -362,11 +362,12 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
     setLoading(true); setError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Sin sesión');
       const res = await fetch('/api/novedades', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session!.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ ad_id: adId, titulo, texto }),
       });
@@ -382,9 +383,10 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
 
   async function handleEliminar(id: string) {
     const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
     await fetch(`/api/novedades?id=${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${session!.access_token}` },
+      headers: { Authorization: `Bearer ${session.access_token}` },
     });
     onRefresh();
   }
@@ -493,7 +495,11 @@ function EditarComercioModal({
     const file = e.target.files?.[0];
     if (!file) return;
     setFotoFile(file);
-    setFotoPreview(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setFotoPreview((prev) => {
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+      return url;
+    });
   }
 
   async function handleGuardar() {

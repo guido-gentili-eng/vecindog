@@ -496,6 +496,94 @@ export type Translations = {
   pubReportIncorrecto: string;
   pubReportDuplicado: string;
   pubReportOtro: string;
+  // ── Mi Perfil page ───────────────────────────────────
+  mipChip: string;
+  mipObediencia: string;
+  mipSosTitle: string;
+  mipSosSub: string;
+  mipDatosTitle: string;
+  mipEditar: string;
+  mipNombrePlaceholder: string;
+  mipApellidoPlaceholder: string;
+  mipTelefonoPlaceholder: string;
+  mipCiudadSelect: string;
+  mipProvinciaPlaceholder: string;
+  mipPaisPlaceholder: string;
+  mipBioLabel: string;
+  mipBioPlaceholder: string;
+  mipInstagramFacebook: string;
+  mipRadioLabel: string;
+  mipRadioHint: string;
+  mipGuardar: string;
+  mipLabelEmail: string;
+  mipLabelNombre: string;
+  mipLabelTelefono: string;
+  mipLabelCiudad: string;
+  mipLabelProvincia: string;
+  mipLabelPais: string;
+  mipLabelDireccion: string;
+  mipLabelSobreMi: string;
+  mipLabelRadio: string;
+  mipLabelRedes: string;
+  mipAgregar: string;
+  mipLinkEnviado: string;
+  mipCambiar: string;
+  mipVacunasTitle: string;
+  mipPendiente: string;
+  mipPendientes: string;
+  mipVacunaVencida: string;
+  mipDias: string;
+  mipHoy: string;
+  mipEn: string;
+  mipVacunaVer: string;
+  mipAvisosTitle: string;
+  mipVerTodos: string;
+  mipAvisosPublicados: string;
+  mipSinLimite: string;
+  mipDe5Avisos: string;
+  mipPasatePro: string;
+  mipDisponible: string;
+  mipDisponibles: string;
+  mipHistorialTitle: string;
+  mipSinResueltos: string;
+  mipSinNombre: string;
+  mipMisPerrosTitle: string;
+  mipAgregarDog: string;
+  mipSinPerros: string;
+  mipRegistrarPerro: string;
+  mipSuccessPerfil: string;
+  mipErrFotoSize: string;
+  mipErrFoto: string;
+  mipNotAuth: string;
+  mipIrInicio: string;
+  mipCatPerdido: string;
+  mipCatEncontrado: string;
+  mipCatAdopcion: string;
+  mipCatTransito: string;
+  mipCatBuscoCuidador: string;
+  mipCatCuidadorDisp: string;
+  mipQrExpires: string;
+  mipQrRenews: string;
+  mipQrDiscounts: string;
+  mipSosModalTitle: string;
+  mipSosModalSub: string;
+  mipSosSinPerros: string;
+  mipSosRegistrar: string;
+  mipSosSinPerrosSuffix: string;
+  mipSosCualPerro: string;
+  mipSosSinDesc: string;
+  mipSosEnviando: string;
+  mipSosAlertar: string;
+  mipSosSoloPublicar: string;
+  mipSosErr: string;
+  mipSosEnviado: string;
+  mipSosAmigosPrefix: string;
+  mipSosAmigo: string;
+  mipSosAmigos: string;
+  mipSosAmigosSuffix: string;
+  mipSosSinAmigos: string;
+  mipSosPublicar: string;
+  mipLabelContrasena: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -992,6 +1080,94 @@ const translations: Record<Lang, Translations> = {
     pubReportIncorrecto: 'Información incorrecta',
     pubReportDuplicado: 'Duplicado',
     pubReportOtro: 'Otro',
+    // Mi Perfil
+    mipChip: 'Mi perfil',
+    mipObediencia: 'Obediencia',
+    mipSosTitle: '🚨 Perro perdido — alertar ahora',
+    mipSosSub: 'Notificá a tus amigos y publicá el aviso de emergencia.',
+    mipDatosTitle: 'Datos personales',
+    mipEditar: 'Editar',
+    mipNombrePlaceholder: 'Nombre',
+    mipApellidoPlaceholder: 'Apellido',
+    mipTelefonoPlaceholder: 'Teléfono',
+    mipCiudadSelect: 'Seleccioná tu ciudad',
+    mipProvinciaPlaceholder: 'Provincia',
+    mipPaisPlaceholder: 'País',
+    mipBioLabel: 'Descripción personal',
+    mipBioPlaceholder: 'Contá algo sobre vos: experiencia con perros, disponibilidad, patio…',
+    mipInstagramFacebook: 'Instagram y Facebook',
+    mipRadioLabel: 'Radio de alertas de perros perdidos',
+    mipRadioHint: 'Te avisamos cuando hay un perro perdido en este radio desde tu casa.',
+    mipGuardar: 'Guardar cambios',
+    mipLabelEmail: 'Email',
+    mipLabelNombre: 'Nombre',
+    mipLabelTelefono: 'Teléfono',
+    mipLabelCiudad: 'Ciudad',
+    mipLabelProvincia: 'Provincia',
+    mipLabelPais: 'País',
+    mipLabelDireccion: 'Dirección',
+    mipLabelSobreMi: 'Sobre mí',
+    mipLabelRadio: 'Radio alertas',
+    mipLabelRedes: 'Redes sociales',
+    mipAgregar: '+ Agregar',
+    mipLinkEnviado: 'Link enviado',
+    mipCambiar: 'Cambiar',
+    mipVacunasTitle: 'Próximas vacunas',
+    mipPendiente: 'pendiente',
+    mipPendientes: 'pendientes',
+    mipVacunaVencida: 'Vencida hace',
+    mipDias: 'días',
+    mipHoy: 'Hoy',
+    mipEn: 'En',
+    mipVacunaVer: 'Ver →',
+    mipAvisosTitle: 'Mis avisos activos',
+    mipVerTodos: 'Ver todos →',
+    mipAvisosPublicados: 'avisos publicados',
+    mipSinLimite: 'Sin límite',
+    mipDe5Avisos: '/ 5 avisos',
+    mipPasatePro: 'Pasate a Pro',
+    mipDisponible: 'disponible',
+    mipDisponibles: 'disponibles',
+    mipHistorialTitle: 'Historial de avisos resueltos',
+    mipSinResueltos: 'Todavía no tenés avisos resueltos.',
+    mipSinNombre: 'Sin nombre',
+    mipMisPerrosTitle: 'Mis perros',
+    mipAgregarDog: 'Agregar',
+    mipSinPerros: 'Todavía no registraste ningún perro.',
+    mipRegistrarPerro: 'Registrar perro',
+    mipSuccessPerfil: 'Perfil actualizado correctamente.',
+    mipErrFotoSize: 'La foto debe pesar menos de 5 MB.',
+    mipErrFoto: 'Error al subir la foto.',
+    mipNotAuth: 'Iniciá sesión para ver tu perfil.',
+    mipIrInicio: 'Ir al inicio',
+    mipCatPerdido: 'Perdido',
+    mipCatEncontrado: 'Visto',
+    mipCatAdopcion: 'Adopción',
+    mipCatTransito: 'Tránsito',
+    mipCatBuscoCuidador: 'Busca cuidador',
+    mipCatCuidadorDisp: 'Cuidador',
+    mipQrExpires: 'Caduca en',
+    mipQrRenews: '· se renueva solo',
+    mipQrDiscounts: '🏷️ Mostrá este QR para acceder a descuentos exclusivos de socios Vecindog.',
+    mipSosModalTitle: 'Alerta de emergencia',
+    mipSosModalSub: 'Se notifica a tus amigos',
+    mipSosSinPerros: 'No tenés perros registrados.',
+    mipSosRegistrar: 'Registrá uno',
+    mipSosSinPerrosSuffix: 'para usar esta función.',
+    mipSosCualPerro: '¿Cuál de tus perros se perdió?',
+    mipSosSinDesc: 'Sin descripción',
+    mipSosEnviando: 'Enviando alerta…',
+    mipSosAlertar: 'Alertar a mis amigos',
+    mipSosSoloPublicar: 'Solo publicar aviso →',
+    mipSosErr: 'No se pudo enviar la alerta. Intentá de nuevo.',
+    mipSosEnviado: '¡Alerta enviada!',
+    mipSosAmigosPrefix: 'Notificamos a',
+    mipSosAmigo: 'amigo',
+    mipSosAmigos: 'amigos',
+    mipSosAmigosSuffix: 'por notificación y email.',
+    mipSosSinAmigos: 'Todavía no tenés amigos en Vecindog. Publicá el aviso para que te ayuden los vecinos.',
+    mipSosPublicar: 'Publicar aviso completo →',
+    mipLabelContrasena: 'Contraseña',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1487,6 +1663,94 @@ const translations: Record<Lang, Translations> = {
     pubReportIncorrecto: 'Incorrect information',
     pubReportDuplicado: 'Duplicate',
     pubReportOtro: 'Other',
+    // Mi Perfil
+    mipChip: 'My profile',
+    mipObediencia: 'Obedience',
+    mipSosTitle: '🚨 Lost dog — alert now',
+    mipSosSub: 'Notify your friends and post the emergency listing.',
+    mipDatosTitle: 'Personal details',
+    mipEditar: 'Edit',
+    mipNombrePlaceholder: 'First name',
+    mipApellidoPlaceholder: 'Last name',
+    mipTelefonoPlaceholder: 'Phone',
+    mipCiudadSelect: 'Select your city',
+    mipProvinciaPlaceholder: 'Province',
+    mipPaisPlaceholder: 'Country',
+    mipBioLabel: 'Personal description',
+    mipBioPlaceholder: 'Tell us about yourself: experience with dogs, availability, yard…',
+    mipInstagramFacebook: 'Instagram and Facebook',
+    mipRadioLabel: 'Lost dog alert radius',
+    mipRadioHint: 'We notify you when there is a lost dog within this radius from your home.',
+    mipGuardar: 'Save changes',
+    mipLabelEmail: 'Email',
+    mipLabelNombre: 'Name',
+    mipLabelTelefono: 'Phone',
+    mipLabelCiudad: 'City',
+    mipLabelProvincia: 'Province',
+    mipLabelPais: 'Country',
+    mipLabelDireccion: 'Address',
+    mipLabelSobreMi: 'About me',
+    mipLabelRadio: 'Alert radius',
+    mipLabelRedes: 'Social media',
+    mipAgregar: '+ Add',
+    mipLinkEnviado: 'Link sent',
+    mipCambiar: 'Change',
+    mipVacunasTitle: 'Upcoming vaccines',
+    mipPendiente: 'pending',
+    mipPendientes: 'pending',
+    mipVacunaVencida: 'Overdue by',
+    mipDias: 'days',
+    mipHoy: 'Today',
+    mipEn: 'In',
+    mipVacunaVer: 'View →',
+    mipAvisosTitle: 'My active listings',
+    mipVerTodos: 'See all →',
+    mipAvisosPublicados: 'listings posted',
+    mipSinLimite: 'No limit',
+    mipDe5Avisos: '/ 5 listings',
+    mipPasatePro: 'Go Pro',
+    mipDisponible: 'available',
+    mipDisponibles: 'available',
+    mipHistorialTitle: 'Resolved listings history',
+    mipSinResueltos: 'No resolved listings yet.',
+    mipSinNombre: 'Unnamed',
+    mipMisPerrosTitle: 'My dogs',
+    mipAgregarDog: 'Add',
+    mipSinPerros: "You haven't registered any dogs yet.",
+    mipRegistrarPerro: 'Register dog',
+    mipSuccessPerfil: 'Profile updated successfully.',
+    mipErrFotoSize: 'Photo must be smaller than 5 MB.',
+    mipErrFoto: 'Error uploading photo.',
+    mipNotAuth: 'Sign in to view your profile.',
+    mipIrInicio: 'Go to home',
+    mipCatPerdido: 'Lost',
+    mipCatEncontrado: 'Seen',
+    mipCatAdopcion: 'Adoption',
+    mipCatTransito: 'Transit',
+    mipCatBuscoCuidador: 'Needs carer',
+    mipCatCuidadorDisp: 'Carer',
+    mipQrExpires: 'Expires in',
+    mipQrRenews: '· renews automatically',
+    mipQrDiscounts: '🏷️ Show this QR to access exclusive discounts for Vecindog members.',
+    mipSosModalTitle: 'Emergency alert',
+    mipSosModalSub: 'Your friends will be notified',
+    mipSosSinPerros: 'No registered dogs.',
+    mipSosRegistrar: 'Register one',
+    mipSosSinPerrosSuffix: 'to use this feature.',
+    mipSosCualPerro: 'Which of your dogs is lost?',
+    mipSosSinDesc: 'No description',
+    mipSosEnviando: 'Sending alert…',
+    mipSosAlertar: 'Alert my friends',
+    mipSosSoloPublicar: 'Just post listing →',
+    mipSosErr: 'Could not send the alert. Please try again.',
+    mipSosEnviado: 'Alert sent!',
+    mipSosAmigosPrefix: 'We notified',
+    mipSosAmigo: 'friend',
+    mipSosAmigos: 'friends',
+    mipSosAmigosSuffix: 'by notification and email.',
+    mipSosSinAmigos: 'You have no friends on Vecindog yet. Post the listing so neighbors can help.',
+    mipSosPublicar: 'Post full listing →',
+    mipLabelContrasena: 'Password',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -1982,6 +2246,94 @@ const translations: Record<Lang, Translations> = {
     pubReportIncorrecto: 'Informação incorreta',
     pubReportDuplicado: 'Duplicado',
     pubReportOtro: 'Outro',
+    // Mi Perfil
+    mipChip: 'Meu perfil',
+    mipObediencia: 'Obediência',
+    mipSosTitle: '🚨 Cão perdido — alertar agora',
+    mipSosSub: 'Notifique seus amigos e publique o aviso de emergência.',
+    mipDatosTitle: 'Dados pessoais',
+    mipEditar: 'Editar',
+    mipNombrePlaceholder: 'Nome',
+    mipApellidoPlaceholder: 'Sobrenome',
+    mipTelefonoPlaceholder: 'Telefone',
+    mipCiudadSelect: 'Selecione sua cidade',
+    mipProvinciaPlaceholder: 'Província',
+    mipPaisPlaceholder: 'País',
+    mipBioLabel: 'Descrição pessoal',
+    mipBioPlaceholder: 'Conte algo sobre você: experiência com cães, disponibilidade, quintal…',
+    mipInstagramFacebook: 'Instagram e Facebook',
+    mipRadioLabel: 'Raio de alertas de cães perdidos',
+    mipRadioHint: 'Avisamos quando há um cão perdido neste raio da sua casa.',
+    mipGuardar: 'Salvar alterações',
+    mipLabelEmail: 'Email',
+    mipLabelNombre: 'Nome',
+    mipLabelTelefono: 'Telefone',
+    mipLabelCiudad: 'Cidade',
+    mipLabelProvincia: 'Província',
+    mipLabelPais: 'País',
+    mipLabelDireccion: 'Endereço',
+    mipLabelSobreMi: 'Sobre mim',
+    mipLabelRadio: 'Raio de alertas',
+    mipLabelRedes: 'Redes sociais',
+    mipAgregar: '+ Adicionar',
+    mipLinkEnviado: 'Link enviado',
+    mipCambiar: 'Alterar',
+    mipVacunasTitle: 'Próximas vacinas',
+    mipPendiente: 'pendente',
+    mipPendientes: 'pendentes',
+    mipVacunaVencida: 'Vencida há',
+    mipDias: 'dias',
+    mipHoy: 'Hoje',
+    mipEn: 'Em',
+    mipVacunaVer: 'Ver →',
+    mipAvisosTitle: 'Meus avisos ativos',
+    mipVerTodos: 'Ver todos →',
+    mipAvisosPublicados: 'avisos publicados',
+    mipSinLimite: 'Sem limite',
+    mipDe5Avisos: '/ 5 avisos',
+    mipPasatePro: 'Ir para Pro',
+    mipDisponible: 'disponível',
+    mipDisponibles: 'disponíveis',
+    mipHistorialTitle: 'Histórico de avisos resolvidos',
+    mipSinResueltos: 'Ainda não há avisos resolvidos.',
+    mipSinNombre: 'Sem nome',
+    mipMisPerrosTitle: 'Meus cães',
+    mipAgregarDog: 'Adicionar',
+    mipSinPerros: 'Você ainda não registrou nenhum cão.',
+    mipRegistrarPerro: 'Registrar cão',
+    mipSuccessPerfil: 'Perfil atualizado com sucesso.',
+    mipErrFotoSize: 'A foto deve ter menos de 5 MB.',
+    mipErrFoto: 'Erro ao enviar a foto.',
+    mipNotAuth: 'Faça login para ver seu perfil.',
+    mipIrInicio: 'Ir ao início',
+    mipCatPerdido: 'Perdido',
+    mipCatEncontrado: 'Visto',
+    mipCatAdopcion: 'Adoção',
+    mipCatTransito: 'Trânsito',
+    mipCatBuscoCuidador: 'Busca cuidador',
+    mipCatCuidadorDisp: 'Cuidador',
+    mipQrExpires: 'Expira em',
+    mipQrRenews: '· renova automaticamente',
+    mipQrDiscounts: '🏷️ Mostre este QR para acessar descontos exclusivos de membros Vecindog.',
+    mipSosModalTitle: 'Alerta de emergência',
+    mipSosModalSub: 'Seus amigos serão notificados',
+    mipSosSinPerros: 'Nenhum cão registrado.',
+    mipSosRegistrar: 'Registre um',
+    mipSosSinPerrosSuffix: 'para usar esta função.',
+    mipSosCualPerro: 'Qual dos seus cães se perdeu?',
+    mipSosSinDesc: 'Sem descrição',
+    mipSosEnviando: 'Enviando alerta…',
+    mipSosAlertar: 'Alertar meus amigos',
+    mipSosSoloPublicar: 'Só publicar aviso →',
+    mipSosErr: 'Não foi possível enviar o alerta. Tente novamente.',
+    mipSosEnviado: 'Alerta enviado!',
+    mipSosAmigosPrefix: 'Notificamos',
+    mipSosAmigo: 'amigo',
+    mipSosAmigos: 'amigos',
+    mipSosAmigosSuffix: 'por notificação e email.',
+    mipSosSinAmigos: 'Você ainda não tem amigos no Vecindog. Publique o aviso para que os vizinhos possam ajudar.',
+    mipSosPublicar: 'Publicar aviso completo →',
+    mipLabelContrasena: 'Senha',
   },
 };
 

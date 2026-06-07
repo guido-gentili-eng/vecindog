@@ -19,11 +19,7 @@ import { useEffect, useCallback } from 'react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CIUDADES } from '@/lib/ciudades';
 import QRCode from 'qrcode';
-
-const ETIQUETA: Record<string, string> = {
-  perdido: 'Perdido', encontrado: 'Visto', adopcion: 'Adopción',
-  transito: 'Tránsito', busco_cuidador: 'Busca cuidador', cuidador_disponible: 'Cuidador',
-};
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const COLOR_CAT: Record<string, string> = {
   perdido: 'bg-lost/10 text-lost', encontrado: 'bg-found/10 text-found',
@@ -37,6 +33,7 @@ function diasHasta(fecha: string): number {
 
 export default function MiPerfilPage() {
   const { user, profile, isAuthenticated, isPro, loading: authLoading, saveProfile, resetPassword } = useAuth();
+  const { t } = useLanguage();
   const fileRef  = useRef<HTMLInputElement>(null);
   const router   = useRouter();
 
@@ -128,19 +125,18 @@ export default function MiPerfilPage() {
     });
     setSubmitting(false);
     if (err) { setError(err); return; }
-    setSuccess('Perfil actualizado correctamente.');
+    setSuccess(t.mipSuccessPerfil);
     setEditando(false);
   }
 
   async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user || !profile) return;
-    if (file.size > 5 * 1024 * 1024) { setError('La foto debe pesar menos de 5 MB.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError(t.mipErrFotoSize); return; }
     setAvatarLoading(true);
     try {
       const url = await subirFotoPerfil(file, user.id);
       setFotoUrl(url);
-      // Usar siempre los datos del perfil guardado, no el estado del form que puede estar incompleto
       await saveProfile({
         nombre:           profile.nombre,
         apellido:         profile.apellido,
@@ -155,7 +151,7 @@ export default function MiPerfilPage() {
         radio_alerta_km:  profile.radio_alerta_km ?? null,
         foto_url: url,
       });
-    } catch { setError('Error al subir la foto.'); }
+    } catch { setError(t.mipErrFoto); }
     finally { setAvatarLoading(false); }
   }
 
@@ -170,13 +166,18 @@ export default function MiPerfilPage() {
   if (!isAuthenticated) {
     return (
       <div className="py-12 text-center">
-        <p className="text-ink-muted">Iniciá sesión para ver tu perfil.</p>
-        <Link href="/" className="btn-primary mt-4 inline-flex">Ir al inicio</Link>
+        <p className="text-ink-muted">{t.mipNotAuth}</p>
+        <Link href="/" className="btn-primary mt-4 inline-flex">{t.mipIrInicio}</Link>
       </div>
     );
   }
 
-  // Vacunas próximas (en los próximos 60 días o vencidas)
+  const ETIQUETA: Record<string, string> = {
+    perdido: t.mipCatPerdido, encontrado: t.mipCatEncontrado,
+    adopcion: t.mipCatAdopcion, transito: t.mipCatTransito,
+    busco_cuidador: t.mipCatBuscoCuidador, cuidador_disponible: t.mipCatCuidadorDisp,
+  };
+
   const vacunasAlerta = vacunas.filter((v) => diasHasta(v.proxima) <= 60);
 
   return (
@@ -215,7 +216,7 @@ export default function MiPerfilPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-              <User className="h-3.5 w-3.5" /> Mi perfil
+              <User className="h-3.5 w-3.5" /> {t.mipChip}
             </span>
             {isPro ? (
               <button type="button" onClick={() => setQrOpen(true)}
@@ -230,7 +231,7 @@ export default function MiPerfilPage() {
             )}
           </div>
           <h1 className="mt-1 font-display text-2xl font-black tracking-tight text-ink truncate">
-            {profile ? `${profile.nombre} ${profile.apellido}` : 'Mi perfil'}
+            {profile ? `${profile.nombre} ${profile.apellido}` : t.mipChip}
           </h1>
           {profile?.bio && (
             <p className="mt-0.5 text-sm text-ink-muted line-clamp-2">{profile.bio}</p>
@@ -242,12 +243,12 @@ export default function MiPerfilPage() {
           {isPro ? (
             <a href="/plan-obediencia-canina.pdf" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
-              <BookOpen className="h-4 w-4" /> Obediencia
+              <BookOpen className="h-4 w-4" /> {t.mipObediencia}
             </a>
           ) : (
             <Link href="/planes"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
-              <BookOpen className="h-4 w-4" /> Obediencia
+              <BookOpen className="h-4 w-4" /> {t.mipObediencia}
             </Link>
           )}
         </div>
@@ -273,8 +274,8 @@ export default function MiPerfilPage() {
             <Siren className="h-6 w-6" />
           </div>
           <div className="flex-1 text-left">
-            <p className="font-display text-base font-black">🚨 Perro perdido — alertar ahora</p>
-            <p className="text-xs text-white/80">Notificá a tus amigos y publicá el aviso de emergencia.</p>
+            <p className="font-display text-base font-black">{t.mipSosTitle}</p>
+            <p className="text-xs text-white/80">{t.mipSosSub}</p>
           </div>
           <ChevronRight className="h-5 w-5 shrink-0 opacity-70" />
         </button>
@@ -287,7 +288,7 @@ export default function MiPerfilPage() {
           user={user}
           ownerNombre={profile ? `${profile.nombre} ${profile.apellido}`.trim() : ''}
           onClose={() => setSosOpen(false)}
-          onDone={(perroId, nombrePerro) => {
+          onDone={(perroId) => {
             setSosOpen(false);
             const params = new URLSearchParams({ cat: 'perdido' });
             if (perroId) params.set('perro', perroId);
@@ -299,11 +300,11 @@ export default function MiPerfilPage() {
       {/* ── Datos personales ── */}
       <div className="card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-extrabold text-ink">Datos personales</h2>
+          <h2 className="font-display text-lg font-extrabold text-ink">{t.mipDatosTitle}</h2>
           {!editando && (
             <button type="button" onClick={() => setEditando(true)}
               className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
-              <Pencil className="h-3.5 w-3.5" /> Editar
+              <Pencil className="h-3.5 w-3.5" /> {t.mipEditar}
             </button>
           )}
         </div>
@@ -312,24 +313,24 @@ export default function MiPerfilPage() {
           <form onSubmit={handleGuardar} className="space-y-3">
             <div className="relative">
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="text" required placeholder="Nombre" value={nombre}
+              <input type="text" required placeholder={t.mipNombrePlaceholder} value={nombre}
                 onChange={(e) => setNombre(e.target.value)} className="field pl-9" />
             </div>
             <div className="relative">
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="text" required placeholder="Apellido" value={apellido}
+              <input type="text" required placeholder={t.mipApellidoPlaceholder} value={apellido}
                 onChange={(e) => setApellido(e.target.value)} className="field pl-9" />
             </div>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="tel" required placeholder="Teléfono" value={telefono}
+              <input type="tel" required placeholder={t.mipTelefonoPlaceholder} value={telefono}
                 onChange={(e) => setTelefono(e.target.value)} className="field pl-9" />
             </div>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none z-10" />
               <select required value={ciudadPerfil} onChange={(e) => handleCiudadChange(e.target.value)}
                 className="field pl-9 appearance-none">
-                <option value="">Seleccioná tu ciudad</option>
+                <option value="">{t.mipCiudadSelect}</option>
                 {CIUDADES.map((c) => (
                   <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
                 ))}
@@ -337,12 +338,12 @@ export default function MiPerfilPage() {
             </div>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="text" required placeholder="Provincia" value={provincia}
+              <input type="text" required placeholder={t.mipProvinciaPlaceholder} value={provincia}
                 onChange={(e) => setProvincia(e.target.value)} className="field pl-9" />
             </div>
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input type="text" required placeholder="País" value={pais}
+              <input type="text" required placeholder={t.mipPaisPlaceholder} value={pais}
                 onChange={(e) => setPais(e.target.value)} className="field pl-9" />
             </div>
             <AddressAutocomplete value={direccion} onChange={setDireccion} ciudad={ciudadPerfil} required />
@@ -350,11 +351,11 @@ export default function MiPerfilPage() {
             {/* Bio — Pro */}
             {isPro ? (
               <div>
-                <label className="mb-1 block text-xs font-semibold text-ink-muted">Descripción personal</label>
+                <label className="mb-1 block text-xs font-semibold text-ink-muted">{t.mipBioLabel}</label>
                 <textarea
                   className="field w-full resize-none"
                   rows={3}
-                  placeholder="Contá algo sobre vos: experiencia con perros, disponibilidad, patio…"
+                  placeholder={t.mipBioPlaceholder}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   maxLength={280}
@@ -363,7 +364,7 @@ export default function MiPerfilPage() {
               </div>
             ) : (
               <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-black/10 px-4 py-3">
-                <span className="text-sm text-ink-muted">Descripción personal</span>
+                <span className="text-sm text-ink-muted">{t.mipBioLabel}</span>
                 <Link href="/planes" className="flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline">
                   <Sparkles className="h-3.5 w-3.5" /> Pro
                 </Link>
@@ -388,7 +389,7 @@ export default function MiPerfilPage() {
               <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-black/10 px-4 py-3">
                 <div className="flex items-center gap-2 text-sm text-ink-muted">
                   <Instagram className="h-4 w-4" />
-                  <span>Instagram y Facebook</span>
+                  <span>{t.mipInstagramFacebook}</span>
                 </div>
                 <Link href="/planes" className="flex items-center gap-1 text-xs font-bold text-brand-primary hover:underline">
                   <Sparkles className="h-3.5 w-3.5" /> Pro
@@ -400,7 +401,7 @@ export default function MiPerfilPage() {
             {isPro && (
               <div>
                 <label className="mb-1 block text-xs font-semibold text-ink-muted flex items-center gap-1">
-                  <Bell className="h-3.5 w-3.5" /> Radio de alertas de perros perdidos
+                  <Bell className="h-3.5 w-3.5" /> {t.mipRadioLabel}
                 </label>
                 <div className="flex gap-2">
                   {[1, 3, 5, 10, 20].map((km) => (
@@ -416,7 +417,7 @@ export default function MiPerfilPage() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-1 text-[10px] text-ink-muted">Te avisamos cuando hay un perro perdido en este radio desde tu casa.</p>
+                <p className="mt-1 text-[10px] text-ink-muted">{t.mipRadioHint}</p>
               </div>
             )}
 
@@ -427,11 +428,11 @@ export default function MiPerfilPage() {
             )}
             <div className="flex gap-2">
               <button type="submit" disabled={submitting} className="btn-primary flex-1 disabled:opacity-60">
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar cambios'}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t.mipGuardar}
               </button>
               <button type="button" onClick={() => setEditando(false)}
                 className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted hover:border-black/20">
-                Cancelar
+                {t.commonCancel}
               </button>
             </div>
           </form>
@@ -442,21 +443,21 @@ export default function MiPerfilPage() {
                 <CheckCircle2 className="h-4 w-4 shrink-0" />{success}
               </p>
             )}
-            <InfoRow icon={<Mail className="h-4 w-4 text-brand-primary" />} label="Email" value={user?.email ?? ''} />
-            <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label="Nombre" value={profile ? `${profile.nombre} ${profile.apellido}` : '—'} />
-            <InfoRow icon={<Phone className="h-4 w-4 text-brand-primary" />} label="Teléfono" value={profile?.telefono ?? '—'} />
-            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Ciudad" value={profile?.ciudad ?? '—'} />
-            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Provincia" value={profile?.provincia ?? '—'} />
-            <InfoRow icon={<Globe className="h-4 w-4 text-brand-primary" />} label="País" value={profile?.pais ?? '—'} />
-            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Dirección" value={profile?.direccion ?? '—'} />
+            <InfoRow icon={<Mail className="h-4 w-4 text-brand-primary" />} label={t.mipLabelEmail} value={user?.email ?? ''} />
+            <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label={t.mipLabelNombre} value={profile ? `${profile.nombre} ${profile.apellido}` : '—'} />
+            <InfoRow icon={<Phone className="h-4 w-4 text-brand-primary" />} label={t.mipLabelTelefono} value={profile?.telefono ?? '—'} />
+            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label={t.mipLabelCiudad} value={profile?.ciudad ?? '—'} />
+            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label={t.mipLabelProvincia} value={profile?.provincia ?? '—'} />
+            <InfoRow icon={<Globe className="h-4 w-4 text-brand-primary" />} label={t.mipLabelPais} value={profile?.pais ?? '—'} />
+            <InfoRow icon={<MapPin className="h-4 w-4 text-brand-primary" />} label={t.mipLabelDireccion} value={profile?.direccion ?? '—'} />
 
             {isPro && profile?.bio && (
-              <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label="Sobre mí" value={profile.bio} />
+              <InfoRow icon={<User className="h-4 w-4 text-brand-primary" />} label={t.mipLabelSobreMi} value={profile.bio} />
             )}
 
             {isPro && (
               <>
-                <InfoRow icon={<Bell className="h-4 w-4 text-brand-primary" />} label="Radio alertas" value={`${profile?.radio_alerta_km ?? 5} km`} />
+                <InfoRow icon={<Bell className="h-4 w-4 text-brand-primary" />} label={t.mipLabelRadio} value={`${profile?.radio_alerta_km ?? 5} km`} />
                 {profile?.instagram && (
                   <InfoRow icon={<Instagram className="h-4 w-4 text-brand-primary" />} label="Instagram" value={profile.instagram} />
                 )}
@@ -467,11 +468,11 @@ export default function MiPerfilPage() {
                   <div className="flex items-center justify-between py-2 border-b border-black/5">
                     <div className="flex items-center gap-3">
                       <Instagram className="h-4 w-4 text-brand-primary shrink-0" />
-                      <span className="text-xs text-ink-muted">Redes sociales</span>
+                      <span className="text-xs text-ink-muted">{t.mipLabelRedes}</span>
                     </div>
                     <button type="button" onClick={() => setEditando(true)}
                       className="text-xs font-bold text-brand-primary hover:underline">
-                      + Agregar
+                      {t.mipAgregar}
                     </button>
                   </div>
                 )}
@@ -481,13 +482,13 @@ export default function MiPerfilPage() {
             {/* Contraseña */}
             <div className="flex items-center gap-3 py-2">
               <span className="shrink-0"><Lock className="h-4 w-4 text-brand-primary" /></span>
-              <span className="text-xs text-ink-muted w-20 shrink-0">Contraseña</span>
+              <span className="text-xs text-ink-muted w-20 shrink-0">{t.mipLabelContrasena}</span>
               <span className="text-sm font-semibold text-ink tracking-widest">••••••••</span>
               <button type="button" onClick={handleChangePassword}
                 className="ml-auto inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition hover:bg-brand-primary/10 text-brand-primary">
                 {pwSent
-                  ? <><CheckCircle2 className="h-3.5 w-3.5 text-good" /><span className="text-good">Link enviado</span></>
-                  : <><KeyRound className="h-3.5 w-3.5" /> Cambiar</>}
+                  ? <><CheckCircle2 className="h-3.5 w-3.5 text-good" /><span className="text-good">{t.mipLinkEnviado}</span></>
+                  : <><KeyRound className="h-3.5 w-3.5" /> {t.mipCambiar}</>}
               </button>
             </div>
           </div>
@@ -498,10 +499,10 @@ export default function MiPerfilPage() {
       {isPro && vacunas.length > 0 && (
         <div className="card p-5 space-y-3">
           <h2 className="font-display text-base font-extrabold text-ink flex items-center gap-2">
-            <AlarmClock className="h-4 w-4 text-brand-primary" /> Próximas vacunas
+            <AlarmClock className="h-4 w-4 text-brand-primary" /> {t.mipVacunasTitle}
             {vacunasAlerta.length > 0 && (
               <span className="ml-1 rounded-full bg-bad/10 px-2 py-0.5 text-xs font-bold text-bad">
-                {vacunasAlerta.length} pendiente{vacunasAlerta.length !== 1 ? 's' : ''}
+                {vacunasAlerta.length} {vacunasAlerta.length !== 1 ? t.mipPendientes : t.mipPendiente}
               </span>
             )}
           </h2>
@@ -509,7 +510,11 @@ export default function MiPerfilPage() {
             {vacunas.slice(0, 5).map((v) => {
               const dias = diasHasta(v.proxima);
               const color = dias < 0 ? 'bg-bad/10 text-bad' : dias <= 14 ? 'bg-warn/15 text-amber-700' : dias <= 60 ? 'bg-amber-50 text-amber-600' : 'bg-good/10 text-good';
-              const label = dias < 0 ? `Vencida hace ${Math.abs(dias)} días` : dias === 0 ? 'Hoy' : `En ${dias} días`;
+              const label = dias < 0
+                ? `${t.mipVacunaVencida} ${Math.abs(dias)} ${t.mipDias}`
+                : dias === 0
+                ? t.mipHoy
+                : `${t.mipEn} ${dias} ${t.mipDias}`;
               return (
                 <div key={v.id} className="flex items-center gap-3 rounded-xl bg-brand-cream px-4 py-3">
                   <div className={`rounded-lg px-2.5 py-1 text-xs font-bold ${color}`}>{label}</div>
@@ -517,8 +522,8 @@ export default function MiPerfilPage() {
                     <p className="font-bold text-sm text-ink truncate">{v.nombre}</p>
                     <p className="text-xs text-ink-muted">{v.perro_nombre} · {new Date(v.proxima + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                   </div>
-                  <Link href={`/mis-perros`} className="text-xs font-bold text-brand-primary hover:underline shrink-0">
-                    Ver →
+                  <Link href="/mis-perros" className="text-xs font-bold text-brand-primary hover:underline shrink-0">
+                    {t.mipVacunaVer}
                   </Link>
                 </div>
               );
@@ -531,11 +536,11 @@ export default function MiPerfilPage() {
       <div className="card p-5">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-base font-extrabold text-ink flex items-center gap-2">
-            <FileText className="h-4 w-4 text-brand-primary" /> Mis avisos activos
+            <FileText className="h-4 w-4 text-brand-primary" /> {t.mipAvisosTitle}
           </h2>
           <Link href="/publicaciones?solo=1"
             className="text-xs font-bold text-brand-primary hover:underline transition">
-            Ver todos →
+            {t.mipVerTodos}
           </Link>
         </div>
 
@@ -543,9 +548,9 @@ export default function MiPerfilPage() {
           {isPro ? (
             <div className="flex items-center gap-2">
               <span className="font-display text-3xl font-black text-ink">{postCount}</span>
-              <span className="text-sm text-ink-muted">avisos publicados</span>
+              <span className="text-sm text-ink-muted">{t.mipAvisosPublicados}</span>
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#7c3aed]/10 px-2.5 py-1 text-xs font-bold text-[#7c3aed]">
-                <Sparkles className="h-3 w-3" /> Sin límite
+                <Sparkles className="h-3 w-3" /> {t.mipSinLimite}
               </span>
             </div>
           ) : (
@@ -553,14 +558,14 @@ export default function MiPerfilPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-sm font-bold text-ink">
                   <span className={postCount >= 5 ? 'text-bad' : 'text-ink'}>{postCount}</span>
-                  <span className="text-ink-muted"> / 5 avisos</span>
+                  <span className="text-ink-muted"> {t.mipDe5Avisos}</span>
                 </span>
                 {postCount >= 5 ? (
                   <Link href="/planes" className="text-xs font-bold text-brand-primary hover:underline">
-                    <Sparkles className="h-3 w-3 inline mr-0.5" /> Pasate a Pro
+                    <Sparkles className="h-3 w-3 inline mr-0.5" /> {t.mipPasatePro}
                   </Link>
                 ) : (
-                  <span className="text-xs text-ink-muted">{5 - postCount} disponible{5 - postCount !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-ink-muted">{5 - postCount} {(5 - postCount) !== 1 ? t.mipDisponibles : t.mipDisponible}</span>
                 )}
               </div>
               <div className="h-2 w-full rounded-full bg-black/8 overflow-hidden">
@@ -578,7 +583,7 @@ export default function MiPerfilPage() {
       {isPro && (
         <div className="card p-5 space-y-3">
           <h2 className="font-display text-base font-extrabold text-ink flex items-center gap-2">
-            <History className="h-4 w-4 text-brand-primary" /> Historial de avisos resueltos
+            <History className="h-4 w-4 text-brand-primary" /> {t.mipHistorialTitle}
             {resueltos.length > 0 && (
               <span className="ml-1 rounded-full bg-good/10 px-2 py-0.5 text-xs font-bold text-good">
                 {resueltos.length}
@@ -586,7 +591,7 @@ export default function MiPerfilPage() {
             )}
           </h2>
           {resueltos.length === 0 ? (
-            <p className="text-sm text-ink-muted py-2">Todavía no tenés avisos resueltos.</p>
+            <p className="text-sm text-ink-muted py-2">{t.mipSinResueltos}</p>
           ) : (
             <div className="space-y-2">
               {resueltos.map((p) => (
@@ -601,7 +606,7 @@ export default function MiPerfilPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{p.nombre ?? 'Sin nombre'}</p>
+                    <p className="font-bold text-sm text-ink truncate">{p.nombre ?? t.mipSinNombre}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${COLOR_CAT[p.categoria] ?? 'bg-black/5 text-ink-muted'}`}>
                         {ETIQUETA[p.categoria] ?? p.categoria}
@@ -621,20 +626,20 @@ export default function MiPerfilPage() {
       <div className="card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-extrabold text-ink flex items-center gap-2">
-            <Dog className="h-5 w-5 text-brand-primary" /> Mis perros
+            <Dog className="h-5 w-5 text-brand-primary" /> {t.mipMisPerrosTitle}
           </h2>
           <Link href="/mis-perros/nuevo"
             className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
-            <Plus className="h-3.5 w-3.5" /> Agregar
+            <Plus className="h-3.5 w-3.5" /> {t.mipAgregarDog}
           </Link>
         </div>
 
         {perros.length === 0 ? (
           <div className="text-center py-6">
             <Dog className="h-10 w-10 text-brand-primary/20 mx-auto mb-2" />
-            <p className="text-sm text-ink-muted">Todavía no registraste ningún perro.</p>
+            <p className="text-sm text-ink-muted">{t.mipSinPerros}</p>
             <Link href="/mis-perros/nuevo" className="btn-primary mt-3 inline-flex gap-1 text-sm">
-              <Plus className="h-4 w-4" /> Registrar perro
+              <Plus className="h-4 w-4" /> {t.mipRegistrarPerro}
             </Link>
           </div>
         ) : (
@@ -692,6 +697,7 @@ function SOSModal({
   onClose: () => void;
   onDone: (perroId: string | null, nombrePerro: string) => void;
 }) {
+  const { t } = useLanguage();
   const [perroSel,  setPerroSel]  = useState<string>(perros[0]?.id ?? '');
   const [enviando,  setEnviando]  = useState(false);
   const [enviado,   setEnviado]   = useState(false);
@@ -721,7 +727,7 @@ function SOSModal({
       setAmigosCount(json.amigos ?? 0);
       setEnviado(true);
     } catch {
-      setErrorSos('No se pudo enviar la alerta. Intentá de nuevo.');
+      setErrorSos(t.mipSosErr);
     } finally {
       setEnviando(false);
     }
@@ -739,8 +745,8 @@ function SOSModal({
               <Siren className="h-5 w-5 text-lost" />
             </div>
             <div>
-              <p className="font-display text-base font-black text-ink">Alerta de emergencia</p>
-              <p className="text-xs text-ink-muted">Se notifica a tus amigos</p>
+              <p className="font-display text-base font-black text-ink">{t.mipSosModalTitle}</p>
+              <p className="text-xs text-ink-muted">{t.mipSosModalSub}</p>
             </div>
           </div>
           <button type="button" onClick={onClose}
@@ -754,11 +760,13 @@ function SOSModal({
             {/* Selector de perro */}
             {perros.length === 0 ? (
               <p className="rounded-2xl bg-brand-cream px-4 py-3 text-sm text-ink-muted text-center">
-                No tenés perros registrados. <Link href="/mis-perros/nuevo" className="font-bold text-brand-primary">Registrá uno</Link> para usar esta función.
+                {t.mipSosSinPerros}{' '}
+                <Link href="/mis-perros/nuevo" className="font-bold text-brand-primary">{t.mipSosRegistrar}</Link>
+                {' '}{t.mipSosSinPerrosSuffix}
               </p>
             ) : (
               <div className="space-y-2 mb-5">
-                <p className="text-xs font-semibold text-ink-muted">¿Cuál de tus perros se perdió?</p>
+                <p className="text-xs font-semibold text-ink-muted">{t.mipSosCualPerro}</p>
                 {perros.map((p) => (
                   <button key={p.id} type="button"
                     onClick={() => setPerroSel(p.id)}
@@ -779,7 +787,7 @@ function SOSModal({
                     <div className="flex-1 text-left">
                       <p className="font-bold text-ink">{p.nombre}</p>
                       <p className="text-xs text-ink-muted">
-                        {[p.raza, p.color].filter(Boolean).join(' · ') || 'Sin descripción'}
+                        {[p.raza, p.color].filter(Boolean).join(' · ') || t.mipSosSinDesc}
                       </p>
                     </div>
                     {perroSel === p.id && <CheckCircle2 className="h-5 w-5 text-lost shrink-0" />}
@@ -799,14 +807,14 @@ function SOSModal({
                 <button type="button" onClick={handleSOS} disabled={enviando || !perroSel}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-lost py-3 text-sm font-bold text-white transition hover:bg-lost/90 disabled:opacity-60">
                   {enviando
-                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando alerta…</>
-                    : <><Siren className="h-4 w-4" /> Alertar a mis amigos</>}
+                    ? <><Loader2 className="h-4 w-4 animate-spin" /> {t.mipSosEnviando}</>
+                    : <><Siren className="h-4 w-4" /> {t.mipSosAlertar}</>}
                 </button>
               )}
               <button type="button"
                 onClick={() => onDone(perroSel || null, perroActual?.nombre ?? '')}
                 className="w-full rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted hover:border-black/20 transition">
-                Solo publicar aviso →
+                {t.mipSosSoloPublicar}
               </button>
             </div>
           </>
@@ -817,21 +825,23 @@ function SOSModal({
               <CheckCircle2 className="h-8 w-8 text-good" />
             </div>
             <div>
-              <p className="font-display text-lg font-black text-ink">¡Alerta enviada!</p>
+              <p className="font-display text-lg font-black text-ink">{t.mipSosEnviado}</p>
               {amigosCount !== null && amigosCount > 0 ? (
                 <p className="mt-1 text-sm text-ink-muted">
-                  Notificamos a <strong>{amigosCount} amigo{amigosCount !== 1 ? 's' : ''}</strong> por notificación y email.
+                  {t.mipSosAmigosPrefix}{' '}
+                  <strong>{amigosCount} {amigosCount !== 1 ? t.mipSosAmigos : t.mipSosAmigo}</strong>
+                  {' '}{t.mipSosAmigosSuffix}
                 </p>
               ) : (
                 <p className="mt-1 text-sm text-ink-muted">
-                  Todavía no tenés amigos en Vecindog. Publicá el aviso para que te ayuden los vecinos.
+                  {t.mipSosSinAmigos}
                 </p>
               )}
             </div>
             <button type="button"
               onClick={() => onDone(perroSel || null, perroActual?.nombre ?? '')}
               className="w-full rounded-2xl bg-lost py-3 text-sm font-bold text-white transition hover:bg-lost/90">
-              Publicar aviso completo →
+              {t.mipSosPublicar}
             </button>
           </div>
         )}
@@ -842,6 +852,7 @@ function SOSModal({
 
 /* ── Modal QR rotativo ── */
 function QRModal({ userId, nombre, onClose }: { userId: string; nombre: string; onClose: () => void }) {
+  const { t } = useLanguage();
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [countdown, setCountdown] = useState(0);
 
@@ -903,10 +914,10 @@ function QRModal({ userId, nombre, onClose }: { userId: string; nombre: string; 
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-sm font-black text-ink">{countdown}</span>
           </div>
-          <p className="text-xs text-ink-muted">Caduca en {countdown}s · se renueva solo</p>
+          <p className="text-xs text-ink-muted">{t.mipQrExpires} {countdown}s {t.mipQrRenews}</p>
         </div>
         <div className="rounded-2xl bg-brand-cream px-4 py-3 text-xs text-ink-muted">
-          🏷️ Mostrá este QR para acceder a descuentos exclusivos de socios Vecindog.
+          {t.mipQrDiscounts}
         </div>
       </div>
     </div>

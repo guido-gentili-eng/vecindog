@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Share2, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, CheckCircle2 } from 'lucide-react';
 import { obtenerPerro, type Perro } from '@/lib/perros';
 import { buscarPostActivoDePerro } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 
-/* ── SVG icons de redes ── */
 function IgIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -25,7 +25,6 @@ function FbIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-/* ── Helpers ── */
 function limpiarHandle(raw: string) {
   return raw.trim().toLowerCase();
 }
@@ -43,6 +42,7 @@ export default function HistoriaPage() {
   const { id }            = useParams<{ id: string }>();
   const router            = useRouter();
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const storyRef          = useRef<HTMLDivElement>(null);
 
   const [perro,      setPerro]      = useState<Perro | null>(null);
@@ -56,7 +56,6 @@ export default function HistoriaPage() {
     facebook:  { red: 'facebook',  handle: '', editando: false, guardando: false },
   });
 
-  /* Cargar perro */
   useEffect(() => {
     obtenerPerro(id).then(async (p) => {
       setPerro(p);
@@ -67,7 +66,6 @@ export default function HistoriaPage() {
     }).finally(() => setLoading(false));
   }, [id]);
 
-  /* Cargar handles del perfil */
   useEffect(() => {
     setRedes((prev) => ({
       instagram: { ...prev.instagram, handle: profile?.instagram ?? '' },
@@ -151,7 +149,6 @@ export default function HistoriaPage() {
   const igFinal = redes.instagram.handle ? limpiarHandle(redes.instagram.handle) : null;
   const fbFinal = redes.facebook.handle  ? limpiarHandle(redes.facebook.handle)  : null;
 
-  /* ── Sección de conexión por red ── */
   function ConexionCard({ red, label, color, icon }: {
     red: Red; label: string; color: string; icon: React.ReactNode;
   }) {
@@ -159,28 +156,28 @@ export default function HistoriaPage() {
     if (!r.handle && !r.editando) return (
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/10 p-4">
         <div>
-          <p className="font-bold text-white text-sm">Conectar {label}</p>
-          <p className="text-xs text-white/60">Tu email aparecerá en la historia.</p>
+          <p className="font-bold text-white text-sm">{t.histConectarLabel.replace('{red}', label)}</p>
+          <p className="text-xs text-white/60">{t.histEmailLabel}</p>
         </div>
         <button type="button" onClick={() => setEditando(red, true)}
           className="rounded-xl px-3 py-2 text-xs font-bold text-white transition hover:opacity-90"
           style={{ background: color }}>
-          Conectar
+          {t.histConectar}
         </button>
       </div>
     );
     if (r.editando) return (
       <div className="rounded-2xl bg-white/10 p-4 space-y-3">
-        <p className="font-bold text-white text-sm flex items-center gap-2">{icon} Email de {label}</p>
+        <p className="font-bold text-white text-sm flex items-center gap-2">{icon} {t.histEmailDe.replace('{red}', label)}</p>
         <div className="flex gap-2">
-          <input autoFocus type="email" placeholder="tucorreo@ejemplo.com"
+          <input autoFocus type="email" placeholder={t.histEmailPh}
             value={r.handle} onChange={(e) => setHandle(red, e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && guardarHandle(red)}
             className="field flex-1" />
           <button type="button" disabled={r.guardando} onClick={() => guardarHandle(red)}
             className="rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
             style={{ background: color }}>
-            {r.guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar'}
+            {r.guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : t.histGuardar}
           </button>
         </div>
       </div>
@@ -193,7 +190,7 @@ export default function HistoriaPage() {
         </div>
         <button type="button" onClick={() => setEditando(red, true)}
           className="text-xs font-bold text-white/50 hover:text-white transition">
-          Cambiar
+          {t.histCambiar}
         </button>
       </div>
     );
@@ -202,16 +199,14 @@ export default function HistoriaPage() {
   return (
     <div className="min-h-screen bg-[#111] py-6 px-4">
 
-      {/* Header */}
       <div className="mx-auto max-w-sm mb-5 flex items-center justify-between">
         <button type="button" onClick={() => router.back()}
           className="flex items-center gap-1.5 text-sm font-bold text-white/70 hover:text-white transition">
-          <ArrowLeft className="h-4 w-4" /> Volver
+          <ArrowLeft className="h-4 w-4" /> {t.histVolver}
         </button>
-        <span className="text-sm font-bold text-white/50">Compartir en redes</span>
+        <span className="text-sm font-bold text-white/50">{t.histCompartirRedes}</span>
       </div>
 
-      {/* Conexiones */}
       <div className="mx-auto max-w-sm mb-5 space-y-2">
         <ConexionCard red="instagram" label="Instagram"
           color="linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"
@@ -221,7 +216,6 @@ export default function HistoriaPage() {
           icon={<FbIcon size={14} />} />
       </div>
 
-      {/* Preview story */}
       <div className="mx-auto mb-6" style={{ maxWidth: '360px' }}>
         <div ref={storyRef} style={{
           width: '360px', height: '640px',
@@ -231,7 +225,6 @@ export default function HistoriaPage() {
         }}>
           <div style={{ height: '5px', background: `linear-gradient(90deg, ${accent}, ${accent}99)` }} />
 
-          {/* Header */}
           <div style={{ padding: '16px 20px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{ margin: 0, fontSize: '9px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
@@ -246,7 +239,6 @@ export default function HistoriaPage() {
             </div>
           </div>
 
-          {/* Foto + datos */}
           <div style={{ padding: '0 20px 12px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
             <div style={{ flex: '0 0 auto' }}>
               {perro.foto_url ? (
@@ -290,7 +282,6 @@ export default function HistoriaPage() {
             </div>
           </div>
 
-          {/* Contacto */}
           <div style={{ margin: '0 14px', background: accent, borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ flex: 1 }}>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
@@ -313,7 +304,6 @@ export default function HistoriaPage() {
             </div>
           </div>
 
-          {/* Handles de redes */}
           {(igFinal || fbFinal) && (
             <div style={{ margin: '10px 14px 0', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {igFinal && (
@@ -329,7 +319,6 @@ export default function HistoriaPage() {
             </div>
           )}
 
-          {/* Footer */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', padding: '10px 20px 12px' }}>
             <p style={{ margin: 0, fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontWeight: 600 }}>
               Creado en mivecindog.com.ar · Red vecinal de mascotas · Argentina
@@ -339,48 +328,44 @@ export default function HistoriaPage() {
         </div>
       </div>
 
-      {/* Botones de compartir */}
       <div className="mx-auto max-w-sm space-y-3">
 
-        {/* Instagram */}
         <button type="button" disabled={!!generando}
           onClick={() => generarYCompartir('instagram')}
           className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white transition disabled:opacity-60"
           style={{ background: 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
           {generando === 'instagram'
-            ? <><Loader2 className="h-5 w-5 animate-spin" /> Generando…</>
+            ? <><Loader2 className="h-5 w-5 animate-spin" /> {t.histGenerando}</>
             : compartido === 'instagram'
-            ? <><CheckCircle2 className="h-5 w-5" /> ¡Lista para Instagram!</>
-            : <><IgIcon size={20} /> Compartir en Instagram Stories</>}
+            ? <><CheckCircle2 className="h-5 w-5" /> {t.histListaIg}</>
+            : <><IgIcon size={20} /> {t.histCompartirIg}</>}
         </button>
 
-        {/* Facebook */}
         <button type="button" disabled={!!generando}
           onClick={() => generarYCompartir('facebook')}
           className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white transition disabled:opacity-60"
           style={{ background: '#1877F2' }}>
           {generando === 'facebook'
-            ? <><Loader2 className="h-5 w-5 animate-spin" /> Generando…</>
+            ? <><Loader2 className="h-5 w-5 animate-spin" /> {t.histGenerando}</>
             : compartido === 'facebook'
-            ? <><CheckCircle2 className="h-5 w-5" /> ¡Lista para Facebook!</>
-            : <><FbIcon size={20} /> Compartir en Facebook</>}
+            ? <><CheckCircle2 className="h-5 w-5" /> {t.histListaFb}</>
+            : <><FbIcon size={20} /> {t.histCompartirFb}</>}
         </button>
 
         {(compartido === 'instagram' || compartido === 'facebook') && (
           <div className="rounded-2xl bg-white/10 p-4 text-center text-sm text-white/80 space-y-1">
-            <p className="font-bold">📱 En el celular:</p>
+            <p className="font-bold">{t.histEnCelular}</p>
             {compartido === 'instagram'
-              ? <p>Abrí Instagram → ➕ Nueva historia → elegí la imagen</p>
-              : <p>Abrí Facebook → ➕ Nueva historia → elegí la imagen</p>}
+              ? <p>{t.histPasoIg}</p>
+              : <p>{t.histPasoFb}</p>}
           </div>
         )}
 
-        {/* Solo descargar */}
         <button type="button" disabled={!!generando}
           onClick={() => generarYCompartir('download')}
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/20 py-3 text-sm font-bold text-white/60 transition hover:text-white hover:border-white/40 disabled:opacity-40">
           <Download className="h-4 w-4" />
-          {generando === 'download' ? 'Generando…' : 'Solo descargar imagen'}
+          {generando === 'download' ? t.histGenerando : t.histDescargar}
         </button>
       </div>
     </div>

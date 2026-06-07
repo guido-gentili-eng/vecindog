@@ -5,9 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
-
-/* ── Tipos ── */
 
 type TipoEvento =
   | 'vacuna'
@@ -22,27 +21,23 @@ type TipoEvento =
 interface EventoTimeline {
   id: string;
   tipo: TipoEvento;
-  fecha: string; // YYYY-MM-DD
+  fecha: string;
   titulo: string;
   subtitulo?: string;
   notas?: string;
-  extra?: string; // ej: valor kg, estado aviso
+  extra?: string;
 }
 
-/* ── Config visual por tipo ── */
-
-const CONFIG: Record<TipoEvento, { emoji: string; color: string; bg: string; label: string }> = {
-  vacuna:          { emoji: '💉', color: 'text-[#3F8B5C]',  bg: 'bg-[#3F8B5C]/10',  label: 'Vacuna'          },
-  desparasitacion: { emoji: '🐛', color: 'text-[#8B5CF6]',  bg: 'bg-[#8B5CF6]/10',  label: 'Desparasitación' },
-  medicamento:     { emoji: '💊', color: 'text-[#0EA5E9]',  bg: 'bg-[#0EA5E9]/10',  label: 'Medicamento'     },
-  peso:            { emoji: '⚖️', color: 'text-[#F59E0B]',  bg: 'bg-[#F59E0B]/10',  label: 'Peso'            },
-  estudio:         { emoji: '📋', color: 'text-[#64748B]',  bg: 'bg-[#64748B]/10',  label: 'Estudio'         },
-  grooming:        { emoji: '✂️', color: 'text-[#EC4899]',  bg: 'bg-[#EC4899]/10',  label: 'Grooming'        },
-  turno:           { emoji: '📅', color: 'text-[#EE5A3B]',  bg: 'bg-[#EE5A3B]/10',  label: 'Turno'           },
-  aviso:           { emoji: '📢', color: 'text-[#D7503A]',  bg: 'bg-[#D7503A]/10',  label: 'Aviso'           },
+const CONFIG_STATIC: Record<TipoEvento, { emoji: string; color: string; bg: string }> = {
+  vacuna:          { emoji: '💉', color: 'text-[#3F8B5C]',  bg: 'bg-[#3F8B5C]/10'  },
+  desparasitacion: { emoji: '🐛', color: 'text-[#8B5CF6]',  bg: 'bg-[#8B5CF6]/10'  },
+  medicamento:     { emoji: '💊', color: 'text-[#0EA5E9]',  bg: 'bg-[#0EA5E9]/10'  },
+  peso:            { emoji: '⚖️', color: 'text-[#F59E0B]',  bg: 'bg-[#F59E0B]/10'  },
+  estudio:         { emoji: '📋', color: 'text-[#64748B]',  bg: 'bg-[#64748B]/10'  },
+  grooming:        { emoji: '✂️', color: 'text-[#EC4899]',  bg: 'bg-[#EC4899]/10'  },
+  turno:           { emoji: '📅', color: 'text-[#EE5A3B]',  bg: 'bg-[#EE5A3B]/10'  },
+  aviso:           { emoji: '📢', color: 'text-[#D7503A]',  bg: 'bg-[#D7503A]/10'  },
 };
-
-/* ── Helpers ── */
 
 function fmt(iso: string) {
   if (!iso) return '—';
@@ -55,12 +50,11 @@ function fmtMes(iso: string) {
   return d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
 }
 
-/* ── Página ── */
-
 export default function TimelinePage() {
   const { id: perroId } = useParams<{ id: string }>();
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
 
   const [perroNombre, setPerroNombre] = useState('');
   const [eventos, setEventos] = useState<EventoTimeline[]>([]);
@@ -98,7 +92,6 @@ export default function TimelinePage() {
         supabase.from('posts').select('id, categoria, nombre, zona, fecha, created_at, estado').eq('perro_id', perroId),
       ]);
 
-      // Verificar que el perro pertenece al usuario
       if (!perro || perro.user_id !== user?.id) { router.replace('/mis-perros'); return; }
 
       setPerroNombre(perro.nombre);
@@ -113,7 +106,7 @@ export default function TimelinePage() {
           titulo: v.nombre,
           subtitulo: v.veterinario || undefined,
           notas: v.notas || undefined,
-          extra: v.proxima ? `Próxima: ${fmt(v.proxima)}` : undefined,
+          extra: v.proxima ? t.tlineProxima.replace('{fecha}', fmt(v.proxima)) : undefined,
         });
       }
 
@@ -125,7 +118,7 @@ export default function TimelinePage() {
           titulo: d.producto,
           subtitulo: d.tipo,
           notas: d.notas || undefined,
-          extra: d.proxima ? `Próxima: ${fmt(d.proxima)}` : undefined,
+          extra: d.proxima ? t.tlineProxima.replace('{fecha}', fmt(d.proxima)) : undefined,
         });
       }
 
@@ -137,7 +130,7 @@ export default function TimelinePage() {
           titulo: m.nombre,
           subtitulo: `${m.dosis} · ${m.frecuencia}`,
           notas: m.notas || undefined,
-          extra: m.activo ? 'Activo' : (m.fecha_fin ? `Hasta: ${fmt(m.fecha_fin)}` : undefined),
+          extra: m.activo ? t.tlineActivo : (m.fecha_fin ? `Hasta: ${fmt(m.fecha_fin)}` : undefined),
         });
       }
 
@@ -172,13 +165,13 @@ export default function TimelinePage() {
         });
       }
 
-      for (const t of turnos ?? []) {
+      for (const turno of turnos ?? []) {
         lista.push({
-          id: `turno-${t.id}`,
+          id: `turno-${turno.id}`,
           tipo: 'turno',
-          fecha: t.fecha,
-          titulo: t.tipo === 'radiografia' ? 'Radiografía' : t.tipo === 'ecografia' ? 'Ecografía' : t.tipo,
-          notas: t.nota || undefined,
+          fecha: turno.fecha,
+          titulo: turno.tipo === 'radiografia' ? 'Radiografía' : turno.tipo === 'ecografia' ? 'Ecografía' : turno.tipo,
+          notas: turno.nota || undefined,
         });
       }
 
@@ -190,20 +183,28 @@ export default function TimelinePage() {
           fecha: (p.fecha ?? p.created_at)?.slice(0, 10),
           titulo: catLabel,
           subtitulo: p.zona || undefined,
-          extra: p.estado === 'resuelto' ? '✓ Resuelto' : 'Activo',
+          extra: p.estado === 'resuelto' ? t.tlineResuelto : t.tlineActivo,
         });
       }
 
-      // Ordenar por fecha descendente
       lista.sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
-
       setEventos(lista);
     } finally {
       setCargando(false);
     }
   }
 
-  // Agrupar por mes
+  const CONFIG: Record<TipoEvento, { emoji: string; color: string; bg: string; label: string }> = {
+    vacuna:          { ...CONFIG_STATIC.vacuna,          label: t.tlineVacuna          },
+    desparasitacion: { ...CONFIG_STATIC.desparasitacion, label: t.tlineDesparasitacion },
+    medicamento:     { ...CONFIG_STATIC.medicamento,     label: t.tlineMedicamento     },
+    peso:            { ...CONFIG_STATIC.peso,            label: t.tlinePeso            },
+    estudio:         { ...CONFIG_STATIC.estudio,         label: t.tlineEstudio         },
+    grooming:        { ...CONFIG_STATIC.grooming,        label: t.tlineGrooming        },
+    turno:           { ...CONFIG_STATIC.turno,           label: t.tlineTurno           },
+    aviso:           { ...CONFIG_STATIC.aviso,           label: t.tlineAviso           },
+  };
+
   const grupos: { mes: string; items: EventoTimeline[] }[] = [];
   for (const ev of eventos) {
     const mes = fmtMes(ev.fecha);
@@ -230,27 +231,25 @@ export default function TimelinePage() {
           href={`/mis-perros/${perroId}`}
           className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver al perfil
+          <ArrowLeft className="h-4 w-4" /> {t.tlineVolver}
         </Link>
 
-        {/* Header */}
         <div className="mb-6 rounded-[24px] bg-brand-primary px-6 py-5 text-white">
-          <p className="text-xs font-bold uppercase tracking-[2px] opacity-70 mb-1">Diario</p>
+          <p className="text-xs font-bold uppercase tracking-[2px] opacity-70 mb-1">{t.tlineDiario}</p>
           <h1 className="font-display text-3xl font-black">{perroNombre}</h1>
-          <p className="mt-1 text-sm opacity-75">{eventos.length} eventos registrados</p>
+          <p className="mt-1 text-sm opacity-75">{t.tlineEventos.replace('{n}', String(eventos.length))}</p>
         </div>
 
         {eventos.length === 0 ? (
           <div className="rounded-2xl bg-white border border-black/5 px-6 py-10 text-center">
             <p className="text-3xl mb-3">📋</p>
-            <p className="font-bold text-ink">Todavía no hay eventos</p>
-            <p className="text-sm text-ink-muted mt-1">Registrá vacunas, pesos y más para ver el historial aquí.</p>
+            <p className="font-bold text-ink">{t.tlineSinEventos}</p>
+            <p className="text-sm text-ink-muted mt-1">{t.tlineSinEventosSub}</p>
           </div>
         ) : (
           <div className="space-y-6">
             {grupos.map(({ mes, items }) => (
               <div key={mes}>
-                {/* Separador de mes */}
                 <div className="mb-3 flex items-center gap-3">
                   <div className="h-px flex-1 bg-black/10" />
                   <span className="text-xs font-bold uppercase tracking-wider text-ink-muted capitalize">{mes}</span>
@@ -265,12 +264,10 @@ export default function TimelinePage() {
                         key={ev.id}
                         className="flex gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3"
                       >
-                        {/* Icono */}
                         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg ${cfg.bg}`}>
                           {cfg.emoji}
                         </div>
 
-                        {/* Contenido */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>

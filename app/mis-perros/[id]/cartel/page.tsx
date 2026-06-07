@@ -10,10 +10,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Printer, ArrowLeft } from 'lucide-react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CartelPage() {
   const { id }      = useParams<{ id: string }>();
   const { profile } = useAuth();
+  const { t } = useLanguage();
 
   const [perro,    setPerro]    = useState<Perro | null>(null);
   const [perdido,  setPerdido]  = useState(false);
@@ -69,14 +71,14 @@ export default function CartelPage() {
       <div className="print:hidden bg-gray-100 border-b px-6 py-4 flex items-center justify-between gap-4">
         <Link href={`/mis-perros/${id}`}
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-muted hover:text-ink transition">
-          <ArrowLeft className="h-4 w-4" /> Volver
+          <ArrowLeft className="h-4 w-4" /> {t.cartelVolver}
         </Link>
         <button
           onClick={() => window.print()}
           className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
           style={{ background: accent }}
         >
-          <Printer className="h-4 w-4" /> Imprimir / Guardar PDF
+          <Printer className="h-4 w-4" /> {t.cartelImprimir}
         </button>
       </div>
 

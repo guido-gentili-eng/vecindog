@@ -6,26 +6,15 @@ import { Loader2, AlertCircle, Check, ChevronLeft, HandHeart } from 'lucide-reac
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-
-const EXPERIENCIA_OPTS = [
-  'Soy dueño/a de perros',
-  'Tuve perros de niño/a',
-  'Cuidé perros de amigos/familia',
-  'Trabajé con animales',
-  'Sin experiencia previa',
-];
-
-const DISPONIBILIDAD_OPTS = [
-  'De lunes a viernes',
-  'Fines de semana',
-  'Cualquier día',
-  'Solo de día',
-  'Con pernocte incluido',
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function QuieroCuidarPage() {
   const router  = useRouter();
   const { user, isAuthenticated, isPro } = useAuth();
+  const { t } = useLanguage();
+
+  const EXPERIENCIA_OPTS = [t.svcExp1, t.svcExp2, t.svcExp3, t.svcExp4, t.svcExp5];
+  const DISPONIBILIDAD_OPTS = [t.svcDisp1, t.svcDisp2, t.svcDisp3, t.svcDisp4, t.qqcDisp5];
 
   const [nombre,        setNombre]        = useState('');
   const [experiencias,  setExperiencias]  = useState<string[]>([]);
@@ -46,16 +35,15 @@ export default function QuieroCuidarPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) { setError('Tenés que iniciar sesión para registrarte.'); return; }
-    if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
-    if (!zona.trim())   { setError('La zona es obligatoria.'); return; }
-    if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
-    if (contacto.replace(/\D/g, '').length < 10) { setError('El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210'); return; }
+    if (!user) { setError(t.qqcErrLogin); return; }
+    if (!nombre.trim()) { setError(t.qqcErrNombre); return; }
+    if (!zona.trim())   { setError(t.qqcErrZona); return; }
+    if (!contacto.trim()) { setError(t.qqcErrContacto); return; }
+    if (contacto.replace(/\D/g, '').length < 10) { setError(t.qqcErrContactoShort); return; }
 
     setEnviando(true);
     setError('');
 
-    // Construir descripción enriquecida
     const partes: string[] = [];
     if (experiencias.length)   partes.push(`Experiencia: ${experiencias.join(', ')}.`);
     if (disponibilidad.length) partes.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
@@ -88,7 +76,7 @@ export default function QuieroCuidarPage() {
     });
 
     setEnviando(false);
-    if (dbErr) { setError('No se pudo registrar. Intentá de nuevo.'); return; }
+    if (dbErr) { setError(t.qqcErrRegistrar); return; }
     setPublicado(true);
     setTimeout(() => router.push('/cuidado'), 1800);
   }
@@ -96,7 +84,7 @@ export default function QuieroCuidarPage() {
   if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
-        <p className="text-ink-muted">Iniciá sesión para registrarte como cuidador.</p>
+        <p className="text-ink-muted">{t.qqcLoginSub}</p>
       </div>
     );
   }
@@ -108,15 +96,13 @@ export default function QuieroCuidarPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100">
             <HandHeart className="h-7 w-7 text-teal-600" />
           </div>
-          <h2 className="font-display text-2xl font-black text-ink">Función exclusiva VecindogPro</h2>
-          <p className="mt-2 text-sm text-ink-muted">
-            Para registrarte como cuidador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.
-          </p>
+          <h2 className="font-display text-2xl font-black text-ink">{t.qqcProTitle}</h2>
+          <p className="mt-2 text-sm text-ink-muted">{t.qqcProSub}</p>
           <Link
             href="/planes"
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 font-bold text-white transition hover:bg-teal-700"
           >
-            Ver planes
+            {t.qqcVerPlanes}
           </Link>
         </div>
       </div>
@@ -129,8 +115,8 @@ export default function QuieroCuidarPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
           <Check className="h-8 w-8 text-teal-600" />
         </div>
-        <h2 className="font-display text-2xl font-black text-ink">¡Te registraste como cuidador!</h2>
-        <p className="mt-2 text-ink-muted">Tu perfil ya aparece en el listado de cuidadores disponibles.</p>
+        <h2 className="font-display text-2xl font-black text-ink">{t.qqcOkTitle}</h2>
+        <p className="mt-2 text-ink-muted">{t.qqcOkSub}</p>
       </div>
     );
   }
@@ -138,31 +124,27 @@ export default function QuieroCuidarPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <Link href="/cuidado" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink">
-        <ChevronLeft className="h-4 w-4" /> Volver
+        <ChevronLeft className="h-4 w-4" /> {t.cartelVolver}
       </Link>
 
-      <h1 className="font-display text-3xl font-black text-ink mb-1">Quiero cuidar</h1>
-      <p className="text-sm text-ink-muted mb-8">
-        Completá tu perfil de cuidador para que los dueños puedan encontrarte.
-      </p>
+      <h1 className="font-display text-3xl font-black text-ink mb-1">{t.qqcTitle}</h1>
+      <p className="text-sm text-ink-muted mb-8">{t.qqcSub}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Nombre */}
         <div>
-          <label className="label">Tu nombre o apodo <span className="text-bad">*</span></label>
+          <label className="label">{t.qqcNombre} <span className="text-bad">*</span></label>
           <input
             className="field w-full mt-1"
-            placeholder="Ej: Martina G."
+            placeholder={t.qqcNombrePh}
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
           />
         </div>
 
-        {/* Experiencia */}
         <div>
-          <label className="label">Experiencia con perros</label>
+          <label className="label">{t.qqcExperiencia}</label>
           <div className="mt-2 flex flex-wrap gap-2">
             {EXPERIENCIA_OPTS.map((opt) => (
               <button
@@ -181,9 +163,8 @@ export default function QuieroCuidarPage() {
           </div>
         </div>
 
-        {/* Disponibilidad */}
         <div>
-          <label className="label">Disponibilidad</label>
+          <label className="label">{t.qqcDisponibilidad}</label>
           <div className="mt-2 flex flex-wrap gap-2">
             {DISPONIBILIDAD_OPTS.map((opt) => (
               <button
@@ -202,9 +183,8 @@ export default function QuieroCuidarPage() {
           </div>
         </div>
 
-        {/* Cantidad máxima */}
         <div>
-          <label className="label">¿Cuántos perros podés cuidar a la vez?</label>
+          <label className="label">{t.qqcCuantos}</label>
           <div className="mt-2 flex gap-2">
             {['1','2','3','4+'].map((n) => (
               <button
@@ -223,11 +203,10 @@ export default function QuieroCuidarPage() {
           </div>
         </div>
 
-        {/* Tiene perros propios */}
         <div>
-          <label className="label">¿Tenés perros en casa?</label>
+          <label className="label">{t.qqcTienePerros}</label>
           <div className="mt-2 flex gap-3">
-            {([['si', 'Sí'], ['no', 'No']] as const).map(([val, lbl]) => (
+            {([['si', t.adpSi], ['no', t.adpNo]] as const).map(([val, lbl]) => (
               <button
                 key={val}
                 type="button"
@@ -244,21 +223,19 @@ export default function QuieroCuidarPage() {
           </div>
         </div>
 
-        {/* Detalles adicionales */}
         <div>
-          <label className="label">Información adicional <span className="text-ink-muted font-normal">(opcional)</span></label>
+          <label className="label">{t.qqcInfo} <span className="text-ink-muted font-normal">{t.cubcOpcional}</span></label>
           <textarea
             className="field w-full mt-1"
             rows={3}
-            placeholder="Contá algo más: si tenés patio, si podés hacer pernocte, razas con las que te sentís cómodo/a…"
+            placeholder={t.qqcInfoPh}
             value={detalles}
             onChange={(e) => setDetalles(e.target.value)}
           />
         </div>
 
-        {/* Zona */}
         <div>
-          <label className="label">Zona / Barrio <span className="text-bad">*</span></label>
+          <label className="label">{t.qqcZona} <span className="text-bad">*</span></label>
           <input
             className="field w-full mt-1"
             placeholder="Ej: Palermo, Villa Crespo…"
@@ -268,21 +245,18 @@ export default function QuieroCuidarPage() {
           />
         </div>
 
-        {/* Contacto */}
         <div>
-          <label className="label">WhatsApp de contacto <span className="text-bad">*</span></label>
+          <label className="label">{t.qqcContacto} <span className="text-bad">*</span></label>
           <input
             className="field w-full mt-1"
             type="tel"
-            placeholder="Ej: 1122334455"
+            placeholder={t.cubcContactoPh}
             value={contacto}
             onChange={(e) => setContacto(e.target.value)}
             required
           />
           {contacto.trim() && contacto.replace(/\D/g, '').length < 10 && (
-            <p className="mt-1.5 text-xs font-semibold text-bad">
-              Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210
-            </p>
+            <p className="mt-1.5 text-xs font-semibold text-bad">{t.qqcErrContactoShort}</p>
           )}
         </div>
 
@@ -298,7 +272,7 @@ export default function QuieroCuidarPage() {
           className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-700 py-3.5 font-bold text-white transition hover:bg-teal-800 disabled:opacity-60"
         >
           {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <HandHeart className="h-4 w-4" />}
-          Registrarme como cuidador
+          {t.qqcRegistrar}
         </button>
       </form>
     </div>

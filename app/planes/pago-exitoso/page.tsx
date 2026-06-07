@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 
 type Estado = 'cargando' | 'ok' | 'pendiente' | 'error';
@@ -13,6 +14,7 @@ export default function PagoExitosoPro() {
   const searchParams  = useSearchParams();
   const router        = useRouter();
   const { refreshProfile } = useAuth();
+  const { t } = useLanguage();
   const [estado, setEstado] = useState<Estado>('cargando');
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function PagoExitosoPro() {
         {estado === 'cargando' && (
           <>
             <Loader2 className="mx-auto h-12 w-12 animate-spin text-brand-primary" />
-            <p className="mt-4 font-bold text-ink">Confirmando tu pago…</p>
+            <p className="mt-4 font-bold text-ink">{t.ppxCargando}</p>
           </>
         )}
 
@@ -63,19 +65,17 @@ export default function PagoExitosoPro() {
               <CheckCircle2 className="h-10 w-10 text-good" />
             </div>
             <h1 className="mt-5 font-display text-2xl font-black text-ink">
-              ¡Bienvenido a VecindogPro! 🎉
+              {t.ppxOkTitle} 🎉
             </h1>
-            <p className="mt-2 text-sm text-ink-muted">
-              Tu cuenta ya tiene acceso a todas las funciones Pro por 30 días.
-            </p>
+            <p className="mt-2 text-sm text-ink-muted">{t.ppxOkSub}</p>
             <div className="mt-6 space-y-2">
               <Link href="/mis-perros"
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white shadow-soft transition hover:opacity-90">
-                <Sparkles className="h-4 w-4" /> Ir a Mis perros
+                <Sparkles className="h-4 w-4" /> {t.ppxIrMisPerros}
               </Link>
               <Link href="/"
                 className="flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-                Volver al inicio
+                {t.ppxVolver}
               </Link>
             </div>
           </>
@@ -86,12 +86,10 @@ export default function PagoExitosoPro() {
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-warn/10">
               <Loader2 className="h-10 w-10 text-warn" />
             </div>
-            <h1 className="mt-5 font-display text-2xl font-black text-ink">Pago en proceso</h1>
-            <p className="mt-2 text-sm text-ink-muted">
-              Tu pago está siendo procesado. Te avisaremos por email cuando se confirme.
-            </p>
+            <h1 className="mt-5 font-display text-2xl font-black text-ink">{t.ppxPendienteTitle}</h1>
+            <p className="mt-2 text-sm text-ink-muted">{t.ppxPendienteSub}</p>
             <Link href="/" className="mt-6 flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
-              Volver al inicio
+              {t.ppxVolver}
             </Link>
           </>
         )}
@@ -101,15 +99,15 @@ export default function PagoExitosoPro() {
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-bad/10">
               <AlertCircle className="h-10 w-10 text-bad" />
             </div>
-            <h1 className="mt-5 font-display text-2xl font-black text-ink">No pudimos confirmar</h1>
+            <h1 className="mt-5 font-display text-2xl font-black text-ink">{t.ppxErrorTitle}</h1>
             <p className="mt-2 text-sm text-ink-muted">
-              Hubo un problema al verificar tu pago. Si el cobro se realizó, escribinos a{' '}
+              {t.ppxErrorSub}{' '}
               <a href="mailto:hola@mivecindog.com.ar" className="font-bold text-brand-primary underline">
                 hola@mivecindog.com.ar
               </a>.
             </p>
             <Link href="/planes" className="mt-6 flex w-full items-center justify-center rounded-2xl bg-brand-primary py-3 text-sm font-bold text-white transition hover:opacity-90">
-              Volver a planes
+              {t.ppxVolverPlanes}
             </Link>
           </>
         )}

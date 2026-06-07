@@ -926,6 +926,241 @@ export type Translations = {
   pbrFotoInvalida: string;
   pbrFotoPesada: string;
   pbrWhatsappError: string;
+  // planes/pago-exitoso
+  ppxCargando: string;
+  ppxOkTitle: string;
+  ppxOkSub: string;
+  ppxIrMisPerros: string;
+  ppxVolver: string;
+  ppxPendienteTitle: string;
+  ppxPendienteSub: string;
+  ppxErrorTitle: string;
+  ppxErrorSub: string;
+  ppxVolverPlanes: string;
+  // red-vecindog/pago-exitoso
+  rvpxCargando: string;
+  rvpxErrorTitle: string;
+  rvpxPendienteTitle: string;
+  rvpxBienvenidoTitle: string;
+  rvpxPagoTitle: string;
+  rvpxErrorSub: string;
+  rvpxPendienteSub: string;
+  rvpxActivadoSub: string;
+  rvpxPagoSub: string;
+  rvpxNegocioTiene: string;
+  rvpxBenef1: string;
+  rvpxBenef2: string;
+  rvpxPlan: string;
+  rvpxActualizar: string;
+  rvpxIrApp: string;
+  // publicitate/pago-exitoso
+  pubpxCargando: string;
+  pubpxErrorTitle: string;
+  pubpxPendienteTitle: string;
+  pubpxRenovadoTitle: string;
+  pubpxActivadoTitle: string;
+  pubpxPagoTitle: string;
+  pubpxErrorSub: string;
+  pubpxPendienteSub: string;
+  pubpxRenovadoSub: string;
+  pubpxActivadoSub: string;
+  pubpxPagoSub: string;
+  pubpxEspacios: string;
+  pubpxActualizar: string;
+  pubpxIrApp: string;
+  // publicitate/renovar
+  pubrvChip: string;
+  pubrvVencida: string;
+  pubrvExtender: string;
+  pubrvPlan: string;
+  pubrvVencimientoActual: string;
+  pubrvVencido: string;
+  pubrvNuevoVencimiento: string;
+  pubrvTotal: string;
+  pubrvPagoFallido: string;
+  pubrvNoEncontrado: string;
+  pubrvNoEncontradoSub: string;
+  pubrvVerPlanes: string;
+  pubrvCargando: string;
+  pubrvBtn: string;
+  pubrvPagoCon: string;
+  pubrvVerTodos: string;
+  // shared service options (cuidado/transporte)
+  svcExp1: string;
+  svcExp2: string;
+  svcExp3: string;
+  svcExp4: string;
+  svcExp5: string;
+  svcDisp1: string;
+  svcDisp2: string;
+  svcDisp3: string;
+  svcDisp4: string;
+  // busco-cuidador
+  cubcTitle: string;
+  cubcSub: string;
+  cubcCualPerro: string;
+  cubcCargandoPerros: string;
+  cubcSinPerros: string;
+  cubcRegistra: string;
+  cubcSinPerroSub: string;
+  cubcFechas: string;
+  cubcOpcional: string;
+  cubcDesde: string;
+  cubcHasta: string;
+  cubcZona: string;
+  cubcDescripcion: string;
+  cubcDescripcionPh: string;
+  cubcContacto: string;
+  cubcContactoPh: string;
+  cubcContactoError: string;
+  cubcPublicar: string;
+  cubcErrLogin: string;
+  cubcErrZona: string;
+  cubcErrContacto: string;
+  cubcErrContactoShort: string;
+  cubcErrPublicar: string;
+  cubcLoginSub: string;
+  cubcLoginBtn: string;
+  cubcOkTitle: string;
+  cubcOkSub: string;
+  // quiero-cuidar
+  qqcTitle: string;
+  qqcSub: string;
+  qqcNombre: string;
+  qqcNombrePh: string;
+  qqcExperiencia: string;
+  qqcDisponibilidad: string;
+  qqcCuantos: string;
+  qqcTienePerros: string;
+  qqcDisp5: string;
+  qqcInfo: string;
+  qqcInfoPh: string;
+  qqcZona: string;
+  qqcContacto: string;
+  qqcRegistrar: string;
+  qqcProTitle: string;
+  qqcProSub: string;
+  qqcVerPlanes: string;
+  qqcLoginSub: string;
+  qqcOkTitle: string;
+  qqcOkSub: string;
+  qqcErrLogin: string;
+  qqcErrNombre: string;
+  qqcErrZona: string;
+  qqcErrContacto: string;
+  qqcErrContactoShort: string;
+  qqcErrRegistrar: string;
+  // quiero-transportar
+  qqtTitle: string;
+  qqtSub: string;
+  qqtCuantos: string;
+  qqtVehiculo: string;
+  qqtDisp5: string;
+  qqtInfoPh: string;
+  qqtRegistrar: string;
+  qqtProSub: string;
+  qqtLoginSub: string;
+  qqtOkTitle: string;
+  qqtOkSub: string;
+  qqtErrRegistrar: string;
+  // cuidador/[id] rating
+  quidBack: string;
+  quidSobre: string;
+  quidContactar: string;
+  quidDisponibilidad: string;
+  quidCalificaciones: string;
+  quidCalificar: string;
+  quidEditarCal: string;
+  quidCalGuardada: string;
+  quidSinCal: string;
+  quidSePrimero: string;
+  quidNoEncontrado: string;
+  quidModalTitle: string;
+  quidPuntuacion: string;
+  quidCuidadoPerro: string;
+  quidFuePuntual: string;
+  quidBuenaCom: string;
+  quidRecomienda: string;
+  quidComentario: string;
+  quidComentarioPh: string;
+  quidCancelar: string;
+  quidGuardar: string;
+  quidErrEstrella: string;
+  quidExcelente: string;
+  quidBueno: string;
+  quidRegular: string;
+  quidPuntual: string;
+  quidBuenaComunicacion: string;
+  quidLoRecomienda: string;
+  quidCuidadoBadge: string;
+  quidRecomendaciones: string;
+  // transportador/[id] rating
+  tridBack: string;
+  tridSobre: string;
+  tridNoEncontrado: string;
+  tridModalTitle: string;
+  tridCuidadoPerro: string;
+  tridTratoBadge: string;
+  tridCuidadoBadge: string;
+  tridSinCal: string;
+  // red-vecindog/[categoria]
+  rvcatBack: string;
+  rvcatNoEncontrado: string;
+  rvcatVolverRvn: string;
+  rvcatSinInscrip: string;
+  rvcatProTitle: string;
+  rvcatVerPro: string;
+  rvcatVerNegocio: string;
+  rvcatCiudadTitle: string;
+  rvcatCiudadSub: string;
+  rvcatCiudadPh: string;
+  rvcatUsarDeTodas: string;
+  rvcatEmptySub: string;
+  rvcatRegistrar: string;
+  rvcatVolver: string;
+  rvcatConfirmar: string;
+  rvcatProSub: string;
+  rvcatProBeneficios: string;
+  rvcatEmptyTitle: string;
+  // cartel
+  cartelVolver: string;
+  cartelImprimir: string;
+  // timeline
+  tlineVolver: string;
+  tlineDiario: string;
+  tlineEventos: string;
+  tlineSinEventos: string;
+  tlineSinEventosSub: string;
+  tlineVacuna: string;
+  tlineDesparasitacion: string;
+  tlineMedicamento: string;
+  tlinePeso: string;
+  tlineEstudio: string;
+  tlineGrooming: string;
+  tlineTurno: string;
+  tlineAviso: string;
+  tlineActivo: string;
+  tlineResuelto: string;
+  tlineProxima: string;
+  // historia (social sharing)
+  histVolver: string;
+  histCompartirRedes: string;
+  histConectar: string;
+  histConectarLabel: string;
+  histEmailLabel: string;
+  histEmailPh: string;
+  histGuardar: string;
+  histCambiar: string;
+  histEmailDe: string;
+  histGenerando: string;
+  histListaIg: string;
+  histListaFb: string;
+  histCompartirIg: string;
+  histCompartirFb: string;
+  histEnCelular: string;
+  histPasoIg: string;
+  histPasoFb: string;
+  histDescargar: string;
 };
 
 const translations: Record<Lang, Translations> = {
@@ -1852,6 +2087,227 @@ const translations: Record<Lang, Translations> = {
     pbrFotoInvalida: 'no es una imagen válida (JPG, PNG o WEBP).',
     pbrFotoPesada: 'pesa {mb} MB.',
     pbrWhatsappError: 'El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
+    ppxCargando: 'Confirmando tu pago…',
+    ppxOkTitle: '¡Bienvenido a VecindogPro!',
+    ppxOkSub: 'Tu cuenta ya tiene acceso a todas las funciones Pro por 30 días.',
+    ppxIrMisPerros: 'Ir a Mis perros',
+    ppxVolver: 'Volver al inicio',
+    ppxPendienteTitle: 'Pago en proceso',
+    ppxPendienteSub: 'Tu pago está siendo procesado. Te avisaremos por email cuando se confirme.',
+    ppxErrorTitle: 'No pudimos confirmar',
+    ppxErrorSub: 'Hubo un problema al verificar tu pago. Si el cobro se realizó, escribinos a',
+    ppxVolverPlanes: 'Volver a planes',
+    rvpxCargando: 'Verificando pago y activando tu negocio…',
+    rvpxErrorTitle: 'Hubo un problema',
+    rvpxPendienteTitle: '¡Pago en proceso!',
+    rvpxBienvenidoTitle: '¡Bienvenido a la Red!',
+    rvpxPagoTitle: '¡Pago recibido!',
+    rvpxErrorSub: 'Escribinos a hola@mivecindog.com.ar y lo resolvemos rápido.',
+    rvpxPendienteSub: 'Tu pago está siendo procesado. Tu negocio se activa automáticamente al confirmarse.',
+    rvpxActivadoSub: 'Tu negocio ya es parte de la Red Vecindog y aparece en el mapa para los vecinos dueños de perros.',
+    rvpxPagoSub: 'Recibirás una confirmación por email cuando tu negocio esté activo en el mapa.',
+    rvpxNegocioTiene: 'Tu negocio ahora tiene',
+    rvpxBenef1: 'Presencia en el mapa de búsqueda de perros',
+    rvpxBenef2: 'Teléfono y dirección visibles para los vecinos',
+    rvpxPlan: 'Red Vecindog · 30 días',
+    rvpxActualizar: '¿Necesitás actualizar algún dato? Escribinos a',
+    rvpxIrApp: 'Ir a la app',
+    pubpxCargando: 'Verificando pago y activando tu anuncio…',
+    pubpxErrorTitle: 'Hubo un problema',
+    pubpxPendienteTitle: '¡Pago en proceso!',
+    pubpxRenovadoTitle: '¡Publicidad renovada!',
+    pubpxActivadoTitle: '¡Tu anuncio está activo!',
+    pubpxPagoTitle: '¡Pago recibido!',
+    pubpxErrorSub: 'Escribinos a hola@mivecindog.com.ar y lo resolvemos rápido.',
+    pubpxPendienteSub: 'Tu pago está siendo procesado. Tu anuncio se activa automáticamente al confirmarse.',
+    pubpxRenovadoSub: 'Tu publicidad fue renovada por 30 días más. No tuviste que reingresar ningún dato.',
+    pubpxActivadoSub: 'Tu publicidad en Vecindog quedó activada para los próximos 30 días.',
+    pubpxPagoSub: 'Recibirás una confirmación por email cuando tu anuncio esté activo.',
+    pubpxEspacios: 'Espacios activados',
+    pubpxActualizar: '¿Necesitás hacer un cambio en tu anuncio? Escribinos a',
+    pubpxIrApp: 'Ir a la app',
+    pubrvChip: 'Renovar publicidad',
+    pubrvVencida: 'Tu publicidad venció. Renovar la reactiva por 30 días más.',
+    pubrvExtender: 'Extendé tu publicidad 30 días más.',
+    pubrvPlan: 'Plan',
+    pubrvVencimientoActual: 'Vencimiento actual',
+    pubrvVencido: '(vencido)',
+    pubrvNuevoVencimiento: 'Nuevo vencimiento',
+    pubrvTotal: 'Total',
+    pubrvPagoFallido: 'El pago no se procesó. Intentá de nuevo.',
+    pubrvNoEncontrado: 'Anuncio no encontrado',
+    pubrvNoEncontradoSub: 'El link de renovación es inválido o expiró.',
+    pubrvVerPlanes: 'Ver planes de publicidad',
+    pubrvCargando: 'Cargando…',
+    pubrvBtn: 'Renovar con Mercado Pago',
+    pubrvPagoCon: 'Podés pagar con tarjeta de débito, crédito o cuenta de Mercado Pago.',
+    pubrvVerTodos: 'Ver todos los planes',
+    svcExp1: 'Soy dueño/a de perros',
+    svcExp2: 'Tuve perros de niño/a',
+    svcExp3: 'Cuidé perros de amigos/familia',
+    svcExp4: 'Trabajé con animales',
+    svcExp5: 'Sin experiencia previa',
+    svcDisp1: 'De lunes a viernes',
+    svcDisp2: 'Fines de semana',
+    svcDisp3: 'Cualquier día',
+    svcDisp4: 'Solo de día',
+    cubcTitle: 'Busco cuidador',
+    cubcSub: 'Publicá un aviso para encontrar a alguien que cuide a tu perro.',
+    cubcCualPerro: '¿Para cuál de tus perros?',
+    cubcCargandoPerros: 'Cargando tus perros…',
+    cubcSinPerros: 'No tenés perros registrados.',
+    cubcRegistra: 'Registrá uno →',
+    cubcSinPerroSub: 'También podés continuar sin seleccionar un perro y completar los datos manualmente.',
+    cubcFechas: '¿Para qué fechas?',
+    cubcOpcional: '(opcional)',
+    cubcDesde: 'Desde',
+    cubcHasta: 'Hasta',
+    cubcZona: 'Zona / Barrio',
+    cubcDescripcion: 'Descripción',
+    cubcDescripcionPh: 'Necesidades especiales, rutinas, información importante para el cuidador…',
+    cubcContacto: 'WhatsApp de contacto',
+    cubcContactoPh: 'Ej: 1122334455',
+    cubcContactoError: 'Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210',
+    cubcPublicar: 'Publicar aviso',
+    cubcErrLogin: 'Tenés que iniciar sesión para publicar.',
+    cubcErrZona: 'La zona es obligatoria.',
+    cubcErrContacto: 'El contacto de WhatsApp es obligatorio.',
+    cubcErrContactoShort: 'El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
+    cubcErrPublicar: 'No se pudo publicar. Intentá de nuevo.',
+    cubcLoginSub: 'Iniciá sesión para publicar un pedido de cuidado.',
+    cubcLoginBtn: 'Iniciar sesión',
+    cubcOkTitle: '¡Aviso publicado!',
+    cubcOkSub: 'Tu pedido ya aparece en el listado de cuidado.',
+    qqcTitle: 'Quiero cuidar',
+    qqcSub: 'Completá tu perfil de cuidador para que los dueños puedan encontrarte.',
+    qqcNombre: 'Tu nombre o apodo',
+    qqcNombrePh: 'Ej: Martina G.',
+    qqcExperiencia: 'Experiencia con perros',
+    qqcDisponibilidad: 'Disponibilidad',
+    qqcCuantos: '¿Cuántos perros podés cuidar a la vez?',
+    qqcTienePerros: '¿Tenés perros en casa?',
+    qqcDisp5: 'Con pernocte incluido',
+    qqcInfo: 'Información adicional',
+    qqcInfoPh: 'Contá algo más: si tenés patio, si podés hacer pernocte, razas con las que te sentís cómodo/a…',
+    qqcZona: 'Zona / Barrio',
+    qqcContacto: 'WhatsApp de contacto',
+    qqcRegistrar: 'Registrarme como cuidador',
+    qqcProTitle: 'Función exclusiva VecindogPro',
+    qqcProSub: 'Para registrarte como cuidador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.',
+    qqcVerPlanes: 'Ver planes',
+    qqcLoginSub: 'Iniciá sesión para registrarte como cuidador.',
+    qqcOkTitle: '¡Te registraste como cuidador!',
+    qqcOkSub: 'Tu perfil ya aparece en el listado de cuidadores disponibles.',
+    qqcErrLogin: 'Tenés que iniciar sesión para registrarte.',
+    qqcErrNombre: 'El nombre es obligatorio.',
+    qqcErrZona: 'La zona es obligatoria.',
+    qqcErrContacto: 'El contacto de WhatsApp es obligatorio.',
+    qqcErrContactoShort: 'El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210',
+    qqcErrRegistrar: 'No se pudo registrar. Intentá de nuevo.',
+    qqtTitle: 'Quiero transportar perros',
+    qqtSub: 'Completá tu perfil de transportador para que los dueños puedan encontrarte.',
+    qqtCuantos: '¿Cuántos perros podés transportar a la vez?',
+    qqtVehiculo: '¿Qué vehículo tenés?',
+    qqtDisp5: 'Con horario flexible',
+    qqtInfoPh: 'Contá algo más: si tenés auto propio, qué zonas cubrís, si hacés traslados al veterinario…',
+    qqtRegistrar: 'Registrarme como transportador',
+    qqtProSub: 'Para registrarte como transportador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.',
+    qqtLoginSub: 'Iniciá sesión para registrarte como transportador.',
+    qqtOkTitle: '¡Te registraste como transportador!',
+    qqtOkSub: 'Tu perfil ya aparece en el listado de transportadores disponibles.',
+    qqtErrRegistrar: 'No se pudo registrar. Intentá de nuevo.',
+    quidBack: 'Cuidadores disponibles',
+    quidSobre: 'Sobre este cuidador',
+    quidContactar: 'Contactar',
+    quidDisponibilidad: 'Disponibilidad:',
+    quidCalificaciones: 'Calificaciones',
+    quidCalificar: 'Calificar',
+    quidEditarCal: 'Editar calificación',
+    quidCalGuardada: '¡Calificación guardada! Gracias por tu opinión.',
+    quidSinCal: 'Todavía no hay calificaciones para este cuidador.',
+    quidSePrimero: '¡Sé el primero!',
+    quidNoEncontrado: 'No se encontró el perfil de este cuidador.',
+    quidModalTitle: 'Calificar cuidador',
+    quidPuntuacion: 'Puntuación general',
+    quidCuidadoPerro: '¿Cómo fue el cuidado de tu perro?',
+    quidFuePuntual: '¿Fue puntual?',
+    quidBuenaCom: '¿La comunicación fue fluida?',
+    quidRecomienda: '¿Lo recomendarías a otros dueños?',
+    quidComentario: 'Comentario',
+    quidComentarioPh: 'Contá cómo fue la experiencia…',
+    quidCancelar: 'Cancelar',
+    quidGuardar: 'Guardar',
+    quidErrEstrella: 'Seleccioná al menos una estrella.',
+    quidExcelente: 'Excelente 🐾',
+    quidBueno: 'Bueno 👍',
+    quidRegular: 'Regular 😐',
+    quidPuntual: 'Puntual',
+    quidBuenaComunicacion: 'Buena comunicación',
+    quidLoRecomienda: 'Lo recomienda',
+    quidCuidadoBadge: '🐾 Cuidado',
+    quidRecomendaciones: '% lo recomienda',
+    tridBack: 'Transportadores disponibles',
+    tridSobre: 'Sobre este transportador',
+    tridNoEncontrado: 'No se encontró el perfil de este transportador.',
+    tridModalTitle: 'Calificar transportador',
+    tridCuidadoPerro: '¿Cómo fue el trato hacia tu perro?',
+    tridTratoBadge: '🐾 Trato',
+    tridCuidadoBadge: '🐾 Trato',
+    tridSinCal: 'Todavía no hay calificaciones para este transportador.',
+    rvcatBack: 'Red Vecindog',
+    rvcatNoEncontrado: 'Categoría no encontrada.',
+    rvcatVolverRvn: 'Volver a Red Vecindog',
+    rvcatSinInscrip: 'Sin inscriptos todavía',
+    rvcatProTitle: 'Exclusivo VecindogPro',
+    rvcatVerPro: 'Ver Pro',
+    rvcatVerNegocio: 'Ver negocio',
+    rvcatCiudadTitle: '¿En qué ciudad estás?',
+    rvcatCiudadSub: 'Tenés que elegir tu ciudad para ver los negocios de tu zona.',
+    rvcatCiudadPh: 'Escribí tu ciudad…',
+    rvcatUsarDeTodas: 'Usar "{q}" igual',
+    rvcatEmptySub: '¿Tenés un negocio de este rubro? Sé el primero en sumarte.',
+    rvcatRegistrar: 'Registrar mi negocio',
+    rvcatVolver: 'Volver',
+    rvcatConfirmar: 'Confirmar',
+    rvcatProSub: 'Activá el plan Pro para ver los datos de cada negocio.',
+    rvcatProBeneficios: 'Con VecindogPro tenés',
+    rvcatEmptyTitle: 'Todavía no hay inscriptos en esta categoría',
+    cartelVolver: 'Volver',
+    cartelImprimir: 'Imprimir / Guardar PDF',
+    tlineVolver: 'Volver al perfil',
+    tlineDiario: 'Diario',
+    tlineEventos: '{n} eventos registrados',
+    tlineSinEventos: 'Todavía no hay eventos',
+    tlineSinEventosSub: 'Registrá vacunas, pesos y más para ver el historial aquí.',
+    tlineVacuna: 'Vacuna',
+    tlineDesparasitacion: 'Desparasitación',
+    tlineMedicamento: 'Medicamento',
+    tlinePeso: 'Peso',
+    tlineEstudio: 'Estudio',
+    tlineGrooming: 'Grooming',
+    tlineTurno: 'Turno',
+    tlineAviso: 'Aviso',
+    tlineActivo: 'Activo',
+    tlineResuelto: '✓ Resuelto',
+    tlineProxima: 'Próxima: {fecha}',
+    histVolver: 'Volver',
+    histCompartirRedes: 'Compartir en redes',
+    histConectar: 'Conectar',
+    histConectarLabel: 'Conectar {red}',
+    histEmailLabel: 'Tu email aparecerá en la historia.',
+    histEmailPh: 'tucorreo@ejemplo.com',
+    histGuardar: 'Guardar',
+    histCambiar: 'Cambiar',
+    histEmailDe: 'Email de {red}',
+    histGenerando: 'Generando…',
+    histListaIg: '¡Lista para Instagram!',
+    histListaFb: '¡Lista para Facebook!',
+    histCompartirIg: 'Compartir en Instagram Stories',
+    histCompartirFb: 'Compartir en Facebook',
+    histEnCelular: '📱 En el celular:',
+    histPasoIg: 'Abrí Instagram → ➕ Nueva historia → elegí la imagen',
+    histPasoFb: 'Abrí Facebook → ➕ Nueva historia → elegí la imagen',
+    histDescargar: 'Solo descargar imagen',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -2777,6 +3233,227 @@ const translations: Record<Lang, Translations> = {
     pbrFotoInvalida: 'is not a valid image (JPG, PNG or WEBP).',
     pbrFotoPesada: 'weighs {mb} MB.',
     pbrWhatsappError: 'WhatsApp must have at least 10 digits. Example: +54 9 291 4050210',
+    ppxCargando: 'Confirming your payment…',
+    ppxOkTitle: 'Welcome to VecindogPro!',
+    ppxOkSub: 'Your account now has access to all Pro features for 30 days.',
+    ppxIrMisPerros: 'Go to My dogs',
+    ppxVolver: 'Back to home',
+    ppxPendienteTitle: 'Payment in progress',
+    ppxPendienteSub: 'Your payment is being processed. We will notify you by email when confirmed.',
+    ppxErrorTitle: "We couldn't confirm",
+    ppxErrorSub: 'There was an issue verifying your payment. If you were charged, contact us at',
+    ppxVolverPlanes: 'Back to plans',
+    rvpxCargando: 'Verifying payment and activating your business…',
+    rvpxErrorTitle: 'There was a problem',
+    rvpxPendienteTitle: 'Payment in progress!',
+    rvpxBienvenidoTitle: 'Welcome to the Network!',
+    rvpxPagoTitle: 'Payment received!',
+    rvpxErrorSub: 'Contact us at hola@mivecindog.com.ar and we\'ll sort it out.',
+    rvpxPendienteSub: 'Your payment is being processed. Your business activates automatically once confirmed.',
+    rvpxActivadoSub: 'Your business is now part of the Vecindog Network and appears on the map for dog owners.',
+    rvpxPagoSub: 'You\'ll receive an email confirmation when your business is active on the map.',
+    rvpxNegocioTiene: 'Your business now has',
+    rvpxBenef1: 'Presence on the dog search map',
+    rvpxBenef2: 'Phone and address visible to neighbors',
+    rvpxPlan: 'Vecindog Network · 30 days',
+    rvpxActualizar: 'Need to update any details? Contact us at',
+    rvpxIrApp: 'Go to app',
+    pubpxCargando: 'Verifying payment and activating your ad…',
+    pubpxErrorTitle: 'There was a problem',
+    pubpxPendienteTitle: 'Payment in progress!',
+    pubpxRenovadoTitle: 'Ad renewed!',
+    pubpxActivadoTitle: 'Your ad is active!',
+    pubpxPagoTitle: 'Payment received!',
+    pubpxErrorSub: 'Contact us at hola@mivecindog.com.ar and we\'ll sort it out.',
+    pubpxPendienteSub: 'Your payment is being processed. Your ad activates automatically once confirmed.',
+    pubpxRenovadoSub: 'Your ad was renewed for 30 more days. No need to re-enter any details.',
+    pubpxActivadoSub: 'Your Vecindog ad is active for the next 30 days.',
+    pubpxPagoSub: 'You\'ll receive an email confirmation when your ad is active.',
+    pubpxEspacios: 'Active placements',
+    pubpxActualizar: 'Need to change something? Contact us at',
+    pubpxIrApp: 'Go to app',
+    pubrvChip: 'Renew advertising',
+    pubrvVencida: 'Your ad has expired. Renewing reactivates it for 30 more days.',
+    pubrvExtender: 'Extend your ad for 30 more days.',
+    pubrvPlan: 'Plan',
+    pubrvVencimientoActual: 'Current expiry',
+    pubrvVencido: '(expired)',
+    pubrvNuevoVencimiento: 'New expiry',
+    pubrvTotal: 'Total',
+    pubrvPagoFallido: 'Payment was not processed. Please try again.',
+    pubrvNoEncontrado: 'Ad not found',
+    pubrvNoEncontradoSub: 'The renewal link is invalid or has expired.',
+    pubrvVerPlanes: 'View advertising plans',
+    pubrvCargando: 'Loading…',
+    pubrvBtn: 'Renew with Mercado Pago',
+    pubrvPagoCon: 'You can pay with debit, credit card or Mercado Pago account.',
+    pubrvVerTodos: 'View all plans',
+    svcExp1: "I'm a dog owner",
+    svcExp2: 'I had dogs as a child',
+    svcExp3: "I've cared for friends' / family's dogs",
+    svcExp4: 'I worked with animals',
+    svcExp5: 'No prior experience',
+    svcDisp1: 'Monday to Friday',
+    svcDisp2: 'Weekends',
+    svcDisp3: 'Any day',
+    svcDisp4: 'Daytime only',
+    cubcTitle: 'Looking for a sitter',
+    cubcSub: 'Post an ad to find someone to look after your dog.',
+    cubcCualPerro: 'Which of your dogs?',
+    cubcCargandoPerros: 'Loading your dogs…',
+    cubcSinPerros: "You don't have any registered dogs.",
+    cubcRegistra: 'Register one →',
+    cubcSinPerroSub: 'You can also continue without selecting a dog and fill in the details manually.',
+    cubcFechas: 'For which dates?',
+    cubcOpcional: '(optional)',
+    cubcDesde: 'From',
+    cubcHasta: 'To',
+    cubcZona: 'Area / Neighborhood',
+    cubcDescripcion: 'Description',
+    cubcDescripcionPh: 'Special needs, routines, important info for the sitter…',
+    cubcContacto: 'WhatsApp contact',
+    cubcContactoPh: 'e.g. 1122334455',
+    cubcContactoError: 'Incomplete number — enter the full number with area code. e.g. +54 9 291 4050210',
+    cubcPublicar: 'Post ad',
+    cubcErrLogin: 'You need to sign in to post.',
+    cubcErrZona: 'Area is required.',
+    cubcErrContacto: 'WhatsApp contact is required.',
+    cubcErrContactoShort: 'WhatsApp must have at least 10 digits. Example: +54 9 291 4050210',
+    cubcErrPublicar: "Couldn't post. Please try again.",
+    cubcLoginSub: 'Sign in to post a care request.',
+    cubcLoginBtn: 'Sign in',
+    cubcOkTitle: 'Ad posted!',
+    cubcOkSub: 'Your request is now listed in the care section.',
+    qqcTitle: 'I want to be a sitter',
+    qqcSub: 'Complete your sitter profile so owners can find you.',
+    qqcNombre: 'Your name or nickname',
+    qqcNombrePh: 'e.g. Martina G.',
+    qqcExperiencia: 'Experience with dogs',
+    qqcDisponibilidad: 'Availability',
+    qqcCuantos: 'How many dogs can you look after at once?',
+    qqcTienePerros: 'Do you have dogs at home?',
+    qqcDisp5: 'Overnight stays included',
+    qqcInfo: 'Additional info',
+    qqcInfoPh: 'Tell us more: do you have a yard, can you do overnights, breeds you\'re comfortable with…',
+    qqcZona: 'Area / Neighborhood',
+    qqcContacto: 'WhatsApp contact',
+    qqcRegistrar: 'Register as sitter',
+    qqcProTitle: 'Exclusive VecindogPro feature',
+    qqcProSub: 'To register as a sitter and receive ratings from owners, you need an active Pro plan.',
+    qqcVerPlanes: 'View plans',
+    qqcLoginSub: 'Sign in to register as a sitter.',
+    qqcOkTitle: 'You registered as a sitter!',
+    qqcOkSub: 'Your profile is now listed among available sitters.',
+    qqcErrLogin: 'You need to sign in to register.',
+    qqcErrNombre: 'Name is required.',
+    qqcErrZona: 'Area is required.',
+    qqcErrContacto: 'WhatsApp contact is required.',
+    qqcErrContactoShort: 'WhatsApp must have at least 10 digits. Example: +54 9 291 4050210',
+    qqcErrRegistrar: "Couldn't register. Please try again.",
+    qqtTitle: 'I want to transport dogs',
+    qqtSub: 'Complete your transporter profile so owners can find you.',
+    qqtCuantos: 'How many dogs can you transport at once?',
+    qqtVehiculo: 'What vehicle do you have?',
+    qqtDisp5: 'Flexible schedule',
+    qqtInfoPh: 'Tell us more: your own vehicle, areas you cover, vet trips…',
+    qqtRegistrar: 'Register as transporter',
+    qqtProSub: 'To register as a transporter and receive ratings from owners, you need an active Pro plan.',
+    qqtLoginSub: 'Sign in to register as a transporter.',
+    qqtOkTitle: 'You registered as a transporter!',
+    qqtOkSub: 'Your profile is now listed among available transporters.',
+    qqtErrRegistrar: "Couldn't register. Please try again.",
+    quidBack: 'Available sitters',
+    quidSobre: 'About this sitter',
+    quidContactar: 'Contact',
+    quidDisponibilidad: 'Availability:',
+    quidCalificaciones: 'Ratings',
+    quidCalificar: 'Rate',
+    quidEditarCal: 'Edit rating',
+    quidCalGuardada: 'Rating saved! Thanks for your feedback.',
+    quidSinCal: 'No ratings for this sitter yet.',
+    quidSePrimero: 'Be the first!',
+    quidNoEncontrado: "This sitter's profile was not found.",
+    quidModalTitle: 'Rate sitter',
+    quidPuntuacion: 'Overall rating',
+    quidCuidadoPerro: 'How was the care of your dog?',
+    quidFuePuntual: 'Were they on time?',
+    quidBuenaCom: 'Was communication good?',
+    quidRecomienda: 'Would you recommend them to other owners?',
+    quidComentario: 'Comment',
+    quidComentarioPh: 'Share how the experience went…',
+    quidCancelar: 'Cancel',
+    quidGuardar: 'Save',
+    quidErrEstrella: 'Select at least one star.',
+    quidExcelente: 'Excellent 🐾',
+    quidBueno: 'Good 👍',
+    quidRegular: 'OK 😐',
+    quidPuntual: 'On time',
+    quidBuenaComunicacion: 'Good communication',
+    quidLoRecomienda: 'Recommends them',
+    quidCuidadoBadge: '🐾 Care',
+    quidRecomendaciones: '% recommend',
+    tridBack: 'Available transporters',
+    tridSobre: 'About this transporter',
+    tridNoEncontrado: "This transporter's profile was not found.",
+    tridModalTitle: 'Rate transporter',
+    tridCuidadoPerro: 'How was the treatment of your dog?',
+    tridTratoBadge: '🐾 Treatment',
+    tridCuidadoBadge: '🐾 Treatment',
+    tridSinCal: 'No ratings for this transporter yet.',
+    rvcatBack: 'Vecindog Network',
+    rvcatNoEncontrado: 'Category not found.',
+    rvcatVolverRvn: 'Back to Vecindog Network',
+    rvcatSinInscrip: 'No members yet',
+    rvcatProTitle: 'Exclusive VecindogPro',
+    rvcatVerPro: 'View Pro',
+    rvcatVerNegocio: 'View business',
+    rvcatCiudadTitle: 'What city are you in?',
+    rvcatCiudadSub: 'You need to choose your city to see local businesses.',
+    rvcatCiudadPh: 'Type your city…',
+    rvcatUsarDeTodas: 'Use "{q}" anyway',
+    rvcatEmptySub: 'Do you have a business in this category? Be the first to join.',
+    rvcatRegistrar: 'Register my business',
+    rvcatVolver: 'Back',
+    rvcatConfirmar: 'Confirm',
+    rvcatProSub: 'Activate Pro to view the details of each business.',
+    rvcatProBeneficios: 'With VecindogPro you get',
+    rvcatEmptyTitle: 'No members yet in this category',
+    cartelVolver: 'Back',
+    cartelImprimir: 'Print / Save PDF',
+    tlineVolver: 'Back to profile',
+    tlineDiario: 'Journal',
+    tlineEventos: '{n} events recorded',
+    tlineSinEventos: 'No events yet',
+    tlineSinEventosSub: 'Record vaccines, weights and more to see the history here.',
+    tlineVacuna: 'Vaccine',
+    tlineDesparasitacion: 'Deworming',
+    tlineMedicamento: 'Medication',
+    tlinePeso: 'Weight',
+    tlineEstudio: 'Study',
+    tlineGrooming: 'Grooming',
+    tlineTurno: 'Appointment',
+    tlineAviso: 'Post',
+    tlineActivo: 'Active',
+    tlineResuelto: '✓ Resolved',
+    tlineProxima: 'Next: {fecha}',
+    histVolver: 'Back',
+    histCompartirRedes: 'Share on social media',
+    histConectar: 'Connect',
+    histConectarLabel: 'Connect {red}',
+    histEmailLabel: 'Your email will appear in the story.',
+    histEmailPh: 'youremail@example.com',
+    histGuardar: 'Save',
+    histCambiar: 'Change',
+    histEmailDe: '{red} email',
+    histGenerando: 'Generating…',
+    histListaIg: 'Ready for Instagram!',
+    histListaFb: 'Ready for Facebook!',
+    histCompartirIg: 'Share on Instagram Stories',
+    histCompartirFb: 'Share on Facebook',
+    histEnCelular: '📱 On your phone:',
+    histPasoIg: 'Open Instagram → ➕ New story → pick the image',
+    histPasoFb: 'Open Facebook → ➕ New story → pick the image',
+    histDescargar: 'Just download the image',
   },
 
   // ═══════════════════════════════════════════════════════
@@ -3702,6 +4379,227 @@ const translations: Record<Lang, Translations> = {
     pbrFotoInvalida: 'não é uma imagem válida (JPG, PNG ou WEBP).',
     pbrFotoPesada: 'pesa {mb} MB.',
     pbrWhatsappError: 'O WhatsApp deve ter pelo menos 10 dígitos. Exemplo: +54 9 291 4050210',
+    ppxCargando: 'Confirmando seu pagamento…',
+    ppxOkTitle: 'Bem-vindo ao VecindogPro!',
+    ppxOkSub: 'Sua conta já tem acesso a todas as funções Pro por 30 dias.',
+    ppxIrMisPerros: 'Ir para Meus cachorros',
+    ppxVolver: 'Voltar ao início',
+    ppxPendienteTitle: 'Pagamento em andamento',
+    ppxPendienteSub: 'Seu pagamento está sendo processado. Avisaremos por e-mail quando confirmado.',
+    ppxErrorTitle: 'Não conseguimos confirmar',
+    ppxErrorSub: 'Houve um problema ao verificar seu pagamento. Se foi cobrado, entre em contato em',
+    ppxVolverPlanes: 'Voltar aos planos',
+    rvpxCargando: 'Verificando pagamento e ativando seu negócio…',
+    rvpxErrorTitle: 'Houve um problema',
+    rvpxPendienteTitle: 'Pagamento em andamento!',
+    rvpxBienvenidoTitle: 'Bem-vindo à Rede!',
+    rvpxPagoTitle: 'Pagamento recebido!',
+    rvpxErrorSub: 'Entre em contato em hola@mivecindog.com.ar e resolveremos rápido.',
+    rvpxPendienteSub: 'Seu pagamento está sendo processado. Seu negócio é ativado automaticamente ao confirmar.',
+    rvpxActivadoSub: 'Seu negócio já faz parte da Rede Vecindog e aparece no mapa para donos de cães.',
+    rvpxPagoSub: 'Você receberá uma confirmação por e-mail quando seu negócio estiver ativo no mapa.',
+    rvpxNegocioTiene: 'Seu negócio agora tem',
+    rvpxBenef1: 'Presença no mapa de busca de cães',
+    rvpxBenef2: 'Telefone e endereço visíveis para os vizinhos',
+    rvpxPlan: 'Rede Vecindog · 30 dias',
+    rvpxActualizar: 'Precisa atualizar algum dado? Entre em contato em',
+    rvpxIrApp: 'Ir para o app',
+    pubpxCargando: 'Verificando pagamento e ativando seu anúncio…',
+    pubpxErrorTitle: 'Houve um problema',
+    pubpxPendienteTitle: 'Pagamento em andamento!',
+    pubpxRenovadoTitle: 'Publicidade renovada!',
+    pubpxActivadoTitle: 'Seu anúncio está ativo!',
+    pubpxPagoTitle: 'Pagamento recebido!',
+    pubpxErrorSub: 'Entre em contato em hola@mivecindog.com.ar e resolveremos rápido.',
+    pubpxPendienteSub: 'Seu pagamento está sendo processado. Seu anúncio é ativado automaticamente ao confirmar.',
+    pubpxRenovadoSub: 'Sua publicidade foi renovada por mais 30 dias. Não foi necessário reinserir nenhum dado.',
+    pubpxActivadoSub: 'Sua publicidade no Vecindog está ativa pelos próximos 30 dias.',
+    pubpxPagoSub: 'Você receberá uma confirmação por e-mail quando seu anúncio estiver ativo.',
+    pubpxEspacios: 'Espaços ativados',
+    pubpxActualizar: 'Precisa fazer uma alteração no seu anúncio? Entre em contato em',
+    pubpxIrApp: 'Ir para o app',
+    pubrvChip: 'Renovar publicidade',
+    pubrvVencida: 'Sua publicidade venceu. Renovar reativa por mais 30 dias.',
+    pubrvExtender: 'Estenda sua publicidade por mais 30 dias.',
+    pubrvPlan: 'Plano',
+    pubrvVencimientoActual: 'Vencimento atual',
+    pubrvVencido: '(vencido)',
+    pubrvNuevoVencimiento: 'Novo vencimento',
+    pubrvTotal: 'Total',
+    pubrvPagoFallido: 'O pagamento não foi processado. Tente novamente.',
+    pubrvNoEncontrado: 'Anúncio não encontrado',
+    pubrvNoEncontradoSub: 'O link de renovação é inválido ou expirou.',
+    pubrvVerPlanes: 'Ver planos de publicidade',
+    pubrvCargando: 'Carregando…',
+    pubrvBtn: 'Renovar com Mercado Pago',
+    pubrvPagoCon: 'Você pode pagar com cartão de débito, crédito ou conta do Mercado Pago.',
+    pubrvVerTodos: 'Ver todos os planos',
+    svcExp1: 'Sou dono/a de cachorros',
+    svcExp2: 'Tive cachorros quando criança',
+    svcExp3: 'Cuidei de cachorros de amigos/família',
+    svcExp4: 'Trabalhei com animais',
+    svcExp5: 'Sem experiência prévia',
+    svcDisp1: 'Segunda a sexta',
+    svcDisp2: 'Fins de semana',
+    svcDisp3: 'Qualquer dia',
+    svcDisp4: 'Somente durante o dia',
+    cubcTitle: 'Procuro cuidador',
+    cubcSub: 'Publique um aviso para encontrar alguém que cuide do seu cachorro.',
+    cubcCualPerro: 'Para qual dos seus cachorros?',
+    cubcCargandoPerros: 'Carregando seus cachorros…',
+    cubcSinPerros: 'Você não tem cachorros cadastrados.',
+    cubcRegistra: 'Cadastre um →',
+    cubcSinPerroSub: 'Você também pode continuar sem selecionar um cachorro e preencher os dados manualmente.',
+    cubcFechas: 'Para quais datas?',
+    cubcOpcional: '(opcional)',
+    cubcDesde: 'De',
+    cubcHasta: 'Até',
+    cubcZona: 'Zona / Bairro',
+    cubcDescripcion: 'Descrição',
+    cubcDescripcionPh: 'Necessidades especiais, rotinas, informações importantes para o cuidador…',
+    cubcContacto: 'WhatsApp de contato',
+    cubcContactoPh: 'Ex.: 1122334455',
+    cubcContactoError: 'Número incompleto — insira o número completo com DDD. Ex.: +54 9 291 4050210',
+    cubcPublicar: 'Publicar aviso',
+    cubcErrLogin: 'Você precisa fazer login para publicar.',
+    cubcErrZona: 'A zona é obrigatória.',
+    cubcErrContacto: 'O contato WhatsApp é obrigatório.',
+    cubcErrContactoShort: 'O WhatsApp deve ter pelo menos 10 dígitos. Exemplo: +54 9 291 4050210',
+    cubcErrPublicar: 'Não foi possível publicar. Tente novamente.',
+    cubcLoginSub: 'Faça login para publicar um pedido de cuidado.',
+    cubcLoginBtn: 'Fazer login',
+    cubcOkTitle: 'Aviso publicado!',
+    cubcOkSub: 'Seu pedido já aparece na listagem de cuidado.',
+    qqcTitle: 'Quero cuidar',
+    qqcSub: 'Complete seu perfil de cuidador para que os donos possam te encontrar.',
+    qqcNombre: 'Seu nome ou apelido',
+    qqcNombrePh: 'Ex.: Martina G.',
+    qqcExperiencia: 'Experiência com cachorros',
+    qqcDisponibilidad: 'Disponibilidade',
+    qqcCuantos: 'Quantos cachorros você consegue cuidar ao mesmo tempo?',
+    qqcTienePerros: 'Você tem cachorros em casa?',
+    qqcDisp5: 'Com pernoite incluído',
+    qqcInfo: 'Informações adicionais',
+    qqcInfoPh: 'Conte mais: se tem quintal, se pode fazer pernoite, raças com as quais se sente confortável…',
+    qqcZona: 'Zona / Bairro',
+    qqcContacto: 'WhatsApp de contato',
+    qqcRegistrar: 'Cadastrar como cuidador',
+    qqcProTitle: 'Função exclusiva VecindogPro',
+    qqcProSub: 'Para se cadastrar como cuidador e receber avaliações dos donos, você precisa ter o plano Pro ativo.',
+    qqcVerPlanes: 'Ver planos',
+    qqcLoginSub: 'Faça login para se cadastrar como cuidador.',
+    qqcOkTitle: 'Você se cadastrou como cuidador!',
+    qqcOkSub: 'Seu perfil já aparece na listagem de cuidadores disponíveis.',
+    qqcErrLogin: 'Você precisa fazer login para se cadastrar.',
+    qqcErrNombre: 'O nome é obrigatório.',
+    qqcErrZona: 'A zona é obrigatória.',
+    qqcErrContacto: 'O contato WhatsApp é obrigatório.',
+    qqcErrContactoShort: 'O WhatsApp deve ter pelo menos 10 dígitos. Exemplo: +54 9 291 4050210',
+    qqcErrRegistrar: 'Não foi possível cadastrar. Tente novamente.',
+    qqtTitle: 'Quero transportar cachorros',
+    qqtSub: 'Complete seu perfil de transportador para que os donos possam te encontrar.',
+    qqtCuantos: 'Quantos cachorros você consegue transportar ao mesmo tempo?',
+    qqtVehiculo: 'Que veículo você tem?',
+    qqtDisp5: 'Horário flexível',
+    qqtInfoPh: 'Conte mais: se tem carro próprio, quais zonas cobre, se faz traslados ao veterinário…',
+    qqtRegistrar: 'Cadastrar como transportador',
+    qqtProSub: 'Para se cadastrar como transportador e receber avaliações dos donos, você precisa ter o plano Pro ativo.',
+    qqtLoginSub: 'Faça login para se cadastrar como transportador.',
+    qqtOkTitle: 'Você se cadastrou como transportador!',
+    qqtOkSub: 'Seu perfil já aparece na listagem de transportadores disponíveis.',
+    qqtErrRegistrar: 'Não foi possível cadastrar. Tente novamente.',
+    quidBack: 'Cuidadores disponíveis',
+    quidSobre: 'Sobre este cuidador',
+    quidContactar: 'Contatar',
+    quidDisponibilidad: 'Disponibilidade:',
+    quidCalificaciones: 'Avaliações',
+    quidCalificar: 'Avaliar',
+    quidEditarCal: 'Editar avaliação',
+    quidCalGuardada: 'Avaliação salva! Obrigado pela sua opinião.',
+    quidSinCal: 'Ainda não há avaliações para este cuidador.',
+    quidSePrimero: 'Seja o primeiro!',
+    quidNoEncontrado: 'Perfil deste cuidador não encontrado.',
+    quidModalTitle: 'Avaliar cuidador',
+    quidPuntuacion: 'Avaliação geral',
+    quidCuidadoPerro: 'Como foi o cuidado do seu cachorro?',
+    quidFuePuntual: 'Foi pontual?',
+    quidBuenaCom: 'A comunicação foi boa?',
+    quidRecomienda: 'Você recomendaria para outros donos?',
+    quidComentario: 'Comentário',
+    quidComentarioPh: 'Conta como foi a experiência…',
+    quidCancelar: 'Cancelar',
+    quidGuardar: 'Salvar',
+    quidErrEstrella: 'Selecione pelo menos uma estrela.',
+    quidExcelente: 'Excelente 🐾',
+    quidBueno: 'Bom 👍',
+    quidRegular: 'Regular 😐',
+    quidPuntual: 'Pontual',
+    quidBuenaComunicacion: 'Boa comunicação',
+    quidLoRecomienda: 'Recomenda',
+    quidCuidadoBadge: '🐾 Cuidado',
+    quidRecomendaciones: '% recomenda',
+    tridBack: 'Transportadores disponíveis',
+    tridSobre: 'Sobre este transportador',
+    tridNoEncontrado: 'Perfil deste transportador não encontrado.',
+    tridModalTitle: 'Avaliar transportador',
+    tridCuidadoPerro: 'Como foi o trato com seu cachorro?',
+    tridTratoBadge: '🐾 Trato',
+    tridCuidadoBadge: '🐾 Trato',
+    tridSinCal: 'Ainda não há avaliações para este transportador.',
+    rvcatBack: 'Rede Vecindog',
+    rvcatNoEncontrado: 'Categoria não encontrada.',
+    rvcatVolverRvn: 'Voltar à Rede Vecindog',
+    rvcatSinInscrip: 'Sem inscritos ainda',
+    rvcatProTitle: 'Exclusivo VecindogPro',
+    rvcatVerPro: 'Ver Pro',
+    rvcatVerNegocio: 'Ver negócio',
+    rvcatCiudadTitle: 'Em que cidade você está?',
+    rvcatCiudadSub: 'Você precisa escolher sua cidade para ver os negócios da sua região.',
+    rvcatCiudadPh: 'Digite sua cidade…',
+    rvcatUsarDeTodas: 'Usar "{q}" assim mesmo',
+    rvcatEmptySub: 'Tem um negócio nesta categoria? Seja o primeiro a participar.',
+    rvcatRegistrar: 'Cadastrar meu negócio',
+    rvcatVolver: 'Voltar',
+    rvcatConfirmar: 'Confirmar',
+    rvcatProSub: 'Ative o Pro para ver os dados de cada negócio.',
+    rvcatProBeneficios: 'Com VecindogPro você tem',
+    rvcatEmptyTitle: 'Ainda não há inscritos nesta categoria',
+    cartelVolver: 'Voltar',
+    cartelImprimir: 'Imprimir / Salvar PDF',
+    tlineVolver: 'Voltar ao perfil',
+    tlineDiario: 'Diário',
+    tlineEventos: '{n} eventos registrados',
+    tlineSinEventos: 'Ainda não há eventos',
+    tlineSinEventosSub: 'Registre vacinas, pesos e mais para ver o histórico aqui.',
+    tlineVacuna: 'Vacina',
+    tlineDesparasitacion: 'Vermifugação',
+    tlineMedicamento: 'Medicamento',
+    tlinePeso: 'Peso',
+    tlineEstudio: 'Exame',
+    tlineGrooming: 'Banho e tosa',
+    tlineTurno: 'Consulta',
+    tlineAviso: 'Aviso',
+    tlineActivo: 'Ativo',
+    tlineResuelto: '✓ Resolvido',
+    tlineProxima: 'Próxima: {fecha}',
+    histVolver: 'Voltar',
+    histCompartirRedes: 'Compartilhar nas redes',
+    histConectar: 'Conectar',
+    histConectarLabel: 'Conectar {red}',
+    histEmailLabel: 'Seu e-mail aparecerá na história.',
+    histEmailPh: 'seuemail@exemplo.com',
+    histGuardar: 'Salvar',
+    histCambiar: 'Alterar',
+    histEmailDe: 'E-mail do {red}',
+    histGenerando: 'Gerando…',
+    histListaIg: 'Pronta para o Instagram!',
+    histListaFb: 'Pronta para o Facebook!',
+    histCompartirIg: 'Compartilhar no Instagram Stories',
+    histCompartirFb: 'Compartilhar no Facebook',
+    histEnCelular: '📱 No celular:',
+    histPasoIg: 'Abra o Instagram → ➕ Nova história → escolha a imagem',
+    histPasoFb: 'Abra o Facebook → ➕ Nova história → escolha a imagem',
+    histDescargar: 'Apenas baixar a imagem',
   },
 };
 

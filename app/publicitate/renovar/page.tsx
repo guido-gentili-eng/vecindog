@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { RefreshCw, AlertCircle, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AdInfo {
   id:         string;
@@ -22,6 +23,7 @@ export default function RenovarPage() {
   const searchParams = useSearchParams();
   const adIdsParam   = searchParams.get('ads') ?? '';
   const pagoFallido  = searchParams.get('pago') === 'fallido';
+  const { t } = useLanguage();
 
   const adIds = adIdsParam.split(',').filter(Boolean);
 
@@ -70,9 +72,9 @@ export default function RenovarPage() {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
         <AlertCircle className="mx-auto h-10 w-10 text-bad" />
-        <h1 className="mt-4 font-display text-2xl font-black text-ink">Anuncio no encontrado</h1>
-        <p className="mt-2 text-sm text-ink-muted">El link de renovación es inválido o expiró.</p>
-        <Link href="/publicitate" className="btn-primary mt-6 inline-flex">Ver planes de publicidad</Link>
+        <h1 className="mt-4 font-display text-2xl font-black text-ink">{t.pubrvNoEncontrado}</h1>
+        <p className="mt-2 text-sm text-ink-muted">{t.pubrvNoEncontradoSub}</p>
+        <Link href="/publicitate" className="btn-primary mt-6 inline-flex">{t.pubrvVerPlanes}</Link>
       </div>
     );
   }
@@ -86,19 +88,16 @@ export default function RenovarPage() {
     <div className="mx-auto max-w-md py-12 space-y-5">
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-          <RefreshCw className="h-3.5 w-3.5" /> Renovar publicidad
+          <RefreshCw className="h-3.5 w-3.5" /> {t.pubrvChip}
         </span>
         <h1 className="mt-3 font-display text-3xl font-black tracking-tight text-ink">
-          Renovar {label}
+          {t.pubrvChip} {label}
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
-          {vencida
-            ? 'Tu publicidad venció. Renovar la reactiva por 30 días más.'
-            : 'Extendé tu publicidad 30 días más.'}
+          {vencida ? t.pubrvVencida : t.pubrvExtender}
         </p>
       </div>
 
-      {/* Resumen del anuncio */}
       <div className="card p-5 space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10">
@@ -110,26 +109,26 @@ export default function RenovarPage() {
           </div>
         </div>
         <div className="border-t border-black/5 pt-3 flex items-center justify-between text-sm">
-          <span className="text-ink-muted">Plan</span>
+          <span className="text-ink-muted">{t.pubrvPlan}</span>
           <span className="font-bold text-ink">{label}</span>
         </div>
         {ad.fecha_fin && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-ink-muted">Vencimiento actual</span>
+            <span className="text-ink-muted">{t.pubrvVencimientoActual}</span>
             <span className={`font-bold ${vencida ? 'text-bad' : 'text-ink'}`}>
               {new Date(ad.fecha_fin + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              {vencida ? ' (vencido)' : ''}
+              {vencida ? ` ${t.pubrvVencido}` : ''}
             </span>
           </div>
         )}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-ink-muted">Nuevo vencimiento</span>
+          <span className="text-ink-muted">{t.pubrvNuevoVencimiento}</span>
           <span className="font-bold text-good">
             {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
         </div>
         <div className="border-t border-black/5 pt-3 flex items-center justify-between">
-          <span className="font-bold text-ink">Total</span>
+          <span className="font-bold text-ink">{t.pubrvTotal}</span>
           <span className="font-display text-xl font-black text-brand-primary">
             ${precio?.toLocaleString('es-AR')} ARS
           </span>
@@ -138,7 +137,7 @@ export default function RenovarPage() {
 
       {pagoFallido && (
         <div className="flex items-center gap-2 rounded-2xl bg-bad/10 p-3 text-sm font-bold text-bad">
-          <AlertCircle className="h-4 w-4 shrink-0" /> El pago no se procesó. Intentá de nuevo.
+          <AlertCircle className="h-4 w-4 shrink-0" /> {t.pubrvPagoFallido}
         </div>
       )}
 
@@ -156,18 +155,16 @@ export default function RenovarPage() {
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-primary py-4 text-sm font-bold text-white shadow-soft transition hover:opacity-90 disabled:opacity-70"
         >
           {pagando
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> Cargando…</>
-            : <><RefreshCw className="h-4 w-4" /> Renovar con Mercado Pago · ${precio?.toLocaleString('es-AR')}</>
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> {t.pubrvCargando}</>
+            : <><RefreshCw className="h-4 w-4" /> {t.pubrvBtn} · ${precio?.toLocaleString('es-AR')}</>
           }
         </button>
-        <p className="text-center text-xs text-ink-muted">
-          Podés pagar con tarjeta de débito, crédito o cuenta de Mercado Pago.
-        </p>
+        <p className="text-center text-xs text-ink-muted">{t.pubrvPagoCon}</p>
       </div>
 
       <div className="text-center">
         <Link href="/publicitate" className="text-xs text-ink-muted hover:text-brand-primary hover:underline transition">
-          Ver todos los planes
+          {t.pubrvVerTodos}
         </Link>
       </div>
     </div>

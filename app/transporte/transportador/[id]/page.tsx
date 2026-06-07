@@ -13,6 +13,7 @@ import {
   type TransportadorRating, type ResumenRatingTransportador,
 } from '@/lib/transportadorRatings';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function Estrellas({ valor, max = 5, size = 'sm' }: { valor: number; max?: number; size?: 'sm' | 'lg' }) {
   const sz = size === 'lg' ? 'h-6 w-6' : 'h-4 w-4';
@@ -39,6 +40,7 @@ function ModalPuntuacion({
   onGuardado: () => void;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [estrellas,     setEstrellas]     = useState(inicial?.estrellas ?? 0);
   const [cuidadoAnimal, setCuidadoAnimal] = useState<'excelente'|'bueno'|'regular'|null>(inicial?.cuidado_animal ?? null);
   const [fuePuntual,    setFuePuntual]    = useState<boolean|null>(inicial?.fue_puntual ?? null);
@@ -50,7 +52,7 @@ function ModalPuntuacion({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (estrellas === 0) { setError('Seleccioná al menos una estrella.'); return; }
+    if (estrellas === 0) { setError(t.quidErrEstrella); return; }
     setEnviando(true);
     setError('');
     try {
@@ -74,12 +76,11 @@ function ModalPuntuacion({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-        <h3 className="font-display text-xl font-black text-ink mb-5">Calificar transportador</h3>
+        <h3 className="font-display text-xl font-black text-ink mb-5">{t.tridModalTitle}</h3>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Estrellas */}
           <div>
-            <p className="mb-2 text-sm font-bold text-ink">Puntuación general <span className="text-bad">*</span></p>
+            <p className="mb-2 text-sm font-bold text-ink">{t.quidPuntuacion} <span className="text-bad">*</span></p>
             <div className="flex gap-1">
               {[1,2,3,4,5].map((n) => (
                 <button key={n} type="button" onClick={() => setEstrellas(n)}>
@@ -89,11 +90,10 @@ function ModalPuntuacion({
             </div>
           </div>
 
-          {/* Trato al animal */}
           <div>
-            <p className="mb-2 text-sm font-bold text-ink">¿Cómo fue el trato hacia tu perro?</p>
+            <p className="mb-2 text-sm font-bold text-ink">{t.tridCuidadoPerro}</p>
             <div className="flex gap-2">
-              {([['excelente','Excelente 🐾'],['bueno','Bueno 👍'],['regular','Regular 😐']] as const).map(([val, lbl]) => (
+              {([['excelente', t.quidExcelente], ['bueno', t.quidBueno], ['regular', t.quidRegular]] as const).map(([val, lbl]) => (
                 <button
                   key={val}
                   type="button"
@@ -108,16 +108,15 @@ function ModalPuntuacion({
             </div>
           </div>
 
-          {/* Preguntas Sí/No */}
           {([
-            ['¿Fue puntual?', fuePuntual, setFuePuntual],
-            ['¿La comunicación fue fluida?', buenaCom, setBuenaCom],
-            ['¿Lo recomendarías a otros dueños?', loRecomienda, setLoRecomienda],
+            [t.quidFuePuntual, fuePuntual, setFuePuntual],
+            [t.quidBuenaCom,   buenaCom,   setBuenaCom],
+            [t.quidRecomienda, loRecomienda, setLoRecomienda],
           ] as [string, boolean | null, (v: boolean | null) => void][]).map(([pregunta, val, setter]) => (
             <div key={pregunta}>
               <p className="mb-2 text-sm font-bold text-ink">{pregunta}</p>
               <div className="flex gap-2">
-                {([[true, 'Sí'], [false, 'No']] as [boolean, string][]).map(([bval, lbl]) => (
+                {([[true, t.adpSi], [false, t.adpNo]] as [boolean, string][]).map(([bval, lbl]) => (
                   <button
                     key={String(bval)}
                     type="button"
@@ -133,13 +132,12 @@ function ModalPuntuacion({
             </div>
           ))}
 
-          {/* Comentario */}
           <div>
-            <p className="mb-2 text-sm font-bold text-ink">Comentario <span className="text-ink-muted font-normal">(opcional)</span></p>
+            <p className="mb-2 text-sm font-bold text-ink">{t.quidComentario} <span className="text-ink-muted font-normal">{t.cubcOpcional}</span></p>
             <textarea
               className="field w-full"
               rows={2}
-              placeholder="Contá cómo fue la experiencia…"
+              placeholder={t.quidComentarioPh}
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
             />
@@ -154,12 +152,12 @@ function ModalPuntuacion({
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
               className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted transition hover:border-bad/30 hover:text-bad">
-              Cancelar
+              {t.quidCancelar}
             </button>
             <button type="submit" disabled={enviando}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-60">
               {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Guardar
+              {t.quidGuardar}
             </button>
           </div>
         </form>
@@ -171,6 +169,7 @@ function ModalPuntuacion({
 export default function PerfilTransportadorPage() {
   const { id }             = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const [post,         setPost]         = useState<Post | null>(null);
   const [ratings,      setRatings]      = useState<TransportadorRating[]>([]);
@@ -211,9 +210,9 @@ export default function PerfilTransportadorPage() {
   if (!post) {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center text-ink-muted">
-        No se encontró el perfil de este transportador.
+        {t.tridNoEncontrado}
         <br />
-        <Link href="/transporte" className="mt-4 inline-block font-bold text-blue-600 hover:underline">Volver</Link>
+        <Link href="/transporte" className="mt-4 inline-block font-bold text-blue-600 hover:underline">{t.cartelVolver}</Link>
       </div>
     );
   }
@@ -224,10 +223,9 @@ export default function PerfilTransportadorPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <Link href="/transporte" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink">
-        <ChevronLeft className="h-4 w-4" /> Transportadores disponibles
+        <ChevronLeft className="h-4 w-4" /> {t.tridBack}
       </Link>
 
-      {/* Header */}
       <div className="card mb-6 p-6">
         <div className="flex items-start gap-4">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
@@ -244,9 +242,9 @@ export default function PerfilTransportadorPage() {
               <div className="mt-2 flex items-center gap-2">
                 <Estrellas valor={resumen.promedio} size="sm" />
                 <span className="text-sm font-bold text-ink">{resumen.promedio.toFixed(1)}</span>
-                <span className="text-xs text-ink-muted">({resumen.total} calificación{resumen.total !== 1 ? 'es' : ''})</span>
+                <span className="text-xs text-ink-muted">({resumen.total} {t.quidCalificaciones.toLowerCase()})</span>
                 {resumen.recomendaciones > 0 && (
-                  <span className="ml-1 text-xs text-blue-600 font-semibold">· {resumen.recomendaciones}% lo recomienda</span>
+                  <span className="ml-1 text-xs text-blue-600 font-semibold">· {resumen.recomendaciones}{t.quidRecomendaciones}</span>
                 )}
               </div>
             )}
@@ -258,16 +256,15 @@ export default function PerfilTransportadorPage() {
               rel="noopener noreferrer"
               className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
             >
-              <Phone className="h-4 w-4" /> Contactar
+              <Phone className="h-4 w-4" /> {t.quidContactar}
             </a>
           )}
         </div>
       </div>
 
-      {/* Info */}
       <div className="card mb-6 p-6">
         <h2 className="mb-4 font-display text-lg font-black text-ink flex items-center gap-2">
-          <Car className="h-5 w-5 text-blue-600" /> Sobre este transportador
+          <Car className="h-5 w-5 text-blue-600" /> {t.tridSobre}
         </h2>
         {post.descripcion && (
           <p className="text-sm leading-relaxed text-ink-muted mb-4">{post.descripcion}</p>
@@ -275,18 +272,17 @@ export default function PerfilTransportadorPage() {
         {post.horario && (
           <div className="flex items-center gap-2 rounded-2xl bg-brand-cream px-4 py-2.5 text-sm">
             <Calendar className="h-4 w-4 shrink-0 text-blue-600" />
-            <span className="font-semibold text-ink">Disponibilidad:</span>
+            <span className="font-semibold text-ink">{t.quidDisponibilidad}</span>
             <span className="text-ink-muted">{post.horario}</span>
           </div>
         )}
       </div>
 
-      {/* Calificaciones */}
       <div className="mb-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-lg font-black text-ink flex items-center gap-2">
             <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
-            Calificaciones
+            {t.quidCalificaciones}
             {resumen && resumen.total > 0 && (
               <span className="ml-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-sm font-bold text-blue-700">
                 {resumen.total}
@@ -301,22 +297,22 @@ export default function PerfilTransportadorPage() {
               className="inline-flex items-center gap-1.5 rounded-2xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
             >
               <Star className="h-3.5 w-3.5" />
-              {yaCalificó ? 'Editar calificación' : 'Calificar'}
+              {yaCalificó ? t.quidEditarCal : t.quidCalificar}
             </button>
           )}
         </div>
 
         {guardado && (
           <div className="mb-4 flex items-center gap-2 rounded-2xl bg-blue-50 p-3 text-sm font-bold text-blue-700">
-            <Check className="h-4 w-4" /> ¡Calificación guardada! Gracias por tu opinión.
+            <Check className="h-4 w-4" /> {t.quidCalGuardada}
           </div>
         )}
 
         {ratings.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50 p-8 text-center text-sm text-blue-600">
-            Todavía no hay calificaciones para este transportador.{' '}
+            {t.tridSinCal}{' '}
             {isAuthenticated && !esPropioPost && (
-              <button onClick={() => setModalAbierto(true)} className="font-bold underline">¡Sé el primero!</button>
+              <button onClick={() => setModalAbierto(true)} className="font-bold underline">{t.quidSePrimero}</button>
             )}
           </div>
         ) : (
@@ -337,12 +333,12 @@ export default function PerfilTransportadorPage() {
                       r.cuidado_animal === 'bueno'     ? 'bg-teal-100 text-teal-700' :
                                                           'bg-amber-100 text-amber-700'
                     }`}>
-                      🐾 Trato {r.cuidado_animal}
+                      {t.tridCuidadoBadge} {r.cuidado_animal}
                     </span>
                   )}
-                  {r.fue_puntual === true && <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700"><Clock className="inline h-3 w-3 mr-0.5" />Puntual</span>}
-                  {r.buena_comunicacion === true && <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700"><MessageCircle className="inline h-3 w-3 mr-0.5" />Buena comunicación</span>}
-                  {r.lo_recomendaria === true && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700"><ThumbsUp className="inline h-3 w-3 mr-0.5" />Lo recomienda</span>}
+                  {r.fue_puntual === true  && <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700"><Clock className="inline h-3 w-3 mr-0.5" />{t.quidPuntual}</span>}
+                  {r.buena_comunicacion === true && <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700"><MessageCircle className="inline h-3 w-3 mr-0.5" />{t.quidBuenaComunicacion}</span>}
+                  {r.lo_recomendaria === true && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700"><ThumbsUp className="inline h-3 w-3 mr-0.5" />{t.quidLoRecomienda}</span>}
                 </div>
 
                 {r.comentario && (

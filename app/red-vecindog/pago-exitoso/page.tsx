@@ -5,12 +5,14 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Loader2, Clock, AlertCircle, MapPin, Phone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function PagoExitosoComercioPage() {
   const params    = useSearchParams();
   const adsParam  = params.get('ads') ?? '';
   const pending   = params.get('pending') === '1';
   const paymentId = params.get('payment_id') ?? params.get('collection_id') ?? '';
+  const { t } = useLanguage();
 
   const [activado, setActivado] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -46,7 +48,7 @@ export default function PagoExitosoComercioPage() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-        <p className="font-bold text-ink">Verificando pago y activando tu negocio…</p>
+        <p className="font-bold text-ink">{t.rvpxCargando}</p>
       </div>
     );
   }
@@ -66,20 +68,20 @@ export default function PagoExitosoComercioPage() {
         </div>
 
         <h1 className="mt-5 font-display text-2xl font-black text-ink md:text-3xl">
-          {error   ? 'Hubo un problema'           :
-           pending  ? '¡Pago en proceso!'          :
-           activado ? '¡Bienvenido a la Red!'      :
-           '¡Pago recibido!'}
+          {error   ? t.rvpxErrorTitle       :
+           pending  ? t.rvpxPendienteTitle  :
+           activado ? t.rvpxBienvenidoTitle :
+           t.rvpxPagoTitle}
         </h1>
 
         <p className="mt-2 text-ink-muted">
           {error
-            ? 'Escribinos a hola@mivecindog.com.ar y lo resolvemos rápido.'
+            ? t.rvpxErrorSub
             : pending
-            ? 'Tu pago está siendo procesado. Tu negocio se activa automáticamente al confirmarse.'
+            ? t.rvpxPendienteSub
             : activado
-            ? 'Tu negocio ya es parte de la Red Vecindog y aparece en el mapa para los vecinos dueños de perros.'
-            : 'Recibirás una confirmación por email cuando tu negocio esté activo en el mapa.'}
+            ? t.rvpxActivadoSub
+            : t.rvpxPagoSub}
         </p>
 
         {error && (
@@ -88,10 +90,10 @@ export default function PagoExitosoComercioPage() {
 
         {!pending && !error && activado && (
           <div className="mt-5 rounded-2xl bg-good/10 p-4 text-left space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-good">Tu negocio ahora tiene</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-good">{t.rvpxNegocioTiene}</p>
             {[
-              { icon: MapPin, label: 'Presencia en el mapa de búsqueda de perros' },
-              { icon: Phone,  label: 'Teléfono y dirección visibles para los vecinos' },
+              { icon: MapPin, label: t.rvpxBenef1 },
+              { icon: Phone,  label: t.rvpxBenef2 },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <Icon className="h-4 w-4 shrink-0 text-good" /> {label}
@@ -101,15 +103,15 @@ export default function PagoExitosoComercioPage() {
         )}
 
         <div className="mt-5 rounded-2xl bg-brand-cream p-4 text-left text-sm text-ink-muted">
-          <p className="font-bold text-ink">Red Vecindog · 30 días</p>
+          <p className="font-bold text-ink">{t.rvpxPlan}</p>
           <p className="mt-1">
-            ¿Necesitás actualizar algún dato? Escribinos a{' '}
+            {t.rvpxActualizar}{' '}
             <strong>hola@mivecindog.com.ar</strong>
           </p>
         </div>
 
         <Link href="/" className="mt-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-          Ir a la app <ArrowRight className="h-3.5 w-3.5" />
+          {t.rvpxIrApp} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </div>

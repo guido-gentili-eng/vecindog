@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Loader2, Clock, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const PLAN_LABEL: Record<string, string> = {
   basico:   'Plan Básico',
@@ -25,6 +26,7 @@ export default function PagoExitosoPage() {
   const pending     = params.get('pending') === '1';
   const renovacion  = params.get('renovacion') === '1';
   const paymentId   = params.get('payment_id') ?? params.get('collection_id') ?? '';
+  const { t } = useLanguage();
 
   const [activado, setActivado] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -36,13 +38,8 @@ export default function PagoExitosoPage() {
     const adIds = adsParam.split(',').filter(Boolean);
     if (adIds.length === 0) { setCargando(false); return; }
 
-    if (!paymentId) {
-      // Sin payment_id no podemos verificar — mostramos mensaje de espera
-      setCargando(false);
-      return;
-    }
+    if (!paymentId) { setCargando(false); return; }
 
-    // Verificar el pago con MP server-side y activar los ads
     supabase.auth.getSession().then(({ data: { session } }) =>
     fetch('/api/confirmar-pago', {
       method: 'POST',
@@ -65,7 +62,7 @@ export default function PagoExitosoPage() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-        <p className="font-bold text-ink">Verificando pago y activando tu anuncio…</p>
+        <p className="font-bold text-ink">{t.pubpxCargando}</p>
       </div>
     );
   }
@@ -74,7 +71,6 @@ export default function PagoExitosoPage() {
     <div className="mx-auto max-w-md py-16 text-center">
       <div className="card p-8 md:p-10">
 
-        {/* Ícono */}
         <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${
           error ? 'bg-bad/15 text-bad' :
           pending ? 'bg-warn/15 text-warn' :
@@ -85,38 +81,35 @@ export default function PagoExitosoPage() {
            <CheckCircle2 className="h-9 w-9" />}
         </div>
 
-        {/* Título */}
         <h1 className="mt-5 font-display text-2xl font-black text-ink md:text-3xl">
-          {error   ? 'Hubo un problema'         :
-           pending  ? '¡Pago en proceso!'        :
-           activado && renovacion ? '¡Publicidad renovada!' :
-           activado ? '¡Tu anuncio está activo!' :
-           '¡Pago recibido!'}
+          {error                     ? t.pubpxErrorTitle     :
+           pending                   ? t.pubpxPendienteTitle :
+           activado && renovacion    ? t.pubpxRenovadoTitle  :
+           activado                  ? t.pubpxActivadoTitle  :
+           t.pubpxPagoTitle}
         </h1>
 
         <p className="mt-2 text-ink-muted">
           {error
-            ? 'Escribinos a hola@mivecindog.com.ar y lo resolvemos rápido.'
+            ? t.pubpxErrorSub
             : pending
-            ? 'Tu pago está siendo procesado. Tu anuncio se activa automáticamente al confirmarse.'
+            ? t.pubpxPendienteSub
             : activado && renovacion
-            ? 'Tu publicidad fue renovada por 30 días más. No tuviste que reingresar ningún dato.'
+            ? t.pubpxRenovadoSub
             : activado
-            ? 'Tu publicidad en Vecindog quedó activada para los próximos 30 días.'
-            : 'Recibirás una confirmación por email cuando tu anuncio esté activo.'}
+            ? t.pubpxActivadoSub
+            : t.pubpxPagoSub}
         </p>
 
-        {/* Error detalle */}
         {error && (
           <p className="mt-3 rounded-2xl bg-bad/10 px-4 py-3 text-sm font-semibold text-bad">
             {error}
           </p>
         )}
 
-        {/* Slots activados */}
         {!pending && !error && activado && (
           <div className="mt-5 rounded-2xl bg-good/10 p-4 text-left">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-good">Espacios activados</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-good">{t.pubpxEspacios}</p>
             <ul className="space-y-1">
               {(PLAN_SLOTS_LABEL[plan] ?? []).map((slot) => (
                 <li key={slot} className="flex items-center gap-2 text-sm font-semibold text-ink">
@@ -127,18 +120,17 @@ export default function PagoExitosoPage() {
           </div>
         )}
 
-        {/* Plan */}
         <div className="mt-5 rounded-2xl bg-brand-cream p-4 text-left text-sm text-ink-muted">
           <p className="font-bold text-ink">{PLAN_LABEL[plan] ?? plan} · 30 días</p>
           <p className="mt-1">
-            ¿Necesitás hacer un cambio en tu anuncio? Escribinos a{' '}
+            {t.pubpxActualizar}{' '}
             <strong>hola@mivecindog.com.ar</strong> o por WhatsApp al{' '}
             <strong>+54 9 291 405-0210</strong>
           </p>
         </div>
 
         <Link href="/" className="mt-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
-          Ir a la app <ArrowRight className="h-3.5 w-3.5" />
+          {t.pubpxIrApp} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </div>

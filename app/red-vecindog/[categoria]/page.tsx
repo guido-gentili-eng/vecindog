@@ -10,10 +10,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { buscarCiudades } from '@/lib/ciudades';
 import type { Ad } from '@/lib/ads';
-
-/* ── Mapa de categorías ──────────────────────────────────────────── */
 
 const CATEGORIAS: Record<string, {
   label: string;
@@ -30,13 +29,12 @@ const CATEGORIAS: Record<string, {
   'guarderia-hotel':   { label: 'Guardería / Hotel',  slug: 'Guardería / Hotel', icon: Home,        bg: 'bg-amber-50',  text: 'text-amber-600' },
 };
 
-/* ── Página ──────────────────────────────────────────────────────── */
-
 export default function CategoriaPage() {
   const params  = useParams();
   const router  = useRouter();
   const catKey  = params?.categoria as string;
   const cat     = CATEGORIAS[catKey];
+  const { t } = useLanguage();
 
   const { isPro, loading: authLoading, ciudad, setCiudad } = useAuth();
 
@@ -65,9 +63,9 @@ export default function CategoriaPage() {
   if (!cat) {
     return (
       <div className="py-16 text-center">
-        <p className="text-ink-muted">Categoría no encontrada.</p>
+        <p className="text-ink-muted">{t.rvcatNoEncontrado}</p>
         <Link href="/red-vecindog" className="mt-4 inline-flex items-center gap-1 font-bold text-brand-primary hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Volver a Red Vecindog
+          <ArrowLeft className="h-4 w-4" /> {t.rvcatVolverRvn}
         </Link>
       </div>
     );
@@ -83,13 +81,12 @@ export default function CategoriaPage() {
   return (
     <div className="py-10 md:py-14">
 
-      {/* ── HEADER ── */}
       <div className="mb-10">
         <Link
           href="/red-vecindog"
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-muted transition hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" /> Red Vecindog
+          <ArrowLeft className="h-4 w-4" /> {t.rvcatBack}
         </Link>
 
         <div className="mt-4 flex items-center gap-4">
@@ -105,7 +102,7 @@ export default function CategoriaPage() {
             {!cargando && isPro && (
               <p className="mt-1 text-sm text-ink-muted">
                 {comercios.length === 0
-                  ? 'Sin inscriptos todavía'
+                  ? t.rvcatSinInscrip
                   : `${comercios.length} negocio${comercios.length !== 1 ? 's' : ''} adherido${comercios.length !== 1 ? 's' : ''}`}
               </p>
             )}
@@ -113,15 +110,12 @@ export default function CategoriaPage() {
         </div>
       </div>
 
-      {/* ── CONTENIDO ── */}
       {cargando ? (
         <div className="flex justify-center py-20">
           <Loader2 className="h-7 w-7 animate-spin text-amber-500" />
         </div>
       ) : !isPro ? (
-        /* Gate para usuarios sin Pro */
         <ProGate
-          categoria={cat.label}
           count={comercios.length}
           onVerPro={() => router.push('/planes')}
         />
@@ -139,17 +133,14 @@ export default function CategoriaPage() {
   );
 }
 
-/* ── Gate Pro ────────────────────────────────────────────────────── */
-
 function ProGate({
-  categoria,
   count,
   onVerPro,
 }: {
-  categoria: string;
   count: number;
   onVerPro: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="mx-auto max-w-md py-8 text-center">
       <div className="card p-8 md:p-10">
@@ -158,18 +149,16 @@ function ProGate({
         </div>
 
         <h2 className="mt-5 font-display text-2xl font-black text-ink">
-          Exclusivo VecindogPro
+          {t.rvcatProTitle}
         </h2>
 
         <p className="mt-2 text-ink-muted">
-          {count > 0
-            ? `Hay ${count} ${categoria.toLowerCase()}${count !== 1 ? 's' : ''} adherido${count !== 1 ? 's' : ''} esperándote.`
-            : `Los ${categoria.toLowerCase()}s de la red aparecen acá.`}
-          {' '}Activá el plan Pro para ver sus datos.
+          {count > 0 && <span>{count} negocios adheridos. </span>}
+          {t.rvcatProSub}
         </p>
 
         <div className="mt-6 rounded-2xl bg-brand-cream p-4 text-left">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">Con VecindogPro tenés</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">{t.rvcatProBeneficios}</p>
           <ul className="space-y-1.5">
             {[
               'Todo lo del plan Gratis',
@@ -197,23 +186,22 @@ function ProGate({
           onClick={onVerPro}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-[#5b21b6] to-[#4c1d95] px-5 py-3.5 font-bold text-white shadow-soft transition hover:opacity-90"
         >
-          <Sparkles className="h-4 w-4" /> Ver Pro
+          <Sparkles className="h-4 w-4" /> {t.rvcatVerPro}
         </button>
 
         <Link
           href="/red-vecindog"
           className="mt-3 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
         >
-          Volver a Red Vecindog
+          {t.rvcatVolverRvn}
         </Link>
       </div>
     </div>
   );
 }
 
-/* ── Card de comercio ────────────────────────────────────────────── */
-
 function ComercioCard({ comercio: c }: { comercio: Ad }) {
+  const { t } = useLanguage();
   const horario = [c.horario_apertura, c.horario_cierre].filter(Boolean).join(' – ');
 
   return (
@@ -265,7 +253,7 @@ function ComercioCard({ comercio: c }: { comercio: Ad }) {
             rel="noopener noreferrer"
             className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 transition hover:border-amber-400 hover:bg-amber-100"
           >
-            <ExternalLink className="h-4 w-4" /> Ver negocio
+            <ExternalLink className="h-4 w-4" /> {t.rvcatVerNegocio}
           </a>
         )}
       </div>
@@ -273,9 +261,8 @@ function ComercioCard({ comercio: c }: { comercio: Ad }) {
   );
 }
 
-/* ── Gate ciudad ─────────────────────────────────────────────────── */
-
 function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
+  const { t } = useLanguage();
   const [query,      setQuery]      = useState('');
   const [custom,     setCustom]     = useState('');
   const [showCustom, setShowCustom] = useState(false);
@@ -294,10 +281,10 @@ function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
           <MapPin className="h-7 w-7" />
         </span>
         <h2 className="mt-4 font-display text-2xl font-black text-ink">
-          ¿En qué ciudad estás?
+          {t.rvcatCiudadTitle}
         </h2>
         <p className="mt-1 text-sm text-ink-muted">
-          Tenés que elegir tu ciudad para ver los negocios de tu zona.
+          {t.rvcatCiudadSub}
         </p>
 
         <div className="mt-5 text-left">
@@ -305,7 +292,7 @@ function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none" />
             <input
               type="text"
-              placeholder="Escribí tu ciudad…"
+              placeholder={t.rvcatCiudadPh}
               value={query}
               onChange={(e) => { setQuery(e.target.value); setShowCustom(false); setCustom(''); }}
               className="field w-full pl-10 pr-10"
@@ -323,10 +310,10 @@ function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
             <div className="mt-1 max-h-56 overflow-y-auto rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
               {resultados.length === 0 ? (
                 <div className="py-4 text-center">
-                  <p className="text-sm text-ink-muted">No encontramos <strong>"{query}"</strong></p>
+                  <p className="text-sm text-ink-muted">No encontramos <strong>&quot;{query}&quot;</strong></p>
                   <button type="button" onClick={() => setShowCustom(true)}
                     className="mt-2 inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary/10 px-3 py-1.5 text-sm font-bold text-brand-primary">
-                    <PenLine className="h-3.5 w-3.5" /> Usar "{query.trim()}" igual
+                    <PenLine className="h-3.5 w-3.5" /> {t.rvcatUsarDeTodas.replace('{q}', query.trim())}
                   </button>
                 </div>
               ) : (
@@ -359,11 +346,11 @@ function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
               <div className="mt-2 flex gap-2">
                 <button type="button" onClick={() => setShowCustom(false)}
                   className="flex-1 rounded-2xl border-2 border-black/10 py-2.5 text-sm font-bold text-ink-muted hover:border-brand-primary hover:text-brand-primary">
-                  Volver
+                  {t.rvcatVolver}
                 </button>
                 <button type="button" onClick={() => confirmar(custom)} disabled={!custom.trim()}
                   className="flex-1 rounded-2xl bg-brand-primary py-2.5 text-sm font-bold text-white disabled:opacity-40">
-                  Confirmar
+                  {t.rvcatConfirmar}
                 </button>
               </div>
             </div>
@@ -374,25 +361,25 @@ function CiudadGate({ onConfirm }: { onConfirm: (c: string) => void }) {
   );
 }
 
-/* ── Empty state ─────────────────────────────────────────────────── */
-
 function EmptyState({ categoria }: { categoria: string }) {
+  const { t } = useLanguage();
   return (
     <div className="py-16 text-center">
       <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-amber-50">
         <Building2 className="h-8 w-8 text-amber-400" />
       </div>
       <h2 className="mt-5 font-display text-xl font-black text-ink">
-        Todavía no hay {categoria.toLowerCase()}s inscriptos
+        {t.rvcatEmptyTitle}
       </h2>
+      <p className="mt-1 text-sm text-ink-muted">{categoria}</p>
       <p className="mt-2 text-ink-muted">
-        ¿Tenés un negocio de este rubro? Sé el primero en sumarte.
+        {t.rvcatEmptySub}
       </p>
       <Link
         href="/red-vecindog"
         className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 font-bold text-white transition hover:bg-amber-600"
       >
-        Registrar mi negocio
+        {t.rvcatRegistrar}
       </Link>
     </div>
   );

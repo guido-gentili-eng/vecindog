@@ -7,16 +7,17 @@ import Link from 'next/link';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function BuscoCuidadorPage() {
   const router  = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const [perros,      setPerros]      = useState<Perro[]>([]);
   const [perroSel,    setPerroSel]    = useState<Perro | null>(null);
   const [cargandoPerros, setCargandoPerros] = useState(true);
 
-  // Campos del formulario
   const [descripcion, setDescripcion] = useState('');
   const [zona,        setZona]        = useState('');
   const [contacto,    setContacto]    = useState('');
@@ -39,10 +40,10 @@ export default function BuscoCuidadorPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) { setError('Tenés que iniciar sesión para publicar.'); return; }
-    if (!zona.trim()) { setError('La zona es obligatoria.'); return; }
-    if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
-    if (contacto.replace(/\D/g, '').length < 10) { setError('El WhatsApp debe tener al menos 10 dígitos. Ejemplo: +54 9 291 4050210'); return; }
+    if (!user) { setError(t.cubcErrLogin); return; }
+    if (!zona.trim()) { setError(t.cubcErrZona); return; }
+    if (!contacto.trim()) { setError(t.cubcErrContacto); return; }
+    if (contacto.replace(/\D/g, '').length < 10) { setError(t.cubcErrContactoShort); return; }
 
     setEnviando(true);
     setError('');
@@ -76,7 +77,7 @@ export default function BuscoCuidadorPage() {
     });
 
     setEnviando(false);
-    if (dbErr) { setError('No se pudo publicar. Intentá de nuevo.'); return; }
+    if (dbErr) { setError(t.cubcErrPublicar); return; }
     setPublicado(true);
     setTimeout(() => router.push('/cuidado'), 1800);
   }
@@ -84,9 +85,9 @@ export default function BuscoCuidadorPage() {
   if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
-        <p className="text-ink-muted">Iniciá sesión para publicar un pedido de cuidado.</p>
+        <p className="text-ink-muted">{t.cubcLoginSub}</p>
         <Link href="/publicar" className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 font-bold text-white">
-          Iniciar sesión
+          {t.cubcLoginBtn}
         </Link>
       </div>
     );
@@ -98,8 +99,8 @@ export default function BuscoCuidadorPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
           <Check className="h-8 w-8 text-teal-600" />
         </div>
-        <h2 className="font-display text-2xl font-black text-ink">¡Aviso publicado!</h2>
-        <p className="mt-2 text-ink-muted">Tu pedido ya aparece en el listado de cuidado.</p>
+        <h2 className="font-display text-2xl font-black text-ink">{t.cubcOkTitle}</h2>
+        <p className="mt-2 text-ink-muted">{t.cubcOkSub}</p>
       </div>
     );
   }
@@ -107,31 +108,28 @@ export default function BuscoCuidadorPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <Link href="/cuidado" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink">
-        <ChevronLeft className="h-4 w-4" /> Volver
+        <ChevronLeft className="h-4 w-4" /> {t.cartelVolver}
       </Link>
 
-      <h1 className="font-display text-3xl font-black text-ink mb-1">Busco cuidador</h1>
-      <p className="text-sm text-ink-muted mb-8">
-        Publicá un aviso para encontrar a alguien que cuide a tu perro.
-      </p>
+      <h1 className="font-display text-3xl font-black text-ink mb-1">{t.cubcTitle}</h1>
+      <p className="text-sm text-ink-muted mb-8">{t.cubcSub}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Selector de perro */}
         <div className="card p-5">
-          <p className="mb-3 text-sm font-bold text-ink">¿Para cuál de tus perros?</p>
+          <p className="mb-3 text-sm font-bold text-ink">{t.cubcCualPerro}</p>
 
           {cargandoPerros ? (
             <div className="flex items-center gap-2 text-sm text-ink-muted">
-              <Loader2 className="h-4 w-4 animate-spin" /> Cargando tus perros…
+              <Loader2 className="h-4 w-4 animate-spin" /> {t.cubcCargandoPerros}
             </div>
           ) : perros.length === 0 ? (
             <div className="rounded-2xl bg-brand-cream p-4 text-sm text-ink-muted">
-              No tenés perros registrados.{' '}
+              {t.cubcSinPerros}{' '}
               <Link href="/mis-perros/nuevo" className="font-bold text-teal-600 hover:underline">
-                Registrá uno →
+                {t.cubcRegistra}
               </Link>
-              <p className="mt-2 text-xs">También podés continuar sin seleccionar un perro y completar los datos manualmente.</p>
+              <p className="mt-2 text-xs">{t.cubcSinPerroSub}</p>
             </div>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -147,6 +145,7 @@ export default function BuscoCuidadorPage() {
                   }`}
                 >
                   {p.foto_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.foto_url} alt={p.nombre} className="h-10 w-10 rounded-xl object-cover shrink-0" />
                   ) : (
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-cream">
@@ -164,38 +163,36 @@ export default function BuscoCuidadorPage() {
           )}
         </div>
 
-        {/* Datos auto-llenados (solo lectura si hay perro seleccionado) */}
         {perroSel && (
           <div className="card p-5 bg-teal-50 border border-teal-100">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-teal-600">Datos de {perroSel.nombre}</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-teal-600">
+              {t.cubcCualPerro.replace('?', '')} {perroSel.nombre}
+            </p>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-ink">
               {perroSel.raza   && <span><span className="font-semibold">Raza:</span> {perroSel.raza}</span>}
               {perroSel.color  && <span><span className="font-semibold">Color:</span> {perroSel.color}</span>}
               {perroSel.tamano && <span><span className="font-semibold">Tamaño:</span> {perroSel.tamano}</span>}
               {perroSel.sexo   && <span><span className="font-semibold">Sexo:</span> {perroSel.sexo}</span>}
             </div>
-            <p className="mt-1.5 text-xs text-teal-600">Estos datos se publican automáticamente.</p>
           </div>
         )}
 
-        {/* Fechas */}
         <div>
-          <label className="label">¿Para qué fechas? <span className="text-ink-muted font-normal">(opcional)</span></label>
+          <label className="label">{t.cubcFechas} <span className="text-ink-muted font-normal">{t.cubcOpcional}</span></label>
           <div className="grid grid-cols-2 gap-3 mt-1">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-muted">Desde</label>
+              <label className="mb-1 block text-xs font-semibold text-ink-muted">{t.cubcDesde}</label>
               <input type="date" className="field w-full" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-ink-muted">Hasta</label>
+              <label className="mb-1 block text-xs font-semibold text-ink-muted">{t.cubcHasta}</label>
               <input type="date" className="field w-full" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
             </div>
           </div>
         </div>
 
-        {/* Zona */}
         <div>
-          <label className="label">Zona / Barrio <span className="text-bad">*</span></label>
+          <label className="label">{t.cubcZona} <span className="text-bad">*</span></label>
           <input
             className="field w-full mt-1"
             placeholder="Ej: Palermo, Villa Crespo…"
@@ -205,33 +202,29 @@ export default function BuscoCuidadorPage() {
           />
         </div>
 
-        {/* Descripción */}
         <div>
-          <label className="label">Descripción <span className="text-ink-muted font-normal">(opcional)</span></label>
+          <label className="label">{t.cubcDescripcion} <span className="text-ink-muted font-normal">{t.cubcOpcional}</span></label>
           <textarea
             className="field w-full mt-1"
             rows={3}
-            placeholder="Necesidades especiales, rutinas, información importante para el cuidador…"
+            placeholder={t.cubcDescripcionPh}
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
           />
         </div>
 
-        {/* Contacto */}
         <div>
-          <label className="label">WhatsApp de contacto <span className="text-bad">*</span></label>
+          <label className="label">{t.cubcContacto} <span className="text-bad">*</span></label>
           <input
             className="field w-full mt-1"
             type="tel"
-            placeholder="Ej: 1122334455"
+            placeholder={t.cubcContactoPh}
             value={contacto}
             onChange={(e) => setContacto(e.target.value)}
             required
           />
           {contacto.trim() && contacto.replace(/\D/g, '').length < 10 && (
-            <p className="mt-1.5 text-xs font-semibold text-bad">
-              Número incompleto — ingresá el número completo con código de área. Ej: +54 9 291 4050210
-            </p>
+            <p className="mt-1.5 text-xs font-semibold text-bad">{t.cubcContactoError}</p>
           )}
         </div>
 
@@ -247,7 +240,7 @@ export default function BuscoCuidadorPage() {
           className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 py-3.5 font-bold text-white transition hover:bg-teal-700 disabled:opacity-60"
         >
           {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-          Publicar aviso
+          {t.cubcPublicar}
         </button>
       </form>
     </div>

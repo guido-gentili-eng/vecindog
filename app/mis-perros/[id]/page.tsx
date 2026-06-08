@@ -128,7 +128,12 @@ export default function PerroDetallePage() {
             listarFotos(p.id).then(setFotos),
             listarContactos(p.id).then(setContactos),
             obtenerGrooming(p.id).then(setGrooming),
-          ]).then(() => setSubDataLoaded(true));
+          ]).then((results) => {
+            results.forEach((r, i) => {
+              if (r.status === 'rejected') console.error(`[mis-perros] sub-data[${i}] falló:`, r.reason);
+            });
+            setSubDataLoaded(true);
+          });
         }
         return null;
       })
@@ -161,15 +166,13 @@ export default function PerroDetallePage() {
 
   async function handleRegistrarTurno(tipo: TipoTurno, fecha: string, nota: string) {
     if (!perro) return;
-    // Solo un turno activo por tipo — reemplaza si ya existía
+    // Insertar primero, luego eliminar el viejo — así no se pierde el dato si el insert falla
     const existing = turnos.find((t) => t.tipo === tipo);
-    if (existing) await eliminarTurno(existing.id);
     try {
       const nuevo = await agregarTurno({ perro_id: perro.id, tipo, fecha, nota: nota || null });
+      if (existing) await eliminarTurno(existing.id);
       setTurnos((prev) => [...prev.filter((t) => t.tipo !== tipo), nuevo]);
     } catch {
-      // Si el insert falla luego del delete, recargamos turnos desde la DB
-      // para evitar que el estado local quede desincronizado
       listarTurnos(perro.id).then(setTurnos);
       throw new Error('No se pudo guardar el turno. Intentá de nuevo.');
     }

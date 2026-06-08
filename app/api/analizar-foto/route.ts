@@ -75,7 +75,12 @@ Si la imagen no contiene un perro claramente visible, devolvé: {"error": "No se
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return NextResponse.json({ error: 'Respuesta inválida del análisis' }, { status: 500 });
 
-    const resultado = JSON.parse(match[0]);
+    let resultado: Record<string, unknown>;
+    try {
+      resultado = JSON.parse(match[0]);
+    } catch {
+      return NextResponse.json({ error: 'No se pudo interpretar la respuesta de la IA' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, ...resultado });
   } catch {
     return NextResponse.json({ error: 'Error al analizar la foto' }, { status: 500 });

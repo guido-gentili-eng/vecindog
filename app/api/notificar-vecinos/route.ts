@@ -92,12 +92,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Traer perfiles con coordenadas ───────────────────────────────
-    const { data: profiles } = await admin
+    let profilesQuery = admin
       .from('profiles')
       .select('id, nombre, apellido, lat, lng, radio_alerta_km')
       .not('lat', 'is', null)
-      .not('lng', 'is', null)
-      .neq('id', publicador_id ?? '');
+      .not('lng', 'is', null);
+    if (publicador_id) profilesQuery = profilesQuery.neq('id', publicador_id);
+    const { data: profiles } = await profilesQuery;
 
     if (!profiles || profiles.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 

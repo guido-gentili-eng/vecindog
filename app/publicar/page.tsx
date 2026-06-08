@@ -482,6 +482,16 @@ export default function PublicarPage() {
                 setPerroData(null);
                 setPerroFotoRemovida(false);
                 setUbicacion(null);
+                setSinContacto(false);
+                setMatchCandidatos([]);
+                setMatchPost(null);
+                setMismaZona(null);
+                setZonaVisto('');
+                setLatVisto(null);
+                setLngVisto(null);
+                setHorarioVisto('');
+                setZonaManual(false);
+                setGpsEstado('idle');
                 setEnviado(false);
               }}
               className="btn-secondary"

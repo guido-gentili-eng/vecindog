@@ -271,7 +271,13 @@ export default function DetalleAvisoPage() {
           loViMismoLugar ? undefined : (loViLng ?? undefined),
           fechaEfectiva,
         );
-        setPost((p) => p ? { ...p, horario: loViHora, fecha: fechaEfectiva } : p);
+        setPost((p) => p ? {
+          ...p,
+          zona:    calleEfectiva,
+          horario: loViHora,
+          fecha:   fechaEfectiva,
+          ...(!loViMismoLugar && loViLat != null ? { lat: loViLat, lng: loViLng } : {}),
+        } : p);
       } else if (post!.categoria === 'encontrado') {
         const lat = loViMismoLugar ? undefined : (loViLat ?? undefined);
         const lng = loViMismoLugar ? undefined : (loViLng ?? undefined);

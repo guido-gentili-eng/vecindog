@@ -1,11 +1,5 @@
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
-
 export interface PushPayload {
   title: string;
   body: string;
@@ -15,6 +9,15 @@ export interface PushPayload {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function sendPushToUser(userId: string, payload: PushPayload, adminClient: any) {
+  // Configurar VAPID en runtime, no en tiempo de build
+  if (!process.env.VAPID_SUBJECT || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return;
+  }
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY,
+  );
   const { data: subs } = await adminClient
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth')

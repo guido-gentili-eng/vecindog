@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, Plus, ImagePlus, X, AlertCircle, Camera, Star,
@@ -665,8 +666,7 @@ export default function PublicarPage() {
                 {t.pbrFotoPerfilDe} {perroData.nombre}
               </p>
               <div className="relative inline-block">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={perroData.foto_url} alt={perroData.nombre} className="h-24 w-24 rounded-2xl object-cover ring-2 ring-brand-primary" />
+                <Image src={perroData.foto_url} alt={perroData.nombre} width={96} height={96} className="rounded-2xl object-cover ring-2 ring-brand-primary" />
                 <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-brand-primary px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
                   <Star className="h-3 w-3 fill-current" /> {t.pbrPrincipal}
                 </span>

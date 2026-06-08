@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -193,8 +194,7 @@ export default function MiPerfilPage() {
             className="relative h-20 w-20 overflow-hidden rounded-2xl bg-brand-cream ring-2 ring-brand-primary/20 transition hover:ring-brand-primary"
           >
             {fotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={fotoUrl} alt="Avatar" className="h-full w-full object-cover" />
+              <Image src={fotoUrl} alt="Avatar" fill className="object-cover" sizes="80px" />
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-1">
                 <User className="h-8 w-8 text-brand-primary/40" />
@@ -598,8 +598,7 @@ export default function MiPerfilPage() {
                 <Link key={p.id} href={`/publicaciones/${p.id}`}
                   className="flex items-center gap-3 rounded-xl bg-brand-cream px-4 py-3 hover:bg-brand-primary/10 transition">
                   {p.images?.[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.images[0]} alt={p.nombre ?? ''} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                    <Image src={p.images[0]} alt={p.nombre ?? ''} width={40} height={40} className="rounded-xl object-cover shrink-0" />
                   ) : (
                     <div className="h-10 w-10 rounded-xl bg-good/10 flex items-center justify-center shrink-0">
                       <Heart className="h-5 w-5 text-good" />
@@ -648,8 +647,7 @@ export default function MiPerfilPage() {
               <Link key={p.id} href={`/mis-perros/${p.id}`}
                 className="flex items-center gap-3 rounded-xl bg-brand-cream px-4 py-3 hover:bg-brand-primary/10 transition">
                 {p.foto_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.foto_url} alt={p.nombre} className="h-10 w-10 rounded-xl object-cover" />
+                  <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="rounded-xl object-cover" />
                 ) : (
                   <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center">
                     <Dog className="h-5 w-5 text-brand-primary" />
@@ -777,8 +775,7 @@ function SOSModal({
                     }`}
                   >
                     {p.foto_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.foto_url} alt={p.nombre} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                      <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="rounded-xl object-cover shrink-0" />
                     ) : (
                       <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0">
                         <Dog className="h-5 w-5 text-brand-primary" />

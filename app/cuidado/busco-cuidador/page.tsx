@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dog, Loader2, AlertCircle, Check, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { listarMisPerros, type Perro } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -146,7 +147,7 @@ export default function BuscoCuidadorPage() {
                 >
                   {p.foto_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.foto_url} alt={p.nombre} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                    <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="rounded-xl object-cover shrink-0" />
                   ) : (
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-cream">
                       <Dog className="h-5 w-5 text-ink-muted" />

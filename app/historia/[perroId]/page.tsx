@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import EncontrePerroButton from './EncontrePerroButton';
 import PrintButton from './PrintButton';
@@ -186,8 +187,7 @@ export default async function HistoriaPublicaPage({ params }: Props) {
                   >
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
                       {post.images?.[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={post.images[0]} alt="" className="h-full w-full object-cover" />
+                        <Image src={post.images[0]} alt="" fill className="object-cover" sizes="56px" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-2xl">🐾</div>
                       )}

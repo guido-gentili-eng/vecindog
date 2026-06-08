@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import NextImage from 'next/image';
 import {
   Camera, ImagePlus, X, AlertCircle, Sparkles, ArrowLeft,
   ScanSearch, RotateCw, MapPin, Calendar, ArrowRight, ImageIcon,
@@ -663,8 +664,7 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
         className="group block overflow-hidden rounded-2xl bg-white shadow-card ring-2 ring-brand-primary/30 transition hover:-translate-y-0.5">
         <div className="relative h-48 w-full overflow-hidden bg-brand-cream">
           {post.images?.[0]
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={post.images[0]} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
+            ? <NextImage src={post.images[0]} alt="" fill className="object-cover transition group-hover:scale-105" sizes="(max-width:768px) 100vw, 480px" />
             : <div className="flex h-full items-center justify-center text-brand-primary/20"><ImageIcon className="h-12 w-12" /></div>
           }
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
@@ -725,8 +725,7 @@ function PostCard({ post, score, matches, grande = false }: { post: Post; score:
       className="group flex gap-3 overflow-hidden rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card">
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-brand-cream">
         {post.images?.[0]
-          // eslint-disable-next-line @next/next/no-img-element
-          ? <img src={post.images[0]} alt="" className="h-full w-full object-cover" />
+          ? <NextImage src={post.images[0]} alt="" fill className="object-cover" sizes="64px" />
           : <div className="flex h-full items-center justify-center text-brand-primary/20"><ImageIcon className="h-6 w-6" /></div>
         }
         <span className="absolute bottom-0.5 left-0.5 right-0.5 rounded text-center text-[9px] font-extrabold bg-black/55 text-white">

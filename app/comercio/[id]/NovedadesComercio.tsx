@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Megaphone } from 'lucide-react';
+import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Novedad {
@@ -40,8 +41,9 @@ export default function NovedadesComercio({ adId }: { adId: string }) {
         {novedades.map((n) => (
           <div key={n.id} className="px-5 py-4">
             {n.imagen_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={n.imagen_url} alt={n.titulo} className="mb-3 w-full rounded-2xl object-cover max-h-48" />
+              <div className="relative mb-3 w-full overflow-hidden rounded-2xl" style={{ maxHeight: '192px', height: '192px' }}>
+                <Image src={n.imagen_url} alt={n.titulo} fill className="object-cover" sizes="(max-width:768px) 100vw, 600px" />
+              </div>
             )}
             <p className="font-bold text-ink">{n.titulo}</p>
             {n.texto && <p className="mt-1 text-sm text-ink-muted leading-relaxed">{n.texto}</p>}

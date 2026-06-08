@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Dog, Syringe, ChevronLeft, CheckCircle2, CalendarDays,
   Loader2, AlertCircle, Cpu, MapPin, Pencil, X, ImagePlus, Save,
@@ -419,9 +420,7 @@ export default function PerroDetallePage() {
           {/* Header del perro: foto chica + nombre + chips */}
           <div className="card mb-5 flex items-center gap-4 p-4">
             {perro.foto_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={perro.foto_url} alt={perro.nombre}
-                className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
+              <Image src={perro.foto_url} alt={perro.nombre} width={64} height={64} className="shrink-0 rounded-2xl object-cover" />
             ) : (
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-cream">
                 <Dog className="h-8 w-8 text-brand-primary/30" />

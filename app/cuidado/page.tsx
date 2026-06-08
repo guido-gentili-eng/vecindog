@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HandHeart, Search, Phone, MapPin, Calendar, ChevronRight, User, Star, ArrowLeft } from 'lucide-react';
@@ -163,7 +164,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
     <div className="card flex gap-4 p-4">
       <div className="shrink-0">
         {foto ? (
-          <img src={foto} alt={p.nombre ?? ''} className="h-16 w-16 rounded-2xl object-cover" />
+          <Image src={foto} alt={p.nombre ?? ''} width={64} height={64} className="rounded-2xl object-cover" />
         ) : (
           <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${esCuidador ? 'bg-teal-100' : 'bg-brand-cream'}`}>
             {esCuidador

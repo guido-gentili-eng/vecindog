@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft, Loader2, Store, Phone, MapPin, Clock,
   ExternalLink, Edit3, CheckCircle2, AlertCircle, Plus, Trash2, Megaphone,
@@ -207,8 +208,9 @@ export default function MiComercioPage() {
 
         <div className="rounded-[24px] bg-white border border-black/5 overflow-hidden">
           {comercio.imagen_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={comercio.imagen_url} alt={comercio.titulo} className="h-36 w-full object-cover" />
+            <div className="relative h-36 w-full overflow-hidden">
+              <Image src={comercio.imagen_url} alt={comercio.titulo} fill className="object-cover" sizes="(max-width:768px) 100vw, 600px" />
+            </div>
           )}
           <div className="px-5 py-4">
             <div className="flex items-start justify-between gap-3">

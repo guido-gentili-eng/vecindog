@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft, Phone, MapPin, Clock, ExternalLink, Building2, Loader2,
   Stethoscope, ShoppingBag, Scissors, Award, Footprints, Home,
@@ -207,8 +208,9 @@ function ComercioCard({ comercio: c }: { comercio: Ad }) {
   return (
     <div className="card overflow-hidden p-0">
       {c.imagen_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={c.imagen_url} alt={c.titulo} className="h-44 w-full object-cover" />
+        <div className="relative h-44 w-full overflow-hidden">
+          <Image src={c.imagen_url} alt={c.titulo} fill className="object-cover" sizes="(max-width:768px) 100vw, 360px" />
+        </div>
       ) : (
         <div className="flex h-44 items-center justify-center bg-brand-cream">
           <Building2 className="h-10 w-10 text-ink-muted/30" />

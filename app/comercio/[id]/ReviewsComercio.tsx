@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Star, Loader2, CheckCircle2, X } from 'lucide-react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -149,7 +150,7 @@ export default function ReviewsComercio({ adId, nombreComercio }: Props) {
                 <div className="flex items-start gap-3">
                   {r.profiles?.foto_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.profiles.foto_url} alt={nombre} className="h-9 w-9 rounded-full object-cover shrink-0" />
+                    <Image src={r.profiles.foto_url} alt={nombre} width={36} height={36} className="rounded-full object-cover shrink-0" />
                   ) : (
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-sm font-bold text-brand-primary shrink-0">
                       {nombre.charAt(0).toUpperCase()}

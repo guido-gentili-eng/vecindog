@@ -37,7 +37,7 @@ export default function OnboardingModal({ storageKey, slides }: Props) {
     }
   }
 
-  if (!visible) return null;
+  if (!visible || slides.length === 0) return null;
 
   const slide = slides[current];
   const esUltimo = current === slides.length - 1;

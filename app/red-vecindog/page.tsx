@@ -74,7 +74,7 @@ export default function RedVecindogPage() {
           {
             emoji: '🏪',
             titulo: 'La red de comercios de tu barrio',
-            descripcion: 'Encontrá veterinarias, pet shops, peluquerías y cuidadores en Bahía Blanca. Todos en un solo mapa.',
+            descripcion: 'Encontrá veterinarias, pet shops, peluquerías y cuidadores cerca tuyo. Todos en un solo mapa.',
           },
           {
             emoji: '📍',

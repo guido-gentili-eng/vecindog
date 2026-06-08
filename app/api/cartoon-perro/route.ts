@@ -28,25 +28,32 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Llamar a Replicate (Prefer: wait = respuesta sincrónica) ──────
-    const res = await fetch('https://api.replicate.com/v1/models/catacolabs/cartoonify/predictions', {
+    // Modelo: timothybrooks/instruct-pix2pix
+    const res = await fetch('https://api.replicate.com/v1/models/timothybrooks/instruct-pix2pix/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
-        'Prefer': 'wait=55', // espera hasta 55s por resultado
+        'Prefer': 'wait=55',
       },
       body: JSON.stringify({
-        input: { image: foto_url },
+        input: {
+          image:                foto_url,
+          prompt:               'turn this dog into a cute cartoon illustration, pixar style, vibrant colors',
+          negative_prompt:      'ugly, blurry, low quality',
+          image_guidance_scale: 1.5,
+          guidance_scale:       7,
+          num_inference_steps:  20,
+        },
       }),
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[cartoon-perro] Replicate error:', res.status, errText);
-      return NextResponse.json({ error: 'Error al generar la caricatura' }, { status: 500 });
-    }
-
     const prediction = await res.json();
+
+    if (!res.ok) {
+      console.error('[cartoon-perro] Replicate error:', res.status, JSON.stringify(prediction));
+      return NextResponse.json({ error: `Replicate: ${prediction?.detail || prediction?.error || res.status}` }, { status: 500 });
+    }
 
     // Si ya terminó sincrónicamente
     if (prediction.status === 'succeeded' && prediction.output) {

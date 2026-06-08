@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
 import InstallBanner from '@/components/InstallBanner';
 import AiHelpButton from '@/components/AiHelpButton';
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 export const viewport: Viewport = {
   themeColor: '#B85C4A',
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <InstallBanner />
           <AiHelpButton />
+          <ServiceWorkerRegister />
         </Providers>
       </body>
     </html>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendPushToUser } from '@/lib/pushNotification';
 
 const RADIO_KM = 1;
 
@@ -136,6 +137,19 @@ export async function POST(req: NextRequest) {
       const { error: insertErr } = await admin.from('notifications').insert(notifRows);
       if (insertErr) console.error('[notificar-vecinos] insert notifications error:', insertErr.message);
     }
+
+    // ── Enviar push notifications ────────────────────────────────────
+    const pushTitle = `🐾 ${categoriaLabel.charAt(0).toUpperCase() + categoriaLabel.slice(1)} cerca de tu casa`;
+    const pushBody  = nombrePerroS
+      ? `${nombrePerroS} — ${zonaLabel}`
+      : `Nuevo aviso en ${zonaLabel}`;
+    const pushUrl   = `/publicaciones/${postIdS}`;
+
+    await Promise.allSettled(
+      cercanos.map((p: { id: string }) =>
+        sendPushToUser(p.id, { title: pushTitle, body: pushBody, url: pushUrl }, admin)
+      )
+    );
 
     // ── Enviar emails ────────────────────────────────────────────────
     let enviados = 0;

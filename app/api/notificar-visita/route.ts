@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendPushToUser } from '@/lib/pushNotification';
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
       mensaje,
       leida:   false,
     });
+
+    // Enviar push al dueño del aviso
+    sendPushToUser(post.user_id, {
+      title: '👁️ Alguien vio tu aviso',
+      body:  mensaje,
+      url:   `/publicaciones/${post_id}`,
+    }, admin).catch(() => {});
 
     return NextResponse.json({ ok: true });
   } catch {

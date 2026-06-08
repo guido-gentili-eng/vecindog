@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Dog, Eye, X, CheckCheck, RefreshCw, CheckCircle2, Loader2, Users, UserPlus } from 'lucide-react';
+import { Bell, Dog, Eye, X, CheckCheck, RefreshCw, CheckCircle2, Loader2, Users, UserPlus, BellOff } from 'lucide-react';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,6 +29,7 @@ export default function NotificationsBell() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const unread = notifs.filter((n) => !n.leida).length;
+  const { state: pushState, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushSubscription();
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -166,20 +168,42 @@ export default function NotificationsBell() {
       {open && (
         <div className="absolute right-0 top-12 z-50 w-80 max-w-[calc(100vw-1rem)] rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-black/5 px-4 py-3">
-            <span className="font-bold text-ink text-sm">Notificaciones</span>
-            <div className="flex items-center gap-2">
-              {unread > 0 && (
-                <button type="button" onClick={marcarTodasLeidas}
-                  className="flex items-center gap-1 text-xs text-brand-primary font-bold hover:underline">
-                  <CheckCheck className="h-3.5 w-3.5" /> Marcar todas leídas
+          <div className="border-b border-black/5 px-4 py-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-ink text-sm">Notificaciones</span>
+              <div className="flex items-center gap-2">
+                {unread > 0 && (
+                  <button type="button" onClick={marcarTodasLeidas}
+                    className="flex items-center gap-1 text-xs text-brand-primary font-bold hover:underline">
+                    <CheckCheck className="h-3.5 w-3.5" /> Marcar todas leídas
+                  </button>
+                )}
+                <button type="button" onClick={() => setOpen(false)}
+                  className="text-ink-muted hover:text-ink">
+                  <X className="h-4 w-4" />
                 </button>
-              )}
-              <button type="button" onClick={() => setOpen(false)}
-                className="text-ink-muted hover:text-ink">
-                <X className="h-4 w-4" />
-              </button>
+              </div>
             </div>
+            {/* Botón activar/desactivar notificaciones push */}
+            {pushState === 'unsubscribed' && (
+              <button type="button" onClick={pushSubscribe}
+                className="flex w-full items-center gap-2 rounded-xl bg-brand-primary/8 px-3 py-2 text-xs font-bold text-brand-primary hover:bg-brand-primary/15 transition">
+                <Bell className="h-3.5 w-3.5 shrink-0" />
+                Activar notificaciones en este celular
+              </button>
+            )}
+            {pushState === 'subscribed' && (
+              <button type="button" onClick={pushUnsubscribe}
+                className="flex w-full items-center gap-2 rounded-xl bg-black/5 px-3 py-2 text-xs font-bold text-ink-muted hover:bg-black/10 transition">
+                <BellOff className="h-3.5 w-3.5 shrink-0" />
+                Notificaciones activas — tocá para desactivar
+              </button>
+            )}
+            {pushState === 'denied' && (
+              <p className="text-[11px] text-ink-muted px-1">
+                Las notificaciones están bloqueadas en este navegador. Habilitálas desde Configuración.
+              </p>
+            )}
           </div>
 
           {/* Lista */}

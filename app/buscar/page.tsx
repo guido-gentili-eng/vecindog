@@ -12,7 +12,6 @@ import RazaAutocomplete from '@/components/RazaAutocomplete';
 import ProGate from '@/components/ProGate';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import OnboardingModal from '@/components/OnboardingModal';
 
 /* ─────────────── Tipos del formulario ─────────────── */
 
@@ -237,21 +236,6 @@ export default function BuscarPage() {
 
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
-      <OnboardingModal
-        storageKey="onboarding_buscar"
-        slides={[
-          {
-            emoji: '🔍',
-            titulo: 'Buscá coincidencias por características',
-            descripcion: 'Ingresá el color, tamaño y raza del perro que perdiste o encontraste. Vecindog cruza los datos con los avisos activos.',
-          },
-          {
-            emoji: '✅',
-            titulo: 'Más datos = más chance de encontrar',
-            descripcion: 'Cuanto más completes el formulario de búsqueda, más precisos son los resultados. ¡Hasta el collar importa!',
-          },
-        ]}
-      />
       <Link
         href="/publicaciones"
         className="mb-5 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted transition hover:text-ink"

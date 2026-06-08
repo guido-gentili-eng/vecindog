@@ -14,6 +14,7 @@ interface Props {
   estudios: Estudio[];
   pesos: Peso[];
   contactos: ContactoEmergencia[];
+  dataLoaded: boolean;
 }
 
 interface CheckItem {
@@ -52,7 +53,7 @@ function buildChecklist(
   ];
 }
 
-export default function ProfileCompletion({ perro, vacunas, estudios, pesos, contactos }: Props) {
+export default function ProfileCompletion({ perro, vacunas, estudios, pesos, contactos, dataLoaded }: Props) {
   const storageKey   = `perfil_completion_seen_${perro.id}`;
   const skipPrefix   = `perro_skip_`;
   const [visible,    setVisible]  = useState(false);
@@ -60,6 +61,7 @@ export default function ProfileCompletion({ perro, vacunas, estudios, pesos, con
   const [dismissed,  setDismissed] = useState(false);
 
   useEffect(() => {
+    if (!dataLoaded) return;
     if (typeof window === 'undefined') return;
     const seenThisSession = sessionStorage.getItem(storageKey);
     if (seenThisSession) return;
@@ -72,7 +74,7 @@ export default function ProfileCompletion({ perro, vacunas, estudios, pesos, con
     const items = buildChecklist(perro, vacunas, estudios, pesos, contactos, savedSkips);
     const allDone = items.every((i) => i.done);
     if (!allDone) setVisible(true);
-  }, [perro.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dataLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function dismiss() {
     sessionStorage.setItem(storageKey, '1');

@@ -104,6 +104,8 @@ export default function PerroDetallePage() {
   const [contactos,          setContactos]         = useState<ContactoEmergencia[]>([]);
   const [grooming,           setGrooming]          = useState<Grooming | null>(null);
 
+  const [subDataLoaded, setSubDataLoaded] = useState(false);
+
   useEffect(() => {
     obtenerPerro(id)
       .then((p) => {
@@ -114,16 +116,18 @@ export default function PerroDetallePage() {
           );
           setVacunas(sorted);
           buscarPostActivoDePerro(p.id).then(setPostActivo);
-          listarEstudios(p.id).then(setEstudios);
-          listarDesparasitaciones(p.id).then(setDesparasitaciones);
-          listarPesos(p.id).then(setPesos);
-          listarTurnos(p.id).then(setTurnos);
-          listarMedicamentos(p.id).then(setMedicamentos);
-          listarVisitasVet(p.id).then(setVisitasVet);
-          listarProcedimientos(p.id).then(setProcedimientos);
-          listarFotos(p.id).then(setFotos);
-          listarContactos(p.id).then(setContactos);
-          obtenerGrooming(p.id).then(setGrooming);
+          Promise.allSettled([
+            listarEstudios(p.id).then(setEstudios),
+            listarDesparasitaciones(p.id).then(setDesparasitaciones),
+            listarPesos(p.id).then(setPesos),
+            listarTurnos(p.id).then(setTurnos),
+            listarMedicamentos(p.id).then(setMedicamentos),
+            listarVisitasVet(p.id).then(setVisitasVet),
+            listarProcedimientos(p.id).then(setProcedimientos),
+            listarFotos(p.id).then(setFotos),
+            listarContactos(p.id).then(setContactos),
+            obtenerGrooming(p.id).then(setGrooming),
+          ]).then(() => setSubDataLoaded(true));
         }
         return null;
       })
@@ -459,6 +463,7 @@ export default function PerroDetallePage() {
             estudios={estudios}
             pesos={pesos}
             contactos={contactos}
+            dataLoaded={subDataLoaded}
           />
 
           {/* Banner Pro para usuarios Free */}

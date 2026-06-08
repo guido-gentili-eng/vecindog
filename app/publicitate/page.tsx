@@ -514,8 +514,11 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
         }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) {
-        window.location.href = `/publicitate/pago-exitoso?plan=${planKey}&ads=${data.ad_ids?.join(',')}&trial=1`;
+      if (res.ok && data.ok && data.ad_ids?.length > 0) {
+        window.location.href = `/publicitate/pago-exitoso?plan=${planKey}&ads=${data.ad_ids.join(',')}&trial=1`;
+      } else if (res.ok && data.ok) {
+        setError('El anuncio se activó pero no se pudo obtener el ID. Revisá tu email de confirmación.');
+        setLoading(false);
       } else {
         setError(data.error ?? 'Error al procesar.');
         setLoading(false);

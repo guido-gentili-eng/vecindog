@@ -126,6 +126,8 @@ export default function PublicarPage() {
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
   const [ubicacion,         setUbicacion]         = useState<'casa' | 'otro' | null>(null);
 
+  const [sinContacto,     setSinContacto]     = useState(false);
+
   const [matchCandidatos, setMatchCandidatos] = useState<Post[]>([]);
   const [matchPost,       setMatchPost]       = useState<Post | null>(null);
   const [mismaZona,       setMismaZona]       = useState<boolean | null>(null);
@@ -266,11 +268,13 @@ export default function PublicarPage() {
       return;
     }
 
-    const digitos = form.contacto.replace(/\D/g, '');
-    if (digitos.length < 10) {
-      setSubmitError(t.pbrWhatsappError);
-      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
-      return;
+    if (!sinContacto) {
+      const digitos = form.contacto.replace(/\D/g, '');
+      if (digitos.length < 10) {
+        setSubmitError(t.pbrWhatsappError);
+        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        return;
+      }
     }
 
     if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
@@ -280,6 +284,12 @@ export default function PublicarPage() {
         setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
         return;
       }
+    }
+
+    // Si no quiere mostrar contacto, publicar directo sin modal de confirmación
+    if (sinContacto) {
+      doPublicar();
+      return;
     }
 
     // Mostrar confirmación del número de WhatsApp antes de publicar
@@ -327,7 +337,7 @@ export default function PublicarPage() {
         zona:        appendCiudad(form.zona, efectivaCiudad),
         fecha:       form.fecha,
         horario:     form.horario     || null,
-        contacto:    form.contacto,
+        contacto:    sinContacto ? 'OCULTO' : form.contacto,
         images:      uploadedUrls,
         ...(form.lat != null && form.lng != null ? { lat: form.lat, lng: form.lng } : {}),
         ...(form.categoria === 'transito' ? {
@@ -1087,13 +1097,42 @@ export default function PublicarPage() {
 
         {/* ── PASO 4/5: contacto ── */}
         <StepCard n={form.categoria === 'transito' ? 5 : 4} titulo={t.pbrContactoLabel}>
-          <Field label={t.pbrContactoLabel}>
-            <input type="tel" className="field" placeholder="+54 9 291 ..."
-              value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} required />
-            {form.contacto.trim() && form.contacto.replace(/\D/g, '').length < 10 && (
-              <p className="mt-1.5 text-xs font-semibold text-bad">{t.pbrContactoError}</p>
-            )}
-          </Field>
+          {!sinContacto && (
+            <Field label={t.pbrContactoLabel}>
+              <input type="tel" className="field" placeholder="+54 9 291 ..."
+                value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} required={!sinContacto} />
+              {form.contacto.trim() && form.contacto.replace(/\D/g, '').length < 10 && (
+                <p className="mt-1.5 text-xs font-semibold text-bad">{t.pbrContactoError}</p>
+              )}
+            </Field>
+          )}
+
+          {form.categoria === 'encontrado' && (
+            <button
+              type="button"
+              onClick={() => {
+                setSinContacto((v) => !v);
+                if (!sinContacto) handleChange('contacto', '');
+              }}
+              className={`mt-3 flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left text-sm transition ${
+                sinContacto
+                  ? 'border-brand-primary bg-brand-primary/5'
+                  : 'border-black/10 hover:border-brand-primary/40'
+              }`}
+            >
+              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
+                sinContacto ? 'border-brand-primary bg-brand-primary' : 'border-black/20'
+              }`}>
+                {sinContacto && (
+                  <svg viewBox="0 0 10 8" className="h-3 w-3 fill-white"><path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                )}
+              </span>
+              <div>
+                <p className="font-bold text-ink">No quiero mostrar mi celular</p>
+                <p className="text-xs text-ink-muted">El aviso se publica sin número de contacto</p>
+              </div>
+            </button>
+          )}
         </StepCard>
 
         {submitError && (

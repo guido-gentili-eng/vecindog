@@ -159,7 +159,8 @@ export default function DetalleAvisoPage() {
     adopcion:   t.pubRenovarAdopcion,
   };
 
-  const waNumero = (post.contacto ?? '').replace(/[^0-9]/g, '');
+  const sinContacto = post.contacto === 'OCULTO';
+  const waNumero = sinContacto ? '' : (post.contacto ?? '').replace(/[^0-9]/g, '');
   const waTexto  = encodeURIComponent(
     `Hola, te escribo por el aviso de Vecindog (${ETIQUETA_CATEGORIA[post.categoria] ?? post.categoria} en ${post.zona}).`
   );
@@ -589,6 +590,7 @@ export default function DetalleAvisoPage() {
             waNumero={waNumero}
             waTexto={waTexto}
             animalId={post.id}
+            sinContacto={sinContacto}
           />
 
           <MensajesHilo
@@ -779,8 +781,8 @@ export default function DetalleAvisoPage() {
         <ReportarAvisoButton postId={post.id} />
       )}
 
-      {/* Barra flotante de contacto — solo mobile, solo si no está resuelto */}
-      {!resuelto && (
+      {/* Barra flotante de contacto — solo mobile, solo si no está resuelto y hay contacto */}
+      {!resuelto && !sinContacto && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
           <div className="flex gap-3">
             <a

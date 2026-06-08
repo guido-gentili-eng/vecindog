@@ -35,13 +35,14 @@ type Tamano = 'pequeño' | 'mediano' | 'grande' | '';
 const COLOR_CSS: Record<string, string> = {
   'Negro':    '#222222',
   'Blanco':   '#e8e4dc',
-  'Marron':   '#7a4518',
+  'Marrón':   '#7a4518',
   'Caramelo': '#bf7a2e',
   'Dorado':   '#c8a03c',
   'Gris':     '#909090',
   'Atigrado': '#6a5032',
   'Tricolor': '#7a5a3a',
   'Manchado': '#967860',
+  'Canela':   '#c47b3a',
 };
 
 /* ─────────────── Helpers de color visual ─────────────── */
@@ -49,13 +50,14 @@ const COLOR_CSS: Record<string, string> = {
 const COLOR_RGB: Record<string, ColorRGB> = {
   'Negro':    { r: 30,  g: 30,  b: 30  },
   'Blanco':   { r: 240, g: 240, b: 240 },
-  'Marron':   { r: 120, g: 70,  b: 30  },
+  'Marrón':   { r: 120, g: 70,  b: 30  },
   'Caramelo': { r: 190, g: 130, b: 60  },
   'Dorado':   { r: 200, g: 160, b: 70  },
   'Gris':     { r: 140, g: 140, b: 140 },
   'Atigrado': { r: 100, g: 80,  b: 50  },
   'Tricolor': { r: 120, g: 90,  b: 60  },
   'Manchado': { r: 150, g: 120, b: 90  },
+  'Canela':   { r: 196, g: 123, b: 58  },
 };
 
 async function extraerColor(src: string): Promise<ColorRGB | null> {

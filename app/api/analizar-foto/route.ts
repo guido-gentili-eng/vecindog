@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             type: 'text',
             text: `Analizá esta foto de un perro y respondé ÚNICAMENTE con un JSON válido, sin texto adicional, con esta estructura exacta:
 {
-  "color": "<uno de: Negro, Blanco, Marron, Caramelo, Dorado, Gris, Atigrado, Tricolor, Manchado>",
+  "color": "<uno de: Negro, Blanco, Marrón, Caramelo, Dorado, Gris, Atigrado, Tricolor, Manchado, Canela>",
   "tamano": "<uno de: pequeño, mediano, grande, o null si no se puede determinar>",
   "raza": "<nombre de la raza más probable en español, o null si es mestizo o no se puede determinar>",
   "descripcion": "<descripción breve del perro en 1 oración, máx 80 caracteres>"

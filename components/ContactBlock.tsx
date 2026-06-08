@@ -1,17 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle, Shield, Lock, Flag, UserPlus } from 'lucide-react';
+import { MessageCircle, Shield, Lock, Flag, UserPlus, EyeOff } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
-  waNumero: string;
-  waTexto:  string;
-  animalId: string;
+  waNumero:   string;
+  waTexto:    string;
+  animalId:   string;
+  sinContacto?: boolean;
 }
 
-export default function ContactBlock({ waNumero, waTexto, animalId }: Props) {
+export default function ContactBlock({ waNumero, waTexto, animalId, sinContacto }: Props) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -69,6 +70,31 @@ export default function ContactBlock({ waNumero, waTexto, animalId }: Props) {
             <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-primary" />
             Es gratis, sin spam. Solo para proteger a la comunidad.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Sin contacto: quien lo vio no quiere recibir mensajes ── */
+  if (sinContacto) {
+    return (
+      <div className="card p-6">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-black/5">
+            <EyeOff className="h-5 w-5 text-ink-muted" />
+          </div>
+          <div>
+            <h2 className="font-display text-base font-extrabold text-ink">Sin contacto directo</h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              Quien publicó este aviso prefirió no dejar su número. Podés compartir el aviso para que llegue a más personas.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4">
+          <ShareButton
+            label="Compartir aviso"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-black/10 bg-white px-3 py-2.5 text-sm font-bold text-ink transition hover:border-brand-primary hover:text-brand-primary"
+          />
         </div>
       </div>
     );

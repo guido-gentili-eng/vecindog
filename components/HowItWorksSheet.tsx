@@ -109,8 +109,7 @@ export default function HowItWorksSheet({ featureKey, onClose, onDismiss }: Prop
 
   function handleDismiss() {
     onDismiss?.();
-    onClose();
-    router.push(data.href);
+    handleCta();
   }
 
   return (

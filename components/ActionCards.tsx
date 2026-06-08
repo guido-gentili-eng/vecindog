@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, MapPin, Home, ArrowRight, Footprints, HandHeart, Car } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,9 +24,10 @@ export default function ActionCards() {
   const { t } = useLanguage();
   const router = useRouter();
   const [activeSheet, setActiveSheet] = useState<string | null>(null);
-  const [dismissed, setDismissed] = useState(() =>
-    typeof window !== 'undefined' && localStorage.getItem(HIW_DISMISSED_KEY) === '1'
-  );
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    if (localStorage.getItem(HIW_DISMISSED_KEY) === '1') setDismissed(true);
+  }, []);
 
   function openSheet(featureKey: string) {
     if (dismissed) {

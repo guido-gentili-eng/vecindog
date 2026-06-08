@@ -80,6 +80,9 @@ export type Translations = {
   navEnterPerfil: string;
   navMiPerfil: string;
   topEscapistasTitle: string;
+  adBannerTitle: string;
+  adBannerSub: string;
+  adBannerCta: string;
   navMiPlanPro: string;
   navPlanes: string;
   navMiComercio: string;
@@ -1687,6 +1690,9 @@ const translations: Record<Lang, Translations> = {
     navEnterPerfil: 'Entrar al perfil',
     navMiPerfil: 'Mi perfil',
     topEscapistasTitle: 'Los más escapistas 🏃',
+    adBannerTitle: '¿Tenés un negocio local para dueños de mascotas?',
+    adBannerSub: 'Llegá a vecinos que ya están buscando productos y servicios para sus mascotas.',
+    adBannerCta: 'Publicitate aquí',
     navMiPlanPro: 'Mi plan Pro',
     navPlanes: 'Planes',
     navMiComercio: 'Mi comercio',
@@ -3253,6 +3259,9 @@ const translations: Record<Lang, Translations> = {
     navEnterPerfil: 'My profile',
     navMiPerfil: 'My profile',
     topEscapistasTitle: 'Most frequent escapees 🏃',
+    adBannerTitle: 'Do you have a local business for pet owners?',
+    adBannerSub: 'Reach neighbors already looking for products and services for their pets.',
+    adBannerCta: 'Advertise here',
     navMiPlanPro: 'My Pro plan',
     navPlanes: 'Plans',
     navMiComercio: 'My business',
@@ -4819,6 +4828,9 @@ const translations: Record<Lang, Translations> = {
     navEnterPerfil: 'Meu perfil',
     navMiPerfil: 'Meu perfil',
     topEscapistasTitle: 'Os mais escapistas 🏃',
+    adBannerTitle: 'Tem um negócio local para donos de pets?',
+    adBannerSub: 'Alcance vizinhos que já buscam produtos e serviços para seus pets.',
+    adBannerCta: 'Anuncie aqui',
     navMiPlanPro: 'Meu plano Pro',
     navPlanes: 'Planos',
     navMiComercio: 'Meu negócio',

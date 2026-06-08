@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Megaphone, Phone, Star, ExternalLink, ArrowRight } from 'lucide-react';
 import { getAdForSlot, type Ad, type AdVariant } from '@/lib/ads';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AdSlotProps {
   variant?: AdVariant;
@@ -38,6 +39,7 @@ function AdBadge({ className = '' }: { className?: string }) {
 
 /* ── LEADERBOARD ── */
 function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) {
+  const { t } = useLanguage();
   if (ad) {
     return (
       <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
@@ -70,13 +72,13 @@ function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) 
           <Megaphone className="h-7 w-7 text-brand-coral" />
         </span>
         <div className="flex-1">
-          <p className="font-display text-lg font-black leading-tight sm:text-xl">¿Tenés un negocio local para dueños de mascotas?</p>
-          <p className="mt-0.5 text-sm text-white/70">Llegá a vecinos que ya están buscando productos y servicios para sus mascotas.</p>
+          <p className="font-display text-lg font-black leading-tight sm:text-xl">{t.adBannerTitle}</p>
+          <p className="mt-0.5 text-sm text-white/70">{t.adBannerSub}</p>
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <Link href="/publicitate"
             className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-coral-dark">
-            <Megaphone className="h-4 w-4" /> Publicitate aquí
+            <Megaphone className="h-4 w-4" /> {t.adBannerCta}
           </Link>
           <span className="flex items-center gap-1 text-xs text-white/50"><Phone className="h-3 w-3" /> {CONTACT_PHONE}</span>
         </div>

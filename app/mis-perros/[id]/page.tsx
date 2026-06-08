@@ -64,6 +64,7 @@ import {
 } from '@/lib/pesos';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
+import ProfileCompletion from '@/components/ProfileCompletion';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -450,6 +451,15 @@ export default function PerroDetallePage() {
               )}
             </div>
           </div>
+
+          {/* Completado del perfil */}
+          <ProfileCompletion
+            perro={perro}
+            vacunas={vacunas}
+            estudios={estudios}
+            pesos={pesos}
+            contactos={contactos}
+          />
 
           {/* Banner Pro para usuarios Free */}
           {!isPro && (

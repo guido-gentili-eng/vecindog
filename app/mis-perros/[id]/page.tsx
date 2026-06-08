@@ -16,7 +16,7 @@ import {
   Navigation, CheckCheck,
 } from 'lucide-react';
 import {
-  obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
+  obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro, guardarCartoonUrl,
   agregarVacuna, actualizarVacuna, eliminarVacuna,
   VACUNAS_COMUNES,
   type Perro, type Vacuna, type VacunaInput, type PerroInput,
@@ -114,12 +114,18 @@ export default function PerroDetallePage() {
   const [cartoonLoading,   setCartoonLoading]   = useState(false);
   const [cartoonError,     setCartoonError]     = useState<string | null>(null);
   const [showCartoonModal, setShowCartoonModal] = useState(false);
+  const [cartoonFotoBase,  setCartoonFotoBase]  = useState<string | null>(null);
 
   useEffect(() => {
     obtenerPerro(id)
       .then((p) => {
         setPerro(p);
         if (p) {
+          // Restaurar caricatura guardada si la foto no cambió
+          if (p.cartoon_url && p.foto_url) {
+            setCartoonUrl(p.cartoon_url);
+            setCartoonFotoBase(p.foto_url);
+          }
           const sorted = (p.vacunas ?? []).sort((a, b) =>
             new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
           );
@@ -250,9 +256,15 @@ export default function PerroDetallePage() {
 
   async function handleCartoon() {
     if (!perro?.foto_url) return;
+
+    // Si ya hay caricatura de la misma foto, mostrarla directo
+    if (cartoonUrl && cartoonFotoBase === perro.foto_url) {
+      setShowCartoonModal(true);
+      return;
+    }
+
     setCartoonLoading(true);
     setCartoonError(null);
-    setCartoonUrl(null);
     try {
       const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
       const token = session?.access_token;
@@ -268,9 +280,16 @@ export default function PerroDetallePage() {
 
       const data = await res.json();
 
-      if (data.ok && data.url) {
-        setCartoonUrl(data.url);
+      const saveCartoon = async (url: string) => {
+        setCartoonUrl(url);
+        setCartoonFotoBase(perro.foto_url);
         setShowCartoonModal(true);
+        // Guardar en BD para próximas visitas
+        try { await guardarCartoonUrl(perro.id, url); } catch { /* no bloquear */ }
+      };
+
+      if (data.ok && data.url) {
+        await saveCartoon(data.url);
         return;
       }
 
@@ -282,8 +301,7 @@ export default function PerroDetallePage() {
           const poll = await fetch(`/api/cartoon-perro?id=${predId}`);
           const pollData = await poll.json();
           if (pollData.ok && pollData.url) {
-            setCartoonUrl(pollData.url);
-            setShowCartoonModal(true);
+            await saveCartoon(pollData.url);
             return;
           }
           if (!pollData.pending) break;
@@ -495,8 +513,8 @@ export default function PerroDetallePage() {
                   type="button"
                   onClick={handleCartoon}
                   disabled={cartoonLoading}
-                  title="Convertir en caricatura con IA"
-                  className="absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white shadow-md hover:bg-brand-primary/80 disabled:opacity-60 transition"
+                  title={cartoonUrl && cartoonFotoBase === perro.foto_url ? 'Ver caricatura guardada' : 'Convertir en caricatura con IA'}
+                  className={`absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-md disabled:opacity-60 transition ${cartoonUrl && cartoonFotoBase === perro.foto_url ? 'bg-purple-500 hover:bg-purple-400' : 'bg-brand-primary hover:bg-brand-primary/80'}`}
                 >
                   {cartoonLoading
                     ? <Loader2 className="h-3.5 w-3.5 animate-spin" />

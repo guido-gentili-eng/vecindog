@@ -13,6 +13,7 @@ import {
   Pill, QrCode, Printer, Store, TrendingUp, Clock, TriangleAlert,
   Heart, Camera, UtensilsCrossed, Scissors, PhoneCall, UserRound,
   Stethoscope as StethoscopeIcon, ClipboardList, ImageIcon, Plus as PlusIcon,
+  Navigation, CheckCheck,
 } from 'lucide-react';
 import {
   obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro,
@@ -64,6 +65,7 @@ import {
   type Peso, type PesoInput,
 } from '@/lib/pesos';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 import PerroDocumento from '@/components/PerroDocumento';
 import ProfileCompletion from '@/components/ProfileCompletion';
 import { nombreCorto } from '@/lib/ciudades';
@@ -993,7 +995,39 @@ function EditForm({
   const [error,           setError]           = useState('');
   const [confirmEliminar, setConfirmEliminar] = useState(false);
   const [eliminando,      setEliminando]      = useState(false);
+  const [gpsEstado,       setGpsEstado]       = useState<'idle' | 'cargando' | 'ok' | 'error'>(perro.direccion ? 'ok' : 'idle');
+  const [zonaManual,      setZonaManual]      = useState(!!perro.direccion);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function capturarGPS() {
+    if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
+    setGpsEstado('cargando');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const dentroDeArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
+        if (!dentroDeArgentina) { setGpsEstado('error'); setZonaManual(true); return; }
+        setGpsEstado('ok');
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+            { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+          );
+          const data = await res.json();
+          if (data?.address) {
+            const a = data.address;
+            const calle  = a.road ?? a.pedestrian ?? a.footway ?? '';
+            const numero = a.house_number ?? '';
+            const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
+            const zona   = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
+            if (zona) campo('direccion', zona);
+          }
+        } catch { /* sin reverse geocode */ }
+      },
+      () => { setGpsEstado('error'); setZonaManual(true); },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  }
 
   async function handleEliminar() {
     setEliminando(true);
@@ -1143,6 +1177,59 @@ function EditForm({
             placeholder={t.mpdAlergiasPlaceholder}
             onChange={(e) => campo('alergias', e.target.value)} />
         </div>
+      </div>
+
+      {/* Dirección de casa */}
+      <div className="card space-y-3 p-5">
+        <h3 className="flex items-center gap-2 font-display text-sm font-extrabold text-ink">
+          <MapPin className="h-4 w-4 text-brand-primary" /> Dirección de tu casa
+        </h3>
+        <p className="text-xs text-ink-muted">Si algún día lo perdés, se usará para completar el aviso automáticamente.</p>
+
+        {gpsEstado === 'ok' ? (
+          <div className="flex items-center justify-between rounded-2xl bg-good/10 px-4 py-3 ring-1 ring-good/20">
+            <div className="flex items-center gap-2 text-sm font-bold text-good">
+              <CheckCheck className="h-4 w-4 shrink-0" />
+              <span>Ubicación capturada</span>
+            </div>
+            <button type="button"
+              onClick={() => { setGpsEstado('idle'); setZonaManual(true); campo('direccion', ''); }}
+              className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
+          </div>
+        ) : gpsEstado === 'cargando' ? (
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-4 py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
+            <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
+          </div>
+        ) : !zonaManual ? (
+          <div className="space-y-2">
+            <button type="button" onClick={capturarGPS}
+              className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-4 py-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 active:scale-[0.99]">
+              <Navigation className="h-5 w-5" />
+              {gpsEstado === 'error' ? 'No se pudo obtener el GPS — intentar de nuevo' : 'Usar mi ubicación GPS'}
+            </button>
+            <button type="button" onClick={() => setZonaManual(true)}
+              className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
+              No tengo GPS / prefiero escribir la dirección
+            </button>
+          </div>
+        ) : null}
+
+        {(zonaManual || gpsEstado === 'ok') && (
+          <AddressAutocomplete
+            value={form.direccion}
+            onChange={(v) => campo('direccion', v)}
+            onSelectCoords={() => {}}
+            placeholder="Ej: Av. Alem 1200, Villa Mitre"
+          />
+        )}
+
+        {zonaManual && gpsEstado !== 'ok' && (
+          <button type="button" onClick={() => { setZonaManual(false); capturarGPS(); }}
+            className="text-xs text-brand-primary hover:underline">
+            ← Volver a usar GPS
+          </button>
+        )}
       </div>
 
       {/* Veterinario */}

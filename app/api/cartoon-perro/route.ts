@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Obtener la versión más reciente del modelo ────────────────────
-    const MODEL_OWNER = 'timothybrooks';
-    const MODEL_NAME  = 'instruct-pix2pix';
+    // stability-ai/stable-diffusion-img2img: preserva la imagen y aplica estilo
+    const MODEL_OWNER = 'stability-ai';
+    const MODEL_NAME  = 'stable-diffusion-img2img';
 
     const modelRes = await fetch(
       `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}`,
@@ -56,12 +57,13 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         version,
         input: {
-          image:                foto_url,
-          prompt:               'turn this dog into a cute cartoon illustration, pixar style, vibrant colors',
-          negative_prompt:      'ugly, blurry, low quality',
-          image_guidance_scale: 1.5,
-          guidance_scale:       7,
-          num_inference_steps:  20,
+          image:            foto_url,
+          prompt:           'cute cartoon dog illustration, pixar style, disney style, colorful, friendly, detailed face, same dog breed and color as the photo',
+          negative_prompt:  'ugly, blurry, low quality, multiple dogs, distorted, extra limbs, bad anatomy',
+          prompt_strength:  0.55,
+          guidance_scale:   8,
+          num_inference_steps: 30,
+          scheduler:        'K_EULER',
         },
       }),
     });

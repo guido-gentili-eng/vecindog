@@ -27,8 +27,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
+    // ── Obtener la versión más reciente del modelo ────────────────────
+    const MODEL_OWNER = 'timothybrooks';
+    const MODEL_NAME  = 'instruct-pix2pix';
+
+    const modelRes = await fetch(
+      `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}`,
+      { headers: { 'Authorization': `Bearer ${apiToken}` } }
+    );
+    if (!modelRes.ok) {
+      const t = await modelRes.text();
+      return NextResponse.json({ error: `No se pudo obtener el modelo: ${t}` }, { status: 500 });
+    }
+    const modelData = await modelRes.json();
+    const version = modelData?.latest_version?.id;
+    if (!version) {
+      return NextResponse.json({ error: 'No se encontró versión del modelo' }, { status: 500 });
+    }
+
     // ── Llamar a Replicate ────────────────────────────────────────────
-    // Modelo: timothybrooks/instruct-pix2pix (version fija)
     const res = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -37,7 +54,7 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
-        version: '30c1d0b916a6f8efce20493f5d61ee27491ab2a60cb2fc07ea1494f1aee5d8f9',
+        version,
         input: {
           image:                foto_url,
           prompt:               'turn this dog into a cute cartoon illustration, pixar style, vibrant colors',

@@ -50,7 +50,7 @@ export function usePushSubscription() {
     if (!session) return;
 
     const json = sub.toJSON();
-    await fetch('/api/push/subscribe', {
+    const res = await fetch('/api/push/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export function usePushSubscription() {
       },
       body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
     });
-    setState('subscribed');
+    if (res.ok) setState('subscribed');
   }
 
   async function unsubscribe() {

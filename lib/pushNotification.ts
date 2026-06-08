@@ -7,17 +7,23 @@ export interface PushPayload {
   icon?: string;
 }
 
+// Memoize VAPID config — only call setVapidDetails once per process
+let vapidConfigured = false;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function sendPushToUser(userId: string, payload: PushPayload, adminClient: any) {
   // Configurar VAPID en runtime, no en tiempo de build
   if (!process.env.VAPID_SUBJECT || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     return;
   }
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY,
-  );
+  if (!vapidConfigured) {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT,
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY,
+    );
+    vapidConfigured = true;
+  }
   const { data: subs } = await adminClient
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth')

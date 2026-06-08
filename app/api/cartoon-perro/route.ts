@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Llamar a Replicate (Prefer: wait = respuesta sincrónica) ──────
-    // Modelo: timothybrooks/instruct-pix2pix
-    const res = await fetch('https://api.replicate.com/v1/models/timothybrooks/instruct-pix2pix/predictions', {
+    // ── Llamar a Replicate ────────────────────────────────────────────
+    // Modelo: timothybrooks/instruct-pix2pix (version fija)
+    const res = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
+        version: '30c1d0b916a6f8efce20493f5d61ee27491ab2a60cb2fc07ea1494f1aee5d8f9',
         input: {
           image:                foto_url,
           prompt:               'turn this dog into a cute cartoon illustration, pixar style, vibrant colors',

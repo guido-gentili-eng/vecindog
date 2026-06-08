@@ -57,9 +57,9 @@ export default function Header() {
         <nav className="hidden items-center gap-0.5 lg:flex">
           {navConPerros.map((item) =>
             item.href === '/mapa' ? (
-              <button key={item.href} type="button" onClick={() => setMapaSheet(true)} className="btn-ghost">
+              <Link key={item.href} href="/mapa" className="btn-ghost">
                 <span className="flex items-center gap-1"><Map className="h-3.5 w-3.5" />{item.label}</span>
-              </button>
+              </Link>
             ) : (
               <Link key={item.href} href={item.href} className="btn-ghost">
                 {item.href === '/mis-perros'
@@ -217,15 +217,15 @@ export default function Header() {
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             {navConPerros.map((item) =>
               item.href === '/mapa' ? (
-                <button
+                <Link
                   key={item.href}
-                  type="button"
-                  onClick={() => { setOpen(false); setMapaSheet(true); }}
-                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream text-left"
+                  href="/mapa"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
                 >
                   <Map className="h-4 w-4 text-brand-primary" />
                   {item.label}
-                </button>
+                </Link>
               ) : (
                 <Link
                   key={item.href}

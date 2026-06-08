@@ -115,9 +115,10 @@ export default function PublicarPage() {
   const [form,        setForm]        = useState<FormState>(estadoInicial(catParam));
   const [fotos,       setFotos]       = useState<FotoPreview[]>([]);
   const [errorFoto,   setErrorFoto]   = useState<string>('');
-  const [enviado,     setEnviado]     = useState(false);
-  const [loading,     setLoading]     = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [enviado,       setEnviado]       = useState(false);
+  const [loading,       setLoading]       = useState(false);
+  const [submitError,   setSubmitError]   = useState('');
+  const [showWaConfirm, setShowWaConfirm] = useState(false);
   const [gpsEstado,   setGpsEstado]   = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
 
   const [perroData,         setPerroData]         = useState<Perro | null>(null);
@@ -255,6 +256,15 @@ export default function PublicarPage() {
     e.preventDefault();
     if (loading) return;
     setSubmitError('');
+
+    // Foto obligatoria para perdido, encontrado y adopcion
+    const tieneFoto = fotos.length > 0 || (perroData?.foto_url && !perroFotoRemovida);
+    if (!tieneFoto && ['perdido', 'encontrado', 'adopcion'].includes(form.categoria)) {
+      setSubmitError('Agregá al menos una foto. Ayuda mucho a que los vecinos reconozcan al perro.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const digitos = form.contacto.replace(/\D/g, '');
     if (digitos.length < 10) {
       setSubmitError(t.pbrWhatsappError);
@@ -271,6 +281,12 @@ export default function PublicarPage() {
       }
     }
 
+    // Mostrar confirmación del número de WhatsApp antes de publicar
+    setShowWaConfirm(true);
+  }
+
+  async function doPublicar() {
+    setShowWaConfirm(false);
     setLoading(true);
     try {
       if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
@@ -514,8 +530,49 @@ export default function PublicarPage() {
 
   const maxFotosNuevas = MAX_FOTOS - (perroData?.foto_url && !perroFotoRemovida ? 1 : 0);
 
+  const waDigitos = form.contacto.replace(/\D/g, '');
+  const waFormateado = waDigitos.length >= 10
+    ? `+${waDigitos.startsWith('54') ? waDigitos : '54' + waDigitos}`
+    : form.contacto;
+
   return (
     <div className="mx-auto max-w-2xl py-8 md:py-10">
+      {/* Modal confirmación WhatsApp */}
+      {showWaConfirm && (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 sm:items-center">
+          <div className="w-full max-w-sm rounded-t-[32px] bg-white px-6 pb-8 pt-5 shadow-2xl sm:rounded-[32px]">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#25D366]/10 text-[#25D366]">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.117 1.528 5.845L0 24l6.335-1.508A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 0 1-5.003-1.373l-.358-.213-3.758.894.952-3.653-.234-.374A9.78 9.78 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
+              </svg>
+            </div>
+            <h2 className="font-display text-xl font-black text-ink">Confirmá tu WhatsApp</h2>
+            <p className="mt-1 text-sm text-ink-muted">Los vecinos van a contactarte por este número. ¿Es correcto?</p>
+            <div className="mt-4 rounded-2xl bg-brand-cream px-4 py-3 text-center">
+              <p className="font-display text-2xl font-black text-ink tracking-wide">{waFormateado}</p>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowWaConfirm(false)}
+                className="flex-1 rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20"
+              >
+                Corregir
+              </button>
+              <button
+                type="button"
+                onClick={doPublicar}
+                className="flex-1 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition hover:opacity-90"
+              >
+                Sí, publicar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm font-bold text-brand-primary hover:underline">
         <ArrowLeft className="h-4 w-4" /> {t.pbrBack}
       </Link>

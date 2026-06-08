@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ScanSearch, Sparkles, ArrowRight, Dog, Loader2, Search } from 'lucide-react';
+import { ScanSearch, Sparkles, ArrowRight, Dog, Loader2, Search, Navigation } from 'lucide-react';
 import { type FiltroCategoria } from '@/lib/mockData';
 import { listarPosts, postToAnimal, type Post } from '@/lib/posts';
 import AnimalCard from '@/components/AnimalCard';
@@ -68,14 +68,47 @@ export default function PublicacionesPage() {
     zona:      zonaParam,
     soloMios:  soloParam,
   });
-  const [posts,    setPosts]    = useState<Post[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [fetchErr, setFetchErr] = useState('');
-  const [busqueda, setBusqueda] = useState('');
-  const [visibles, setVisibles] = useState(PAGE_SIZE);
+  const [posts,       setPosts]       = useState<Post[]>([]);
+  const [cargando,    setCargando]    = useState(true);
+  const [fetchErr,    setFetchErr]    = useState('');
+  const [busqueda,    setBusqueda]    = useState('');
+  const [visibles,    setVisibles]    = useState(PAGE_SIZE);
+  const [userCoords,  setUserCoords]  = useState<{ lat: number; lng: number } | null>(null);
+  const [cercaniaOn,  setCercaniaOn]  = useState(false);
+  const [gpsLoading,  setGpsLoading]  = useState(false);
 
   /* Scroll al tope al montar la página */
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function toggleCercania() {
+    if (cercaniaOn) {
+      setCercaniaOn(false);
+      return;
+    }
+    if (userCoords) {
+      setCercaniaOn(true);
+      return;
+    }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setCercaniaOn(true);
+        setGpsLoading(false);
+      },
+      () => setGpsLoading(false),
+      { timeout: 8000 }
+    );
+  }
 
   /* Sync URL → filtros cuando el usuario navega atrás/adelante */
   useEffect(() => {
@@ -124,7 +157,7 @@ export default function PublicacionesPage() {
     const zona   = filtros.zona.trim().toLowerCase();
     const needle = busqueda.trim().toLowerCase();
 
-    return posts.filter((p) => {
+    const filtered = posts.filter((p) => {
       // Filtro admin por uid en URL (solo lectura, no interactivo)
       if (uidParam && p.user_id !== uidParam) return false;
       if (filtros.soloMios && user?.id) {
@@ -142,7 +175,20 @@ export default function PublicacionesPage() {
       }
       return true;
     });
-  }, [posts, filtros, user, uidParam, busqueda]);
+
+    if (cercaniaOn && userCoords) {
+      return [...filtered].sort((a, b) => {
+        const dA = a.lat != null && a.lng != null
+          ? haversineKm(userCoords.lat, userCoords.lng, a.lat, a.lng)
+          : Infinity;
+        const dB = b.lat != null && b.lng != null
+          ? haversineKm(userCoords.lat, userCoords.lng, b.lat, b.lng)
+          : Infinity;
+        return dA - dB;
+      });
+    }
+    return filtered;
+  }, [posts, filtros, user, uidParam, busqueda, cercaniaOn, userCoords]);
 
   /* Slice para paginación */
   const visiblesSlice = resultados.slice(0, visibles);
@@ -203,16 +249,35 @@ export default function PublicacionesPage() {
         </Link>
       </div>
 
-      {/* Búsqueda de texto libre */}
-      <div className="relative mb-4">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-        <input
-          type="search"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          placeholder={t.pubSearchPlaceholder}
-          className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder-ink-muted shadow-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
-        />
+      {/* Búsqueda de texto libre + Cerca mío */}
+      <div className="mb-4 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder={t.pubSearchPlaceholder}
+            className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder-ink-muted shadow-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={toggleCercania}
+          disabled={gpsLoading}
+          title="Ordenar por cercanía"
+          className={`flex shrink-0 items-center gap-1.5 rounded-xl border-2 px-3 py-2 text-sm font-bold transition ${
+            cercaniaOn
+              ? 'border-brand-primary bg-brand-primary text-white'
+              : 'border-black/10 bg-white text-ink-muted hover:border-brand-primary/40 hover:text-brand-primary'
+          }`}
+        >
+          {gpsLoading
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <Navigation className="h-4 w-4" />
+          }
+          <span className="hidden sm:inline">Cerca mío</span>
+        </button>
       </div>
 
       <Filters value={filtros} onChange={handleFiltrosChange} isAuthenticated={isAuthenticated} />

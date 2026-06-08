@@ -28,9 +28,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Obtener la versión más reciente del modelo ────────────────────
-    // stability-ai/stable-diffusion-img2img: preserva la imagen y aplica estilo
-    const MODEL_OWNER = 'stability-ai';
-    const MODEL_NAME  = 'stable-diffusion-img2img';
+    // catacolabs/cartoonify: convierte fotos en cartoon estilo Cartoon Network
+    const MODEL_OWNER = 'catacolabs';
+    const MODEL_NAME  = 'cartoonify';
 
     const modelRes = await fetch(
       `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}`,
@@ -57,13 +57,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         version,
         input: {
-          image:            foto_url,
-          prompt:           'cute cartoon dog illustration, pixar style, disney style, colorful, friendly, detailed face, same dog breed and color as the photo',
-          negative_prompt:  'ugly, blurry, low quality, multiple dogs, distorted, extra limbs, bad anatomy',
-          prompt_strength:  0.55,
-          guidance_scale:   8,
-          num_inference_steps: 30,
-          scheduler:        'K_EULER',
+          image: foto_url,
         },
       }),
     });

@@ -109,6 +109,12 @@ export default function PerroDetallePage() {
 
   const [subDataLoaded, setSubDataLoaded] = useState(false);
 
+  // Caricatura IA
+  const [cartoonUrl,       setCartoonUrl]       = useState<string | null>(null);
+  const [cartoonLoading,   setCartoonLoading]   = useState(false);
+  const [cartoonError,     setCartoonError]     = useState<string | null>(null);
+  const [showCartoonModal, setShowCartoonModal] = useState(false);
+
   useEffect(() => {
     obtenerPerro(id)
       .then((p) => {
@@ -240,6 +246,58 @@ export default function PerroDetallePage() {
     if (!perro) return;
     const g = await guardarGrooming(perro.id, data);
     setGrooming(g);
+  }
+
+  async function handleCartoon() {
+    if (!perro?.foto_url) return;
+    setCartoonLoading(true);
+    setCartoonError(null);
+    setCartoonUrl(null);
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch('/api/cartoon-perro', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ foto_url: perro.foto_url }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok && data.url) {
+        setCartoonUrl(data.url);
+        setShowCartoonModal(true);
+        return;
+      }
+
+      // Polling si quedó pendiente
+      if (data.pending && data.prediction_id) {
+        const predId = data.prediction_id;
+        for (let i = 0; i < 25; i++) {
+          await new Promise((r) => setTimeout(r, 2500));
+          const poll = await fetch(`/api/cartoon-perro?id=${predId}`);
+          const pollData = await poll.json();
+          if (pollData.ok && pollData.url) {
+            setCartoonUrl(pollData.url);
+            setShowCartoonModal(true);
+            return;
+          }
+          if (!pollData.pending) break;
+        }
+        setCartoonError('No se pudo generar la caricatura. Intentá de nuevo.');
+        return;
+      }
+
+      setCartoonError(data.error || 'Error generando la caricatura');
+    } catch {
+      setCartoonError('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setCartoonLoading(false);
+    }
   }
 
   async function handleEstadoSalud(estado: EstadoSalud | '') {
@@ -424,13 +482,28 @@ export default function PerroDetallePage() {
 
           {/* Header del perro: foto chica + nombre + chips */}
           <div className="card mb-5 flex items-center gap-4 p-4">
-            {perro.foto_url ? (
-              <Image src={perro.foto_url} alt={perro.nombre} width={64} height={64} className="shrink-0 rounded-2xl object-cover" />
-            ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-cream">
-                <Dog className="h-8 w-8 text-brand-primary/30" />
-              </div>
-            )}
+            <div className="relative shrink-0">
+              {perro.foto_url ? (
+                <Image src={perro.foto_url} alt={perro.nombre} width={64} height={64} className="rounded-2xl object-cover" />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-cream">
+                  <Dog className="h-8 w-8 text-brand-primary/30" />
+                </div>
+              )}
+              {perro.foto_url && (
+                <button
+                  type="button"
+                  onClick={handleCartoon}
+                  disabled={cartoonLoading}
+                  title="Convertir en caricatura con IA"
+                  className="absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white shadow-md hover:bg-brand-primary/80 disabled:opacity-60 transition"
+                >
+                  {cartoonLoading
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : <Sparkles className="h-3.5 w-3.5" />}
+                </button>
+              )}
+            </div>
             <div className="min-w-0">
               <h1 className="font-display text-2xl font-black text-ink leading-tight">{perro.nombre}</h1>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -949,6 +1022,63 @@ export default function PerroDetallePage() {
             )
           )}
         </>
+      )}
+
+      {/* ── Modal caricatura IA ── */}
+      {showCartoonModal && cartoonUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setShowCartoonModal(false)}
+              className="absolute right-4 top-4 rounded-full p-1 text-ink-muted hover:bg-black/5"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="mb-3 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-brand-primary" />
+              <h3 className="font-display text-lg font-black text-ink">
+                ¡Caricatura de {perro.nombre}!
+              </h3>
+            </div>
+            <div className="overflow-hidden rounded-2xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={cartoonUrl} alt={`Caricatura de ${perro.nombre}`} className="w-full object-cover" />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <a
+                href={cartoonUrl}
+                download={`caricatura-${perro.nombre.toLowerCase()}.png`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-brand-primary px-4 py-3 text-sm font-bold text-white hover:bg-brand-primary/80 transition"
+              >
+                <Download className="h-4 w-4" /> Descargar
+              </a>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.share({ url: cartoonUrl, title: `Caricatura de ${perro.nombre}` });
+                  } catch {
+                    await navigator.clipboard.writeText(cartoonUrl);
+                  }
+                }}
+                className="flex items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 py-3 text-sm font-bold text-ink hover:bg-black/10 transition"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error caricatura */}
+      {cartoonError && !cartoonLoading && (
+        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-bold text-white shadow-lg">
+          {cartoonError}
+          <button type="button" onClick={() => setCartoonError(null)} className="ml-3 underline opacity-80">Cerrar</button>
+        </div>
       )}
     </div>
   );

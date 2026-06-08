@@ -3,6 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar sesión del usuario
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
+
+    const { data: { user } } = await admin.auth.getUser(token);
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
     const {
       nombre, categoria, telefono, direccion, localidad,
       lat, lng,
@@ -16,12 +28,20 @@ export async function POST(req: NextRequest) {
     if (!direccion?.trim()) return NextResponse.json({ error: 'Dirección requerida' }, { status: 400 });
     if (!email?.trim())     return NextResponse.json({ error: 'Email requerido' },     { status: 400 });
 
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    );
+    // Verificar que el usuario no usó trial antes (por user_id)
+    const { data: existingByUser } = await admin
+      .from('ads')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('variant', 'comercio')
+      .eq('es_trial', true)
+      .limit(1);
 
-    // Verificar que el email no usó trial de Red Vecindog antes
+    if (existingByUser && existingByUser.length > 0) {
+      return NextResponse.json({ error: 'Ya usaste el mes gratis.' }, { status: 409 });
+    }
+
+    // Verificar también por email (compatibilidad con registros anteriores sin user_id)
     const { data: existing } = await admin
       .from('ads')
       .select('id')
@@ -67,6 +87,7 @@ export async function POST(req: NextRequest) {
       href,
       cta:                null,
       anunciante:         email.trim().toLowerCase(),
+      user_id:            user.id,
       plan:               'comercio',
       activo:             true,
       es_trial:           true,

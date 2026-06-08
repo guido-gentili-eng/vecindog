@@ -36,7 +36,8 @@ export default function PagoExitosoPro() {
       .then((r) => r.json())
       .then(async (data) => {
         if (data.ok) {
-          await refreshProfile();
+          // refreshProfile no debe bloquear ni causar error visible si falla
+          await refreshProfile().catch(() => null);
           setEstado('ok');
         } else if (data.status === 'pending') {
           setEstado('pendiente');

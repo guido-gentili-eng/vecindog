@@ -111,7 +111,7 @@ export default function MapaPage() {
         center={center}
         posts={posts.filter(p => p.categoria !== 'transito' || p.situacion_transito === 'calle')}
         comercios={comercios}
-        userLoc={null}
+        userLoc={userCenter}
         cargando={cargando}
         ciudad={ciudad ?? undefined}
       />

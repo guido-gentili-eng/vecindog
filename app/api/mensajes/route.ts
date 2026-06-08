@@ -23,6 +23,27 @@ export async function GET(req: NextRequest) {
   const { data: { user }, error } = await admin.auth.getUser(auth);
   if (error || !user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
+  // Verificar que el usuario es el dueño del post o participó en el hilo
+  const { data: postData } = await admin
+    .from('posts')
+    .select('user_id')
+    .eq('id', postId)
+    .single();
+
+  const isPostOwner = postData?.user_id === user.id;
+
+  if (!isPostOwner) {
+    const { data: participated } = await admin
+      .from('mensajes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('sender_id', user.id)
+      .limit(1);
+    if (!participated?.length) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
   const { data: mensajes, error: err } = await admin
     .from('mensajes')
     .select('id, texto, created_at, sender_id, profiles(nombre, apellido, foto_url)')

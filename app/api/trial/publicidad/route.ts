@@ -9,6 +9,18 @@ const PLAN_SLOTS: Record<string, Array<'leaderboard' | 'card' | 'sidebar'>> = {
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar sesión del usuario
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
+
+    const { data: { user } } = await admin.auth.getUser(token);
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
     const { plan, negocio, tagline, link, cta, email, telefono, imagen_url, imagen_logo_url } = await req.json();
 
     if (!plan || !PLAN_SLOTS[plan]) {
@@ -26,12 +38,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    );
+    // Verificar que el usuario no usó trial antes (por user_id, no solo por email)
+    const { data: existingByUser } = await admin
+      .from('ads')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('es_trial', true)
+      .not('plan', 'eq', 'comercio')
+      .limit(1);
 
-    // Verificar que el email no usó trial antes
+    if (existingByUser && existingByUser.length > 0) {
+      return NextResponse.json({ error: 'Ya usaste el mes gratis.' }, { status: 409 });
+    }
+
+    // Verificar también por email (compatibilidad con registros anteriores sin user_id)
     const { data: existing } = await admin
       .from('ads')
       .select('id')
@@ -64,6 +84,7 @@ export async function POST(req: NextRequest) {
         href:            link           || null,
         cta:             cta            || null,
         anunciante:      email.trim().toLowerCase(),
+        user_id:         user.id,
         plan,
         activo:          true,
         es_trial:        true,

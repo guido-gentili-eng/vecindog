@@ -1,11 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
 import { activarAds } from '@/lib/ads';
+
+function verifyMpSignature(req: NextRequest, rawBody: string): boolean {
+  const secret = process.env.MP_WEBHOOK_SECRET;
+  if (!secret) return true; // si no hay secret configurado, no bloquear (dev)
+
+  const xSignature = req.headers.get('x-signature');
+  const xRequestId = req.headers.get('x-request-id');
+  const dataId     = req.nextUrl.searchParams.get('data.id');
+
+  if (!xSignature) return false;
+
+  // Parsear ts y v1 del header "ts=...,v1=..."
+  const parts: Record<string, string> = {};
+  for (const part of xSignature.split(',')) {
+    const [k, v] = part.split('=');
+    if (k && v) parts[k.trim()] = v.trim();
+  }
+  const { ts, v1 } = parts;
+  if (!ts || !v1) return false;
+
+  // Construir el manifest que firma MP
+  const manifest = [
+    dataId     ? `id:${dataId}`               : null,
+    xRequestId ? `request-id:${xRequestId}`   : null,
+    `ts:${ts}`,
+  ].filter(Boolean).join(';');
+
+  const expected = createHmac('sha256', secret).update(manifest).digest('hex');
+  return expected === v1;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+
+    // Verificar firma HMAC de MercadoPago
+    if (!verifyMpSignature(req, rawBody)) {
+      console.warn('[MP webhook] firma inválida');
+      return NextResponse.json({ ok: false, error: 'invalid signature' }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
 
     // MP envía distintos tipos de notificaciones
     if (body.type !== 'payment') {

@@ -254,6 +254,7 @@ export default function PublicarPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setSubmitError('');
     const digitos = form.contacto.replace(/\D/g, '');
     if (digitos.length < 10) {

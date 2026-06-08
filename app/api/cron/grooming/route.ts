@@ -34,6 +34,9 @@ export async function GET(req: NextRequest) {
     const perro = (Array.isArray(perrosRaw) ? perrosRaw[0] : perrosRaw) as { id: string; nombre: string; user_id: string } | null;
     if (!perro?.user_id) continue;
 
+    // Guard: frecuencia_dias debe ser un número positivo
+    if (!g.frecuencia_dias || g.frecuencia_dias <= 0) continue;
+
     // Calcular próxima fecha de grooming
     const ultimaFecha = new Date(g.ultima_fecha);
     const proximaFecha = new Date(ultimaFecha);

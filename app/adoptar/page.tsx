@@ -214,6 +214,7 @@ export default function AdoptarPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     const err = validar();
     if (err) {
       setError(err);

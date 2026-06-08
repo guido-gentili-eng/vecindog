@@ -75,7 +75,7 @@ export default function MiComercioPage() {
         .eq('anunciante', email)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       setComercio(data ?? null);
 

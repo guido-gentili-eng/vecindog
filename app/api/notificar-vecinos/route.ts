@@ -68,6 +68,11 @@ export async function POST(req: NextRequest) {
     const nombrePerroS = String(nombre_perro ?? '').slice(0, 80);
     const postIdS     = String(post_id    ?? '').slice(0, 64);
 
+    // post_id es obligatorio — sin él no se puede verificar propiedad
+    if (!postIdS) {
+      return NextResponse.json({ ok: false, error: 'post_id requerido' }, { status: 400 });
+    }
+
     // ── Cliente admin ────────────────────────────────────────────────
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -75,15 +80,13 @@ export async function POST(req: NextRequest) {
     );
 
     // ── Verificar que el post pertenece al usuario autenticado ───────
-    if (postIdS) {
-      const { data: postCheck } = await admin
-        .from('posts')
-        .select('user_id')
-        .eq('id', postIdS)
-        .single();
-      if (!postCheck || postCheck.user_id !== user.id) {
-        return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-      }
+    const { data: postCheck } = await admin
+      .from('posts')
+      .select('user_id')
+      .eq('id', postIdS)
+      .single();
+    if (!postCheck || postCheck.user_id !== user.id) {
+      return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     }
 
     // ── Traer perfiles con coordenadas ───────────────────────────────

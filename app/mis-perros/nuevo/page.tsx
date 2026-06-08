@@ -86,6 +86,7 @@ export default function NuevoPerroPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     if (!form.nombre.trim()) { setError(t.mpnErrNombre); return; }
 
     if (!isPro) {

@@ -78,9 +78,10 @@ export default function NotificationsBell() {
   }
 
   async function marcarTodasLeidas() {
+    if (!user) return;
     const prev = notifs;
     setNotifs((ns) => ns.map((n) => ({ ...n, leida: true })));
-    const { error } = await supabase.from('notifications').update({ leida: true }).eq('user_id', user!.id);
+    const { error } = await supabase.from('notifications').update({ leida: true }).eq('user_id', user.id).eq('leida', false);
     if (error) setNotifs(prev);
   }
 

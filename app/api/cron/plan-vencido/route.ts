@@ -31,17 +31,20 @@ export async function GET(req: NextRequest) {
 
   const ids = vencidos.map((p: { id: string }) => p.id);
 
-  // Bajar a free
-  await admin
-    .from('profiles')
-    .update({ plan: 'free', plan_vencimiento: null })
-    .in('id', ids);
-
   // Obtener emails desde auth.users via admin auth API
   let enviados = 0;
   let notificados = 0;
 
   for (const perfil of vencidos) {
+    // Degradar usuario individualmente antes de notificar,
+    // así si el loop se interrumpe no quedan usuarios degradados sin notificación
+    const { error: downgradeErr } = await admin
+      .from('profiles')
+      .update({ plan: 'free', plan_vencimiento: null })
+      .eq('id', perfil.id)
+      .eq('plan', 'pro'); // guard: solo si sigue siendo pro
+    if (downgradeErr) continue;
+
     const { data: userData } = await admin.auth.admin.getUserById(perfil.id);
     const email = userData?.user?.email;
 

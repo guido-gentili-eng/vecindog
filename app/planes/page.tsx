@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Check, X, Sparkles, Dog, Lock, AlertCircle,
+  Check, X, Sparkles, Dog, Lock, AlertCircle, Loader2,
   Bell, Users, Camera, ScanSearch, Trophy, ArrowLeft, Car, Heart, MapPin,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,18 +53,45 @@ const FEATURES_PRO = [
 /* ── Página ── */
 
 export default function PlanesPage() {
-  const { profile, isPro, isAuthenticated } = useAuth();
+  const { profile, isPro, isAuthenticated, refreshProfile } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [error,     setError]     = useState('');
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [error,        setError]        = useState('');
+  const [trialLoading, setTrialLoading] = useState(false);
+  const [trialOk,      setTrialOk]      = useState(false);
+
+  const trialUsado = profile?.plan_trial_usado ?? false;
 
   const vencimiento = profile?.plan_vencimiento
     ? new Date(profile.plan_vencimiento).toLocaleDateString('es-AR', {
         day: 'numeric', month: 'long', year: 'numeric',
       })
     : null;
+
+  /* Activa el primer mes gratis sin pasar por MercadoPago */
+  async function handleTrialGratis() {
+    if (!isAuthenticated) { router.push('/'); return; }
+    setError('');
+    setTrialLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) { setError('Iniciá sesión primero.'); return; }
+
+      const res  = await fetch('/api/trial/pro', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? 'No se pudo activar el trial.'); return; }
+
+      await refreshProfile();
+      setTrialOk(true);
+    } finally {
+      setTrialLoading(false);
+    }
+  }
 
   /* Redirige al Checkout Pro de Mercado Pago */
   async function handleMercadoPago() {
@@ -179,10 +206,19 @@ export default function PlanesPage() {
 
           <div className="mb-1 text-xs font-bold uppercase tracking-widest text-white/60">Plan</div>
           <div className="font-display text-3xl font-black">{t.plansProLabel}</div>
-          <div className="mt-1">
-            <span className="text-3xl font-extrabold">{t.plansProPrice}</span>
-            <span className="ml-1 text-sm text-white/70">{t.plansPerMonth}</span>
-          </div>
+          {!trialUsado && !isPro ? (
+            <div className="mt-1">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-extrabold text-white">
+                🎁 Primer mes GRATIS
+              </div>
+              <div className="mt-1 text-sm text-white/70">Después {t.plansProPrice}{t.plansPerMonth}</div>
+            </div>
+          ) : (
+            <div className="mt-1">
+              <span className="text-3xl font-extrabold">{t.plansProPrice}</span>
+              <span className="ml-1 text-sm text-white/70">{t.plansPerMonth}</span>
+            </div>
+          )}
           <p className="mt-2 text-sm text-white/80">{t.plansProSub}</p>
 
           <div className="my-6 border-t border-white/20" />
@@ -196,8 +232,12 @@ export default function PlanesPage() {
             ))}
           </ul>
 
-          <div className="mt-8">
-            {isPro ? (
+          <div className="mt-8 space-y-3">
+            {trialOk ? (
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
+                <Check className="h-4 w-4" /> ¡Tu primer mes gratis está activo! 🎉
+              </div>
+            ) : isPro ? (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
                 <Check className="h-4 w-4" /> {t.plansActive}
               </div>
@@ -206,6 +246,18 @@ export default function PlanesPage() {
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">
                 <Sparkles className="h-4 w-4" /> {t.plansLoginFirst}
               </Link>
+            ) : !trialUsado ? (
+              <>
+                <button type="button" onClick={handleTrialGratis} disabled={trialLoading}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90 disabled:opacity-60">
+                  {trialLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {trialLoading ? 'Activando…' : '🎁 Empezar gratis — primer mes sin costo'}
+                </button>
+                <button type="button" onClick={handleSuscribirse}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/30 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10">
+                  O pagar ahora ({t.plansProPrice}/mes)
+                </button>
+              </>
             ) : (
               <button type="button" onClick={handleSuscribirse}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90">

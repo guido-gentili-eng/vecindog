@@ -14,11 +14,13 @@ export default function PagoExitosoComercioPage() {
   const paymentId = params.get('payment_id') ?? params.get('collection_id') ?? '';
   const { t } = useLanguage();
 
-  const [activado, setActivado] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const esTrial   = params.get('trial') === '1';
+  const [activado, setActivado] = useState(esTrial);
+  const [cargando, setCargando] = useState(!esTrial);
   const [error,    setError]    = useState('');
 
   useEffect(() => {
+    if (esTrial) return;
     if (pending || !adsParam) { setCargando(false); return; }
     if (!paymentId)           { setCargando(false); return; }
 
@@ -42,7 +44,7 @@ export default function PagoExitosoComercioPage() {
       })
       .catch(() => setError('Error de conexión al activar.'))
       .finally(() => setCargando(false));
-  }, [adsParam, pending, paymentId]);
+  }, [adsParam, esTrial, pending, paymentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (cargando) {
     return (

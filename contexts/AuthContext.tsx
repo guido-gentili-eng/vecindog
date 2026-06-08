@@ -26,6 +26,7 @@ export interface Profile {
   radio_alerta_km?:  number | null;
   plan?:             'free' | 'pro';
   plan_vencimiento?: string | null;
+  plan_trial_usado?: boolean;
   suspendido?:       boolean;
 }
 

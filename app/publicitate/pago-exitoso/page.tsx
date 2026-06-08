@@ -28,11 +28,13 @@ export default function PagoExitosoPage() {
   const paymentId   = params.get('payment_id') ?? params.get('collection_id') ?? '';
   const { t } = useLanguage();
 
-  const [activado, setActivado] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const esTrial   = params.get('trial') === '1';
+  const [activado, setActivado] = useState(esTrial);
+  const [cargando, setCargando] = useState(!esTrial);
   const [error,    setError]    = useState('');
 
   useEffect(() => {
+    if (esTrial) return;
     if (pending || !adsParam) { setCargando(false); return; }
 
     const adIds = adsParam.split(',').filter(Boolean);
@@ -56,7 +58,7 @@ export default function PagoExitosoPage() {
       })
       .catch(() => setError('Error de conexión al activar el anuncio.'))
       .finally(() => setCargando(false));
-  }, [adsParam, pending, paymentId]);
+  }, [adsParam, esTrial, pending, paymentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (cargando) {
     return (
@@ -105,6 +107,12 @@ export default function PagoExitosoPage() {
           <p className="mt-3 rounded-2xl bg-bad/10 px-4 py-3 text-sm font-semibold text-bad">
             {error}
           </p>
+        )}
+
+        {esTrial && activado && (
+          <div className="mt-4 rounded-2xl bg-brand-primary/10 px-4 py-3 text-sm font-bold text-brand-primary">
+            🎁 Primer mes activado sin costo · Recibirás un aviso antes de que venza para renovar
+          </div>
         )}
 
         {!pending && !error && activado && (

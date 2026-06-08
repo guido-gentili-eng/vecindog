@@ -505,7 +505,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
         imagen_logo_url = await subirLogoAd(logoFile);
       }
 
-      const res = await fetch('/api/pago/publicidad', {
+      const res = await fetch('/api/trial/publicidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -514,10 +514,10 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (res.ok && data.ok) {
+        window.location.href = `/publicitate/pago-exitoso?plan=${planKey}&ads=${data.ad_ids?.join(',')}&trial=1`;
       } else {
-        setError(data.error ?? 'Error al procesar el pago.');
+        setError(data.error ?? 'Error al procesar.');
         setLoading(false);
       }
     } catch {
@@ -535,7 +535,10 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl bg-white px-6 py-4 border-b border-black/5">
           <div>
             <h2 className="font-display text-xl font-black text-ink">{info.label}</h2>
-            <p className="text-sm text-ink-muted">{info.precio} · {info.slots.join(' + ')}</p>
+            <p className="text-sm text-ink-muted">
+              <span className="font-bold text-good">🎁 Primer mes gratis</span>
+              {' · '}después {info.precio} · {info.slots.join(' + ')}
+            </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-black/5">
             <X className="h-5 w-5 text-ink-muted" />
@@ -665,13 +668,13 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             </p>
           )}
 
-          <p className="text-center text-xs text-ink-muted">{t.publModalPagandoCon}</p>
+          <p className="text-center text-xs text-ink-muted">Sin costo el primer mes · después se renueva</p>
 
           <button type="submit" disabled={loading}
             className="btn-primary w-full justify-center disabled:opacity-60 text-base">
             {loading
               ? <Loader2 className="h-5 w-5 animate-spin" />
-              : <><CheckCircle2 className="h-5 w-5" /> {t.publModalPagar}</>}
+              : <><CheckCircle2 className="h-5 w-5" /> Activar gratis — primer mes sin costo</>}
           </button>
         </form>
       </div>

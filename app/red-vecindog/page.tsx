@@ -216,21 +216,26 @@ export default function RedVecindogPage() {
               <h2 className="mt-4 font-display text-3xl font-black md:text-4xl">
                 {t.rvnPricingTitle}
               </h2>
-              <div className="mt-4 flex items-baseline gap-3">
-                <span className="font-display text-5xl font-black">
-                  ${precioInfo.precioActual.toLocaleString('es-AR')}
-                </span>
-                <div>
-                  {precioInfo.esPromo ? (
-                    <>
-                      <span className="block text-white/70 text-sm">{t.rvnPricingPromoSub}</span>
-                      <span className="block text-white/50 text-xs line-through">
-                        ${precioInfo.precioRegular.toLocaleString('es-AR')}{t.rvnPricingPromoStrike}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="block text-white/70 text-sm">{t.rvnPricingRegSub}</span>
-                  )}
+              <div className="mt-4">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-extrabold mb-3">
+                  🎁 Primer mes GRATIS
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-5xl font-black">
+                    ${precioInfo.precioActual.toLocaleString('es-AR')}
+                  </span>
+                  <div>
+                    {precioInfo.esPromo ? (
+                      <>
+                        <span className="block text-white/70 text-sm">a partir del 2.° mes</span>
+                        <span className="block text-white/50 text-xs line-through">
+                          ${precioInfo.precioRegular.toLocaleString('es-AR')}{t.rvnPricingPromoStrike}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="block text-white/70 text-sm">a partir del 2.° mes</span>
+                    )}
+                  </div>
                 </div>
               </div>
               <p className="mt-3 text-white/70 leading-relaxed">
@@ -631,7 +636,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
         imagen_url = await subirImagenAd(fotoFile);
       }
 
-      const res = await fetch('/api/pago/red-vecindog', {
+      const res = await fetch('/api/trial/red-vecindog', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -644,8 +649,8 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (res.ok && data.ok) {
+        window.location.href = `/red-vecindog/pago-exitoso?ads=${data.ad_id}&trial=1`;
       } else {
         setError(data.error ?? t.rvnErrPayment);
         setLoading(false);
@@ -848,12 +853,12 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
           )}
 
           <p className="text-center text-xs text-ink-muted">
-            {t.rvnFormPayNote}
+            Sin costo el primer mes · después se renueva mensualmente
           </p>
 
           <button type="submit" disabled={loading}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-base font-bold text-white transition hover:bg-amber-600 disabled:opacity-60">
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CheckCircle2 className="h-5 w-5" /> {t.rvnFormSubmitBtn}</>}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CheckCircle2 className="h-5 w-5" /> Activar gratis — primer mes sin costo</>}
           </button>
         </form>
       </div>

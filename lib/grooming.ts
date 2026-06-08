@@ -15,7 +15,7 @@ export interface Grooming {
 export async function obtenerGrooming(perroId: string): Promise<Grooming | null> {
   const { data } = await supabase
     .from('grooming')
-    .select('*')
+    .select('id, perro_id, ultima_fecha, frecuencia_dias, tipo, notas, created_at')
     .eq('perro_id', perroId)
     .order('created_at', { ascending: false })
     .limit(1)

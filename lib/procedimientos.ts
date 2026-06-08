@@ -31,7 +31,7 @@ export interface Procedimiento {
 export async function listarProcedimientos(perroId: string): Promise<Procedimiento[]> {
   const { data } = await supabase
     .from('procedimientos')
-    .select('*')
+    .select('id, perro_id, fecha, tipo, descripcion, vet_nombre, notas, created_at')
     .eq('perro_id', perroId)
     .order('fecha', { ascending: false });
   return (data ?? []) as Procedimiento[];

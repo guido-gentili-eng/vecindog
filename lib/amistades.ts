@@ -103,7 +103,7 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
 export async function listarMisAmistades(userId: string): Promise<Amistad[]> {
   const { data } = await supabase
     .from('amistades')
-    .select('*')
+    .select('id, solicitante_id, receptor_id, estado, created_at')
     .or(`solicitante_id.eq.${userId},receptor_id.eq.${userId}`)
     .neq('estado', 'rechazada')
     .order('created_at', { ascending: false });

@@ -16,7 +16,7 @@ export interface Estudio {
 export async function listarEstudios(perroId: string): Promise<Estudio[]> {
   const { data } = await supabase
     .from('estudios')
-    .select('*')
+    .select('id, perro_id, tipo, nombre, archivo_url, fecha, notas, created_at')
     .eq('perro_id', perroId)
     .order('created_at', { ascending: false });
   return data ?? [];

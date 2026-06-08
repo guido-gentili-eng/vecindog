@@ -20,7 +20,7 @@ export interface ContactoEmergencia {
 export async function listarContactos(perroId: string): Promise<ContactoEmergencia[]> {
   const { data } = await supabase
     .from('contactos_emergencia')
-    .select('*')
+    .select('id, perro_id, nombre, relacion, telefono, notas, created_at')
     .eq('perro_id', perroId)
     .order('created_at', { ascending: true });
   return (data ?? []) as ContactoEmergencia[];

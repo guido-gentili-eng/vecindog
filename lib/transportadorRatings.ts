@@ -27,7 +27,7 @@ export async function getRatingsTransportador(transportadorPostId: string): Prom
   const [{ data: rows }, { data: { user } }] = await Promise.all([
     supabase
       .from('transportador_ratings')
-      .select('*')
+      .select('id, transportador_post_id, user_id, estrellas, cuidado_animal, fue_puntual, buena_comunicacion, lo_recomendaria, comentario, created_at')
       .eq('transportador_post_id', transportadorPostId)
       .order('created_at', { ascending: false }),
     supabase.auth.getUser(),

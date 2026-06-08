@@ -19,7 +19,7 @@ export interface Medicamento extends MedicamentoInput {
 export async function listarMedicamentos(perroId: string): Promise<Medicamento[]> {
   const { data } = await supabase
     .from('medicamentos')
-    .select('*')
+    .select('id, perro_id, nombre, dosis, frecuencia, fecha_inicio, fecha_fin, notas, activo, created_at')
     .eq('perro_id', perroId)
     .order('activo', { ascending: false })
     .order('created_at', { ascending: false });

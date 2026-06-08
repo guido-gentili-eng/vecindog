@@ -28,7 +28,7 @@ export async function getRatingsCuidador(cuidadorPostId: string): Promise<{
   const [{ data: rows }, { data: { user } }] = await Promise.all([
     supabase
       .from('cuidador_ratings')
-      .select('*')
+      .select('id, cuidador_post_id, user_id, estrellas, cuidado_animal, fue_puntual, buena_comunicacion, lo_recomendaria, comentario, created_at')
       .eq('cuidador_post_id', cuidadorPostId)
       .order('created_at', { ascending: false }),
     supabase.auth.getUser(),

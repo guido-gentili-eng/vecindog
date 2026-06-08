@@ -24,7 +24,7 @@ export interface VisitaVet {
 export async function listarVisitasVet(perroId: string): Promise<VisitaVet[]> {
   const { data } = await supabase
     .from('visitas_vet')
-    .select('*')
+    .select('id, perro_id, fecha, motivo, diagnostico, tratamiento, vet_nombre, notas, created_at')
     .eq('perro_id', perroId)
     .order('fecha', { ascending: false });
   return (data ?? []) as VisitaVet[];

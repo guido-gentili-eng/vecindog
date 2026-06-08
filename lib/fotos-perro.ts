@@ -11,7 +11,7 @@ export interface FotoPerro {
 export async function listarFotos(perroId: string): Promise<FotoPerro[]> {
   const { data } = await supabase
     .from('fotos_perro')
-    .select('*')
+    .select('id, perro_id, url, descripcion, created_at')
     .eq('perro_id', perroId)
     .order('created_at', { ascending: false });
   return (data ?? []) as FotoPerro[];

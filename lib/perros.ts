@@ -225,7 +225,7 @@ export async function listarMisVacunasProximas(): Promise<Array<Vacuna & { perro
   const perroIds = perros.map((p) => p.id);
   const { data } = await supabase
     .from('vacunas')
-    .select('*')
+    .select('id, perro_id, nombre, fecha, veterinario, proxima, notas, created_at')
     .in('perro_id', perroIds)
     .not('proxima', 'is', null)
     .neq('proxima', '')

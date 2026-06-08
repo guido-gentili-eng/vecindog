@@ -30,7 +30,7 @@ export const DESPARASITACION_VACIA: DesparasitacionInput = {
 export async function listarDesparasitaciones(perroId: string): Promise<Desparasitacion[]> {
   const { data } = await supabase
     .from('desparasitaciones')
-    .select('*')
+    .select('id, perro_id, producto, tipo, fecha, proxima, veterinario, notas, created_at')
     .eq('perro_id', perroId)
     .order('fecha', { ascending: false });
   return (data ?? []) as Desparasitacion[];

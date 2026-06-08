@@ -15,7 +15,7 @@ export interface Peso extends PesoInput {
 export async function listarPesos(perroId: string): Promise<Peso[]> {
   const { data } = await supabase
     .from('pesos')
-    .select('*')
+    .select('id, perro_id, fecha, valor_kg, notas, created_at')
     .eq('perro_id', perroId)
     .order('fecha', { ascending: false });
   return (data ?? []) as Peso[];

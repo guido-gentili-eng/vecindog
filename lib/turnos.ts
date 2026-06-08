@@ -14,7 +14,7 @@ export interface Turno {
 export async function listarTurnos(perroId: string): Promise<Turno[]> {
   const { data } = await supabase
     .from('turnos')
-    .select('*')
+    .select('id, perro_id, tipo, fecha, nota, created_at')
     .eq('perro_id', perroId)
     .order('fecha', { ascending: true });
   return data ?? [];

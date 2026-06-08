@@ -82,13 +82,13 @@ export default function TimelinePage() {
         { data: posts },
       ] = await Promise.all([
         supabase.from('perros').select('nombre, user_id').eq('id', perroId).single(),
-        supabase.from('vacunas').select('*').eq('perro_id', perroId),
-        supabase.from('desparasitaciones').select('*').eq('perro_id', perroId),
-        supabase.from('medicamentos').select('*').eq('perro_id', perroId),
-        supabase.from('pesos').select('*').eq('perro_id', perroId),
-        supabase.from('estudios').select('*').eq('perro_id', perroId),
-        supabase.from('grooming').select('*').eq('perro_id', perroId).maybeSingle(),
-        supabase.from('turnos').select('*').eq('perro_id', perroId),
+        supabase.from('vacunas').select('id, fecha, nombre, veterinario, notas, proxima').eq('perro_id', perroId),
+        supabase.from('desparasitaciones').select('id, fecha, producto, tipo, notas, proxima').eq('perro_id', perroId),
+        supabase.from('medicamentos').select('id, fecha_inicio, fecha_fin, nombre, dosis, frecuencia, notas, activo').eq('perro_id', perroId),
+        supabase.from('pesos').select('id, fecha, valor_kg, notas').eq('perro_id', perroId),
+        supabase.from('estudios').select('id, fecha, created_at, nombre, tipo, notas').eq('perro_id', perroId),
+        supabase.from('grooming').select('id, ultima_fecha, tipo, notas').eq('perro_id', perroId).maybeSingle(),
+        supabase.from('turnos').select('id, fecha, tipo, nota').eq('perro_id', perroId),
         supabase.from('posts').select('id, categoria, nombre, zona, fecha, created_at, estado').eq('perro_id', perroId),
       ]);
 

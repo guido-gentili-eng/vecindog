@@ -76,7 +76,7 @@ export async function listarPosts(): Promise<Post[]> {
 export async function obtenerPost(id: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(POSTS_FIELDS)
     .eq('id', id)
     .single();
   if (error) return null;
@@ -145,7 +145,7 @@ export async function actualizarZonaPost(
 export async function buscarPostActivoDePerro(perroId: string): Promise<Post | null> {
   const { data } = await supabase
     .from('posts')
-    .select('*')
+    .select(POSTS_FIELDS)
     .eq('perro_id', perroId)
     .eq('categoria', 'perdido')
     .neq('estado', 'resuelto')
@@ -159,7 +159,7 @@ export async function buscarPostActivoDePerro(perroId: string): Promise<Post | n
 export async function listarPostsResueltos(limite = 20): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(POSTS_FIELDS)
     .eq('estado', 'resuelto')
     .order('created_at', { ascending: false })
     .limit(limite);
@@ -188,7 +188,7 @@ export async function listarMisPostsResueltos(limite = 10): Promise<Post[]> {
   if (!session?.user) return [];
   const { data, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(POSTS_FIELDS)
     .eq('user_id', session.user.id)
     .eq('estado', 'resuelto')
     .order('created_at', { ascending: false })
@@ -201,7 +201,7 @@ export async function listarMisPostsResueltos(limite = 10): Promise<Post[]> {
 export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible' | 'transportador_disponible'): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(POSTS_FIELDS)
     .eq('categoria', categoria)
     .neq('estado', 'resuelto')
     .order('created_at', { ascending: false });

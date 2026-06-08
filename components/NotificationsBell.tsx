@@ -65,7 +65,7 @@ export default function NotificationsBell() {
     if (!user) return;
     const { data } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, post_id, tipo, mensaje, leida, created_at, meta')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);

@@ -24,7 +24,7 @@ export default function CuidadoPage() {
     ]).then(([b, c]) => {
       setBuscadores(b);
       setCuidadores(c);
-    }).finally(() => setCargando(false));
+    }).catch(() => {}).finally(() => setCargando(false));
   }, []);
 
   async function handleResolver(id: string, cat: 'busco_cuidador' | 'cuidador_disponible') {

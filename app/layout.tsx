@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     title: 'Vecindog',
     startupImage: '/apple-touch-icon.png',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
   formatDetection: { telephone: false },
   openGraph: {
     type: 'website',

@@ -38,9 +38,11 @@ export default function InstallBanner() {
     if (isIOS()) setPlatform('ios');
     else if (isAndroid()) setPlatform('android');
 
-    // Captura el evento de instalación de Android/Chrome
+    // Captura el evento de instalación de Android/Chrome.
+    // Solo llamamos preventDefault() en Android, donde mostramos nuestro propio banner.
+    // En otros contextos (desktop) dejamos que el navegador maneje el evento nativo.
     const handler = (e: Event) => {
-      e.preventDefault();
+      if (isAndroid()) e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
     };
     window.addEventListener('beforeinstallprompt', handler);

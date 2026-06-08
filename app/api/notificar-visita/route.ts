@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendPushToUser } from '@/lib/pushNotification';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,12 +75,14 @@ export async function POST(req: NextRequest) {
       leida:   false,
     });
 
-    // Enviar push al dueño del aviso
-    sendPushToUser(post.user_id, {
-      title: '👁️ Alguien vio tu aviso',
-      body:  mensaje,
-      url:   `/publicaciones/${post_id}`,
-    }, admin).catch(() => {});
+    // Enviar push al dueño del aviso (lazy import)
+    import('@/lib/pushNotification').then(({ sendPushToUser }) =>
+      sendPushToUser(post.user_id, {
+        title: '👁️ Alguien vio tu aviso',
+        body:  mensaje,
+        url:   `/publicaciones/${post_id}`,
+      }, admin)
+    ).catch(() => {});
 
     return NextResponse.json({ ok: true });
   } catch {

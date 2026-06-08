@@ -137,7 +137,7 @@ export default function Header() {
                 <div ref={profileRef} className="relative">
                   <button type="button" onClick={() => setProfileOpen((o) => !o)}
                     className="inline-flex items-center gap-1 rounded-2xl bg-gradient-to-br from-brand-coral to-brand-coral-dark px-2.5 py-1.5 text-xs font-bold text-white shadow-soft transition hover:from-brand-coral-dark hover:to-brand-coral-dark h-[30px]">
-                    <User className="h-4 w-4" /> Mi perfil
+                    <User className="h-4 w-4" /> {t.navMiPerfil}
                     <ChevronDown className={`h-3 w-3 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {profileOpen && (

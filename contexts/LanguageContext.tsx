@@ -78,6 +78,8 @@ export type Translations = {
   navMisPerros: string;
   navPublicar: string;
   navEnterPerfil: string;
+  navMiPerfil: string;
+  topEscapistasTitle: string;
   navMiPlanPro: string;
   navPlanes: string;
   navMiComercio: string;
@@ -1683,6 +1685,8 @@ const translations: Record<Lang, Translations> = {
     navMisPerros: 'Mis perros',
     navPublicar: 'Publicar',
     navEnterPerfil: 'Entrar al perfil',
+    navMiPerfil: 'Mi perfil',
+    topEscapistasTitle: 'Los más escapistas 🏃',
     navMiPlanPro: 'Mi plan Pro',
     navPlanes: 'Planes',
     navMiComercio: 'Mi comercio',
@@ -3247,6 +3251,8 @@ const translations: Record<Lang, Translations> = {
     navMisPerros: 'My dogs',
     navPublicar: 'Post',
     navEnterPerfil: 'My profile',
+    navMiPerfil: 'My profile',
+    topEscapistasTitle: 'Most frequent escapees 🏃',
     navMiPlanPro: 'My Pro plan',
     navPlanes: 'Plans',
     navMiComercio: 'My business',
@@ -4811,6 +4817,8 @@ const translations: Record<Lang, Translations> = {
     navMisPerros: 'Meus cães',
     navPublicar: 'Publicar',
     navEnterPerfil: 'Meu perfil',
+    navMiPerfil: 'Meu perfil',
+    topEscapistasTitle: 'Os mais escapistas 🏃',
     navMiPlanPro: 'Meu plano Pro',
     navPlanes: 'Planos',
     navMiComercio: 'Meu negócio',

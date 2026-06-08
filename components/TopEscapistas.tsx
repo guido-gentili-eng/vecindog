@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, MapPin, Lock, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Escapista {
   clave:    string;         // perro_id o "nombre|zona"
@@ -30,6 +31,7 @@ function ciudadMatchZona(ciudad: string, zona: string): boolean {
 
 export default function TopEscapistas() {
   const { ciudad, isPro, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [lista,    setLista]    = useState<Escapista[]>([]);
   const [cargando, setCargando] = useState(true);
 
@@ -137,7 +139,7 @@ export default function TopEscapistas() {
             <AlertTriangle className="h-3.5 w-3.5" /> Ranking
           </span>
           <h2 className="mt-2 font-display text-2xl font-black tracking-tight text-ink md:text-3xl">
-            Los más escapistas 🏃
+            {t.topEscapistasTitle}
           </h2>
         </div>
         <div className="relative overflow-hidden rounded-[20px]">
@@ -157,7 +159,7 @@ export default function TopEscapistas() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary/10">
               <Lock className="h-6 w-6 text-brand-primary" />
             </div>
-            <p className="font-display text-base font-extrabold text-ink">Los más escapistas</p>
+            <p className="font-display text-base font-extrabold text-ink">{t.topEscapistasTitle}</p>
             <p className="text-xs text-ink-muted">Función exclusiva de VecindogPro</p>
             <Link href="/planes"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-5 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90">

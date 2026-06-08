@@ -94,14 +94,21 @@ export const HOW_IT_WORKS: Record<string, HowItWorksData> = {
 interface Props {
   featureKey: string;
   onClose: () => void;
+  onDismiss?: () => void;
 }
 
-export default function HowItWorksSheet({ featureKey, onClose }: Props) {
+export default function HowItWorksSheet({ featureKey, onClose, onDismiss }: Props) {
   const router = useRouter();
   const data = HOW_IT_WORKS[featureKey];
   if (!data) return null;
 
   function handleCta() {
+    onClose();
+    router.push(data.href);
+  }
+
+  function handleDismiss() {
+    onDismiss?.();
     onClose();
     router.push(data.href);
   }
@@ -159,6 +166,17 @@ export default function HowItWorksSheet({ featureKey, onClose }: Props) {
           >
             {data.ctaLabel} <ArrowRight className="h-5 w-5" />
           </button>
+
+          {/* No volver a mostrar */}
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="mt-3 w-full text-center text-xs text-ink-muted hover:text-ink transition"
+            >
+              No volver a mostrar este mensaje
+            </button>
+          )}
         </div>
       </div>
     </div>

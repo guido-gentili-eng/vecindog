@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, MapPin, Home, ArrowRight, Footprints, HandHeart, Car } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import HowItWorksSheet from '@/components/HowItWorksSheet';
+import HowItWorksSheet, { HOW_IT_WORKS } from '@/components/HowItWorksSheet';
+
+const HIW_DISMISSED_KEY = 'hiw_dismissed';
 
 function PawPrintBg({ className = '' }: { className?: string }) {
   return (
@@ -19,7 +22,25 @@ function PawPrintBg({ className = '' }: { className?: string }) {
 
 export default function ActionCards() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [activeSheet, setActiveSheet] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem(HIW_DISMISSED_KEY) === '1'
+  );
+
+  function openSheet(featureKey: string) {
+    if (dismissed) {
+      const href = HOW_IT_WORKS[featureKey]?.href;
+      if (href) router.push(href);
+    } else {
+      setActiveSheet(featureKey);
+    }
+  }
+
+  function handleDismiss() {
+    localStorage.setItem(HIW_DISMISSED_KEY, '1');
+    setDismissed(true);
+  }
 
   const ACCIONES = [
     {
@@ -63,7 +84,7 @@ export default function ActionCards() {
           <button
             key={a.featureKey}
             type="button"
-            onClick={() => setActiveSheet(a.featureKey)}
+            onClick={() => openSheet(a.featureKey)}
             className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left ${a.bg} ${a.text}`}
           >
             <div className={`w-1.5 shrink-0 ${a.accent}`} />
@@ -94,7 +115,7 @@ export default function ActionCards() {
       <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
         <button
           type="button"
-          onClick={() => setActiveSheet('cuidado')}
+          onClick={() => openSheet('cuidado')}
           className="group relative flex overflow-hidden rounded-[22px] bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left"
         >
           <div className="w-1.5 shrink-0 bg-teal-800" />
@@ -120,7 +141,7 @@ export default function ActionCards() {
 
         <button
           type="button"
-          onClick={() => setActiveSheet('transporte')}
+          onClick={() => openSheet('transporte')}
           className="group relative flex overflow-hidden rounded-[22px] bg-blue-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left"
         >
           <div className="w-1.5 shrink-0 bg-blue-800" />
@@ -146,7 +167,11 @@ export default function ActionCards() {
       </div>
 
       {activeSheet && (
-        <HowItWorksSheet featureKey={activeSheet} onClose={() => setActiveSheet(null)} />
+        <HowItWorksSheet
+          featureKey={activeSheet}
+          onClose={() => setActiveSheet(null)}
+          onDismiss={handleDismiss}
+        />
       )}
     </section>
   );

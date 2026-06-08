@@ -184,9 +184,28 @@ export default function NotificationsBell() {
           {/* Lista */}
           <div className="max-h-80 overflow-y-auto">
             {notifs.length === 0 ? (
-              <div className="py-10 text-center text-sm text-ink-muted">
-                <Bell className="h-8 w-8 mx-auto mb-2 text-black/10" />
-                No tenés notificaciones
+              <div className="px-4 py-5">
+                <div className="mb-4 text-center">
+                  <Bell className="h-7 w-7 mx-auto mb-1.5 text-black/15" />
+                  <p className="text-sm font-bold text-ink">Sin notificaciones por ahora</p>
+                  <p className="text-xs text-ink-muted mt-0.5">Acá vas a ver avisos como estos:</p>
+                </div>
+                <div className="space-y-2.5">
+                  {[
+                    { emoji: '⏰', label: 'Tu aviso está por vencer', desc: 'Te avisamos antes de que expire para que lo renueves o lo marques como resuelto.' },
+                    { emoji: '👁️', label: 'Alguien vio a tu perro', desc: 'Un vecino reportó haber visto a tu perro en la zona.' },
+                    { emoji: '💉', label: 'Vacuna o medicamento', desc: 'Recordatorio de salud de tus perros registrados.' },
+                    { emoji: '🤝', label: 'Solicitud de amistad', desc: 'Un vecino quiere conectar para ayudarse mutuamente.' },
+                  ].map(({ emoji, label, desc }) => (
+                    <div key={label} className="flex items-start gap-3 rounded-xl bg-brand-cream/60 px-3 py-2.5">
+                      <span className="text-base leading-none mt-0.5">{emoji}</span>
+                      <div>
+                        <p className="text-xs font-bold text-ink leading-snug">{label}</p>
+                        <p className="text-[11px] text-ink-muted leading-snug mt-0.5">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               notifs.map((n) => (

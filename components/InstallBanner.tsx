@@ -58,6 +58,7 @@ export default function InstallBanner() {
   function handleDismiss() {
     setDismissed(true);
     sessionStorage.setItem('install_dismissed', '1');
+    window.dispatchEvent(new Event('install-banner-dismissed'));
   }
 
   // No mostrar si ya instalado o descartado

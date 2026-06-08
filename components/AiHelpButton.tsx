@@ -8,13 +8,29 @@ interface Msg {
   content: string;
 }
 
+function installBannerVisible() {
+  if (typeof window === 'undefined') return false;
+  if (sessionStorage.getItem('install_dismissed')) return false;
+  if (window.matchMedia('(display-mode: standalone)').matches) return false;
+  return /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+}
+
 export default function AiHelpButton() {
   const [abierto, setAbierto]   = useState(false);
   const [msgs, setMsgs]         = useState<Msg[]>([]);
   const [input, setInput]       = useState('');
   const [cargando, setCargando] = useState(false);
+  const [bannerActivo, setBannerActivo] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setBannerActivo(installBannerVisible());
+    // 'storage' only fires in other tabs; use a custom event for same-tab dismiss
+    const onDismiss = () => setBannerActivo(installBannerVisible());
+    window.addEventListener('install-banner-dismissed', onDismiss);
+    return () => window.removeEventListener('install-banner-dismissed', onDismiss);
+  }, []);
 
   useEffect(() => {
     if (abierto) {
@@ -70,7 +86,7 @@ export default function AiHelpButton() {
       <button
         type="button"
         onClick={() => setAbierto((v) => !v)}
-        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary shadow-2xl transition-transform hover:scale-110 active:scale-95"
+        className={`fixed ${bannerActivo ? 'bottom-36' : 'bottom-24'} right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary shadow-2xl transition-all hover:scale-110 active:scale-95`}
         aria-label="Ayuda con IA"
       >
         {abierto

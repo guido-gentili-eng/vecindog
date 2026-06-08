@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, type Lang } from '@/contexts/LanguageContext';
 import { nombreCorto } from '@/lib/ciudades';
 import NotificationsBell from '@/components/NotificationsBell';
+import HowItWorksSheet from '@/components/HowItWorksSheet';
 
 const LANGS: { lang: Lang; flag: string; label: string }[] = [
   { lang: 'es', flag: '🇦🇷', label: 'ES' },
@@ -19,6 +20,7 @@ export default function Header() {
   const [open,        setOpen]        = useState(false);
   const [langOpen,    setLangOpen]    = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mapaSheet,   setMapaSheet]   = useState(false);
   const langRef    = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { user, profile, isGuest, isAuthenticated, isPro, signOut, loading, ciudad, clearCiudad } = useAuth();
@@ -53,15 +55,19 @@ export default function Header() {
 
         {/* Nav desktop */}
         <nav className="hidden items-center gap-0.5 lg:flex">
-          {navConPerros.map((item) => (
-            <Link key={item.href} href={item.href} className="btn-ghost">
-              {item.href === '/mis-perros'
-                ? <span className="flex items-center gap-1"><Dog className="h-3.5 w-3.5" />{item.label}</span>
-                : item.href === '/mapa'
-                ? <span className="flex items-center gap-1"><Map className="h-3.5 w-3.5" />{item.label}</span>
-                : item.label}
-            </Link>
-          ))}
+          {navConPerros.map((item) =>
+            item.href === '/mapa' ? (
+              <button key={item.href} type="button" onClick={() => setMapaSheet(true)} className="btn-ghost">
+                <span className="flex items-center gap-1"><Map className="h-3.5 w-3.5" />{item.label}</span>
+              </button>
+            ) : (
+              <Link key={item.href} href={item.href} className="btn-ghost">
+                {item.href === '/mis-perros'
+                  ? <span className="flex items-center gap-1"><Dog className="h-3.5 w-3.5" />{item.label}</span>
+                  : item.label}
+              </Link>
+            )
+          )}
           <Link
             href="/publicitate"
             className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10"
@@ -209,18 +215,29 @@ export default function Header() {
       {open && (
         <div className="border-t border-black/5 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
-            {navConPerros.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
-              >
-                {item.href === '/mis-perros' && <Dog className="h-4 w-4 text-brand-primary" />}
-                {item.href === '/mapa'        && <Map className="h-4 w-4 text-brand-primary" />}
-                {item.label}
-              </Link>
-            ))}
+            {navConPerros.map((item) =>
+              item.href === '/mapa' ? (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => { setOpen(false); setMapaSheet(true); }}
+                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream text-left"
+                >
+                  <Map className="h-4 w-4 text-brand-primary" />
+                  {item.label}
+                </button>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream"
+                >
+                  {item.href === '/mis-perros' && <Dog className="h-4 w-4 text-brand-primary" />}
+                  {item.label}
+                </Link>
+              )
+            )}
             <Link
               href="/publicitate"
               onClick={() => setOpen(false)}
@@ -304,6 +321,9 @@ export default function Header() {
             )}
           </nav>
         </div>
+      )}
+      {mapaSheet && (
+        <HowItWorksSheet featureKey="mapa" onClose={() => setMapaSheet(false)} />
       )}
     </header>
   );

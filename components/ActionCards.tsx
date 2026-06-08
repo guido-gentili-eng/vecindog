@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import { Search, MapPin, Home, ArrowRight, Footprints, HandHeart, Car } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import HowItWorksSheet from '@/components/HowItWorksSheet';
 
 function PawPrintBg({ className = '' }: { className?: string }) {
   return (
@@ -18,10 +19,11 @@ function PawPrintBg({ className = '' }: { className?: string }) {
 
 export default function ActionCards() {
   const { t } = useLanguage();
+  const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
   const ACCIONES = [
     {
-      href: '/publicar?cat=perdido',
+      featureKey: 'perdido',
       icon: Search,
       titulo: t.accionBuscando,
       texto: t.accionBuscandoText,
@@ -29,7 +31,7 @@ export default function ActionCards() {
       bg: 'bg-brand-coral-bright', text: 'text-white', iconBg: 'bg-white/22', accent: 'bg-brand-coral-dark',
     },
     {
-      href: '/publicar?cat=encontrado',
+      featureKey: 'encontrado',
       icon: MapPin,
       titulo: t.accionViPerdido,
       texto: t.accionViPerdidoText,
@@ -37,7 +39,7 @@ export default function ActionCards() {
       bg: 'bg-brand-sage', text: 'text-white', iconBg: 'bg-white/22', accent: 'bg-brand-sage-dark',
     },
     {
-      href: '/publicar?cat=adopcion',
+      featureKey: 'adopcion',
       icon: Home,
       titulo: t.accionDoyAdopcion,
       texto: t.accionDoyAdopcionText,
@@ -45,7 +47,7 @@ export default function ActionCards() {
       bg: 'bg-brand-coral', text: 'text-white', iconBg: 'bg-white/22', accent: 'bg-brand-coral-dark',
     },
     {
-      href: '/publicar?cat=transito',
+      featureKey: 'transito',
       icon: Footprints,
       titulo: t.accionTransito,
       texto: t.accionTransitoText,
@@ -58,10 +60,11 @@ export default function ActionCards() {
     <section aria-label="Acciones principales">
       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
         {ACCIONES.map((a) => (
-          <Link
-            key={a.href}
-            href={a.href}
-            className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] ${a.bg} ${a.text}`}
+          <button
+            key={a.featureKey}
+            type="button"
+            onClick={() => setActiveSheet(a.featureKey)}
+            className={`group relative flex overflow-hidden rounded-[22px] shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left ${a.bg} ${a.text}`}
           >
             <div className={`w-1.5 shrink-0 ${a.accent}`} />
             <div className="relative flex flex-1 items-start gap-3 p-4 sm:gap-4 sm:p-5">
@@ -84,14 +87,15 @@ export default function ActionCards() {
                 </span>
               </div>
             </div>
-          </Link>
+          </button>
         ))}
       </div>
 
       <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
-        <a
-          href="/cuidado"
-          className="group relative flex overflow-hidden rounded-[22px] bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99]"
+        <button
+          type="button"
+          onClick={() => setActiveSheet('cuidado')}
+          className="group relative flex overflow-hidden rounded-[22px] bg-teal-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left"
         >
           <div className="w-1.5 shrink-0 bg-teal-800" />
           <div className="relative flex flex-1 items-start gap-4 p-4 sm:p-5">
@@ -112,11 +116,12 @@ export default function ActionCards() {
               </span>
             </div>
           </div>
-        </a>
+        </button>
 
-        <a
-          href="/transporte"
-          className="group relative flex overflow-hidden rounded-[22px] bg-blue-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99]"
+        <button
+          type="button"
+          onClick={() => setActiveSheet('transporte')}
+          className="group relative flex overflow-hidden rounded-[22px] bg-blue-600 text-white shadow-soft ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-card active:scale-[0.99] text-left"
         >
           <div className="w-1.5 shrink-0 bg-blue-800" />
           <div className="relative flex flex-1 items-start gap-4 p-4 sm:p-5">
@@ -137,8 +142,12 @@ export default function ActionCards() {
               </span>
             </div>
           </div>
-        </a>
+        </button>
       </div>
+
+      {activeSheet && (
+        <HowItWorksSheet featureKey={activeSheet} onClose={() => setActiveSheet(null)} />
+      )}
     </section>
   );
 }

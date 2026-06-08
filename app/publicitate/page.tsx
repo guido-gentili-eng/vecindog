@@ -245,6 +245,51 @@ export default function PublicitatePage() {
         </div>
       </section>
 
+      {/* ── CÓMO FUNCIONA ── */}
+      <section className="mb-16 md:mb-20">
+        <div className="mb-10 text-center">
+          <h2 className="font-display text-3xl font-black text-ink md:text-4xl">¿Cómo funciona?</h2>
+          <p className="mt-2 text-ink-muted">En tres pasos simples tu negocio ya está visible.</p>
+        </div>
+
+        <div className="relative grid gap-6 md:grid-cols-3">
+          {/* línea conectora (solo desktop) */}
+          <div className="absolute left-0 right-0 top-8 hidden h-0.5 bg-brand-primary/15 md:block" style={{ left: '16.66%', right: '16.66%' }} />
+
+          {[
+            {
+              n: '1',
+              titulo: 'Elegí tu plan',
+              desc: 'Seleccioná el paquete que mejor se adapte a tu negocio: Básico, Estándar o Premium.',
+              icon: '🎯',
+            },
+            {
+              n: '2',
+              titulo: 'Completá los datos',
+              desc: 'Nombre del negocio, logo, tagline y el link a tu web o Instagram. Todo en menos de 2 minutos.',
+              icon: '📋',
+            },
+            {
+              n: '3',
+              titulo: 'Tu aviso en vivo',
+              desc: 'Procesamos tu solicitud y en 24 hs tu anuncio ya está visible para cientos de dueños de mascotas.',
+              icon: '🚀',
+            },
+          ].map(({ n, titulo, desc, icon }) => (
+            <div key={n} className="card flex flex-col items-center p-7 text-center">
+              <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
+                <span className="text-2xl">{icon}</span>
+                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-primary text-xs font-black text-white">
+                  {n}
+                </span>
+              </div>
+              <h3 className="font-display text-lg font-black text-ink">{titulo}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── PRECIOS ── */}
       <section className="mb-16 md:mb-20">
         <div className="mb-8 text-center">

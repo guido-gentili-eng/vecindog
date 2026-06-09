@@ -42,7 +42,12 @@ export async function POST(req: NextRequest) {
 
     const bytes  = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString('base64');
-    const mime   = (file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif') || 'image/jpeg';
+    const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
+    type AllowedMime = typeof ALLOWED_MIMES[number];
+    if (!ALLOWED_MIMES.includes(file.type as AllowedMime)) {
+      return NextResponse.json({ error: 'Tipo de archivo no permitido' }, { status: 400 });
+    }
+    const mime = file.type as AllowedMime;
 
     const message = await client.messages.create({
       model:      'claude-haiku-4-5-20251001',
@@ -70,7 +75,11 @@ Si la imagen no contiene un perro claramente visible, devolvé: {"error": "No se
       }]
     });
 
-    const text = (message.content[0] as { type: string; text: string }).text.trim();
+    const firstBlock = message.content[0];
+    if (!firstBlock || firstBlock.type !== 'text') {
+      return NextResponse.json({ error: 'Respuesta inesperada del análisis' }, { status: 500 });
+    }
+    const text = firstBlock.text.trim();
 
     // Extraer JSON aunque venga con texto alrededor
     const match = text.match(/\{[\s\S]*\}/);

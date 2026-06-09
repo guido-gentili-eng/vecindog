@@ -100,6 +100,17 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
 
+  // Auth check
+  const token = req.headers.get('authorization')?.replace('Bearer ', '');
+  if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: { user } } = await admin.auth.getUser(token);
+  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
   const apiToken = process.env.REPLICATE_API_TOKEN;
   if (!apiToken) return NextResponse.json({ error: 'Sin API token' }, { status: 500 });
 

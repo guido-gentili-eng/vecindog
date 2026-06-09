@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse('url inválida', { status: 400 });
   }
 
-  if (!ALLOWED_HOSTS.some(h => parsed.hostname.endsWith(h))) {
+  if (!ALLOWED_HOSTS.some(h => parsed.hostname === h || parsed.hostname.endsWith(`.${h}`))) {
     return new NextResponse('dominio no permitido', { status: 403 });
   }
 

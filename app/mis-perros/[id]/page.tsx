@@ -1240,9 +1240,33 @@ export default function PerroDetallePage() {
                 ¡Caricatura de {perro.nombre}!
               </h3>
             </div>
-            <div className="overflow-hidden rounded-2xl">
+            <div className="overflow-hidden rounded-2xl bg-black/5 min-h-[120px] flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={cartoonUrl} alt={`Caricatura de ${perro.nombre}`} className="w-full object-cover" />
+              <img
+                src={cartoonUrl!}
+                alt={`Caricatura de ${perro.nombre}`}
+                className="w-full object-cover"
+                onError={(e) => {
+                  // URL vencida — ocultar imagen y mostrar botón regenerar
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                }}
+              />
+              <div style={{ display: 'none' }} className="flex-col items-center gap-3 py-8 px-4 text-center">
+                <p className="text-sm text-ink-muted">La caricatura venció. Generá una nueva.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCartoonModal(false);
+                    setCartoonUrl(null);
+                    setCartoonFotoBase(null);
+                    setTimeout(() => handleCartoon(), 100);
+                  }}
+                  className="flex items-center gap-2 rounded-2xl bg-brand-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-primary/80"
+                >
+                  <Sparkles className="h-4 w-4" /> Regenerar caricatura
+                </button>
+              </div>
             </div>
             <div className="mt-4 flex gap-2">
               <a
@@ -1298,6 +1322,22 @@ export default function PerroDetallePage() {
                 ? <Loader2 className="h-4 w-4 animate-spin" />
                 : <Camera className="h-4 w-4" />}
               Compartir carnet en Stories
+            </button>
+
+            {/* Regenerar caricatura */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowCartoonModal(false);
+                setCartoonUrl(null);
+                setCartoonFotoBase(null);
+                // Limpiar en BD también
+                guardarCartoonUrl(perro.id, '').catch(() => {});
+                setTimeout(() => handleCartoon(), 150);
+              }}
+              className="mt-2 w-full flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-ink-muted hover:bg-black/5 transition"
+            >
+              <RefreshCw className="h-4 w-4" /> Regenerar caricatura
             </button>
           </div>
         </div>

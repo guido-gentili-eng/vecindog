@@ -64,21 +64,8 @@ export async function POST(req: NextRequest) {
     const apiToken = process.env.REPLICATE_API_TOKEN;
     if (!apiToken) return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
 
-    // Obtener versión más reciente del modelo dinámicamente
-    const modelRes = await fetch('https://api.replicate.com/v1/models/timbrooks/instruct-pix2pix', {
-      headers: { 'Authorization': `Bearer ${apiToken}` },
-    });
-    const modelInfo = await modelRes.json().catch(() => null);
-    const version = modelInfo?.latest_version?.id;
-    if (!version) {
-      console.error('[cartoon-perro] model info:', modelRes.status, JSON.stringify(modelInfo));
-      return NextResponse.json({
-        error: `Replicate ${modelRes.status}: ${JSON.stringify(modelInfo)}`,
-      }, { status: 500 });
-    }
-
-    // instruct-pix2pix: toma la foto y la transforma con una instrucción de texto
-    const res = await fetch('https://api.replicate.com/v1/predictions', {
+    // flux-kontext-apps/cartoonify — img2img cartoon
+    const res = await fetch('https://api.replicate.com/v1/models/flux-kontext-apps/cartoonify/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -86,15 +73,9 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
-        version,
         input: {
-          image:                foto_url,
-          prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:      'sad, angry, blurry, low quality, ugly, plain, boring, serious',
-          num_inference_steps:  20,
-          guidance_scale:       7.5,
-          image_guidance_scale: 1.5,
-          num_outputs:          1,
+          image:  foto_url,
+          prompt: STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
         },
       }),
     });

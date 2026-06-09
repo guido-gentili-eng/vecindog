@@ -730,7 +730,7 @@ export default function PerroDetallePage() {
               {perro.foto_url && (
                 <button
                   type="button"
-                  onClick={handleCartoon}
+                  onClick={() => handleCartoon()}
                   disabled={cartoonLoading}
                   title={cartoonUrl && cartoonFotoBase === perro.foto_url ? 'Ver caricatura guardada' : 'Convertir en caricatura con IA'}
                   className={`absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-md disabled:opacity-60 transition ${cartoonUrl && cartoonFotoBase === perro.foto_url ? 'bg-purple-500 hover:bg-purple-400' : 'bg-brand-primary hover:bg-brand-primary/80'}`}

@@ -267,73 +267,88 @@ export default function PerroDetallePage() {
     try {
       const html2canvas = (await import('html2canvas')).default;
 
-      // Capturar el carnet
+      // Capturar el carnet completo
       const carnetCanvas = await html2canvas(carnetRef.current, {
-        scale: 3,
+        scale: 4,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
+        scrollY: 0,
+        windowWidth: carnetRef.current.scrollWidth,
+        windowHeight: carnetRef.current.scrollHeight,
       });
 
-      // Crear canvas final con formato Stories (9:16) + banner inferior con link
-      const STORIES_W = 1080;
-      const STORIES_H = 1920;
+      // Canvas Stories 9:16
+      const SW = 1080;
+      const SH = 1920;
       const finalCanvas = document.createElement('canvas');
-      finalCanvas.width  = STORIES_W;
-      finalCanvas.height = STORIES_H;
+      finalCanvas.width  = SW;
+      finalCanvas.height = SH;
       const ctx = finalCanvas.getContext('2d')!;
 
-      // Fondo degradado
-      const grad = ctx.createLinearGradient(0, 0, 0, STORIES_H);
-      grad.addColorStop(0,   '#FFF8F0');
-      grad.addColorStop(1,   '#FFE8D6');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, STORIES_W, STORIES_H);
+      // Fondo blanco limpio
+      ctx.fillStyle = '#FAFAFA';
+      ctx.fillRect(0, 0, SW, SH);
 
-      // Centrar el carnet verticalmente (con margen)
-      const margin   = 60;
-      const maxW     = STORIES_W - margin * 2;
-      const scale    = Math.min(maxW / carnetCanvas.width, (STORIES_H * 0.72) / carnetCanvas.height);
-      const cw       = carnetCanvas.width  * scale;
-      const ch       = carnetCanvas.height * scale;
-      const cx       = (STORIES_W - cw) / 2;
-      const cy       = 140;
+      // Franja superior decorativa
+      ctx.fillStyle = '#EE5A3B';
+      ctx.fillRect(0, 0, SW, 18);
+
+      // Layout: credencial ocupa 78% del alto, banner el resto
+      const BANNER_H = 220;
+      const PAD      = 60;
+      const cardAreaH = SH - BANNER_H - PAD * 2 - 18;
+
+      const scaleCard = Math.min(
+        (SW - PAD * 2) / carnetCanvas.width,
+        cardAreaH / carnetCanvas.height
+      );
+      const cw = carnetCanvas.width  * scaleCard;
+      const ch = carnetCanvas.height * scaleCard;
+      const cx = (SW - cw) / 2;
+      const cy = 18 + PAD + (cardAreaH - ch) / 2;
+
+      // Sombra sutil detrás del carnet
+      ctx.shadowColor   = 'rgba(0,0,0,0.12)';
+      ctx.shadowBlur    = 40;
+      ctx.shadowOffsetY = 8;
+      ctx.fillStyle     = '#fff';
+      const r = 24 * scaleCard;
+      ctx.beginPath();
+      ctx.roundRect(cx - 4, cy - 4, cw + 8, ch + 8, r);
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+
       ctx.drawImage(carnetCanvas, cx, cy, cw, ch);
 
-      // Banner inferior con branding + link
-      const bannerY = cy + ch + 60;
-      const bannerH = STORIES_H - bannerY - 60;
+      // ── Banner inferior minimalista ──
+      const bannerY = SH - BANNER_H;
 
-      // Logo / texto Vecindog
-      ctx.fillStyle = '#EE5A3B';
-      ctx.font      = 'bold 64px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('🐾 Vecindog', STORIES_W / 2, bannerY + 80);
-
-      // Link clickeable (visible en Stories como texto)
-      ctx.fillStyle = '#1a1a1a';
-      ctx.font      = 'bold 42px sans-serif';
-      ctx.fillText('www.mivecindog.com.ar', STORIES_W / 2, bannerY + 160);
-
-      // Subtexto
-      ctx.fillStyle = '#888';
-      ctx.font      = '36px sans-serif';
-      ctx.fillText('Red vecinal de mascotas', STORIES_W / 2, bannerY + 220);
-
-      // Link directo al perro si tiene post activo
-      if (postActivo) {
-        ctx.fillStyle = '#EE5A3B';
-        ctx.font      = '32px sans-serif';
-        ctx.fillText(`mivecindog.com.ar/publicaciones/${postActivo.id.slice(0, 8)}...`, STORIES_W / 2, bannerY + 290);
-      }
-
-      // Línea separadora decorativa
+      // Línea separadora
       ctx.strokeStyle = '#EE5A3B';
-      ctx.lineWidth   = 3;
+      ctx.lineWidth   = 2;
+      ctx.globalAlpha = 0.3;
       ctx.beginPath();
-      ctx.moveTo(margin * 2, bannerY + 20);
-      ctx.lineTo(STORIES_W - margin * 2, bannerY + 20);
+      ctx.moveTo(PAD, bannerY + 16);
+      ctx.lineTo(SW - PAD, bannerY + 16);
       ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Logo + URL
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillStyle = '#EE5A3B';
+      ctx.font      = 'bold 48px sans-serif';
+      ctx.fillText('🐾 Vecindog', SW / 2, bannerY + 76);
+
+      ctx.fillStyle = '#333';
+      ctx.font      = '34px sans-serif';
+      ctx.fillText('www.mivecindog.com.ar', SW / 2, bannerY + 140);
+
+      // Franja inferior
+      ctx.fillStyle = '#EE5A3B';
+      ctx.fillRect(0, SH - 14, SW, 14);
 
       // Exportar
       finalCanvas.toBlob(async (blob) => {
@@ -347,7 +362,6 @@ export default function PerroDetallePage() {
             text:  `Conocé a ${perro.nombre} en www.mivecindog.com.ar`,
           });
         } else {
-          // Fallback desktop: descargar
           const url = URL.createObjectURL(blob);
           const a   = document.createElement('a');
           a.href    = url;

@@ -203,7 +203,7 @@ export default function BuscarPage() {
 
     try {
       const todos = await listarPosts();
-      const candidatos = todos.filter((p) => p.categoria !== 'adopcion');
+      const candidatos = todos.filter((p) => p.categoria === 'perdido' || p.categoria === 'encontrado');
 
       const hayAlgunCriterio =
         form.raza.trim() || form.color || form.tamano ||

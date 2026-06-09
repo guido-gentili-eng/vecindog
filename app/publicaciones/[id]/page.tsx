@@ -27,7 +27,7 @@ const MapPinPicker = dynamic(() => import('@/components/MapPinPicker'), { ssr: f
 
 /* ──────────── Constantes ──────────── */
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
 
 const COLOR_CATEGORIA: Record<string, string> = {
   perdido:    'bg-lost text-white',
@@ -788,7 +788,7 @@ export default function DetalleAvisoPage() {
       )}
 
       {/* Barra flotante de contacto — solo mobile, solo si no está resuelto y hay contacto */}
-      {!resuelto && !sinContacto && (
+      {!resuelto && !sinContacto && waNumero && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
           <div className="flex gap-3">
             <a
@@ -834,9 +834,10 @@ function ReportarAvisoButton({ postId }: { postId: string }) {
     setEnviando(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) { setEnviando(false); return; }
       await fetch('/api/reportar-aviso', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.access_token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ post_id: postId, motivo }),
       });
       setEnviado(true);

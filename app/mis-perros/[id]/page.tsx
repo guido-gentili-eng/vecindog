@@ -750,6 +750,49 @@ export default function PerroDetallePage() {
             </div>
           </div>
 
+          {/* ── ✨ Banner caricatura IA — viral CTA ── */}
+          {perro.foto_url && (
+            <button
+              type="button"
+              onClick={handleCartoon}
+              disabled={cartoonLoading}
+              className="w-full mb-5 group relative overflow-hidden rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-70 focus:outline-none"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
+            >
+              {/* Shimmer en hover */}
+              <div className="pointer-events-none absolute inset-0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-white/20" />
+
+              <div className="relative flex items-center gap-4 px-5 py-4">
+                {/* Icono izquierda */}
+                <div className="text-4xl select-none">🎨</div>
+
+                {/* Texto */}
+                <div className="flex-1 text-left">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-0.5">
+                    Nuevo · Inteligencia Artificial
+                  </div>
+                  <div className="text-[15px] font-black text-white leading-snug">
+                    {cartoonLoading
+                      ? `Generando la caricatura de ${perro.nombre}…`
+                      : cartoonUrl && cartoonFotoBase === perro.foto_url
+                        ? `Ver caricatura de ${perro.nombre} ✨`
+                        : `Convertí a ${perro.nombre} en caricatura 🐾`}
+                  </div>
+                  <div className="text-[11px] text-white/80 font-semibold mt-0.5">
+                    {cartoonLoading ? 'Esto tarda unos segundos…' : isPro ? '1 clic · Compartí en Stories' : 'Exclusivo VecindogPro · Compartí en Stories'}
+                  </div>
+                </div>
+
+                {/* Icono derecha */}
+                <div className="shrink-0 rounded-full bg-white/20 p-2">
+                  {cartoonLoading
+                    ? <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    : <Sparkles className="h-6 w-6 text-white animate-pulse" />}
+                </div>
+              </div>
+            </button>
+          )}
+
           {/* Completado del perfil */}
           <ProfileCompletion
             perro={perro}
@@ -1259,86 +1302,105 @@ export default function PerroDetallePage() {
 
       {/* ── Modal caricatura IA ── */}
       {showCartoonModal && cartoonUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setShowCartoonModal(false)}
-              className="absolute right-4 top-4 rounded-full p-1 text-ink-muted hover:bg-black/5"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white shadow-2xl overflow-hidden">
+
+            {/* Header degradado */}
+            <div
+              className="px-5 pt-5 pb-4"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
             >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="mb-3 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-brand-primary" />
-              <h3 className="font-display text-lg font-black text-ink">
-                ¡Caricatura de {perro.nombre}!
-              </h3>
-            </div>
-            <div className="overflow-hidden rounded-2xl bg-black/5 min-h-[120px] flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cartoonUrl!}
-                alt={`Caricatura de ${perro.nombre}`}
-                className="w-full object-cover"
-              />
-            </div>
-            <div className="mt-4 flex gap-2">
-              <a
-                href={cartoonUrl}
-                download={`caricatura-${perro.nombre.toLowerCase()}.png`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-brand-primary px-4 py-3 text-sm font-bold text-white hover:bg-brand-primary/80 transition"
+              <button
+                type="button"
+                onClick={() => setShowCartoonModal(false)}
+                className="absolute right-4 top-4 rounded-full bg-white/20 p-1 text-white hover:bg-white/30 transition"
               >
-                <Download className="h-4 w-4" /> Descargar
-              </a>
+                <X className="h-5 w-5" />
+              </button>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">🎨</span>
+                <h3 className="font-display text-xl font-black text-white">
+                  ¡Caricatura de {perro.nombre}!
+                </h3>
+              </div>
+              <p className="text-[12px] text-white/80 font-semibold">
+                Compartila y sorprendé a tus amigos 🎉
+              </p>
+            </div>
+
+            {/* Imagen */}
+            <div className="px-5 pt-4">
+              <div className="overflow-hidden rounded-2xl bg-black/5 min-h-[120px] flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cartoonUrl!}
+                  alt={`Caricatura de ${perro.nombre}`}
+                  className="w-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Acciones */}
+            <div className="p-5 flex flex-col gap-2">
+
+              {/* Compartir en Stories — PRIMERO y más grande */}
+              <button
+                type="button"
+                onClick={handleCompartirStories}
+                disabled={storiesLoading}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-black text-white hover:opacity-90 disabled:opacity-60 transition shadow-md"
+                style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
+              >
+                {storiesLoading
+                  ? <Loader2 className="h-5 w-5 animate-spin" />
+                  : <Camera className="h-5 w-5" />}
+                Compartir en Stories 📲
+              </button>
+
+              {/* Fila: Descargar + Compartir link */}
+              <div className="flex gap-2">
+                <a
+                  href={cartoonUrl}
+                  download={`caricatura-${perro.nombre.toLowerCase()}.png`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 py-3 text-sm font-bold text-ink hover:bg-black/10 transition"
+                >
+                  <Download className="h-4 w-4" /> Descargar
+                </a>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.share({ url: cartoonUrl!, title: `Caricatura de ${perro.nombre} — Vecindog` });
+                    } catch {
+                      await navigator.clipboard.writeText(cartoonUrl!);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 py-3 text-sm font-bold text-ink hover:bg-black/10 transition"
+                >
+                  <Share2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Usar en identificación */}
               <button
                 type="button"
                 onClick={async () => {
-                  try {
-                    await navigator.share({ url: cartoonUrl!, title: `Caricatura de ${perro.nombre}` });
-                  } catch {
-                    await navigator.clipboard.writeText(cartoonUrl!);
-                  }
+                  if (!cartoonUrl) return;
+                  const nuevoEstado = !cartoonEnCarnet;
+                  const nuevaUrl = nuevoEstado ? cartoonUrl : null;
+                  setCartoonEnCarnet(nuevoEstado);
+                  setPerro((p) => p ? { ...p, foto_carnet_url: nuevaUrl } : p);
+                  guardarFotoCarnet(perro.id, nuevaUrl).catch(console.error);
                 }}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 py-3 text-sm font-bold text-ink hover:bg-black/10 transition"
+                className={`w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition ${cartoonEnCarnet ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'}`}
               >
-                <Share2 className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
+                {cartoonEnCarnet ? '✓ Usada en identificación — quitar' : 'Usar en la identificación'}
               </button>
+
             </div>
-            {/* Botón usar en identificación */}
-            <button
-              type="button"
-              onClick={async () => {
-                if (!cartoonUrl) return;
-                const nuevoEstado = !cartoonEnCarnet;
-                const nuevaUrl = nuevoEstado ? cartoonUrl : null;
-                // Actualizar estado local inmediatamente
-                setCartoonEnCarnet(nuevoEstado);
-                setPerro((p) => p ? { ...p, foto_carnet_url: nuevaUrl } : p);
-                // Persistir en BD (silencioso si falla)
-                guardarFotoCarnet(perro.id, nuevaUrl).catch(console.error);
-              }}
-              className={`mt-2 w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition ${cartoonEnCarnet ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-500 text-white hover:bg-purple-400'}`}
-            >
-              <Sparkles className="h-4 w-4" />
-              {cartoonEnCarnet ? '✓ Usada en la identificación — quitar' : 'Usar en la identificación'}
-            </button>
-
-            {/* Compartir carnet en Stories */}
-            <button
-              type="button"
-              onClick={handleCompartirStories}
-              disabled={storiesLoading}
-              className="mt-2 w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 transition"
-            >
-              {storiesLoading
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Camera className="h-4 w-4" />}
-              Compartir carnet en Stories
-            </button>
-
           </div>
         </div>
       )}

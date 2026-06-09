@@ -85,6 +85,7 @@ export default function PublicacionesPage() {
   const [userCoords,  setUserCoords]  = useState<{ lat: number; lng: number } | null>(null);
   const [cercaniaOn,  setCercaniaOn]  = useState(false);
   const [gpsLoading,  setGpsLoading]  = useState(false);
+  const [gpsError,    setGpsError]    = useState(false);
 
   /* Scroll al tope al montar la página */
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -99,13 +100,14 @@ export default function PublicacionesPage() {
       return;
     }
     setGpsLoading(true);
+    setGpsError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setCercaniaOn(true);
         setGpsLoading(false);
       },
-      () => setGpsLoading(false),
+      () => { setGpsLoading(false); setGpsError(true); setTimeout(() => setGpsError(false), 4000); },
       { timeout: 8000 }
     );
   }
@@ -279,6 +281,10 @@ export default function PublicacionesPage() {
           <span className="hidden sm:inline">Cerca mío</span>
         </button>
       </div>
+
+      {gpsError && (
+        <p className="mt-2 text-xs font-semibold text-bad">No se pudo obtener tu ubicación. Verificá los permisos del navegador.</p>
+      )}
 
       <Filters value={filtros} onChange={handleFiltrosChange} isAuthenticated={isAuthenticated} />
 

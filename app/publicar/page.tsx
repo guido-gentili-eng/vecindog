@@ -118,6 +118,7 @@ export default function PublicarPage() {
   const [errorFoto,   setErrorFoto]   = useState<string>('');
   const [enviado,       setEnviado]       = useState(false);
   const [loading,       setLoading]       = useState(false);
+  const publicandoRef = useRef(false);
   const [submitError,   setSubmitError]   = useState('');
   const [showWaConfirm, setShowWaConfirm] = useState(false);
   const [gpsEstado,   setGpsEstado]   = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
@@ -199,7 +200,10 @@ export default function PublicarPage() {
         errores.push(`"${f.name}" ${t.pbrFotoInvalida}`); continue;
       }
       const pesoMb = f.size / (1024 * 1024);
-      if (pesoMb > MAX_PESO_MB) pesadas.push(`"${f.name}" ${t.pbrFotoPesada.replace('{mb}', pesoMb.toFixed(1))}`);
+      if (pesoMb > MAX_PESO_MB) {
+        pesadas.push(`"${f.name}" ${t.pbrFotoPesada.replace('{mb}', pesoMb.toFixed(1))}`);
+        continue; // no agregar fotos que superan el límite
+      }
       const url = URL.createObjectURL(f);
       urlsRef.current.push(url);
       nuevos.push({ file: f, url, pesoMb });
@@ -260,6 +264,13 @@ export default function PublicarPage() {
     if (loading) return;
     setSubmitError('');
 
+    // Zona obligatoria (necesaria para matching y notificaciones)
+    if (!form.zona.trim()) {
+      setSubmitError('Ingresá la zona o dirección donde ocurrió.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     // Foto obligatoria para perdido, encontrado y adopcion
     const tieneFoto = fotos.length > 0 || (perroData?.foto_url && !perroFotoRemovida);
     if (!tieneFoto && ['perdido', 'encontrado', 'adopcion'].includes(form.categoria)) {
@@ -297,6 +308,8 @@ export default function PublicarPage() {
   }
 
   async function doPublicar() {
+    if (publicandoRef.current) return;
+    publicandoRef.current = true;
     setShowWaConfirm(false);
     setLoading(true);
     try {
@@ -322,7 +335,7 @@ export default function PublicarPage() {
         uploadedUrls.push(data.publicUrl);
       }
 
-      const { error: insErr } = await supabase.from('posts').insert({
+      const { data: postData, error: insErr } = await supabase.from('posts').insert({
         user_id:     user?.id         ?? null,
         perro_id:    perroData?.id    ?? null,
         categoria:   form.categoria,
@@ -344,17 +357,8 @@ export default function PublicarPage() {
           situacion_transito:    form.situacion_transito || null,
           fecha_limite_transito: (form.situacion_transito === 'tengo' && form.fecha_limite_transito) ? form.fecha_limite_transito : null,
         } : {}),
-      });
+      }).select('id, lat, lng').single();
       if (insErr) throw insErr;
-
-      const { data: postData, error: postFetchErr } = await supabase
-        .from('posts')
-        .select('id, lat, lng')
-        .eq('user_id', user?.id ?? '')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      if (postFetchErr) console.error('[publicar] error recuperando post:', postFetchErr.message);
 
       if (postData) {
         let notifLat = postData.lat;
@@ -432,6 +436,7 @@ export default function PublicarPage() {
       setSubmitError('Error al publicar: ' + msg);
     } finally {
       setLoading(false);
+      publicandoRef.current = false;
     }
   }
 

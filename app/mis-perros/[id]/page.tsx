@@ -16,7 +16,7 @@ import {
   Navigation, CheckCheck,
 } from 'lucide-react';
 import {
-  obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro, guardarCartoonUrl,
+  obtenerPerro, actualizarPerro, eliminarPerro, subirFotoPerro, guardarCartoonUrl, guardarFotoCarnet,
   agregarVacuna, actualizarVacuna, eliminarVacuna,
   VACUNAS_COMUNES,
   type Perro, type Vacuna, type VacunaInput, type PerroInput,
@@ -115,6 +115,7 @@ export default function PerroDetallePage() {
   const [cartoonError,     setCartoonError]     = useState<string | null>(null);
   const [showCartoonModal, setShowCartoonModal] = useState(false);
   const [cartoonFotoBase,  setCartoonFotoBase]  = useState<string | null>(null);
+  const [cartoonEnCarnet,  setCartoonEnCarnet]  = useState(false);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -125,6 +126,10 @@ export default function PerroDetallePage() {
           if (p.cartoon_url && p.foto_url) {
             setCartoonUrl(p.cartoon_url);
             setCartoonFotoBase(p.foto_url);
+          }
+          // Saber si la caricatura está activa en el carnet
+          if (p.foto_carnet_url && p.cartoon_url && p.foto_carnet_url === p.cartoon_url) {
+            setCartoonEnCarnet(true);
           }
           const sorted = (p.vacunas ?? []).sort((a, b) =>
             new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
@@ -1077,9 +1082,9 @@ export default function PerroDetallePage() {
                 type="button"
                 onClick={async () => {
                   try {
-                    await navigator.share({ url: cartoonUrl, title: `Caricatura de ${perro.nombre}` });
+                    await navigator.share({ url: cartoonUrl!, title: `Caricatura de ${perro.nombre}` });
                   } catch {
-                    await navigator.clipboard.writeText(cartoonUrl);
+                    await navigator.clipboard.writeText(cartoonUrl!);
                   }
                 }}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-black/5 px-4 py-3 text-sm font-bold text-ink hover:bg-black/10 transition"
@@ -1087,6 +1092,28 @@ export default function PerroDetallePage() {
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
+            {/* Botón usar en identificación */}
+            <button
+              type="button"
+              onClick={async () => {
+                if (!cartoonUrl) return;
+                try {
+                  if (cartoonEnCarnet) {
+                    await guardarFotoCarnet(perro.id, null);
+                    setPerro((p) => p ? { ...p, foto_carnet_url: null } : p);
+                    setCartoonEnCarnet(false);
+                  } else {
+                    await guardarFotoCarnet(perro.id, cartoonUrl);
+                    setPerro((p) => p ? { ...p, foto_carnet_url: cartoonUrl } : p);
+                    setCartoonEnCarnet(true);
+                  }
+                } catch { /* no bloquear */ }
+              }}
+              className={`mt-2 w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition ${cartoonEnCarnet ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-500 text-white hover:bg-purple-400'}`}
+            >
+              <Sparkles className="h-4 w-4" />
+              {cartoonEnCarnet ? '✓ Usada en la identificación — quitar' : 'Usar en la identificación'}
+            </button>
           </div>
         </div>
       )}

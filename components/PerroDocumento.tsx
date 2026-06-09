@@ -107,10 +107,10 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
 
         {/* Foto */}
         <div style={{ flex: '0 0 auto', width: sz.photoW }}>
-          {perro.foto_url ? (
+          {(perro.foto_carnet_url ?? perro.foto_url) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={perro.foto_url}
+              src={perro.foto_carnet_url ?? perro.foto_url}
               alt={perro.nombre}
               style={{ width: sz.photoW, height: sz.photoH, objectFit: 'cover', borderRadius: '8px', border: `2.5px solid ${accent}`, display: 'block' }}
             />

@@ -263,118 +263,30 @@ export default function PerroDetallePage() {
   }
 
   async function handleCompartirStories() {
-    if (!storiesCarnetRef.current || !perro) return;
-    const captureTarget = storiesCarnetRef.current;
+    if (!cartoonUrl || !perro) return;
     setStoriesLoading(true);
     try {
-      const html2canvas = (await import('html2canvas')).default;
+      const res  = await fetch(cartoonUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `vecindog-${perro.nombre.toLowerCase()}.png`, { type: 'image/png' });
 
-      // Capturar el carnet de Stories (sin contacto, con caricatura)
-      const carnetCanvas = await html2canvas(captureTarget, {
-        scale: 4,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        scrollY: 0,
-        windowWidth: carnetRef.current.scrollWidth,
-        windowHeight: carnetRef.current.scrollHeight,
-      });
-
-      // Canvas Stories 9:16
-      const SW = 1080;
-      const SH = 1920;
-      const finalCanvas = document.createElement('canvas');
-      finalCanvas.width  = SW;
-      finalCanvas.height = SH;
-      const ctx = finalCanvas.getContext('2d')!;
-
-      // Fondo blanco limpio
-      ctx.fillStyle = '#FAFAFA';
-      ctx.fillRect(0, 0, SW, SH);
-
-      // Franja superior decorativa
-      ctx.fillStyle = '#EE5A3B';
-      ctx.fillRect(0, 0, SW, 18);
-
-      // Layout: credencial ocupa 78% del alto, banner el resto
-      const BANNER_H = 220;
-      const PAD      = 60;
-      const cardAreaH = SH - BANNER_H - PAD * 2 - 18;
-
-      const scaleCard = Math.min(
-        (SW - PAD * 2) / carnetCanvas.width,
-        cardAreaH / carnetCanvas.height
-      );
-      const cw = carnetCanvas.width  * scaleCard;
-      const ch = carnetCanvas.height * scaleCard;
-      const cx = (SW - cw) / 2;
-      const cy = 18 + PAD + (cardAreaH - ch) / 2;
-
-      // Sombra sutil detrás del carnet
-      ctx.shadowColor   = 'rgba(0,0,0,0.12)';
-      ctx.shadowBlur    = 40;
-      ctx.shadowOffsetY = 8;
-      ctx.fillStyle     = '#fff';
-      const r = 24 * scaleCard;
-      ctx.beginPath();
-      ctx.roundRect(cx - 4, cy - 4, cw + 8, ch + 8, r);
-      ctx.fill();
-      ctx.shadowColor = 'transparent';
-
-      ctx.drawImage(carnetCanvas, cx, cy, cw, ch);
-
-      // ── Banner inferior minimalista ──
-      const bannerY = SH - BANNER_H;
-
-      // Línea separadora
-      ctx.strokeStyle = '#EE5A3B';
-      ctx.lineWidth   = 2;
-      ctx.globalAlpha = 0.3;
-      ctx.beginPath();
-      ctx.moveTo(PAD, bannerY + 16);
-      ctx.lineTo(SW - PAD, bannerY + 16);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // Logo + URL
-      ctx.textAlign    = 'center';
-      ctx.textBaseline = 'middle';
-
-      ctx.fillStyle = '#EE5A3B';
-      ctx.font      = 'bold 48px sans-serif';
-      ctx.fillText('🐾 Vecindog', SW / 2, bannerY + 76);
-
-      ctx.fillStyle = '#333';
-      ctx.font      = '34px sans-serif';
-      ctx.fillText('www.mivecindog.com.ar', SW / 2, bannerY + 140);
-
-      // Franja inferior
-      ctx.fillStyle = '#EE5A3B';
-      ctx.fillRect(0, SH - 14, SW, 14);
-
-      // Exportar
-      finalCanvas.toBlob(async (blob) => {
-        if (!blob) { setStoriesLoading(false); return; }
-        const file = new File([blob], `vecindog-${perro.nombre.toLowerCase()}.png`, { type: 'image/png' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `${perro.nombre} — Vecindog`,
-            text:  `Conocé a ${perro.nombre} en www.mivecindog.com.ar`,
-          });
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a   = document.createElement('a');
-          a.href    = url;
-          a.download = `vecindog-${perro.nombre.toLowerCase()}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-        setStoriesLoading(false);
-      }, 'image/png');
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `${perro.nombre} — Vecindog`,
+          text:  `Conocé a ${perro.nombre} en www.mivecindog.com.ar`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href    = url;
+        a.download = `vecindog-${perro.nombre.toLowerCase()}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } catch (e) {
       console.error('[stories]', e);
+    } finally {
       setStoriesLoading(false);
     }
   }

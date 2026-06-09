@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Solo permite dominios conocidos (Replicate, Supabase)
-const ALLOWED_HOSTS = [
+// Hosts exactos permitidos — no usar wildcards para evitar bypass de subdominios
+const ALLOWED_HOSTS = new Set([
   'replicate.delivery',
   'pbxt.replicate.delivery',
   'ptjyvhiimvmknzpcbzih.supabase.co',
-];
+]);
+
+// Sufijos de Replicate CDN (subdominios variables tipo xxxx.replicate.delivery)
+const ALLOWED_SUFFIXES = ['.replicate.delivery'];
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url');
@@ -16,7 +19,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse('url inválida', { status: 400 });
   }
 
-  if (!ALLOWED_HOSTS.some(h => parsed.hostname === h || parsed.hostname.endsWith(`.${h}`))) {
+  const host = parsed.hostname;
+  const allowed =
+    ALLOWED_HOSTS.has(host) ||
+    ALLOWED_SUFFIXES.some((s) => host.endsWith(s) && host.length > s.length);
+
+  if (!allowed) {
     return new NextResponse('dominio no permitido', { status: 403 });
   }
 

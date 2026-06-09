@@ -10,11 +10,17 @@ function getAdmin() {
   );
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /* POST /api/comercio-stats  — registrar evento (público, anónimo) */
 export async function POST(req: NextRequest) {
   const { ad_id, event_type } = await req.json();
   if (!ad_id || !event_type) {
     return NextResponse.json({ error: 'ad_id y event_type requeridos' }, { status: 400 });
+  }
+
+  if (!UUID_RE.test(ad_id)) {
+    return NextResponse.json({ error: 'ad_id inválido' }, { status: 400 });
   }
 
   const allowed = ['view', 'click_telefono', 'click_mapa', 'click_link'];
@@ -23,7 +29,8 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = getAdmin();
-  await admin.from('comercio_events').insert({ ad_id, event_type });
+  const { error } = await admin.from('comercio_events').insert({ ad_id, event_type });
+  if (error) console.error('[comercio-stats] insert error:', error);
 
   return NextResponse.json({ ok: true });
 }
@@ -36,9 +43,10 @@ export async function GET(req: NextRequest) {
   const admin = getAdmin();
   const { data: { user }, error } = await admin.auth.getUser(auth);
   if (error || !user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+  if (!user.email) return NextResponse.json({ error: 'Cuenta sin email' }, { status: 403 });
 
   const adId = req.nextUrl.searchParams.get('ad_id');
-  if (!adId) return NextResponse.json({ error: 'ad_id requerido' }, { status: 400 });
+  if (!adId || !UUID_RE.test(adId)) return NextResponse.json({ error: 'ad_id inválido' }, { status: 400 });
 
   // Verificar que el comercio le pertenece
   const { data: ad } = await admin

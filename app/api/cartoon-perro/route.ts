@@ -31,10 +31,24 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Input ─────────────────────────────────────────────────────────
-    const { foto_url } = await req.json();
+    const body = await req.json();
+    const { foto_url, style: styleInput } = body;
     if (!foto_url || typeof foto_url !== 'string') {
       return NextResponse.json({ error: 'foto_url requerida' }, { status: 400 });
     }
+
+    const VALID_STYLES = ['3D', 'Emoji', 'Video game', 'Pixels', 'Clay', 'Toy'];
+    const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
+
+    // Prompts específicos por estilo para mejores resultados
+    const STYLE_PROMPTS: Record<string, string> = {
+      '3D':         'a 3D cartoon dog, happy smiling joyful expression, bright cheerful eyes, cute, adorable, vivid colors, Pixar style',
+      'Clay':       'a clay sculpture dog, happy smiling, colorful clay texture, cute, adorable, studio lighting',
+      'Toy':        'a toy figurine dog, happy smiling, plastic toy style, cute, collectible, bright colors',
+      'Pixels':     'a pixel art dog, happy smiling, retro game style, 16-bit, cute, colorful pixels',
+      'Video game': 'a video game character dog, happy smiling, game art style, cute, detailed, vibrant colors',
+      'Emoji':      'a cute emoji sticker dog, happy smiling, flat cartoon style, expressive, bright colors',
+    };
 
     const apiToken = process.env.REPLICATE_API_TOKEN;
     if (!apiToken) {
@@ -42,8 +56,6 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Llamar a Replicate (endpoint directo — siempre usa latest) ────
-    // Usar /v1/models/.../predictions evita tener que buscar la versión
-    // primero (que puede devolver una versión antigua con schema distinto)
     const res = await fetch('https://api.replicate.com/v1/models/fofr/face-to-many/predictions', {
       method: 'POST',
       headers: {
@@ -54,9 +66,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         input: {
           image:                foto_url,
-          style:                '3D',
-          prompt:               'a cartoon dog, happy smiling joyful expression, bright cheerful eyes, tongue out, cute, adorable, vivid colors',
-          negative_prompt:      'sad, angry, scared, blurry, low quality, ugly',
+          style:                style,
+          prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
+          negative_prompt:      'sad, angry, scared, blurry, low quality, ugly, human, person',
           number_of_images:     1,
           output_format:        'png',
           guidance_scale:       7.5,

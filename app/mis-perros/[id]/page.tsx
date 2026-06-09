@@ -298,56 +298,69 @@ export default function PerroDetallePage() {
       canvas.height = SH;
       const ctx = canvas.getContext('2d')!;
 
-      // ── Fondo degradado naranja-coral ──
+      // ── Fondo degradado alegre amarillo-naranja ──
       const bg = ctx.createLinearGradient(0, 0, SW, SH);
-      bg.addColorStop(0,   '#FF6B35');
-      bg.addColorStop(0.5, '#EE5A3B');
-      bg.addColorStop(1,   '#D94F2E');
+      bg.addColorStop(0,   '#FFD93D');
+      bg.addColorStop(0.45,'#FF9A3C');
+      bg.addColorStop(1,   '#FF6B35');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, SW, SH);
 
-      // Círculos decorativos de fondo
-      ctx.globalAlpha = 0.08;
+      // Círculos decorativos de fondo festivos
+      ctx.globalAlpha = 0.10;
       ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.arc(SW * 0.9, SH * 0.08, 220, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(SW * 0.05, SH * 0.22, 160, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(SW * 0.85, SH * 0.88, 180, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.88, SH * 0.07, 240, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.08, SH * 0.18, 170, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.82, SH * 0.90, 200, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.12, SH * 0.85, 130, 0, Math.PI * 2); ctx.fill();
       ctx.globalAlpha = 1;
 
       // ── TEXTO SUPERIOR ──
       ctx.textAlign = 'center';
 
+      // Confetti / estrellas decorativas
+      const stars = ['⭐','🌟','✨','⭐','🌟','✨'];
+      ctx.font = '55px sans-serif';
+      stars.forEach((s, i) => {
+        const x = (SW / (stars.length + 1)) * (i + 1);
+        ctx.fillText(s, x, 120);
+      });
+
       // "¡Hola! Soy..."
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font      = '500 58px sans-serif';
-      ctx.fillText('¡Hola! Soy', SW / 2, 180);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.font      = '500 62px sans-serif';
+      ctx.fillText('¡Hola! Mi nombre es', SW / 2, 220);
 
-      // Nombre del perro — grande y bold
+      // Nombre del perro — gigante y bold
       ctx.fillStyle = '#fff';
-      ctx.font      = 'bold 148px sans-serif';
-      ctx.fillText(perro.nombre, SW / 2, 340);
+      ctx.font      = 'bold 160px sans-serif';
+      // Sombra suave al nombre
+      ctx.shadowColor   = 'rgba(0,0,0,0.20)';
+      ctx.shadowBlur    = 12;
+      ctx.shadowOffsetY = 6;
+      ctx.fillText(perro.nombre, SW / 2, 400);
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-      // Línea decorativa bajo el nombre
-      const lineW = 200;
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.fillRect(SW / 2 - lineW / 2, 370, lineW, 5);
+      // Línea decorativa corazones bajo el nombre
+      ctx.font = '48px sans-serif';
+      ctx.fillText('🐾  ❤️  🐾', SW / 2, 470);
 
       // ── CARICATURA centrada ──
       const imgSize = 780;
       const imgX    = (SW - imgSize) / 2;
-      const imgY    = 430;
+      const imgY    = 520;
 
-      // Sombra / halo detrás de la imagen
-      ctx.shadowColor   = 'rgba(0,0,0,0.35)';
-      ctx.shadowBlur    = 60;
-      ctx.shadowOffsetY = 20;
+      // Halo amarillo brillante
+      ctx.shadowColor   = 'rgba(255, 220, 0, 0.6)';
+      ctx.shadowBlur    = 80;
+      ctx.shadowOffsetY = 0;
 
       // Marco circular blanco
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(SW / 2, imgY + imgSize / 2, imgSize / 2 + 18, 0, Math.PI * 2);
+      ctx.arc(SW / 2, imgY + imgSize / 2, imgSize / 2 + 22, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowColor = 'transparent';
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
 
       // Clip circular para la imagen
       ctx.save();
@@ -358,30 +371,39 @@ export default function PerroDetallePage() {
       ctx.restore();
 
       // ── TEXTO INFERIOR ──
-      const textY = imgY + imgSize + 80;
+      const textY = imgY + imgSize + 75;
+
+      // Chip "feliz y sano 🎉"
+      const chipW = 460; const chipH = 72; const chipX = (SW - chipW) / 2;
+      const chipGrad = ctx.createLinearGradient(chipX, 0, chipX + chipW, 0);
+      chipGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
+      chipGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+      ctx.fillStyle = chipGrad;
+      ctx.beginPath(); ctx.roundRect(chipX, textY - 50, chipW, chipH, 36); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font      = 'bold 38px sans-serif';
+      ctx.fillText('feliz y sano  🎉', SW / 2, textY + 6);
 
       ctx.fillStyle = '#fff';
-      ctx.font      = 'bold 52px sans-serif';
-      ctx.fillText('Soy socio de Vecindog 🐾', SW / 2, textY);
+      ctx.font      = 'bold 56px sans-serif';
+      ctx.fillText('Soy socio de Vecindog 🐾', SW / 2, textY + 100);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.font      = '40px sans-serif';
-      ctx.fillText('La red vecinal que cuida a las', SW / 2, textY + 70);
-      ctx.fillText('mascotas de tu barrio', SW / 2, textY + 120);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.font      = '38px sans-serif';
+      ctx.fillText('La red vecinal que une a las', SW / 2, textY + 170);
+      ctx.fillText('mascotas felices del barrio 🏡', SW / 2, textY + 218);
 
       // CTA pill
-      const pillY = textY + 180;
-      const pillW = 540;
-      const pillH = 90;
-      const pillX = (SW - pillW) / 2;
+      const pillY = textY + 285;
+      const pillW = 580; const pillH = 92; const pillX = (SW - pillW) / 2;
       ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.roundRect(pillX, pillY, pillW, pillH, 45);
-      ctx.fill();
+      ctx.shadowColor = 'rgba(0,0,0,0.18)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 6;
+      ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 46); ctx.fill();
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-      ctx.fillStyle = '#EE5A3B';
-      ctx.font      = 'bold 38px sans-serif';
-      ctx.fillText('www.mivecindog.com.ar', SW / 2, pillY + 57);
+      ctx.fillStyle = '#FF6B35';
+      ctx.font      = 'bold 40px sans-serif';
+      ctx.fillText('www.mivecindog.com.ar', SW / 2, pillY + 60);
 
       // ── Exportar ──
       canvas.toBlob(async (blob) => {

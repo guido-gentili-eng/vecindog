@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@supabase/supabase-js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -59,6 +60,16 @@ hola@mivecindog.com.ar — WhatsApp: +54 9 291 405-0210
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificar auth — sin esto cualquier persona puede usar la API de Anthropic sin costo
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: { user } } = await admin.auth.getUser(token);
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
     const { messages } = await req.json();
 
     if (!Array.isArray(messages) || messages.length === 0) {

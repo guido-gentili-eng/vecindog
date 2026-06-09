@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Bot, X, Send, Loader2, ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -58,9 +59,21 @@ export default function AiHelpButton() {
     setCargando(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        setMsgs((prev) => [...prev, {
+          role: 'assistant',
+          content: 'Para usar el asistente necesitás iniciar sesión en Vecindog.',
+        }]);
+        return;
+      }
       const res = await fetch('/api/ai-help', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           messages: nuevos.map((m) => ({ role: m.role, content: m.content })),
         }),

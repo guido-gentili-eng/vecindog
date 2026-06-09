@@ -263,6 +263,51 @@ export default function MiPerfilPage() {
         />
       )}
 
+      {/* ── Mis perros ── */}
+      <div className="card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-extrabold text-ink flex items-center gap-2">
+            <Dog className="h-5 w-5 text-brand-primary" /> {t.mipMisPerrosTitle}
+          </h2>
+          <Link href="/mis-perros/nuevo"
+            className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
+            <Plus className="h-3.5 w-3.5" /> {t.mipAgregarDog}
+          </Link>
+        </div>
+
+        {perros.length === 0 ? (
+          <div className="text-center py-6">
+            <Dog className="h-10 w-10 text-brand-primary/20 mx-auto mb-2" />
+            <p className="text-sm text-ink-muted">{t.mipSinPerros}</p>
+            <Link href="/mis-perros/nuevo" className="btn-primary mt-3 inline-flex gap-1 text-sm">
+              <Plus className="h-4 w-4" /> {t.mipRegistrarPerro}
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {perros.map((p) => (
+              <Link key={p.id} href={`/mis-perros/${p.id}`}
+                className="flex items-center gap-3 rounded-xl bg-brand-cream px-4 py-3 hover:bg-brand-primary/10 transition">
+                {p.foto_url ? (
+                  <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="rounded-xl object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center">
+                    <Dog className="h-5 w-5 text-brand-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-ink truncate">{p.nombre}</p>
+                  <p className="text-xs text-ink-muted truncate">
+                    {[p.raza, p.color, p.tamano].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-ink-muted shrink-0" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* ── SOS: Botón perro perdido ── */}
       {isPro && (
         <button
@@ -621,50 +666,6 @@ export default function MiPerfilPage() {
         </div>
       )}
 
-      {/* ── Mis perros ── */}
-      <div className="card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-extrabold text-ink flex items-center gap-2">
-            <Dog className="h-5 w-5 text-brand-primary" /> {t.mipMisPerrosTitle}
-          </h2>
-          <Link href="/mis-perros/nuevo"
-            className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/10 transition">
-            <Plus className="h-3.5 w-3.5" /> {t.mipAgregarDog}
-          </Link>
-        </div>
-
-        {perros.length === 0 ? (
-          <div className="text-center py-6">
-            <Dog className="h-10 w-10 text-brand-primary/20 mx-auto mb-2" />
-            <p className="text-sm text-ink-muted">{t.mipSinPerros}</p>
-            <Link href="/mis-perros/nuevo" className="btn-primary mt-3 inline-flex gap-1 text-sm">
-              <Plus className="h-4 w-4" /> {t.mipRegistrarPerro}
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {perros.map((p) => (
-              <Link key={p.id} href={`/mis-perros/${p.id}`}
-                className="flex items-center gap-3 rounded-xl bg-brand-cream px-4 py-3 hover:bg-brand-primary/10 transition">
-                {p.foto_url ? (
-                  <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="rounded-xl object-cover" />
-                ) : (
-                  <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center">
-                    <Dog className="h-5 w-5 text-brand-primary" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-ink truncate">{p.nombre}</p>
-                  <p className="text-xs text-ink-muted truncate">
-                    {[p.raza, p.color, p.tamano].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-ink-muted shrink-0" />
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
 
     </div>
   );

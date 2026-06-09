@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     for (const variant of slots) {
       // Card usa imagen_url (horizontal). Sidebar/leaderboard usan imagen_logo_url si existe.
       const esCard = variant === 'card';
-      const { data } = await admin.from('ads').insert({
+      const { data, error: insertErr } = await admin.from('ads').insert({
         variant,
         titulo:          negocio,
         subtitulo:       tagline        || null,
@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
         fecha_inicio:    null,
         fecha_fin:       null,
       }).select('id').single();
-      if (data?.id) adIds.push(data.id);
+      if (insertErr || !data?.id) {
+        // Revertir ads ya creados para no dejar registros huérfanos
+        if (adIds.length) await admin.from('ads').delete().in('id', adIds);
+        return NextResponse.json({ error: 'Error al registrar los espacios publicitarios' }, { status: 500 });
+      }
+      adIds.push(data.id);
     }
 
     const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });

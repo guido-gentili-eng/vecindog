@@ -16,6 +16,20 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
+    // ── Verificar plan Pro ────────────────────────────────────────────
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('plan, plan_vencimiento')
+      .eq('id', user.id)
+      .single();
+    const hoy = new Date().toISOString().slice(0, 10);
+    const isPro = profile?.plan === 'pro' &&
+      (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
+    const adminEmail = process.env.ADMIN_EMAIL ?? '';
+    if (!isPro && user.email !== adminEmail) {
+      return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
+    }
+
     // ── Input ─────────────────────────────────────────────────────────
     const { foto_url } = await req.json();
     if (!foto_url || typeof foto_url !== 'string') {

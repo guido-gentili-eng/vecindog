@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
   if (!post_id || !texto?.trim()) {
     return NextResponse.json({ error: 'post_id y texto son requeridos' }, { status: 400 });
   }
+  if (texto.trim().length > 2000) {
+    return NextResponse.json({ error: 'El mensaje no puede superar los 2000 caracteres' }, { status: 400 });
+  }
 
   // Insertar mensaje
   const { data: nuevo, error: insErr } = await admin

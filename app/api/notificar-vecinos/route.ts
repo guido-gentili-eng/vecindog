@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
                 </a>
               </div>
               <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
-                Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso a menos de 1km de tu casa.<br/>
+                Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso cerca de tu casa.<br/>
                 <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Actualizar mi perfil</a>
               </p>
             </div>

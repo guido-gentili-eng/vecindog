@@ -30,21 +30,8 @@ export async function GET(req: NextRequest) {
     .gte('fecha_fin', hoyStr)
     .lte('fecha_fin', en3Str);
 
-  // También chequear medicamentos que vencieron hoy (fecha_fin = hoy)
-  const { data: vencidosHoy } = await admin
-    .from('medicamentos')
-    .select('id, nombre, dosis, fecha_fin, perro_id, perros(id, nombre, user_id)')
-    .eq('activo', true)
-    .eq('fecha_fin', hoyStr);
-
-  const todos = [...(meds ?? []), ...(vencidosHoy ?? [])];
-  // Deduplicar por id
-  const vistos = new Set<string>();
-  const medicamentos = todos.filter((m) => {
-    if (vistos.has(m.id)) return false;
-    vistos.add(m.id);
-    return true;
-  });
+  // Los medicamentos con fecha_fin = hoy ya están incluidos en la query anterior (gte hoy)
+  const medicamentos = meds ?? [];
 
   if (medicamentos.length === 0) {
     return NextResponse.json({ ok: true, procesadas: 0 });

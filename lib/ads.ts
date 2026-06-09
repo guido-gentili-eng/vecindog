@@ -94,7 +94,7 @@ export async function activarAds(adIds: string[]): Promise<void> {
   );
   const hoy = new Date().toISOString().slice(0, 10);
   const fin = new Date();
-  fin.setMonth(fin.getMonth() + 1);
+  fin.setDate(fin.getDate() + 30);
   const finStr = fin.toISOString().slice(0, 10);
   const results = await Promise.all(
     adIds.map((id) =>

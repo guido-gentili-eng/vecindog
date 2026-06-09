@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Llamar a Replicate (endpoint directo — siempre usa latest) ────
-    const res = await fetch('https://api.replicate.com/v1/models/fofr/face-to-many/predictions', {
+    // ── Llamar a Replicate — fofr/face-to-sticker ────────────────────
+    const res = await fetch('https://api.replicate.com/v1/models/fofr/face-to-sticker/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -87,15 +87,14 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         input: {
-          image:                foto_url,
-          style:                style,
-          prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:      'sad, angry, scared, crying, blurry, low quality, ugly, realistic human face, person, plain, boring, serious expression, sitting still',
-          number_of_images:     1,
-          output_format:        'png',
-          guidance_scale:       7.5,
-          ip_adapter_weight:    0.8,
-          shape_match_strength: 1,
+          image:              foto_url,
+          prompt:             STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
+          negative_prompt:    'sad, angry, scared, crying, blurry, low quality, ugly, realistic human face, plain, boring, serious, sitting still',
+          steps:              20,
+          guidance_scale:     7.5,
+          ip_adapter_noise:   0.5,
+          ip_adapter_weight:  0.8,
+          upscale:            false,
         },
       }),
     });

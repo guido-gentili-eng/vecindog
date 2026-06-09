@@ -6,7 +6,14 @@ import { activarAds } from '@/lib/ads';
 
 function verifyMpSignature(req: NextRequest, rawBody: string): boolean {
   const secret = process.env.MP_WEBHOOK_SECRET;
-  if (!secret) return true; // si no hay secret configurado, no bloquear (dev)
+  if (!secret) {
+    // En producción, rechazar si no está configurado el secret
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[MP webhook] MP_WEBHOOK_SECRET no configurado en producción');
+      return false;
+    }
+    return true; // solo permitir sin secret en desarrollo
+  }
 
   const xSignature = req.headers.get('x-signature');
   const xRequestId = req.headers.get('x-request-id');

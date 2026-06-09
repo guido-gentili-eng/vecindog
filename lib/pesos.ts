@@ -37,5 +37,6 @@ export async function agregarPeso(perroId: string, input: PesoInput): Promise<Pe
 }
 
 export async function eliminarPeso(id: string): Promise<void> {
-  await supabase.from('pesos').delete().eq('id', id);
+  const { error } = await supabase.from('pesos').delete().eq('id', id);
+  if (error) throw error;
 }

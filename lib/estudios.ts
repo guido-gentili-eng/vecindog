@@ -44,5 +44,6 @@ export async function agregarEstudio(
 }
 
 export async function eliminarEstudio(id: string): Promise<void> {
-  await supabase.from('estudios').delete().eq('id', id);
+  const { error } = await supabase.from('estudios').delete().eq('id', id);
+  if (error) throw error;
 }

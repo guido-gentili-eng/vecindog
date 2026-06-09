@@ -180,11 +180,14 @@ export async function POST(req: NextRequest) {
         .eq('id', ad_ids[0])
         .single();
 
-      if (ad?.anunciante && ad.anunciante.includes('@')) {
-        await enviarEmailBienvenidaComercio(ad.anunciante, ad.titulo ?? 'tu negocio');
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (ad?.anunciante && EMAIL_REGEX.test(ad.anunciante)) {
+        // Fire & forget — no bloquear la respuesta
+        enviarEmailBienvenidaComercio(ad.anunciante, ad.titulo ?? 'tu negocio')
+          .catch(e => console.error('[confirmar-pago] email bienvenida error:', e));
       }
     } catch (emailErr) {
-      console.error('[confirmar-pago] email bienvenida error:', emailErr);
+      console.error('[confirmar-pago] email lookup error:', emailErr);
     }
 
     return NextResponse.json({ ok: true });

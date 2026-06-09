@@ -76,5 +76,6 @@ export async function actualizarDesparasitacion(
 }
 
 export async function eliminarDesparasitacion(id: string): Promise<void> {
-  await supabase.from('desparasitaciones').delete().eq('id', id);
+  const { error } = await supabase.from('desparasitaciones').delete().eq('id', id);
+  if (error) throw error;
 }

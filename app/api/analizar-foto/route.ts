@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
     const isPro = profile?.plan === 'pro' &&
       (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
 
-    if (!isPro && user.email !== 'guido-gentili@live.com.ar') {
+    const adminEmail = process.env.ADMIN_EMAIL ?? '';
+    if (!isPro && user.email !== adminEmail) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
     }
 

@@ -71,6 +71,7 @@ import ProfileCompletion from '@/components/ProfileCompletion';
 import { nombreCorto } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 export default function PerroDetallePage() {
   const { id }        = useParams<{ id: string }>();
@@ -285,8 +286,8 @@ export default function PerroDetallePage() {
       // Cargar como elemento imagen
       const cartoonImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
-        img.onload  = () => resolve(img);
-        img.onerror = reject;
+        img.onload  = () => { URL.revokeObjectURL(imgObjUrl); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(imgObjUrl); reject(new Error('No se pudo cargar la imagen')); };
         img.src = imgObjUrl;
       });
 
@@ -445,7 +446,7 @@ export default function PerroDetallePage() {
     setCartoonLoading(true);
     setCartoonError(null);
     try {
-      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch('/api/cartoon-perro', {
@@ -467,11 +468,11 @@ export default function PerroDetallePage() {
           const imgBlob = await imgRes.blob();
           const ext     = 'png';
           const path    = `caricaturas/${perro.id}-${Date.now()}.${ext}`;
-          const { error: upErr } = await (await import('@/lib/supabase')).supabase.storage
+          const { error: upErr } = await supabase.storage
             .from('posts')
             .upload(path, imgBlob, { upsert: true, contentType: 'image/png' });
           if (!upErr) {
-            const { data: urlData } = (await import('@/lib/supabase')).supabase.storage
+            const { data: urlData } = supabase.storage
               .from('posts').getPublicUrl(path);
             finalUrl = urlData.publicUrl;
           }
@@ -1393,7 +1394,8 @@ function EditForm({
   const [eliminando,      setEliminando]      = useState(false);
   const [gpsEstado,       setGpsEstado]       = useState<'idle' | 'cargando' | 'ok' | 'error'>(perro.direccion ? 'ok' : 'idle');
   const [zonaManual,      setZonaManual]      = useState(!!perro.direccion);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef    = useRef<HTMLInputElement>(null);
+  const fotoBlobRef = useRef<string | null>(null);
 
   async function capturarGPS() {
     if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
@@ -1443,8 +1445,12 @@ function EditForm({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { setError(t.mpdFotoError); return; }
+    // Revocar el blob anterior para evitar memory leak
+    if (fotoBlobRef.current) URL.revokeObjectURL(fotoBlobRef.current);
+    const newBlobUrl = URL.createObjectURL(file);
+    fotoBlobRef.current = newBlobUrl;
     setFotoFile(file);
-    setFotoPreview(URL.createObjectURL(file));
+    setFotoPreview(newBlobUrl);
     setError('');
   }
 

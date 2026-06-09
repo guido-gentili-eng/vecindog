@@ -32,13 +32,35 @@ export async function POST(req: NextRequest) {
 
     // ── Input ─────────────────────────────────────────────────────────
     const body = await req.json();
-    const { foto_url, style: styleInput } = body;
+    const { foto_url, style: styleInput, perro_id } = body;
     if (!foto_url || typeof foto_url !== 'string') {
       return NextResponse.json({ error: 'foto_url requerida' }, { status: 400 });
     }
 
     const VALID_STYLES = ['3D', 'Emoji', 'Video game', 'Pixels', 'Clay', 'Toy'];
     const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
+
+    // ── Límite: 1 avatar por perro por mes (admin lo saltea) ─────────
+    if (perro_id && user.email !== adminEmail) {
+      const { data: perroData } = await admin
+        .from('perros')
+        .select('cartoon_generado_at')
+        .eq('id', perro_id)
+        .single();
+      if (perroData?.cartoon_generado_at) {
+        const generadoAt = new Date(perroData.cartoon_generado_at);
+        const ahora      = new Date();
+        if (
+          generadoAt.getFullYear() === ahora.getFullYear() &&
+          generadoAt.getMonth()    === ahora.getMonth()
+        ) {
+          return NextResponse.json(
+            { error: 'Ya generaste un avatar este mes para este perro. Volvé el mes que viene 🐾' },
+            { status: 429 }
+          );
+        }
+      }
+    }
 
     // Prompts específicos por estilo para mejores resultados
     const STYLE_PROMPTS: Record<string, string> = {
@@ -83,6 +105,11 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       console.error('[cartoon-perro] Replicate error:', res.status, JSON.stringify(prediction));
       return NextResponse.json({ error: `Replicate: ${prediction?.detail || prediction?.error || res.status}` }, { status: 500 });
+    }
+
+    // ── Marcar uso del mes (Replicate aceptó el pedido) ──────────────
+    if (perro_id) {
+      admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id).then();
     }
 
     // Si ya terminó sincrónicamente

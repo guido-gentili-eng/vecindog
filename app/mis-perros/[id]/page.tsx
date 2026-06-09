@@ -111,13 +111,25 @@ export default function PerroDetallePage() {
   const [subDataLoaded, setSubDataLoaded] = useState(false);
 
   // Caricatura IA
-  const [cartoonUrl,       setCartoonUrl]       = useState<string | null>(null);
-  const [cartoonLoading,   setCartoonLoading]   = useState(false);
-  const [cartoonError,     setCartoonError]     = useState<string | null>(null);
-  const [showCartoonModal, setShowCartoonModal] = useState(false);
-  const [cartoonFotoBase,  setCartoonFotoBase]  = useState<string | null>(null);
-  const [cartoonEnCarnet,  setCartoonEnCarnet]  = useState(false);
-  const [storiesLoading,   setStoriesLoading]   = useState(false);
+  const [cartoonUrl,        setCartoonUrl]        = useState<string | null>(null);
+  const [cartoonLoading,    setCartoonLoading]    = useState(false);
+  const [cartoonError,      setCartoonError]      = useState<string | null>(null);
+  const [showCartoonModal,  setShowCartoonModal]  = useState(false);
+  const [cartoonFotoBase,   setCartoonFotoBase]   = useState<string | null>(null);
+  const [cartoonEnCarnet,   setCartoonEnCarnet]   = useState(false);
+  const [storiesLoading,    setStoriesLoading]    = useState(false);
+  const [showStylePicker,   setShowStylePicker]   = useState(false);
+  const [cartoonStyle,      setCartoonStyle]      = useState<string>('3D');
+  const [cartoonStyleUsed,  setCartoonStyleUsed]  = useState<string | null>(null);
+
+  const CARTOON_STYLES = [
+    { id: '3D',         label: '3D',          emoji: '🎨', desc: 'Estilo cartoon 3D' },
+    { id: 'Clay',       label: 'Clay',         emoji: '🧱', desc: 'Arcilla colorida' },
+    { id: 'Toy',        label: 'Juguete',      emoji: '🪆', desc: 'Figura de colección' },
+    { id: 'Pixels',     label: 'Píxeles',      emoji: '🕹️', desc: 'Estilo retro pixel art' },
+    { id: 'Video game', label: 'Videojuego',   emoji: '🎮', desc: 'Personaje de videojuego' },
+    { id: 'Emoji',      label: 'Emoji',        emoji: '😎', desc: 'Sticker animado' },
+  ];
   const carnetRef        = useRef<HTMLDivElement>(null);
   const storiesCarnetRef = useRef<HTMLDivElement>(null);
 
@@ -437,15 +449,17 @@ export default function PerroDetallePage() {
     }
   }
 
-  async function handleCartoon() {
+  async function handleCartoon(style?: string) {
     if (!perro?.foto_url) return;
+    const estiloSeleccionado = style ?? cartoonStyle;
 
-    // Si ya hay caricatura de la misma foto, mostrarla directo
-    if (cartoonUrl && cartoonFotoBase === perro.foto_url) {
+    // Si ya hay caricatura del mismo estilo y misma foto, mostrarla directo
+    if (cartoonUrl && cartoonFotoBase === perro.foto_url && cartoonStyleUsed === estiloSeleccionado) {
       setShowCartoonModal(true);
       return;
     }
 
+    setShowStylePicker(false);
     setCartoonLoading(true);
     setCartoonError(null);
     try {
@@ -458,10 +472,15 @@ export default function PerroDetallePage() {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ foto_url: perro.foto_url }),
+        body: JSON.stringify({ foto_url: perro.foto_url, style: estiloSeleccionado, perro_id: perro.id }),
       });
 
       const data = await res.json();
+
+      if (res.status === 429) {
+        setCartoonError(data.error || 'Límite mensual alcanzado para este perro.');
+        return;
+      }
 
       const saveCartoon = async (replicateUrl: string) => {
         // Subir a Supabase Storage para que no expire
@@ -483,6 +502,7 @@ export default function PerroDetallePage() {
 
         setCartoonUrl(finalUrl);
         setCartoonFotoBase(perro.foto_url);
+        setCartoonStyleUsed(estiloSeleccionado);
         setShowCartoonModal(true);
         try { await guardarCartoonUrl(perro.id, finalUrl); } catch { /* no bloquear */ }
       };
@@ -754,7 +774,14 @@ export default function PerroDetallePage() {
           {perro.foto_url && (
             <button
               type="button"
-              onClick={handleCartoon}
+              onClick={() => {
+                if (cartoonLoading) return;
+                if (cartoonUrl && cartoonFotoBase === perro.foto_url && cartoonStyleUsed) {
+                  setShowCartoonModal(true);
+                } else {
+                  setShowStylePicker(true);
+                }
+              }}
               disabled={cartoonLoading}
               className="w-full mb-5 group relative overflow-hidden rounded-2xl shadow-lg transition active:scale-95 disabled:opacity-70 focus:outline-none"
               style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
@@ -763,27 +790,22 @@ export default function PerroDetallePage() {
               <div className="pointer-events-none absolute inset-0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-white/20" />
 
               <div className="relative flex items-center gap-4 px-5 py-4">
-                {/* Icono izquierda */}
                 <div className="text-4xl select-none">🎨</div>
-
-                {/* Texto */}
                 <div className="flex-1 text-left">
                   <div className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-0.5">
-                    Nuevo · Inteligencia Artificial
+                    Nuevo · Inteligencia Artificial · 6 estilos
                   </div>
                   <div className="text-[15px] font-black text-white leading-snug">
                     {cartoonLoading
-                      ? `Generando la caricatura de ${perro.nombre}…`
+                      ? `Generando avatar de ${perro.nombre}…`
                       : cartoonUrl && cartoonFotoBase === perro.foto_url
-                        ? `Ver caricatura de ${perro.nombre} ✨`
-                        : `Convertí a ${perro.nombre} en caricatura 🐾`}
+                        ? `Ver avatar de ${perro.nombre} ✨`
+                        : `Convertí a ${perro.nombre} en avatar 🐾`}
                   </div>
                   <div className="text-[11px] text-white/80 font-semibold mt-0.5">
-                    {cartoonLoading ? 'Esto tarda unos segundos…' : isPro ? '1 clic · Compartí en Stories' : 'Exclusivo VecindogPro · Compartí en Stories'}
+                    {cartoonLoading ? 'Esto tarda unos segundos…' : isPro ? 'Elegí tu estilo · Compartí en Stories' : 'Exclusivo VecindogPro · 6 estilos artísticos'}
                   </div>
                 </div>
-
-                {/* Icono derecha */}
                 <div className="shrink-0 rounded-full bg-white/20 p-2">
                   {cartoonLoading
                     ? <Loader2 className="h-6 w-6 text-white animate-spin" />
@@ -1300,6 +1322,69 @@ export default function PerroDetallePage() {
         />
       </div>
 
+      {/* ── Modal selector de estilo ── */}
+      {showStylePicker && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div
+              className="px-5 pt-5 pb-4"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowStylePicker(false)}
+                className="absolute right-4 top-4 rounded-full bg-white/20 p-1 text-white hover:bg-white/30 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">🎨</span>
+                <h3 className="font-display text-xl font-black text-white">Elegí el estilo</h3>
+              </div>
+              <p className="text-[12px] text-white/80 font-semibold">
+                6 estilos artísticos para {perro?.nombre} 🐾
+              </p>
+            </div>
+
+            {/* Grid de estilos */}
+            <div className="p-4 grid grid-cols-3 gap-2">
+              {CARTOON_STYLES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setCartoonStyle(s.id)}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border-2 p-3 transition ${
+                    cartoonStyle === s.id
+                      ? 'border-[#7c3aed] bg-[#7c3aed]/8'
+                      : 'border-black/10 hover:border-[#7c3aed]/40'
+                  }`}
+                >
+                  <span className="text-2xl">{s.emoji}</span>
+                  <span className={`text-xs font-black ${cartoonStyle === s.id ? 'text-[#7c3aed]' : 'text-ink'}`}>
+                    {s.label}
+                  </span>
+                  <span className="text-[9px] text-ink-muted text-center leading-tight">{s.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Botón generar */}
+            <div className="px-4 pb-5">
+              <button
+                type="button"
+                onClick={() => handleCartoon(cartoonStyle)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-black text-white transition hover:opacity-90 shadow-md"
+                style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f97316 100%)' }}
+              >
+                <Sparkles className="h-5 w-5" />
+                Generar avatar {CARTOON_STYLES.find(s => s.id === cartoonStyle)?.emoji}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Modal caricatura IA ── */}
       {showCartoonModal && cartoonUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -1318,14 +1403,23 @@ export default function PerroDetallePage() {
                 <X className="h-5 w-5" />
               </button>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">🎨</span>
+                <span className="text-2xl">{CARTOON_STYLES.find(s => s.id === cartoonStyleUsed)?.emoji ?? '🎨'}</span>
                 <h3 className="font-display text-xl font-black text-white">
-                  ¡Caricatura de {perro.nombre}!
+                  ¡Avatar de {perro.nombre}!
                 </h3>
               </div>
-              <p className="text-[12px] text-white/80 font-semibold">
-                Compartila y sorprendé a tus amigos 🎉
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] text-white/80 font-semibold">
+                  Estilo: {CARTOON_STYLES.find(s => s.id === cartoonStyleUsed)?.label ?? cartoonStyleUsed} · Compartila 🎉
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setShowCartoonModal(false); setShowStylePicker(true); }}
+                  className="text-[11px] text-white/70 font-bold hover:text-white transition underline underline-offset-2"
+                >
+                  Cambiar estilo
+                </button>
+              </div>
             </div>
 
             {/* Imagen */}

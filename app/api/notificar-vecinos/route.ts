@@ -148,11 +148,14 @@ export async function POST(req: NextRequest) {
     const pushUrl   = `/publicaciones/${postIdS}`;
 
     const { sendPushToUser } = await import('@/lib/pushNotification');
-    await Promise.allSettled(
+    const pushResults = await Promise.allSettled(
       cercanos.map((p: { id: string }) =>
         sendPushToUser(p.id, { title: pushTitle, body: pushBody, url: pushUrl }, admin)
       )
     );
+    pushResults.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`[push vecinos ${i}]:`, r.reason);
+    });
 
     // ── Enviar emails ────────────────────────────────────────────────
     let enviados = 0;
@@ -267,7 +270,7 @@ export async function POST(req: NextRequest) {
               </div>
             `,
           }),
-        }).catch(() => {}); // no bloquear si falla
+        }).catch(e => console.error('[notificar-vecinos] email comercio error:', e));
       }
     }
 

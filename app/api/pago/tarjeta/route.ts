@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* ── 5. Crear pago en Mercado Pago ── */
+    if (!user.email) return NextResponse.json({ error: 'Usuario sin email registrado' }, { status: 403 });
     const mp     = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
     const pagoCl = new Payment(mp);
     const origin = req.headers.get('origin') ?? 'https://www.mivecindog.com.ar';
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
         description:          'VecindogPro — Suscripción 30 días',
         installments:         cuotasN,
         payment_method_id:    paymentMethodId,
-        payer:                { email: user.email! },
+        payer:                { email: user.email },
         metadata:             { tipo: 'pro', user_id: user.id, email: user.email },
         // 3D Secure habilitado (modo opcional: si el banco lo requiere, lo activa)
         three_d_secure_mode:  'optional',

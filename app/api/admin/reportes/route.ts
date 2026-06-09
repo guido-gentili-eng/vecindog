@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 export const dynamic = 'force-dynamic';
 
 async function checkAdmin(req: NextRequest) {

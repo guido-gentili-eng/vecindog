@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 
 interface PrecioInfo {
   esPromo: boolean;

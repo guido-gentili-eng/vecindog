@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 
 const GUEST_KEY    = 'vecindog_guest';
 const CITY_KEY     = 'vecindog_ciudad';
-const ADMIN_EMAIL  = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL  = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
 
 export interface Profile {
   id:                string;
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
-      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || profile.plan_vencimiento >= new Date().toISOString().slice(0, 10))) || user?.email === ADMIN_EMAIL,
+      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || user?.email === ADMIN_EMAIL,
       isSuspendido:    profile?.suspendido === true && user?.email !== ADMIN_EMAIL,
       ciudad,
       hasCity:         !!ciudad,

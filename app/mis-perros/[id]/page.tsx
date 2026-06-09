@@ -148,23 +148,26 @@ export default function PerroDetallePage() {
           );
           setVacunas(sorted);
           buscarPostActivoDePerro(p.id).then(setPostActivo);
-          Promise.allSettled([
-            listarEstudios(p.id).then(setEstudios),
-            listarDesparasitaciones(p.id).then(setDesparasitaciones),
-            listarPesos(p.id).then(setPesos),
-            listarTurnos(p.id).then(setTurnos),
-            listarMedicamentos(p.id).then(setMedicamentos),
-            listarVisitasVet(p.id).then(setVisitasVet),
-            listarProcedimientos(p.id).then(setProcedimientos),
-            listarFotos(p.id).then(setFotos),
-            listarContactos(p.id).then(setContactos),
-            obtenerGrooming(p.id).then(setGrooming),
-          ]).then((results) => {
-            results.forEach((r, i) => {
-              if (r.status === 'rejected') console.error(`[mis-perros] sub-data[${i}] falló:`, r.reason);
-            });
-            setSubDataLoaded(true);
-          });
+          const timeout = new Promise<void>(r => setTimeout(r, 12000)); // 12s max
+          Promise.race([
+            Promise.allSettled([
+              listarEstudios(p.id).then(setEstudios),
+              listarDesparasitaciones(p.id).then(setDesparasitaciones),
+              listarPesos(p.id).then(setPesos),
+              listarTurnos(p.id).then(setTurnos),
+              listarMedicamentos(p.id).then(setMedicamentos),
+              listarVisitasVet(p.id).then(setVisitasVet),
+              listarProcedimientos(p.id).then(setProcedimientos),
+              listarFotos(p.id).then(setFotos),
+              listarContactos(p.id).then(setContactos),
+              obtenerGrooming(p.id).then(setGrooming),
+            ]).then((results) => {
+              results.forEach((r, i) => {
+                if (r.status === 'rejected') console.error(`[mis-perros] sub-data[${i}] falló:`, r.reason);
+              });
+            }),
+            timeout,
+          ]).finally(() => setSubDataLoaded(true));
         }
         return null;
       })

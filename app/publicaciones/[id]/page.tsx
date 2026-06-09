@@ -27,7 +27,7 @@ const MapPinPicker = dynamic(() => import('@/components/MapPinPicker'), { ssr: f
 
 /* ──────────── Constantes ──────────── */
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 
 const COLOR_CATEGORIA: Record<string, string> = {
   perdido:    'bg-lost text-white',

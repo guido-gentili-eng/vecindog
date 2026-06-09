@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 
 const EMAIL_PAUSA = (nombre: string) => `
   <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">

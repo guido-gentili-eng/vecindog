@@ -159,7 +159,7 @@ export default function Header() {
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition w-full text-left">
                         <MapPin className="h-4 w-4 text-brand-primary" /> {t.navCambiarUbicacion}
                       </button>
-                      {user?.email === 'guido-gentili@live.com.ar' && (
+                      {user?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '') && (
                         <>
                           <div className="my-1 border-t border-black/5" />
                           <Link href="/admin" onClick={() => setProfileOpen(false)}

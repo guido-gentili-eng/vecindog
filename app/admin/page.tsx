@@ -10,7 +10,7 @@ import { type Perro as PerroCompleto } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
 import PerroDocumento from '@/components/PerroDocumento';
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 
 interface Usuario {
   id:          string;

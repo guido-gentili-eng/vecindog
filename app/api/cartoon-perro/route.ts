@@ -65,14 +65,16 @@ export async function POST(req: NextRequest) {
     if (!apiToken) return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
 
     // Obtener versión más reciente del modelo dinámicamente
-    const modelInfo = await fetch('https://api.replicate.com/v1/models/timbrooks/instruct-pix2pix', {
+    const modelRes = await fetch('https://api.replicate.com/v1/models/timbrooks/instruct-pix2pix', {
       headers: { 'Authorization': `Bearer ${apiToken}` },
-    }).then(r => r.json()).catch(() => null);
-
+    });
+    const modelInfo = await modelRes.json().catch(() => null);
     const version = modelInfo?.latest_version?.id;
     if (!version) {
-      console.error('[cartoon-perro] no se pudo obtener versión del modelo:', modelInfo);
-      return NextResponse.json({ error: 'No se pudo obtener el modelo de IA. Intentá más tarde.' }, { status: 500 });
+      console.error('[cartoon-perro] model info:', modelRes.status, JSON.stringify(modelInfo));
+      return NextResponse.json({
+        error: `Replicate ${modelRes.status}: ${JSON.stringify(modelInfo)}`,
+      }, { status: 500 });
     }
 
     // instruct-pix2pix: toma la foto y la transforma con una instrucción de texto

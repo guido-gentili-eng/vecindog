@@ -116,6 +116,8 @@ export default function PerroDetallePage() {
   const [showCartoonModal, setShowCartoonModal] = useState(false);
   const [cartoonFotoBase,  setCartoonFotoBase]  = useState<string | null>(null);
   const [cartoonEnCarnet,  setCartoonEnCarnet]  = useState(false);
+  const [storiesLoading,   setStoriesLoading]   = useState(false);
+  const carnetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -257,6 +259,45 @@ export default function PerroDetallePage() {
     if (!perro) return;
     const g = await guardarGrooming(perro.id, data);
     setGrooming(g);
+  }
+
+  async function handleCompartirStories() {
+    if (!carnetRef.current) return;
+    setStoriesLoading(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(carnetRef.current, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) { setStoriesLoading(false); return; }
+        const file = new File([blob], `carnet-${perro?.nombre ?? 'perro'}.png`, { type: 'image/png' });
+
+        // Intentar Web Share API con archivo (funciona en móvil)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `Identificación de ${perro?.nombre}`,
+          });
+        } else {
+          // Fallback: descargar la imagen
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `carnet-${perro?.nombre ?? 'perro'}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        setStoriesLoading(false);
+      }, 'image/png');
+    } catch (e) {
+      console.error('[stories]', e);
+      setStoriesLoading(false);
+    }
   }
 
   async function handleCartoon() {
@@ -494,7 +535,7 @@ export default function PerroDetallePage() {
       ) : (
         <>
           {/* Documento / ficha del perro — compact */}
-          <div className="mb-5">
+          <div className="mb-5" ref={carnetRef}>
             <PerroDocumento
               perro={perro}
               profile={profile}
@@ -1109,6 +1150,19 @@ export default function PerroDetallePage() {
             >
               <Sparkles className="h-4 w-4" />
               {cartoonEnCarnet ? '✓ Usada en la identificación — quitar' : 'Usar en la identificación'}
+            </button>
+
+            {/* Compartir carnet en Stories */}
+            <button
+              type="button"
+              onClick={handleCompartirStories}
+              disabled={storiesLoading}
+              className="mt-2 w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 transition"
+            >
+              {storiesLoading
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Camera className="h-4 w-4" />}
+              Compartir carnet en Stories
             </button>
           </div>
         </div>

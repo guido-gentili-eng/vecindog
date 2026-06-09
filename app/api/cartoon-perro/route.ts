@@ -62,109 +62,90 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Prompts específicos por estilo — perros humanizados, cancheros y felices
+    // ── Prompts por estilo — perros humanizados y cancheros ──────────
     const STYLE_PROMPTS: Record<string, string> = {
-      '3D':         'anthropomorphic cool dog wearing stylish sunglasses, big happy smile, thumbs up, wearing a hoodie or jacket, Pixar 3D style, vivid colors, fun personality, confident pose, humanized dog character',
-      'Clay':       'anthropomorphic cool dog made of colorful clay, wearing tiny sunglasses, big goofy happy smile, fun clay texture, humanized dog wearing a cap, Claymation style, bright studio lighting',
-      'Toy':        'anthropomorphic cool dog toy figurine, wearing sunglasses and a jacket, big happy smile, collectible vinyl toy style, street art character, cool pose, vivid colors',
-      'Pixels':     'anthropomorphic cool pixel art dog, wearing pixel sunglasses and a cap, big happy smile, 16-bit retro game character, humanized dog with accessories, vibrant pixel colors, fun expression',
-      'Video game': 'anthropomorphic cool dog video game character, wearing sunglasses and stylish outfit, big confident happy smile, RPG character art style, humanized dog hero, detailed vibrant colors, epic pose',
-      'Emoji':      'anthropomorphic cool dog emoji sticker, wearing sunglasses 😎, huge happy smile, party vibe, humanized dog with fun accessories, flat bold cartoon style, expressive and funny',
+      '3D':         'turn this dog into an anthropomorphic 3D Pixar cartoon character wearing cool sunglasses and a hoodie, big happy smile, thumbs up, vivid colors, fun and confident',
+      'Clay':       'turn this dog into a Claymation character wearing tiny sunglasses and a cap, big goofy happy smile, colorful clay texture, bright studio lighting, fun and cute',
+      'Toy':        'turn this dog into a collectible vinyl toy figure wearing sunglasses and a jacket, big happy smile, street art style, bold vivid colors, cool pose',
+      'Pixels':     'turn this dog into a 16-bit pixel art retro game character wearing pixel sunglasses and a cap, big happy smile, vibrant pixel colors, fun retro expression',
+      'Video game': 'turn this dog into an RPG video game hero character wearing sunglasses and a stylish outfit, big confident happy smile, detailed vibrant colors, epic heroic pose',
+      'Emoji':      'turn this dog into a fun emoji sticker character wearing sunglasses, huge happy smile, party vibe, flat bold cartoon style, expressive and funny',
     };
 
-    const apiToken = process.env.REPLICATE_API_TOKEN;
-    if (!apiToken) {
-      return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
+    const hfToken = process.env.HF_TOKEN;
+    if (!hfToken) {
+      return NextResponse.json({ error: 'HF_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Llamar a Replicate — fofr/face-to-sticker ────────────────────
-    const res = await fetch('https://api.replicate.com/v1/models/fofr/face-to-sticker/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'wait=55',
-      },
-      body: JSON.stringify({
-        input: {
-          image:              foto_url,
-          prompt:             STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:    'sad, angry, scared, crying, blurry, low quality, ugly, realistic human face, plain, boring, serious, sitting still',
-          steps:              20,
-          guidance_scale:     7.5,
-          ip_adapter_noise:   0.5,
-          ip_adapter_weight:  0.8,
-          upscale:            false,
+    // ── Descargar la foto del perro ───────────────────────────────────
+    const imageRes = await fetch(foto_url);
+    if (!imageRes.ok) {
+      return NextResponse.json({ error: 'No se pudo descargar la foto del perro' }, { status: 400 });
+    }
+    const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+    const base64Image = imageBuffer.toString('base64');
+
+    // ── Llamar a Hugging Face — instruct-pix2pix (gratis) ────────────
+    const hfRes = await fetch(
+      'https://api-inference.huggingface.co/models/timbrooks/instruct-pix2pix',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${hfToken}`,
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        body: JSON.stringify({
+          inputs: base64Image,
+          parameters: {
+            prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
+            negative_prompt:      'sad, angry, scared, blurry, low quality, ugly, plain, boring, serious',
+            num_inference_steps:  25,
+            guidance_scale:       7.5,
+            image_guidance_scale: 1.5,
+          },
+        }),
+      }
+    );
 
-    const prediction = await res.json();
-
-    if (!res.ok) {
-      console.error('[cartoon-perro] Replicate error:', res.status, JSON.stringify(prediction));
-      return NextResponse.json({ error: `Replicate: ${prediction?.detail || prediction?.error || res.status}` }, { status: 500 });
+    if (!hfRes.ok) {
+      const errText = await hfRes.text().catch(() => String(hfRes.status));
+      console.error('[cartoon-perro] HF error:', hfRes.status, errText);
+      if (hfRes.status === 503) {
+        return NextResponse.json(
+          { error: 'El modelo está cargando, esperá 30 segundos e intentá de nuevo' },
+          { status: 503 }
+        );
+      }
+      return NextResponse.json({ error: `Error generando el avatar (${hfRes.status})` }, { status: 500 });
     }
 
-    // ── Marcar uso del mes (Replicate aceptó el pedido) ──────────────
+    // ── Respuesta es imagen binaria — subir a Supabase storage ───────
+    const imgBuffer = Buffer.from(await hfRes.arrayBuffer());
+    const storagePath = `caricaturas/${perro_id ?? 'tmp'}-${Date.now()}.png`;
+    const { error: upErr } = await admin.storage
+      .from('posts')
+      .upload(storagePath, imgBuffer, { upsert: true, contentType: 'image/png' });
+
+    if (upErr) {
+      console.error('[cartoon-perro] storage upload error:', upErr);
+      return NextResponse.json({ error: 'Error guardando la imagen' }, { status: 500 });
+    }
+
+    const { data: urlData } = admin.storage.from('posts').getPublicUrl(storagePath);
+    const finalUrl = urlData.publicUrl;
+
+    // ── Marcar uso del mes y guardar URL ─────────────────────────────
     if (perro_id) {
-      admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id).then();
+      admin.from('perros').update({
+        cartoon_generado_at: new Date().toISOString(),
+        cartoon_url: finalUrl,
+      }).eq('id', perro_id).then();
     }
 
-    // Si ya terminó sincrónicamente
-    if (prediction.status === 'succeeded' && prediction.output) {
-      const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-      return NextResponse.json({ ok: true, url: outputUrl, prediction_id: prediction.id });
-    }
+    return NextResponse.json({ ok: true, url: finalUrl });
 
-    // Si sigue procesando, devolvemos el id para polling
-    if (prediction.id) {
-      return NextResponse.json({ ok: false, pending: true, prediction_id: prediction.id });
-    }
-
-    return NextResponse.json({ error: 'Respuesta inesperada de Replicate' }, { status: 500 });
   } catch (e) {
     console.error('[cartoon-perro]', e);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
-}
-
-// Polling de estado
-export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
-
-  // Auth check
-  const token = req.headers.get('authorization')?.replace('Bearer ', '');
-  if (!token) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { data: { user } } = await admin.auth.getUser(token);
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-
-  const apiToken = process.env.REPLICATE_API_TOKEN;
-  if (!apiToken) return NextResponse.json({ error: 'Sin API token' }, { status: 500 });
-
-  const res = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
-    headers: { 'Authorization': `Bearer ${apiToken}` },
-  });
-
-  if (!res.ok) return NextResponse.json({ error: 'Error consultando estado' }, { status: 500 });
-
-  const prediction = await res.json();
-
-  if (prediction.status === 'succeeded' && prediction.output) {
-    const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-    return NextResponse.json({ ok: true, url: outputUrl });
-  }
-
-  if (prediction.status === 'failed') {
-    return NextResponse.json({ error: 'Falló la generación' }, { status: 500 });
-  }
-
-  // Still processing
-  return NextResponse.json({ ok: false, pending: true, status: prediction.status });
 }

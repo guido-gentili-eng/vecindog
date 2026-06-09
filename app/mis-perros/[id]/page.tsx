@@ -429,12 +429,28 @@ export default function PerroDetallePage() {
 
       const data = await res.json();
 
-      const saveCartoon = async (url: string) => {
-        setCartoonUrl(url);
+      const saveCartoon = async (replicateUrl: string) => {
+        // Subir a Supabase Storage para que no expire
+        let finalUrl = replicateUrl;
+        try {
+          const imgRes  = await fetch(`/api/proxy-imagen?url=${encodeURIComponent(replicateUrl)}`);
+          const imgBlob = await imgRes.blob();
+          const ext     = 'png';
+          const path    = `caricaturas/${perro.id}-${Date.now()}.${ext}`;
+          const { error: upErr } = await (await import('@/lib/supabase')).supabase.storage
+            .from('posts')
+            .upload(path, imgBlob, { upsert: true, contentType: 'image/png' });
+          if (!upErr) {
+            const { data: urlData } = (await import('@/lib/supabase')).supabase.storage
+              .from('posts').getPublicUrl(path);
+            finalUrl = urlData.publicUrl;
+          }
+        } catch { /* usar URL de Replicate si falla */ }
+
+        setCartoonUrl(finalUrl);
         setCartoonFotoBase(perro.foto_url);
         setShowCartoonModal(true);
-        // Guardar en BD para próximas visitas
-        try { await guardarCartoonUrl(perro.id, url); } catch { /* no bloquear */ }
+        try { await guardarCartoonUrl(perro.id, finalUrl); } catch { /* no bloquear */ }
       };
 
       if (data.ok && data.url) {

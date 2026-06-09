@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         version,
         input: {
           image:                foto_url,
-          style:                'Cartoon',
+          style:                '3D',
           prompt:               'a cartoon dog, happy smiling joyful expression, bright cheerful eyes, tongue out, cute, adorable, vivid colors',
           negative_prompt:      'sad, angry, scared, blurry, low quality, ugly',
           number_of_images:     1,

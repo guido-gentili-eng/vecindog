@@ -64,8 +64,19 @@ export async function POST(req: NextRequest) {
     const apiToken = process.env.REPLICATE_API_TOKEN;
     if (!apiToken) return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
 
+    // Obtener versión más reciente del modelo dinámicamente
+    const modelInfo = await fetch('https://api.replicate.com/v1/models/timbrooks/instruct-pix2pix', {
+      headers: { 'Authorization': `Bearer ${apiToken}` },
+    }).then(r => r.json()).catch(() => null);
+
+    const version = modelInfo?.latest_version?.id;
+    if (!version) {
+      console.error('[cartoon-perro] no se pudo obtener versión del modelo:', modelInfo);
+      return NextResponse.json({ error: 'No se pudo obtener el modelo de IA. Intentá más tarde.' }, { status: 500 });
+    }
+
     // instruct-pix2pix: toma la foto y la transforma con una instrucción de texto
-    const res = await fetch('https://api.replicate.com/v1/models/timbrooks/instruct-pix2pix/predictions', {
+    const res = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -73,6 +84,7 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
+        version,
         input: {
           image:                foto_url,
           prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],

@@ -263,16 +263,23 @@ export default function PerroDetallePage() {
   }
 
   async function handleCompartirStories() {
-    if (!cartoonUrl || !perro) return;
+    if (!cartoonUrl || !perro) {
+      setCartoonError('Primero generá la caricatura con el botón ✨');
+      return;
+    }
     setStoriesLoading(true);
+    setCartoonError(null);
     try {
-      // Cargar la caricatura como imagen
+      // Descargar imagen via proxy para evitar CORS
+      const imgBlob = await fetch(`/api/proxy-imagen?url=${encodeURIComponent(cartoonUrl)}`).then(r => r.blob());
+      const imgObjUrl = URL.createObjectURL(imgBlob);
+
+      // Cargar como elemento imagen
       const cartoonImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
-        img.crossOrigin = 'anonymous';
         img.onload  = () => resolve(img);
         img.onerror = reject;
-        img.src = cartoonUrl!;
+        img.src = imgObjUrl;
       });
 
       // Canvas Stories 9:16
@@ -391,6 +398,7 @@ export default function PerroDetallePage() {
       }, 'image/png');
     } catch (e) {
       console.error('[stories]', e);
+      setCartoonError('No se pudo generar el cartel. Intentá de nuevo.');
       setStoriesLoading(false);
     }
   }

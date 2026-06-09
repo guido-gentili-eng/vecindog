@@ -266,27 +266,131 @@ export default function PerroDetallePage() {
     if (!cartoonUrl || !perro) return;
     setStoriesLoading(true);
     try {
-      const res  = await fetch(cartoonUrl);
-      const blob = await res.blob();
-      const file = new File([blob], `vecindog-${perro.nombre.toLowerCase()}.png`, { type: 'image/png' });
+      // Cargar la caricatura como imagen
+      const cartoonImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.onload  = () => resolve(img);
+        img.onerror = reject;
+        img.src = cartoonUrl!;
+      });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `${perro.nombre} — Vecindog`,
-          text:  `Conocé a ${perro.nombre} en www.mivecindog.com.ar`,
-        });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a   = document.createElement('a');
-        a.href    = url;
-        a.download = `vecindog-${perro.nombre.toLowerCase()}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
+      // Canvas Stories 9:16
+      const SW = 1080;
+      const SH = 1920;
+      const canvas = document.createElement('canvas');
+      canvas.width  = SW;
+      canvas.height = SH;
+      const ctx = canvas.getContext('2d')!;
+
+      // ── Fondo degradado naranja-coral ──
+      const bg = ctx.createLinearGradient(0, 0, SW, SH);
+      bg.addColorStop(0,   '#FF6B35');
+      bg.addColorStop(0.5, '#EE5A3B');
+      bg.addColorStop(1,   '#D94F2E');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, SW, SH);
+
+      // Círculos decorativos de fondo
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(SW * 0.9, SH * 0.08, 220, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.05, SH * 0.22, 160, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(SW * 0.85, SH * 0.88, 180, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // ── TEXTO SUPERIOR ──
+      ctx.textAlign = 'center';
+
+      // "¡Hola! Soy..."
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.font      = '500 58px sans-serif';
+      ctx.fillText('¡Hola! Soy', SW / 2, 180);
+
+      // Nombre del perro — grande y bold
+      ctx.fillStyle = '#fff';
+      ctx.font      = 'bold 148px sans-serif';
+      ctx.fillText(perro.nombre, SW / 2, 340);
+
+      // Línea decorativa bajo el nombre
+      const lineW = 200;
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.fillRect(SW / 2 - lineW / 2, 370, lineW, 5);
+
+      // ── CARICATURA centrada ──
+      const imgSize = 780;
+      const imgX    = (SW - imgSize) / 2;
+      const imgY    = 430;
+
+      // Sombra / halo detrás de la imagen
+      ctx.shadowColor   = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur    = 60;
+      ctx.shadowOffsetY = 20;
+
+      // Marco circular blanco
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(SW / 2, imgY + imgSize / 2, imgSize / 2 + 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+
+      // Clip circular para la imagen
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(SW / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(cartoonImg, imgX, imgY, imgSize, imgSize);
+      ctx.restore();
+
+      // ── TEXTO INFERIOR ──
+      const textY = imgY + imgSize + 80;
+
+      ctx.fillStyle = '#fff';
+      ctx.font      = 'bold 52px sans-serif';
+      ctx.fillText('Soy socio de Vecindog 🐾', SW / 2, textY);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.font      = '40px sans-serif';
+      ctx.fillText('La red vecinal que cuida a las', SW / 2, textY + 70);
+      ctx.fillText('mascotas de tu barrio', SW / 2, textY + 120);
+
+      // CTA pill
+      const pillY = textY + 180;
+      const pillW = 540;
+      const pillH = 90;
+      const pillX = (SW - pillW) / 2;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, 45);
+      ctx.fill();
+
+      ctx.fillStyle = '#EE5A3B';
+      ctx.font      = 'bold 38px sans-serif';
+      ctx.fillText('www.mivecindog.com.ar', SW / 2, pillY + 57);
+
+      // ── Exportar ──
+      canvas.toBlob(async (blob) => {
+        if (!blob) { setStoriesLoading(false); return; }
+        const file = new File([blob], `vecindog-${perro.nombre.toLowerCase()}.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `${perro.nombre} — Vecindog`,
+            text:  `¡Hola! Soy ${perro.nombre}, socio de Vecindog 🐾`,
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a   = document.createElement('a');
+          a.href    = url;
+          a.download = `vecindog-${perro.nombre.toLowerCase()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        setStoriesLoading(false);
+      }, 'image/png');
     } catch (e) {
       console.error('[stories]', e);
-    } finally {
       setStoriesLoading(false);
     }
   }

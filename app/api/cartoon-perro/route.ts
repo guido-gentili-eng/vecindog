@@ -27,10 +27,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Obtener la versión más reciente del modelo ────────────────────
-    // catacolabs/cartoonify: convierte fotos en cartoon estilo Cartoon Network
-    const MODEL_OWNER = 'catacolabs';
-    const MODEL_NAME  = 'cartoonify';
+    // ── Modelo: fofr/face-to-many ─────────────────────────────────────
+    // Convierte la foto a cartoon con expresión alegre
+    const MODEL_OWNER = 'fofr';
+    const MODEL_NAME  = 'face-to-many';
 
     const modelRes = await fetch(
       `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}`,
@@ -57,7 +57,15 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         version,
         input: {
-          image: foto_url,
+          image:                foto_url,
+          style:                'Cartoon',
+          prompt:               'a cartoon dog, happy smiling joyful expression, bright cheerful eyes, tongue out, cute, adorable, vivid colors',
+          negative_prompt:      'sad, angry, scared, blurry, low quality, ugly',
+          number_of_images:     1,
+          output_format:        'png',
+          guidance_scale:       7.5,
+          ip_adapter_weight:    0.8,
+          shape_match_strength: 1,
         },
       }),
     });
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, url: outputUrl, prediction_id: prediction.id });
     }
 
-    // Si sigue procesando, devolvemos el id para que el cliente haga polling
+    // Si sigue procesando, devolvemos el id para polling
     if (prediction.id) {
       return NextResponse.json({ ok: false, pending: true, prediction_id: prediction.id });
     }

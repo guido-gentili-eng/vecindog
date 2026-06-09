@@ -39,6 +39,7 @@ interface FormState {
   raza:                  string;
   color:                 string;
   tamano:                Tamano | '';
+  sexo:                  'macho' | 'hembra' | '';
   collar:                Ternario;
   chapita:               Ternario;
   descripcion:           string;
@@ -72,6 +73,7 @@ function estadoInicial(catParam: string | null): FormState {
     raza:        '',
     color:       '',
     tamano:      '',
+    sexo:        '',
     collar:      null,
     chapita:     null,
     descripcion: '',
@@ -175,6 +177,7 @@ export default function PublicarPage() {
         raza:        p.raza   || '',
         color:       p.color  || '',
         tamano:      (p.tamano as Tamano) || '',
+        sexo:        (p.sexo as 'macho' | 'hembra' | '') || '',
         descripcion: generarDescripcion(p),
       }));
     });
@@ -344,6 +347,7 @@ export default function PublicarPage() {
         raza:        form.raza        || null,
         color:       form.color       || null,
         tamano:      form.tamano      || null,
+        sexo:        form.sexo        || null,
         collar:      form.collar,
         chapita:     form.chapita,
         descripcion: form.descripcion,
@@ -824,6 +828,23 @@ export default function PublicarPage() {
                     onClick={() => handleChange('tamano', form.tamano === v ? '' : v)}
                     className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
                       form.tamano === v
+                        ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
+                        : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
+                    }`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Sexo <span className="text-ink-muted font-normal">(opcional)</span></label>
+              <div className="flex gap-2">
+                {([['macho', '♂ Macho'], ['hembra', '♀ Hembra']] as const).map(([v, l]) => (
+                  <button key={v} type="button"
+                    onClick={() => handleChange('sexo', form.sexo === v ? '' : v)}
+                    className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
+                      form.sexo === v
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-black/10 text-ink-muted hover:border-brand-primary/40'
                     }`}>

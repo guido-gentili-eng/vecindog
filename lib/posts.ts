@@ -60,7 +60,7 @@ export function postToAnimal(p: Post): Animal {
 
 const CATEGORIAS_AVISO = ['perdido', 'encontrado', 'adopcion', 'transito'];
 
-const POSTS_FIELDS = 'id,created_at,user_id,perro_id,categoria,especie,nombre,raza,color,tamano,collar,chapita,descripcion,zona,fecha,horario,contacto,images,estado,lat,lng,situacion_transito,fecha_limite_transito';
+const POSTS_FIELDS = 'id,created_at,user_id,perro_id,categoria,especie,nombre,raza,color,tamano,sexo,collar,chapita,descripcion,zona,fecha,horario,contacto,images,estado,lat,lng,situacion_transito,fecha_limite_transito';
 
 export async function listarPosts(): Promise<Post[]> {
   const { data, error } = await supabase

@@ -253,8 +253,6 @@ export default function PublicitatePage() {
         </div>
 
         <div className="relative grid gap-6 md:grid-cols-3">
-          {/* línea conectora (solo desktop) */}
-          <div className="absolute left-0 right-0 top-8 hidden h-0.5 bg-brand-primary/15 md:block" style={{ left: '16.66%', right: '16.66%' }} />
 
           {[
             {

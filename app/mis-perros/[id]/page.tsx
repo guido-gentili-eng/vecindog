@@ -1097,17 +1097,13 @@ export default function PerroDetallePage() {
               type="button"
               onClick={async () => {
                 if (!cartoonUrl) return;
-                try {
-                  if (cartoonEnCarnet) {
-                    await guardarFotoCarnet(perro.id, null);
-                    setPerro((p) => p ? { ...p, foto_carnet_url: null } : p);
-                    setCartoonEnCarnet(false);
-                  } else {
-                    await guardarFotoCarnet(perro.id, cartoonUrl);
-                    setPerro((p) => p ? { ...p, foto_carnet_url: cartoonUrl } : p);
-                    setCartoonEnCarnet(true);
-                  }
-                } catch { /* no bloquear */ }
+                const nuevoEstado = !cartoonEnCarnet;
+                const nuevaUrl = nuevoEstado ? cartoonUrl : null;
+                // Actualizar estado local inmediatamente
+                setCartoonEnCarnet(nuevoEstado);
+                setPerro((p) => p ? { ...p, foto_carnet_url: nuevaUrl } : p);
+                // Persistir en BD (silencioso si falla)
+                guardarFotoCarnet(perro.id, nuevaUrl).catch(console.error);
               }}
               className={`mt-2 w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition ${cartoonEnCarnet ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-500 text-white hover:bg-purple-400'}`}
             >

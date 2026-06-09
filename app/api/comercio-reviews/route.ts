@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
   if (error || !user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
   const { ad_id, estrellas, comentario } = await req.json();
-  if (!ad_id || !estrellas || estrellas < 1 || estrellas > 5) {
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!ad_id || !UUID_RE.test(ad_id) || !estrellas || estrellas < 1 || estrellas > 5) {
     return NextResponse.json({ error: 'ad_id y estrellas (1-5) son requeridos' }, { status: 400 });
   }
 

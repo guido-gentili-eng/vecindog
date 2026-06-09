@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
   const { post_id, motivo } = await req.json();
-  if (!post_id || !motivo?.trim()) {
-    return NextResponse.json({ error: 'post_id y motivo son requeridos' }, { status: 400 });
+  if (!post_id || !motivo?.trim() || motivo.length > 500) {
+    return NextResponse.json({ error: 'post_id y motivo son requeridos (máx 500 caracteres)' }, { status: 400 });
   }
 
   const { error } = await admin

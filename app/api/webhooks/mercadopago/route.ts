@@ -195,7 +195,7 @@ async function notificarAdmin({
       },
       body: JSON.stringify({
         from: 'Vecindog <noreply@mivecindog.com.ar>',
-        to: ['guido-gentili@live.com.ar'],
+        to: [process.env.ADMIN_EMAIL ?? ''],
         subject: renovacion ? `🔄 Renovación publicidad: ${negocio} (${plan})` : `💰 Nuevo anunciante: ${negocio} (${plan})`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">

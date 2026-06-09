@@ -3,8 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+function esc(s: string): string {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 export async function POST(req: NextRequest) {
-  const { perroId, mensaje, contacto } = await req.json();
+  const { perroId, mensaje: rawMensaje, contacto: rawContacto } = await req.json();
+  // Sanitizar inputs para evitar XSS en el email
+  const mensaje  = rawMensaje  ? String(rawMensaje).slice(0, 1000)  : '';
+  const contacto = rawContacto ? String(rawContacto).slice(0, 200) : '';
 
   if (!perroId) {
     return NextResponse.json({ error: 'perroId requerido' }, { status: 400 });
@@ -73,8 +80,8 @@ export async function POST(req: NextRequest) {
             </p>
             ${mensaje ? `
             <div style="background:#F0FFF7;border-radius:12px;padding:16px;margin:16px 0;border-left:4px solid #3F8B5C;">
-              <p style="margin:0;font-size:15px;color:#1a1a1a;">💬 <strong>Mensaje:</strong> ${mensaje}</p>
-              ${contacto ? `<p style="margin:8px 0 0;font-size:15px;color:#1a1a1a;">📞 <strong>Contacto:</strong> ${contacto}</p>` : ''}
+              <p style="margin:0;font-size:15px;color:#1a1a1a;">💬 <strong>Mensaje:</strong> ${esc(mensaje)}</p>
+              ${contacto ? `<p style="margin:8px 0 0;font-size:15px;color:#1a1a1a;">📞 <strong>Contacto:</strong> ${esc(contacto)}</p>` : ''}
             </div>` : ''}
             <p style="color:#555;font-size:15px;">
               Revisá las notificaciones en la app para más detalles.

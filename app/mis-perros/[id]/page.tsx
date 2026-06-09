@@ -132,8 +132,8 @@ export default function PerroDetallePage() {
             const esReplicate = p.cartoon_url.includes('replicate.delivery');
             if (esReplicate) {
               // Limpiar silenciosamente: el usuario deberá generar una vez más
-              guardarCartoonUrl(p.id, '').catch(() => {});
-              guardarFotoCarnet(p.id, null).catch(() => {});
+              guardarCartoonUrl(p.id, '').catch(e => console.error('[cartoon] error limpiando url:', e));
+              guardarFotoCarnet(p.id, null).catch(e => console.error('[cartoon] error limpiando carnet:', e));
             } else {
               setCartoonUrl(p.cartoon_url);
               setCartoonFotoBase(p.foto_url);

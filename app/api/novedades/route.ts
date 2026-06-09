@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'guido-gentili@live.com.ar';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
 
 function getAdmin() {
   return createClient(
@@ -58,9 +58,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Solo el dueño del comercio o el admin puede publicar novedades
+  if (!user.email) return NextResponse.json({ error: 'Usuario sin email' }, { status: 403 });
   const esAdmin = user.email === ADMIN_EMAIL;
   if (!esAdmin) {
-    const esOwner = await isOwnerOfAd(admin, ad_id, user.email!);
+    const esOwner = await isOwnerOfAd(admin, ad_id, user.email);
     if (!esOwner) return NextResponse.json({ error: 'Sin permisos' }, { status: 403 });
   }
 
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     .insert({
       ad_id,
       titulo: titulo.trim(),
-      texto: texto?.trim() || null,
+      texto: (texto?.trim() || '').slice(0, 5000) || null,
       imagen_url: imagen_url || null,
       activa: true,
     })
@@ -100,9 +101,10 @@ export async function DELETE(req: NextRequest) {
 
   if (!nov) return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
 
+  if (!user.email) return NextResponse.json({ error: 'Usuario sin email' }, { status: 403 });
   const esAdmin = user.email === ADMIN_EMAIL;
   if (!esAdmin) {
-    const esOwner = await isOwnerOfAd(admin, nov.ad_id, user.email!);
+    const esOwner = await isOwnerOfAd(admin, nov.ad_id, user.email);
     if (!esOwner) return NextResponse.json({ error: 'Sin permisos' }, { status: 403 });
   }
 

@@ -901,6 +901,9 @@ export default function PerroDetallePage() {
               )}
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+              {perro.numero_registro != null && (
+                <DataItem label="N.º de registro" value={`#${perro.numero_registro}`} mono />
+              )}
               <DataItem label={t.mpdMicrochip}        value={perro.chip      || '—'} mono />
               <DataItem label={t.mpdFechaNacLabel}   value={perro.fecha_nac ? formatFecha(perro.fecha_nac) : '—'} />
               <DataItem label={t.mpdEdadLabel}        value={edad            || '—'} />

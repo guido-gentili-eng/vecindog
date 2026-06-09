@@ -63,10 +63,12 @@ export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' |
   dieta_cantidad:   string | null;
   dieta_frecuencia: string | null;
   dieta_notas:      string | null;
-  cartoon_url:      string | null;
-  foto_carnet_url:  string | null;
-  created_at:       string;
-  vacunas?:         Vacuna[];
+  cartoon_url:       string | null;
+  foto_carnet_url:   string | null;
+  cartoon_generado_at?: string | null;
+  numero_registro:   number | null;
+  created_at:        string;
+  vacunas?:          Vacuna[];
 }
 
 /* ─────────────────── Consultas ─────────────────── */

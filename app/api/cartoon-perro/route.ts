@@ -41,27 +41,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Modelo: fofr/face-to-many ─────────────────────────────────────
-    // Convierte la foto a cartoon con expresión alegre
-    const MODEL_OWNER = 'fofr';
-    const MODEL_NAME  = 'face-to-many';
-
-    const modelRes = await fetch(
-      `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}`,
-      { headers: { 'Authorization': `Bearer ${apiToken}` } }
-    );
-    if (!modelRes.ok) {
-      const t = await modelRes.text();
-      return NextResponse.json({ error: `No se pudo obtener el modelo: ${t}` }, { status: 500 });
-    }
-    const modelData = await modelRes.json();
-    const version = modelData?.latest_version?.id;
-    if (!version) {
-      return NextResponse.json({ error: 'No se encontró versión del modelo' }, { status: 500 });
-    }
-
-    // ── Llamar a Replicate ────────────────────────────────────────────
-    const res = await fetch('https://api.replicate.com/v1/predictions', {
+    // ── Llamar a Replicate (endpoint directo — siempre usa latest) ────
+    // Usar /v1/models/.../predictions evita tener que buscar la versión
+    // primero (que puede devolver una versión antigua con schema distinto)
+    const res = await fetch('https://api.replicate.com/v1/models/fofr/face-to-many/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -69,7 +52,6 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
-        version,
         input: {
           image:                foto_url,
           style:                '3D',

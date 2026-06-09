@@ -109,14 +109,18 @@ export async function POST(req: NextRequest) {
     });
     if (cercanos.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 
-    // ── Obtener emails en batch ──────────────────────────────────────
+    // ── Obtener emails en batch (paginando para soportar más de 1000 usuarios) ──
     const ids = cercanos.map((p: { id: string }) => p.id);
     const emailsMap: Record<string, string> = {};
-    const { data: listData, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    if (!listError && listData) {
+    let authPage = 1;
+    while (true) {
+      const { data: listData, error: listError } = await admin.auth.admin.listUsers({ page: authPage, perPage: 1000 });
+      if (listError || !listData?.users?.length) break;
       for (const u of listData.users) {
         if (ids.includes(u.id) && u.email) emailsMap[u.id] = u.email;
       }
+      if (listData.users.length < 1000) break;
+      authPage++;
     }
 
     const categoriaLabel =

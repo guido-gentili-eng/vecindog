@@ -101,6 +101,47 @@ export async function GET(req: NextRequest) {
     .eq('notified_expiration', false)
     .lte('created_at', dia5.toISOString());
 
+  // ── ETAPA 2: Segundo y último aviso (día 6) ───────────────────────
+  const { data: postsDia6 } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', ['perdido', 'encontrado'])
+    .eq('estado', 'activo')
+    .eq('notified_expiration', true)
+    .lte('created_at', dia6.toISOString())
+    .gte('created_at', dia7.toISOString()); // solo exactamente día 6, no los de día 7+
+
+  // Recopilar todos los user_ids únicos y traer sus datos en batch
+  const todosUserIds = [
+    ...(postsDia5 ?? []).map((p: { user_id: string }) => p.user_id),
+    ...(postsDia6 ?? []).map((p: { user_id: string }) => p.user_id),
+  ].filter(Boolean);
+  const uniqueUserIds = [...new Set(todosUserIds)];
+
+  // Traer emails via listUsers paginando (límite real, no hardcodeado a 1000)
+  const emailsMap: Record<string, string> = {};
+  let authPage = 1;
+  while (true) {
+    const { data: listData } = await admin.auth.admin.listUsers({ page: authPage, perPage: 1000 });
+    if (!listData?.users?.length) break;
+    for (const u of listData.users) {
+      if (uniqueUserIds.includes(u.id) && u.email) emailsMap[u.id] = u.email;
+    }
+    if (listData.users.length < 1000) break;
+    authPage++;
+  }
+
+  // Traer perfiles (nombre) en batch
+  const profilesMap: Record<string, string> = {};
+  if (uniqueUserIds.length > 0) {
+    const { data: profilesData } = await admin
+      .from('profiles')
+      .select('id, nombre')
+      .in('id', uniqueUserIds);
+    for (const p of profilesData ?? []) profilesMap[p.id] = p.nombre ?? '';
+  }
+
+  // Procesar día 5 (primer aviso)
   for (const post of postsDia5 ?? []) {
     if (!post.user_id) continue;
     const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
@@ -117,38 +158,23 @@ export async function GET(req: NextRequest) {
     // Marcar como notificado
     await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
 
-    const { data: userData } = await admin.auth.admin.getUserById(post.user_id);
-    const email = userData?.user?.email;
+    const email  = emailsMap[post.user_id];
     if (!email) continue;
-
-    const { data: profile } = await admin.from('profiles').select('nombre').eq('id', post.user_id).single();
-    const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
+    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
 
     const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, false);
     if (ok) notif1++;
   }
 
-  // ── ETAPA 2: Segundo y último aviso (día 6) ───────────────────────
-  const { data: postsDia6 } = await admin
-    .from('posts')
-    .select('id, user_id, nombre, categoria, zona')
-    .in('categoria', ['perdido', 'encontrado'])
-    .eq('estado', 'activo')
-    .eq('notified_expiration', true)
-    .lte('created_at', dia6.toISOString())
-    .gte('created_at', dia7.toISOString()); // solo exactamente día 6, no los de día 7+
-
+  // Procesar día 6 (segundo aviso)
   for (const post of postsDia6 ?? []) {
     if (!post.user_id) continue;
     const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
     const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
 
-    const { data: userData } = await admin.auth.admin.getUserById(post.user_id);
-    const email = userData?.user?.email;
+    const email  = emailsMap[post.user_id];
     if (!email) continue;
-
-    const { data: profile } = await admin.from('profiles').select('nombre').eq('id', post.user_id).single();
-    const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
+    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
 
     const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, true);
     if (ok) notif2++;

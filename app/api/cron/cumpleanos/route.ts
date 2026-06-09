@@ -39,14 +39,16 @@ export async function GET(req: NextRequest) {
     const anioNac = parseInt(perro.fecha_nac.slice(0, 4));
     const edad = hoy.getFullYear() - anioNac;
 
-    // Notificación in-app (una por día)
+    // Notificación in-app (una por día) — buscamos por perro.id para evitar
+    // falsos positivos con nombres que son substring de otros (ej: "Toto" vs "Totona")
+    const hoyStr = hoy.toISOString().slice(0, 10);
     const { data: existente } = await admin
       .from('notifications')
       .select('id')
       .eq('user_id', perro.user_id)
       .eq('tipo', 'cumpleanos')
-      .ilike('mensaje', `%${perro.nombre}%`)
-      .gte('created_at', hoy.toISOString().slice(0, 10))
+      .ilike('mensaje', `%[${perro.id}]%`)
+      .gte('created_at', hoyStr)
       .limit(1);
 
     if (!existente || existente.length === 0) {
@@ -54,7 +56,8 @@ export async function GET(req: NextRequest) {
         user_id: perro.user_id,
         post_id: null,
         tipo: 'cumpleanos',
-        mensaje: `🎂 ¡Hoy cumple ${edad} año${edad === 1 ? '' : 's'} ${perro.nombre}! Feliz cumpleaños.`,
+        // El [perro.id] al final permite deduplicación exacta sin depender del nombre
+        mensaje: `🎂 ¡Hoy cumple ${edad} año${edad === 1 ? '' : 's'} ${perro.nombre}! Feliz cumpleaños. [${perro.id}]`,
         leida: false,
       });
     }

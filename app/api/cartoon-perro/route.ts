@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Llamar a Replicate — stability-ai/sdxl (img2img) ────────────
-    const res = await fetch('https://api.replicate.com/v1/models/stability-ai/sdxl/predictions', {
+    const res = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -86,15 +86,16 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
+        model: 'stability-ai/sdxl',
         input: {
-          image:             foto_url,
-          prompt:            STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:   'sad, angry, scared, blurry, low quality, ugly, plain, boring, serious, human face, person',
-          prompt_strength:   0.8,
-          num_outputs:       1,
+          image:               foto_url,
+          prompt:              STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
+          negative_prompt:     'sad, angry, scared, blurry, low quality, ugly, plain, boring, serious, human face, person',
+          prompt_strength:     0.8,
+          num_outputs:         1,
           num_inference_steps: 25,
-          guidance_scale:    7.5,
-          output_format:     'png',
+          guidance_scale:      7.5,
+          output_format:       'png',
         },
       }),
     });
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       console.error('[cartoon-perro] Replicate error:', res.status, JSON.stringify(prediction));
-      return NextResponse.json({ error: `Error generando el avatar: ${prediction?.detail || prediction?.error || res.status}` }, { status: 500 });
+      return NextResponse.json({ error: `Error ${res.status}: ${JSON.stringify(prediction)}` }, { status: 500 });
     }
 
     // ── Marcar uso del mes ────────────────────────────────────────────

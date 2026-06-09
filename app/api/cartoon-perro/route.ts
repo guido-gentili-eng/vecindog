@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         input: {
-          image:  foto_url,
-          prompt: STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
+          input_image: foto_url,
+          prompt:      STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
         },
       }),
     });

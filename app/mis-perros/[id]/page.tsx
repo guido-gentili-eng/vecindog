@@ -502,7 +502,7 @@ export default function PerroDetallePage() {
         const predId = data.prediction_id;
         for (let i = 0; i < 25; i++) {
           await new Promise((r) => setTimeout(r, 2500));
-          const poll = await fetch(`/api/cartoon-perro?id=${predId}`);
+          const poll = await fetch(`/api/cartoon-perro?id=${predId}&perro_id=${perro.id}`);
           const pollData = await poll.json();
           if (pollData.ok && pollData.url) {
             await saveCartoon(pollData.url);

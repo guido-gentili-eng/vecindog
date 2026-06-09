@@ -87,17 +87,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Error ${res.status}: ${prediction?.detail || prediction?.error || JSON.stringify(prediction)}` }, { status: 500 });
     }
 
-    if (perro_id) {
-      admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id).then();
-    }
-
     if (prediction.status === 'succeeded' && prediction.output) {
       const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+      // Marcar cupo solo cuando hay imagen real
+      if (perro_id) {
+        admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id).then();
+      }
       return NextResponse.json({ ok: true, url: outputUrl, prediction_id: prediction.id });
     }
 
+    // Pendiente — el cupo se marca desde el GET de polling cuando termina exitosamente
     if (prediction.id) {
-      return NextResponse.json({ ok: false, pending: true, prediction_id: prediction.id });
+      return NextResponse.json({ ok: false, pending: true, prediction_id: prediction.id, perro_id: perro_id ?? null });
     }
 
     return NextResponse.json({ error: 'Respuesta inesperada de Replicate' }, { status: 500 });
@@ -109,7 +110,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
+  const id      = req.nextUrl.searchParams.get('id');
+  const perroId = req.nextUrl.searchParams.get('perro_id');
   if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
 
   const token = req.headers.get('authorization')?.replace('Bearer ', '');
@@ -135,6 +137,10 @@ export async function GET(req: NextRequest) {
 
   if (prediction.status === 'succeeded' && prediction.output) {
     const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+    // Marcar cupo solo al confirmar éxito desde polling
+    if (perroId) {
+      admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perroId).then();
+    }
     return NextResponse.json({ ok: true, url: outputUrl });
   }
 

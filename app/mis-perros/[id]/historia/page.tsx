@@ -228,7 +228,7 @@ export default function HistoriaPage() {
           <div style={{ padding: '16px 20px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{ margin: 0, fontSize: '9px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
-                VECINDOG · mivecindog.com.ar
+                mivecindog.com.ar
               </p>
               <p style={{ margin: '2px 0 0', fontSize: perdido ? '18px' : '13px', fontWeight: 900, color: accent }}>
                 {perdido ? '⚠ SE BUSCA · PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
@@ -258,12 +258,13 @@ export default function HistoriaPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <tbody>
                     {([
+                      perro.numero_registro != null ? ['Registro', `#${perro.numero_registro}`] : null,
                       ['Raza',   perro.raza],
                       ['Color',  perro.color],
                       ['Tamaño', perro.tamano],
                       ['Sexo',   perro.sexo],
                       ['Chip',   perro.chip],
-                    ] as [string, string | null | undefined][]).filter(([, v]) => v).map(([l, v]) => (
+                    ].filter(Boolean) as [string, string | null | undefined][]).filter(([, v]) => v).map(([l, v]) => (
                       <tr key={l}>
                         <td style={{ padding: '2px 6px 2px 0', color: 'rgba(255,255,255,0.5)', fontWeight: 600, width: '55px', fontSize: '10px' }}>{l}</td>
                         <td style={{ padding: '2px 0', color: '#fff', fontWeight: 700, textTransform: 'capitalize', fontSize: '10px' }}>{v}</td>
@@ -293,7 +294,7 @@ export default function HistoriaPage() {
                 </p>
               )}
               {profile?.telefono && (
-                <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0 }}>
+                <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0, filter: 'blur(5px)', userSelect: 'none' }}>
                   {profile.telefono}
                 </p>
               )}

@@ -62,14 +62,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Prompts específicos por estilo para mejores resultados
+    // Prompts específicos por estilo — perros humanizados, cancheros y felices
     const STYLE_PROMPTS: Record<string, string> = {
-      '3D':         'a 3D cartoon dog, happy smiling joyful expression, bright cheerful eyes, cute, adorable, vivid colors, Pixar style',
-      'Clay':       'a clay sculpture dog, happy smiling, colorful clay texture, cute, adorable, studio lighting',
-      'Toy':        'a toy figurine dog, happy smiling, plastic toy style, cute, collectible, bright colors',
-      'Pixels':     'a pixel art dog, happy smiling, retro game style, 16-bit, cute, colorful pixels',
-      'Video game': 'a video game character dog, happy smiling, game art style, cute, detailed, vibrant colors',
-      'Emoji':      'a cute emoji sticker dog, happy smiling, flat cartoon style, expressive, bright colors',
+      '3D':         'anthropomorphic cool dog wearing stylish sunglasses, big happy smile, thumbs up, wearing a hoodie or jacket, Pixar 3D style, vivid colors, fun personality, confident pose, humanized dog character',
+      'Clay':       'anthropomorphic cool dog made of colorful clay, wearing tiny sunglasses, big goofy happy smile, fun clay texture, humanized dog wearing a cap, Claymation style, bright studio lighting',
+      'Toy':        'anthropomorphic cool dog toy figurine, wearing sunglasses and a jacket, big happy smile, collectible vinyl toy style, street art character, cool pose, vivid colors',
+      'Pixels':     'anthropomorphic cool pixel art dog, wearing pixel sunglasses and a cap, big happy smile, 16-bit retro game character, humanized dog with accessories, vibrant pixel colors, fun expression',
+      'Video game': 'anthropomorphic cool dog video game character, wearing sunglasses and stylish outfit, big confident happy smile, RPG character art style, humanized dog hero, detailed vibrant colors, epic pose',
+      'Emoji':      'anthropomorphic cool dog emoji sticker, wearing sunglasses 😎, huge happy smile, party vibe, humanized dog with fun accessories, flat bold cartoon style, expressive and funny',
     };
 
     const apiToken = process.env.REPLICATE_API_TOKEN;
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
           image:                foto_url,
           style:                style,
           prompt:               STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:      'sad, angry, scared, blurry, low quality, ugly, human, person',
+          negative_prompt:      'sad, angry, scared, crying, blurry, low quality, ugly, realistic human face, person, plain, boring, serious expression, sitting still',
           number_of_images:     1,
           output_format:        'png',
           guidance_scale:       7.5,

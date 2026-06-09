@@ -262,33 +262,96 @@ export default function PerroDetallePage() {
   }
 
   async function handleCompartirStories() {
-    if (!carnetRef.current) return;
+    if (!carnetRef.current || !perro) return;
     setStoriesLoading(true);
     try {
       const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(carnetRef.current, {
+
+      // Capturar el carnet
+      const carnetCanvas = await html2canvas(carnetRef.current, {
         scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
       });
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setStoriesLoading(false); return; }
-        const file = new File([blob], `carnet-${perro?.nombre ?? 'perro'}.png`, { type: 'image/png' });
+      // Crear canvas final con formato Stories (9:16) + banner inferior con link
+      const STORIES_W = 1080;
+      const STORIES_H = 1920;
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width  = STORIES_W;
+      finalCanvas.height = STORIES_H;
+      const ctx = finalCanvas.getContext('2d')!;
 
-        // Intentar Web Share API con archivo (funciona en móvil)
+      // Fondo degradado
+      const grad = ctx.createLinearGradient(0, 0, 0, STORIES_H);
+      grad.addColorStop(0,   '#FFF8F0');
+      grad.addColorStop(1,   '#FFE8D6');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, STORIES_W, STORIES_H);
+
+      // Centrar el carnet verticalmente (con margen)
+      const margin   = 60;
+      const maxW     = STORIES_W - margin * 2;
+      const scale    = Math.min(maxW / carnetCanvas.width, (STORIES_H * 0.72) / carnetCanvas.height);
+      const cw       = carnetCanvas.width  * scale;
+      const ch       = carnetCanvas.height * scale;
+      const cx       = (STORIES_W - cw) / 2;
+      const cy       = 140;
+      ctx.drawImage(carnetCanvas, cx, cy, cw, ch);
+
+      // Banner inferior con branding + link
+      const bannerY = cy + ch + 60;
+      const bannerH = STORIES_H - bannerY - 60;
+
+      // Logo / texto Vecindog
+      ctx.fillStyle = '#EE5A3B';
+      ctx.font      = 'bold 64px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🐾 Vecindog', STORIES_W / 2, bannerY + 80);
+
+      // Link clickeable (visible en Stories como texto)
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font      = 'bold 42px sans-serif';
+      ctx.fillText('www.mivecindog.com.ar', STORIES_W / 2, bannerY + 160);
+
+      // Subtexto
+      ctx.fillStyle = '#888';
+      ctx.font      = '36px sans-serif';
+      ctx.fillText('Red vecinal de mascotas', STORIES_W / 2, bannerY + 220);
+
+      // Link directo al perro si tiene post activo
+      if (postActivo) {
+        ctx.fillStyle = '#EE5A3B';
+        ctx.font      = '32px sans-serif';
+        ctx.fillText(`mivecindog.com.ar/publicaciones/${postActivo.id.slice(0, 8)}...`, STORIES_W / 2, bannerY + 290);
+      }
+
+      // Línea separadora decorativa
+      ctx.strokeStyle = '#EE5A3B';
+      ctx.lineWidth   = 3;
+      ctx.beginPath();
+      ctx.moveTo(margin * 2, bannerY + 20);
+      ctx.lineTo(STORIES_W - margin * 2, bannerY + 20);
+      ctx.stroke();
+
+      // Exportar
+      finalCanvas.toBlob(async (blob) => {
+        if (!blob) { setStoriesLoading(false); return; }
+        const file = new File([blob], `vecindog-${perro.nombre.toLowerCase()}.png`, { type: 'image/png' });
+
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: `Identificación de ${perro?.nombre}`,
+            title: `${perro.nombre} — Vecindog`,
+            text:  `Conocé a ${perro.nombre} en www.mivecindog.com.ar`,
           });
         } else {
-          // Fallback: descargar la imagen
+          // Fallback desktop: descargar
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `carnet-${perro?.nombre ?? 'perro'}.png`;
+          const a   = document.createElement('a');
+          a.href    = url;
+          a.download = `vecindog-${perro.nombre.toLowerCase()}.png`;
           a.click();
           URL.revokeObjectURL(url);
         }

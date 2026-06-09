@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
     }
 
-    // ── Llamar a Replicate — stability-ai/sdxl (img2img) ────────────
-    const res = await fetch('https://api.replicate.com/v1/predictions', {
+    // ── Llamar a Replicate — stability-ai/sdxl (text-to-image) ──────
+    const res = await fetch('https://api.replicate.com/v1/models/stability-ai/sdxl/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -86,16 +86,14 @@ export async function POST(req: NextRequest) {
         'Prefer': 'wait=55',
       },
       body: JSON.stringify({
-        model: 'stability-ai/sdxl',
         input: {
-          image:               foto_url,
           prompt:              STYLE_PROMPTS[style] ?? STYLE_PROMPTS['3D'],
-          negative_prompt:     'sad, angry, scared, blurry, low quality, ugly, plain, boring, serious, human face, person',
-          prompt_strength:     0.8,
+          negative_prompt:     'sad, angry, scared, blurry, low quality, ugly, plain, boring, serious, human, person',
           num_outputs:         1,
           num_inference_steps: 25,
           guidance_scale:      7.5,
-          output_format:       'png',
+          width:               1024,
+          height:              1024,
         },
       }),
     });

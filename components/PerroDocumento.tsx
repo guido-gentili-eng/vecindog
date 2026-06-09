@@ -6,13 +6,15 @@ import { type Profile } from '@/contexts/AuthContext';
 import QRCode from 'qrcode';
 
 interface Props {
-  perro:   Perro;
-  profile: Profile | null;
-  perdido: boolean;
-  compact?: boolean;
+  perro:        Perro;
+  profile:      Profile | null;
+  perdido:      boolean;
+  compact?:     boolean;
+  hideContact?: boolean;
+  fotoOverride?: string | null;
 }
 
-export default function PerroDocumento({ perro, profile, perdido, compact = false }: Props) {
+export default function PerroDocumento({ perro, profile, perdido, compact = false, hideContact = false, fotoOverride }: Props) {
   const [qr, setQr] = useState('');
 
   const accent      = perdido ? '#dc2626' : '#1e3a5f';
@@ -107,10 +109,10 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
 
         {/* Foto */}
         <div style={{ flex: '0 0 auto', width: sz.photoW }}>
-          {(perro.foto_carnet_url ?? perro.foto_url) ? (
+          {(fotoOverride ?? perro.foto_carnet_url ?? perro.foto_url) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={perro.foto_carnet_url ?? perro.foto_url}
+              src={fotoOverride ?? perro.foto_carnet_url ?? perro.foto_url}
               alt={perro.nombre}
               style={{ width: sz.photoW, height: sz.photoH, objectFit: 'cover', borderRadius: '8px', border: `2.5px solid ${accent}`, display: 'block' }}
             />
@@ -168,7 +170,7 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
       </div>
 
       {/* Contacto + QR */}
-      <div style={{ margin: compact ? '0 14px 10px' : '0 18px 14px', background: accent, borderRadius: '10px', padding: sz.contactPad, display: 'flex', alignItems: 'center', gap: '14px' }}>
+      {!hideContact && <div style={{ margin: compact ? '0 14px 10px' : '0 18px 14px', background: accent, borderRadius: '10px', padding: sz.contactPad, display: 'flex', alignItems: 'center', gap: '14px' }}>
         {qr && (
           <div style={{ flex: '0 0 auto', textAlign: 'center' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -184,7 +186,7 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
           {telefono && <p style={{ color: '#fff', fontSize: sz.ownerPhone, fontWeight: 900, margin: 0 }}>{telefono}</p>}
         </div>
         <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '18px', margin: 0, flex: '0 0 auto' }}>🐾</p>
-      </div>
+      </div>}
 
       {/* Footer */}
       <div style={{ borderTop: `1px solid ${accentLight}`, padding: sz.footerPad, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

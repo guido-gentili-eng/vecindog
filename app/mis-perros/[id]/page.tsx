@@ -117,7 +117,8 @@ export default function PerroDetallePage() {
   const [cartoonFotoBase,  setCartoonFotoBase]  = useState<string | null>(null);
   const [cartoonEnCarnet,  setCartoonEnCarnet]  = useState(false);
   const [storiesLoading,   setStoriesLoading]   = useState(false);
-  const carnetRef = useRef<HTMLDivElement>(null);
+  const carnetRef        = useRef<HTMLDivElement>(null);
+  const storiesCarnetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     obtenerPerro(id)
@@ -262,13 +263,14 @@ export default function PerroDetallePage() {
   }
 
   async function handleCompartirStories() {
-    if (!carnetRef.current || !perro) return;
+    if (!storiesCarnetRef.current || !perro) return;
+    const captureTarget = storiesCarnetRef.current;
     setStoriesLoading(true);
     try {
       const html2canvas = (await import('html2canvas')).default;
 
-      // Capturar el carnet completo
-      const carnetCanvas = await html2canvas(carnetRef.current, {
+      // Capturar el carnet de Stories (sin contacto, con caricatura)
+      const carnetCanvas = await html2canvas(captureTarget, {
         scale: 4,
         useCORS: true,
         allowTaint: true,
@@ -1164,6 +1166,22 @@ export default function PerroDetallePage() {
           )}
         </>
       )}
+
+      {/* ── Carnet oculto para captura de Stories (sin contacto, con caricatura) ── */}
+      <div
+        ref={storiesCarnetRef}
+        style={{ position: 'fixed', left: '-9999px', top: 0, width: '600px', zIndex: -1, pointerEvents: 'none' }}
+        aria-hidden="true"
+      >
+        <PerroDocumento
+          perro={perro}
+          profile={profile}
+          perdido={!!postActivo}
+          compact={false}
+          hideContact
+          fotoOverride={cartoonUrl ?? perro.foto_url}
+        />
+      </div>
 
       {/* ── Modal caricatura IA ── */}
       {showCartoonModal && cartoonUrl && (

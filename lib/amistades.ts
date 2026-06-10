@@ -39,20 +39,37 @@ export interface ResultadoBusquedaPerro {
 export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBusquedaPerro[]> {
   if (!nombre.trim()) return [];
 
+  // Buscar owners por nombre/apellido para incluir en búsqueda por dueño
+  const { data: profilesMatch } = await supabase
+    .from('profiles')
+    .select('id')
+    .or(`nombre.ilike.%${nombre}%,apellido.ilike.%${nombre}%`)
+    .limit(20);
+  const ownerIds = (profilesMatch ?? []).map((p) => p.id);
+
+  // Construir filtros para perros: nombre del perro O owner en los ids encontrados
+  const perrosFilter = ownerIds.length
+    ? `nombre.ilike.%${nombre}%,user_id.in.(${ownerIds.join(',')})`
+    : `nombre.ilike.%${nombre}%`;
+
+  const postsFilter = ownerIds.length
+    ? `nombre.ilike.%${nombre}%,user_id.in.(${ownerIds.join(',')})`
+    : `nombre.ilike.%${nombre}%`;
+
   // Buscar en paralelo en perros y posts
   const [perrosRes, postsRes] = await Promise.all([
     supabase
       .from('perros')
       .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .ilike('nombre', `%${nombre}%`)
-      .limit(10),
+      .or(perrosFilter)
+      .limit(15),
     supabase
       .from('posts')
       .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .ilike('nombre', `%${nombre}%`)
+      .or(postsFilter)
       .not('user_id', 'is', null)
       .neq('estado', 'resuelto')
-      .limit(10),
+      .limit(15),
   ]);
 
   const resultados: ResultadoBusquedaPerro[] = [];

@@ -287,7 +287,7 @@ export default function AmigosPanel({ onClose }: { onClose: () => void }) {
               <input
                 type="text"
                 className="field pl-9"
-                placeholder="Nombre del perro…"
+                placeholder="Nombre del perro o dueño…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 autoFocus

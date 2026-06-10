@@ -93,6 +93,11 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
           </p>
           <p style={{ margin: '2px 0 0', fontSize: sz.titleSize, fontWeight: 900, color: accent, letterSpacing: '-0.3px' }}>
             {perdido ? '⚠ SE BUSCA — PERRO PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
+            {!perdido && (
+              <span style={{ fontWeight: 600, color: '#888', fontSize: '9px', marginLeft: '6px', letterSpacing: '0.5px' }}>
+                N° {perro.id.slice(0, 8).toUpperCase()}
+              </span>
+            )}
           </p>
         </div>
         <div style={{

@@ -44,6 +44,8 @@ export async function agregarEstudio(
 }
 
 export async function eliminarEstudio(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('estudios').delete().eq('id', id);
   if (error) throw error;
 }

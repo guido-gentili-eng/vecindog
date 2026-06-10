@@ -37,6 +37,8 @@ export async function agregarPeso(perroId: string, input: PesoInput): Promise<Pe
 }
 
 export async function eliminarPeso(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('pesos').delete().eq('id', id);
   if (error) throw error;
 }

@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     admin.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
     admin.from('ads').select('id, titulo, anunciante, plan, activo, fecha_fin'),
     admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from('profiles').select('id, nombre, apellido, telefono, ciudad, provincia, direccion, plan, suspendido'),
+    admin.from('profiles').select('id, nombre, apellido, telefono, ciudad, provincia, direccion, plan, suspendido').limit(2000),
   ]);
 
   const hoy         = new Date().toISOString().slice(0, 10);

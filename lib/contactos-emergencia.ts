@@ -40,6 +40,8 @@ export async function agregarContacto(
 }
 
 export async function eliminarContacto(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('contactos_emergencia').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

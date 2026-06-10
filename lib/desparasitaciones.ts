@@ -61,6 +61,8 @@ export async function actualizarDesparasitacion(
   id: string,
   input: DesparasitacionInput,
 ): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase
     .from('desparasitaciones')
     .update({
@@ -76,6 +78,8 @@ export async function actualizarDesparasitacion(
 }
 
 export async function eliminarDesparasitacion(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('desparasitaciones').delete().eq('id', id);
   if (error) throw error;
 }

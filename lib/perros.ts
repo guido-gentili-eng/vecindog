@@ -151,6 +151,9 @@ export async function actualizarPerro(
   id: string,
   input: Partial<PerroInput>,
 ): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+
   const patch: Record<string, unknown> = {};
   if (input.nombre       !== undefined) patch.nombre       = input.nombre       || null;
   if (input.raza         !== undefined) patch.raza         = input.raza         || null;
@@ -172,22 +175,28 @@ export async function actualizarPerro(
   if (input.dieta_frecuencia !== undefined) patch.dieta_frecuencia = input.dieta_frecuencia || null;
   if (input.dieta_notas      !== undefined) patch.dieta_notas      = input.dieta_notas      || null;
 
-  const { error } = await supabase.from('perros').update(patch).eq('id', id);
+  const { error } = await supabase.from('perros').update(patch).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function guardarCartoonUrl(id: string, cartoon_url: string): Promise<void> {
-  const { error } = await supabase.from('perros').update({ cartoon_url }).eq('id', id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { error } = await supabase.from('perros').update({ cartoon_url }).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function guardarFotoCarnet(id: string, foto_carnet_url: string | null): Promise<void> {
-  const { error } = await supabase.from('perros').update({ foto_carnet_url }).eq('id', id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { error } = await supabase.from('perros').update({ foto_carnet_url }).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function eliminarPerro(id: string): Promise<void> {
-  const { error } = await supabase.from('perros').delete().eq('id', id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { error } = await supabase.from('perros').delete().eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
@@ -207,6 +216,8 @@ export async function agregarVacuna(perroId: string, input: VacunaInput): Promis
 }
 
 export async function actualizarVacuna(id: string, input: VacunaInput): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('vacunas').update({
     nombre:      input.nombre,
     fecha:       input.fecha,
@@ -218,6 +229,8 @@ export async function actualizarVacuna(id: string, input: VacunaInput): Promise<
 }
 
 export async function eliminarVacuna(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('vacunas').delete().eq('id', id);
   if (error) throw error;
 }

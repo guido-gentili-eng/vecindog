@@ -34,6 +34,8 @@ export async function agregarTurno(
 }
 
 export async function eliminarTurno(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('turnos').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

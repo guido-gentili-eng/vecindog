@@ -39,6 +39,8 @@ export async function agregarMedicamento(
 }
 
 export async function eliminarMedicamento(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('medicamentos').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

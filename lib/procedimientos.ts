@@ -51,6 +51,8 @@ export async function agregarProcedimiento(
 }
 
 export async function eliminarProcedimiento(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase.from('procedimientos').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

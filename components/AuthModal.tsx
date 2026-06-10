@@ -1,15 +1,20 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Dog, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, LanguageSwitcher } from '@/contexts/LanguageContext';
 
 type Step = 'form' | 'confirm' | 'forgot';
 
+// Rutas públicas donde NO debe aparecer el modal de login
+const PUBLIC_PATHS = ['/historia/'];
+
 export default function AuthModal() {
   const { hasChosen, loading, signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, enterAsGuest } = useAuth();
   const { t } = useLanguage();
+  const pathname = usePathname();
 
   const [mode,       setMode]       = useState<'login' | 'register'>('register');
   const [step,       setStep]       = useState<Step>('form');
@@ -23,6 +28,7 @@ export default function AuthModal() {
   const codeRef = useRef<HTMLInputElement>(null);
 
   if (loading || hasChosen) return null;
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return null;
 
   function switchMode(m: 'login' | 'register') {
     setMode(m); setStep('form'); setError(''); setInfo(''); setCode('');

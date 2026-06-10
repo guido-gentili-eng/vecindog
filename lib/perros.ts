@@ -74,9 +74,12 @@ export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' |
 /* ─────────────────── Consultas ─────────────────── */
 
 export async function listarMisPerros(): Promise<Perro[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
   const { data, error } = await supabase
     .from('perros')
     .select('*, vacunas(*)')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as Perro[];

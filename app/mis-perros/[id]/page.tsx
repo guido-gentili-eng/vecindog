@@ -3346,7 +3346,7 @@ function MedicamentosSection({
             )}
             <button type="button" onClick={() => setAgregando((v) => !v)}
               className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-              {agregando ? <X className="h-3 w-3" /> : <>+ {t.mpdAgregar}</>}
+              {agregando ? <X className="h-3 w-3" /> : <>{t.mpdAgregar}</>}
             </button>
           </div>
         )}
@@ -3818,7 +3818,7 @@ function DesparasitacionesSection({
             )}
           <button type="button" onClick={() => onSetAgregando(true)}
             className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-            + {t.mpdAgregar}
+            {t.mpdAgregar}
           </button>
           </div>
         )}
@@ -4060,7 +4060,7 @@ function PesoSection({
             )}
             <button type="button" onClick={() => onSetAgregando(!agregando)}
               className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/20">
-              {agregando ? <X className="h-3 w-3" /> : <>+ {t.mpdPesoRegistrar}</>}
+              {agregando ? <X className="h-3 w-3" /> : <>{t.mpdPesoRegistrar}</>}
             </button>
           </div>
         )}
@@ -4635,7 +4635,7 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
           <PhoneCall className="h-4 w-4 text-brand-primary" /> {t.mpdContactosTitle}
           {contactos.length > 0 && <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-bold text-brand-primary">{contactos.length}</span>}
         </h2>
-        <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando?<X className="h-3 w-3"/>:<>+ {t.mpdAgregar}</>}</button>
+        <button type="button" onClick={()=>setAgregando((v)=>!v)} className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary hover:bg-brand-primary/20">{agregando?<X className="h-3 w-3"/>:<>{t.mpdAgregar}</>}</button>
       </div>
       {agregando && (
         <form onSubmit={handleSave} className="mb-4 rounded-2xl border-2 border-brand-primary/20 bg-brand-primary/5 p-4 space-y-3">

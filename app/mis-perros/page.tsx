@@ -9,10 +9,14 @@ import AmigosPanel from '@/components/AmigosPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { listarMisPerros, eliminarPerro, type Perro } from '@/lib/perros';
+import { listarMisAmistades } from '@/lib/amistades';
+import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 
+interface AmigoInfo { id: string; nombre: string | null; foto_url: string | null; }
+
 export default function MisPerrosPage() {
-  const { isAuthenticated, loading: authLoading, isPro } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, isPro } = useAuth();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const vieneDeResuelto = searchParams.get('resuelto') === '1';
@@ -20,6 +24,7 @@ export default function MisPerrosPage() {
   const [cargando,     setCargando]     = useState(true);
   const [error,        setError]        = useState('');
   const [amigosOpen,   setAmigosOpen]   = useState(false);
+  const [amigos,       setAmigos]       = useState<AmigoInfo[]>([]);
   const [eliminarTarget, setEliminarTarget] = useState<{ id: string; nombre: string } | null>(null);
   const [eliminando,   setEliminando]   = useState(false);
   const [eliminarError, setEliminarError] = useState('');
@@ -32,6 +37,17 @@ export default function MisPerrosPage() {
       .catch(() => setError(t.mpLoadError))
       .finally(() => setCargando(false));
   }, [isAuthenticated, authLoading, t.mpLoadError]);
+
+  useEffect(() => {
+    if (!user) return;
+    listarMisAmistades(user.id).then(async (amistades) => {
+      const aceptadas = amistades.filter(a => a.estado === 'aceptada');
+      const ids = aceptadas.map(a => a.solicitante_id === user.id ? a.receptor_id : a.solicitante_id);
+      if (!ids.length) return;
+      const { data } = await supabase.from('profiles').select('id, nombre, foto_url').in('id', ids);
+      setAmigos((data ?? []) as AmigoInfo[]);
+    });
+  }, [user]);
 
   async function handleConfirmEliminar() {
     if (!eliminarTarget) return;
@@ -182,7 +198,7 @@ export default function MisPerrosPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {perros.map((p) => (
-            <PerroCard key={p.id} perro={p} onEliminar={(id, nombre) => setEliminarTarget({ id, nombre })} />
+            <PerroCard key={p.id} perro={p} amigos={amigos} onEliminar={(id, nombre) => setEliminarTarget({ id, nombre })} />
           ))}
           {/* Add card — oculto para Free con 1+ perro */}
           {(isPro || perros.length === 0) ? (
@@ -214,9 +230,11 @@ export default function MisPerrosPage() {
 /* ── Tarjeta de perro ── */
 function PerroCard({
   perro,
+  amigos,
   onEliminar,
 }: {
   perro: Perro;
+  amigos: AmigoInfo[];
   onEliminar: (id: string, nombre: string) => void;
 }) {
   const { t } = useLanguage();
@@ -276,6 +294,32 @@ function PerroCard({
             <span className="truncate font-mono text-[10px]">Chip: {perro.chip}</span>
           )}
         </div>
+
+        {/* Amigos del perro */}
+        {amigos.length > 0 && (
+          <div className="mt-3 rounded-xl bg-brand-cream px-3 py-2">
+            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+              Amigos de {perro.nombre}
+            </p>
+            <div className="flex items-center gap-1.5">
+              {amigos.slice(0, 5).map((a) => (
+                a.foto_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={a.id} src={a.foto_url} alt={a.nombre ?? ''} className="h-7 w-7 rounded-full object-cover ring-2 ring-white" />
+                ) : (
+                  <span key={a.id} className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary/20 text-[11px] font-bold text-brand-primary ring-2 ring-white">
+                    {a.nombre?.[0]?.toUpperCase() ?? '?'}
+                  </span>
+                )
+              ))}
+              {amigos.length > 5 && (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/10 text-[10px] font-bold text-ink-muted ring-2 ring-white">
+                  +{amigos.length - 5}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Link ver detalles */}
         <Link

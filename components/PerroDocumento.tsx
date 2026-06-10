@@ -95,7 +95,7 @@ export default function PerroDocumento({ perro, profile, perdido, compact = fals
             {perdido ? '⚠ SE BUSCA — PERRO PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
             {!perdido && (
               <span style={{ fontWeight: 600, color: '#888', fontSize: '9px', marginLeft: '6px', letterSpacing: '0.5px' }}>
-                N° {perro.id.slice(0, 8).toUpperCase()}
+                N° {perro.numero_registro != null ? perro.numero_registro : perro.id.slice(0, 8).toUpperCase()}
               </span>
             )}
           </p>

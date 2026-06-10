@@ -118,6 +118,11 @@ export default function CartelPage() {
               letterSpacing: '-0.5px',
             }}>
               {perdido ? '⚠ SE BUSCA · PERRO PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
+              {!perdido && (
+                <span style={{ fontWeight: 600, color: '#888', fontSize: '12px', marginLeft: '8px', letterSpacing: '0.5px' }}>
+                  N° {perro.numero_registro != null ? perro.numero_registro : perro.id.slice(0, 8).toUpperCase()}
+                </span>
+              )}
             </p>
           </div>
           {/* Badge de estado */}

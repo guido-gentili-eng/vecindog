@@ -39,7 +39,7 @@ export interface ResultadoBusquedaPerro {
 export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBusquedaPerro[]> {
   if (!nombre.trim()) return [];
 
-  // Buscar owners por nombre/apellido para incluir en búsqueda por dueño
+  // Buscar owners cuyo nombre/apellido coincida (para buscar por dueño)
   const { data: profilesMatch } = await supabase
     .from('profiles')
     .select('id')
@@ -47,30 +47,44 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
     .limit(20);
   const ownerIds = (profilesMatch ?? []).map((p) => p.id);
 
-  // Construir filtros para perros: nombre del perro O owner en los ids encontrados
-  const perrosFilter = ownerIds.length
-    ? `nombre.ilike.%${nombre}%,user_id.in.(${ownerIds.join(',')})`
-    : `nombre.ilike.%${nombre}%`;
-
-  const postsFilter = ownerIds.length
-    ? `nombre.ilike.%${nombre}%,user_id.in.(${ownerIds.join(',')})`
-    : `nombre.ilike.%${nombre}%`;
-
-  // Buscar en paralelo en perros y posts
-  const [perrosRes, postsRes] = await Promise.all([
+  // Queries en paralelo: por nombre del perro + por dueño (si hay matches)
+  const queries: Promise<{ data: unknown[] | null }>[] = [
     supabase
       .from('perros')
       .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .or(perrosFilter)
-      .limit(15),
+      .ilike('nombre', `%${nombre}%`)
+      .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
     supabase
       .from('posts')
       .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .or(postsFilter)
+      .ilike('nombre', `%${nombre}%`)
       .not('user_id', 'is', null)
       .neq('estado', 'resuelto')
-      .limit(15),
-  ]);
+      .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
+  ];
+
+  if (ownerIds.length > 0) {
+    queries.push(
+      supabase
+        .from('perros')
+        .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
+        .in('user_id', ownerIds)
+        .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
+      supabase
+        .from('posts')
+        .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
+        .in('user_id', ownerIds)
+        .not('user_id', 'is', null)
+        .neq('estado', 'resuelto')
+        .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
+    );
+  }
+
+  const results = await Promise.all(queries);
+  const perrosData  = [...(results[0].data ?? []), ...(results[2]?.data ?? [])] as Record<string, unknown>[];
+  const postsData   = [...(results[1].data ?? []), ...(results[3]?.data ?? [])] as Record<string, unknown>[];
+  const perrosRes = { data: perrosData };
+  const postsRes  = { data: postsData };
 
   const resultados: ResultadoBusquedaPerro[] = [];
   const vistos = new Set<string>(); // key: owner_id|nombre_lower

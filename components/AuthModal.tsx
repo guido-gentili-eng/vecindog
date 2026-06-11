@@ -40,7 +40,7 @@ export default function AuthModal() {
   const codeRef = useRef<HTMLInputElement>(null);
 
   if (loading || hasChosen) return null;
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return null;
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) return null;
 
   function switchMode(m: 'login' | 'register') {
     setMode(m); setStep('form'); setError(''); setInfo(''); setCode('');

@@ -59,6 +59,8 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
       : Promise.resolve({ data: [] }),
   ]);
 
+  if (r0.error) throw r0.error;
+  if (r1.error) throw r1.error;
   const perrosData = [...((r0.data ?? []) as Record<string, unknown>[]), ...((r2.data ?? []) as Record<string, unknown>[])];
   const postsData  = [...((r1.data ?? []) as Record<string, unknown>[]), ...((r3.data ?? []) as Record<string, unknown>[])];
 
@@ -213,10 +215,11 @@ export async function notificarAmigosPerroPerdido(params: {
 export async function rechazarEliminarAmistad(amistadId: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('amistades')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', amistadId)
     .or(`solicitante_id.eq.${user.id},receptor_id.eq.${user.id}`);
   if (error) throw error;
+  if (count === 0) throw new Error('Amistad no encontrada');
 }

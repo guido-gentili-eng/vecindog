@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <div style="background:#B85C4A;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
-              <img src="https://www.mivecindog.com.ar/logo.svg" alt="Vecindog" width="160" height="40" style="display:block;margin:0 auto;" />
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
             </div>
             <h2 style="color:#1a1a1a">¡Tu negocio ya está en la red!</h2>
             <p style="color:#555;font-size:16px;line-height:1.6">

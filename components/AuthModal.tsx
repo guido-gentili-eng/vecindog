@@ -137,7 +137,7 @@ export default function AuthModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8">
+      <div className="w-full max-w-sm rounded-t-[32px] bg-white px-7 pb-10 pt-7 shadow-2xl sm:rounded-[32px] sm:pb-8 max-h-[92dvh] overflow-y-auto">
 
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-black/10 sm:hidden" />
 

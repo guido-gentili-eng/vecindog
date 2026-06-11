@@ -23,7 +23,7 @@ export default function Header() {
   const [mapaSheet,   setMapaSheet]   = useState(false);
   const langRef    = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const { user, profile, isGuest, isAuthenticated, isPro, signOut, loading, ciudad, clearCiudad } = useAuth();
+  const { user, profile, isGuest, isAuthenticated, isPro, isAdmin, signOut, loading, ciudad, clearCiudad } = useAuth();
   const { lang, setLang, t } = useLanguage();
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function Header() {
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition w-full text-left">
                         <MapPin className="h-4 w-4 text-brand-primary" /> {t.navCambiarUbicacion}
                       </button>
-                      {user?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '') && (
+                      {isAdmin && (
                         <>
                           <div className="my-1 border-t border-black/5" />
                           <Link href="/admin" onClick={() => setProfileOpen(false)}

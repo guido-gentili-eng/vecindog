@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
       // Marcar cupo solo cuando hay imagen real
       if (perro_id) {
-        admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id).then();
+        await admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id);
       }
       return NextResponse.json({ ok: true, url: outputUrl, prediction_id: prediction.id });
     }
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
     const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
     // Marcar cupo solo al confirmar éxito desde polling
     if (perroId) {
-      admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perroId).then();
+      await admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perroId);
     }
     return NextResponse.json({ ok: true, url: outputUrl });
   }

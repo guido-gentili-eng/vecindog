@@ -100,8 +100,9 @@ export async function crearPerro(
   input: PerroInput,
   vacunas: VacunaInput[]
 ): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Tenés que estar registrado para guardar un perro.');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('Tenés que estar registrado para guardar un perro.');
 
   const { data, error } = await supabase
     .from('perros')
@@ -152,8 +153,9 @@ export async function actualizarPerro(
   id: string,
   input: Partial<PerroInput>,
 ): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
 
   const patch: Record<string, unknown> = {};
   if (input.nombre       !== undefined) patch.nombre       = input.nombre       || null;
@@ -181,22 +183,25 @@ export async function actualizarPerro(
 }
 
 export async function guardarCartoonUrl(id: string, cartoon_url: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { error } = await supabase.from('perros').update({ cartoon_url }).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function guardarFotoCarnet(id: string, foto_carnet_url: string | null): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { error } = await supabase.from('perros').update({ foto_carnet_url }).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function eliminarPerro(id: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { error } = await supabase.from('perros').delete().eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
@@ -204,8 +209,9 @@ export async function eliminarPerro(id: string): Promise<void> {
 /* ─────────────────── CRUD vacunas ─────────────────── */
 
 export async function agregarVacuna(perroId: string, input: VacunaInput): Promise<Vacuna> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { data, error } = await supabase.from('vacunas').insert({
     perro_id:    perroId,
     nombre:      input.nombre,
@@ -219,8 +225,9 @@ export async function agregarVacuna(perroId: string, input: VacunaInput): Promis
 }
 
 export async function actualizarVacuna(id: string, input: VacunaInput): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { error } = await supabase.from('vacunas').update({
     nombre:      input.nombre,
     fecha:       input.fecha,
@@ -232,8 +239,9 @@ export async function actualizarVacuna(id: string, input: VacunaInput): Promise<
 }
 
 export async function eliminarVacuna(id: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (authErr || !user) throw new Error('No autorizado');
   const { error } = await supabase.from('vacunas').delete().eq('id', id);
   if (error) throw error;
 }

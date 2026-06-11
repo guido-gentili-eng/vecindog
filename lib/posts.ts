@@ -68,7 +68,23 @@ export async function listarPosts(): Promise<Post[]> {
     .select(POSTS_FIELDS)
     .neq('estado', 'resuelto')
     .in('categoria', CATEGORIAS_AVISO)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data ?? []) as Post[];
+}
+
+/** Solo posts con coordenadas GPS — para el mapa (evita geocodificación masiva). */
+export async function listarPostsMapa(): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(POSTS_FIELDS)
+    .neq('estado', 'resuelto')
+    .in('categoria', CATEGORIAS_AVISO)
+    .not('lat', 'is', null)
+    .not('lng', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(500);
   if (error) throw error;
   return (data ?? []) as Post[];
 }
@@ -105,12 +121,13 @@ export async function resolverPost(id: string): Promise<void> {
 export async function contarPostsActivosDelUsuario(): Promise<number> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) return 0;
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from('posts')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', session.user.id)
     .neq('estado', 'resuelto')
     .in('categoria', ['perdido', 'encontrado', 'adopcion', 'transito']);
+  if (error) throw error;
   return count ?? 0;
 }
 

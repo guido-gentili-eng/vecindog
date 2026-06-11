@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
   if (accion === 'desestimar') {
     await admin.from('reportes').update({ revisado: true }).eq('id', reporte_id);
   } else if (accion === 'eliminar_aviso') {
-    const { data: rep } = await admin.from('reportes').select('post_id').eq('id', reporte_id).single();
+    const { data: rep, error: repErr } = await admin.from('reportes').select('post_id').eq('id', reporte_id).single();
+    if (repErr) return NextResponse.json({ error: 'Reporte no encontrado' }, { status: 404 });
     if (rep?.post_id) {
       // Marcar todos los reportes de ese aviso como revisados
       await admin.from('reportes').update({ revisado: true }).eq('post_id', rep.post_id);

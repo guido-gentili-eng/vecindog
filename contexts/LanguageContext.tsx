@@ -848,6 +848,7 @@ export type Translations = {
   pbrPrefillSub: string;
   pbrStep1: string;
   pbrStep1Sub: string;
+  pbrStep2Data: string;
   pbrFotoPerfilDe: string;
   pbrPrincipal: string;
   pbrHacerPrincipal: string;
@@ -2458,6 +2459,7 @@ const translations: Record<Lang, Translations> = {
     pbrPrefillSub: 'Cargamos los datos del perfil. Revisá y completá si necesitás.',
     pbrStep1: 'Fotos del perro',
     pbrStep1Sub: 'Subí hasta {max} fotos. La primera se usa como imagen principal.',
+    pbrStep2Data: 'Datos del perro',
     pbrFotoPerfilDe: 'Foto del perfil de',
     pbrPrincipal: 'Principal',
     pbrHacerPrincipal: 'Hacer principal',
@@ -4027,6 +4029,7 @@ const translations: Record<Lang, Translations> = {
     pbrPrefillSub: 'We loaded the profile data. Review and complete if needed.',
     pbrStep1: 'Dog photos',
     pbrStep1Sub: 'Upload up to {max} photos. The first is used as the main image.',
+    pbrStep2Data: 'Dog details',
     pbrFotoPerfilDe: 'Profile photo of',
     pbrPrincipal: 'Main',
     pbrHacerPrincipal: 'Make main',
@@ -5596,6 +5599,7 @@ const translations: Record<Lang, Translations> = {
     pbrPrefillSub: 'Carregamos os dados do perfil. Revise e complete se necessário.',
     pbrStep1: 'Fotos do cão',
     pbrStep1Sub: 'Envie até {max} fotos. A primeira é usada como imagem principal.',
+    pbrStep2Data: 'Dados do cão',
     pbrFotoPerfilDe: 'Foto do perfil de',
     pbrPrincipal: 'Principal',
     pbrHacerPrincipal: 'Tornar principal',

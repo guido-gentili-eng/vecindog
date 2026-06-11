@@ -8,7 +8,6 @@ import { supabase } from '@/lib/supabase';
 
 const GUEST_KEY    = 'vecindog_guest';
 const CITY_KEY     = 'vecindog_ciudad';
-const ADMIN_EMAIL  = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
 
 export interface Profile {
   id:                string;
@@ -28,6 +27,7 @@ export interface Profile {
   plan_vencimiento?: string | null;
   plan_trial_usado?: boolean;
   suspendido?:       boolean;
+  is_admin?:         boolean;
 }
 
 interface AuthCtx {
@@ -40,6 +40,7 @@ interface AuthCtx {
   hasChosen:       boolean;
   hasProfile:      boolean;
   isPro:           boolean;
+  isAdmin:         boolean;
   isSuspendido:    boolean;
   ciudad:          string | null;
   hasCity:         boolean;
@@ -49,7 +50,7 @@ interface AuthCtx {
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signInWithGoogle: () => Promise<void>;
   verifyOtp:       (email: string, token: string) => Promise<string | null>;
-  resendConfirm:   (email: string) => Promise<void>;
+  resendConfirm:   (email: string) => Promise<string | null>;
   resetPassword:   (email: string) => Promise<string | null>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
   refreshProfile:  () => Promise<void>;
@@ -94,14 +95,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
       if (confirmedUser) {
-        fetchProfile(confirmedUser.id);
+        fetchProfile(confirmedUser.id).finally(() => setLoading(false));
       } else {
         setProfileLoading(false);
         if (typeof window !== 'undefined') {
           setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
         }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -159,8 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error?.message ?? null;
   };
 
-  const resendConfirm = async (email: string) => {
-    await supabase.auth.resend({ type: 'signup', email });
+  const resendConfirm = async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    return error?.message ?? null;
   };
 
   const resetPassword = async (email: string): Promise<string | null> => {
@@ -191,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         lat = parseFloat(geoData[0].lat);
         lng = parseFloat(geoData[0].lon);
       }
-    } catch { /* sin coords, ok igual */ }
+    } catch (e) { console.warn('[saveProfile] geocoding error:', e); }
 
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
@@ -229,8 +231,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
-      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || user?.email === ADMIN_EMAIL,
-      isSuspendido:    profile?.suspendido === true && user?.email !== ADMIN_EMAIL,
+      isAdmin:         profile?.is_admin === true,
+      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || profile?.is_admin === true,
+      isSuspendido:    profile?.suspendido === true && profile?.is_admin !== true,
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,

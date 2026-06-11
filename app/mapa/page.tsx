@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Loader2, MapPin } from 'lucide-react';
-import { listarPosts, type Post } from '@/lib/posts';
+import { listarPostsMapa, type Post } from '@/lib/posts';
 import { listarComerciosConUbicacion, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,11 +25,15 @@ export default function MapaPage() {
   const [posts,      setPosts]     = useState<Post[]>([]);
   const [comercios,  setComercio]  = useState<Ad[]>([]);
   const [cargando,   setCargando]  = useState(true);
+  const [errorMapa,  setErrorMapa] = useState(false);
   const [center,     setCenter]    = useState<LatLng>({ lat: -34.6, lng: -58.44 });
   const [userCenter, setUserCenter] = useState<LatLng | null>(null);
 
   useEffect(() => {
-    listarPosts().then(setPosts).finally(() => setCargando(false));
+    listarPostsMapa()
+      .then(setPosts)
+      .catch(() => setErrorMapa(true))
+      .finally(() => setCargando(false));
     if (isPro) listarComerciosConUbicacion().then(setComercio);
 
     // 1. Intentar geolocalización del navegador (más precisa)
@@ -62,6 +66,12 @@ export default function MapaPage() {
       }
     } catch { /* sin coords, queda el default */ }
   }
+
+  if (errorMapa) return (
+    <div className="flex h-full items-center justify-center bg-[#f0ebe3] text-sm text-gray-500">
+      No se pudieron cargar los avisos. Revisá tu conexión e intentá de nuevo.
+    </div>
+  );
 
   return (
     <div className="relative h-full w-full">

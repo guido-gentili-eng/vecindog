@@ -23,6 +23,14 @@ export async function obtenerGrooming(perroId: string): Promise<Grooming | null>
   return (data ?? null) as Grooming | null;
 }
 
+export async function eliminarGrooming(perroId: string): Promise<void> {
+  const { error } = await supabase
+    .from('grooming')
+    .delete()
+    .eq('perro_id', perroId);
+  if (error) throw new Error(error.message);
+}
+
 export async function guardarGrooming(
   perroId: string,
   grooming: Omit<Grooming, 'id' | 'created_at'>

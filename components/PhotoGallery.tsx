@@ -35,6 +35,7 @@ export default function PhotoGallery({
   }
 
   const total = imagenes.length;
+  const safeIdx = Math.min(idx, total - 1);
   const hayVarias = total > 1;
   const goPrev = () => setIdx((i) => (i - 1 + total) % total);
   const goNext = () => setIdx((i) => (i + 1) % total);
@@ -45,8 +46,8 @@ export default function PhotoGallery({
       <div className="group relative aspect-[16/10] w-full overflow-hidden rounded-3xl bg-brand-cream">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={imagenes[idx]}
-          alt={`${alt} — foto ${idx + 1} de ${total}`}
+          src={imagenes[safeIdx]}
+          alt={`${alt} — foto ${safeIdx + 1} de ${total}`}
           className="h-full w-full object-cover transition-opacity duration-200"
         />
 

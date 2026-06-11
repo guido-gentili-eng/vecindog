@@ -10,8 +10,6 @@ import { type Perro as PerroCompleto } from '@/lib/perros';
 import { supabase } from '@/lib/supabase';
 import PerroDocumento from '@/components/PerroDocumento';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
-
 interface Usuario {
   id:          string;
   email:       string;
@@ -76,7 +74,7 @@ interface ReporteAdmin {
 }
 
 export default function AdminPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const tokenRef   = useRef('');
 
@@ -171,7 +169,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user || user.email !== ADMIN_EMAIL) { router.replace('/'); return; }
+    if (!user || !isAdmin) { router.replace('/'); return; }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session?.access_token) { setError('Sin sesión'); setCargando(false); return; }

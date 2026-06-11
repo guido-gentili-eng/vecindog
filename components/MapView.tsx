@@ -10,6 +10,17 @@ import type { Ad } from '@/lib/ads';
 
 interface LatLng { lat: number; lng: number }
 
+/** Escapa caracteres HTML para prevenir XSS en popups de Leaflet */
+function esc(s: string | null | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /* ──────────────────── Colores de avisos ──────────────────── */
 
 const CAT_COLOR: Record<string, string> = {
@@ -277,15 +288,15 @@ function agregarMarcadorPost(map: L.Map, post: Post, lat: number, lng: number): 
   const color = CAT_COLOR[post.categoria] ?? '#6b7280';
   const label = CAT_LABEL[post.categoria] ?? post.categoria;
   const imgHtml = post.images?.[0]
-    ? `<img src="${post.images[0]}" style="width:100%;height:96px;object-fit:cover;border-radius:8px;margin-bottom:6px">`
+    ? `<img src="${esc(post.images[0])}" style="width:100%;height:96px;object-fit:cover;border-radius:8px;margin-bottom:6px">`
     : '';
   const html = `
     <div style="width:190px;padding:4px 0">
       ${imgHtml}
-      <span style="display:inline-block;background:${color};color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${label}</span>
-      <div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:2px">${post.nombre ?? 'Sin nombre'}</div>
-      <div style="font-size:11px;color:#6b6258;margin-bottom:6px">${sanitizarZona(post.zona)} · ${post.fecha}</div>
-      <a href="/publicaciones/${post.id}" style="display:block;background:${color};color:white;text-align:center;border-radius:8px;padding:6px;font-size:12px;font-weight:700;text-decoration:none">Ver aviso →</a>
+      <span style="display:inline-block;background:${color};color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${esc(label)}</span>
+      <div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:2px">${esc(post.nombre ?? 'Sin nombre')}</div>
+      <div style="font-size:11px;color:#6b6258;margin-bottom:6px">${esc(sanitizarZona(post.zona))} · ${esc(post.fecha)}</div>
+      <a href="/publicaciones/${esc(post.id)}" style="display:block;background:${color};color:white;text-align:center;border-radius:8px;padding:6px;font-size:12px;font-weight:700;text-decoration:none">Ver aviso →</a>
     </div>`;
   return L.marker([lat, lng], { icon: createPinIcon(post.categoria) })
     .bindPopup(html, { maxWidth: 210 })
@@ -352,22 +363,22 @@ function formatHorario(oh: string): string {
 
 function agregarMarcadorComercio(map: L.Map, comercio: Ad): L.Marker {
   const telefono  = comercio.telefono_comercio
-    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📞 ${comercio.telefono_comercio}</div>`
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📞 ${esc(comercio.telefono_comercio)}</div>`
     : '';
   const direccion = comercio.direccion_comercio
-    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📍 ${comercio.direccion_comercio}</div>`
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">📍 ${esc(comercio.direccion_comercio)}</div>`
     : '';
   const horario   = (comercio.horario_apertura && comercio.horario_cierre)
-    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">🕐 ${comercio.horario_apertura} – ${comercio.horario_cierre}</div>`
+    ? `<div style="margin-top:3px;font-size:11px;color:#4b5563">🕐 ${esc(comercio.horario_apertura)} – ${esc(comercio.horario_cierre)}</div>`
     : '';
   const categoria = comercio.categoria_local
-    ? `<span style="display:inline-block;background:#0d9488;color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${comercio.categoria_local}</span>`
+    ? `<span style="display:inline-block;background:#0d9488;color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;margin-bottom:4px">${esc(comercio.categoria_local)}</span>`
     : '';
 
   const tooltipHtml = `
     <div style="min-width:170px;max-width:230px;padding:3px 0">
       ${categoria}
-      <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${comercio.titulo}</div>
+      <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${esc(comercio.titulo)}</div>
       ${direccion}${telefono}${horario}
       <a href="/red-vecindog/${encodeURIComponent(comercio.categoria_local ?? '')}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver en Red Vecindog →</a>
     </div>`;

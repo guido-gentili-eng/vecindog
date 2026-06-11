@@ -99,6 +99,7 @@ export default function PublicacionesPage() {
       setCercaniaOn(true);
       return;
     }
+    if (!navigator.geolocation) { setGpsError(true); return; }
     setGpsLoading(true);
     setGpsError(false);
     navigator.geolocation.getCurrentPosition(

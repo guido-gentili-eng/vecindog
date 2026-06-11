@@ -786,12 +786,7 @@ export default function PublicarPage() {
 
         {/* ── PASO 2/3: datos del perro ── */}
         <StepCard n={form.categoria === 'transito' ? 3 : 2}
-          titulo={
-            form.categoria === 'perdido'    ? t.pbrStep1 :
-            form.categoria === 'encontrado' ? t.pbrStep1 :
-            form.categoria === 'transito'   ? t.pbrStep1 :
-                                             t.pbrStep1
-          }
+          titulo={t.pbrStep2Data}
           subtitulo={
             form.categoria === 'perdido'    ? t.pbrStep2DataSub :
             form.categoria === 'encontrado' ? t.pbrStep2DataSubEncontrado :

@@ -13,8 +13,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
-
 interface PrecioInfo {
   esPromo: boolean;
   cuposRestantes: number;
@@ -24,9 +22,8 @@ interface PrecioInfo {
 }
 
 export default function RedVecindogPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { t }    = useLanguage();
-  const isAdmin  = user?.email === ADMIN_EMAIL;
 
   const [modalAbierto,      setModalAbierto]      = useState(false);
   const [adminModalAbierto, setAdminModalAbierto] = useState(false);
@@ -296,7 +293,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
   const [diasAtencion,    setDiasAtencion]    = useState('');
   const [descripcion,     setDescripcion]     = useState('');
   const [link,            setLink]            = useState('');
-  const [emailDuenio,     setEmailDuenio]     = useState(ADMIN_EMAIL);
+  const [emailDuenio,     setEmailDuenio]     = useState('');
   const [fotoFile,        setFotoFile]        = useState<File | null>(null);
   const [preview,         setPreview]         = useState('');
   const [loading,         setLoading]         = useState(false);
@@ -350,7 +347,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
         imagen_logo_url:    null,
         href:               link.trim() || '',
         cta:                null,
-        anunciante:         emailDuenio.trim() || ADMIN_EMAIL,
+        anunciante:         emailDuenio.trim(),
         plan:               'comercio',
         activo:             true,
         fecha_inicio:       new Date().toISOString().slice(0, 10),

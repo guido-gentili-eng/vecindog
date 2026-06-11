@@ -27,8 +27,6 @@ const MapPinPicker = dynamic(() => import('@/components/MapPinPicker'), { ssr: f
 
 /* ──────────── Constantes ──────────── */
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
-
 const COLOR_CATEGORIA: Record<string, string> = {
   perdido:    'bg-lost text-white',
   encontrado: 'bg-found text-white',
@@ -41,7 +39,7 @@ export default function DetalleAvisoPage() {
   const { id }    = useParams<{ id: string }>();
   const router    = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthenticated, ciudad }  = useAuth();
+  const { user, isAuthenticated, ciudad, isAdmin: userIsAdmin } = useAuth();
   const { t } = useLanguage();
 
   const [post,        setPost]        = useState<Post | null>(null);
@@ -53,6 +51,7 @@ export default function DetalleAvisoPage() {
   /* estados de acción */
   const [confirmBorrar,   setConfirmBorrar]   = useState(false);
   const [confirmResuelto, setConfirmResuelto] = useState(false);
+  const [confirmRenovar,  setConfirmRenovar]  = useState(false);
   const [accionando,      setAccionando]      = useState(false);
   const [showFoundModal,  setShowFoundModal]  = useState(false);
   const [msgOk,           setMsgOk]           = useState('');
@@ -116,7 +115,7 @@ export default function DetalleAvisoPage() {
     setPanelAbierto(true);
 
     if (accion === 'renovar') {
-      handleRenovar();
+      setConfirmRenovar(true);
     } else if (accion === 'encontrado') {
       setConfirmResuelto(true);
     }
@@ -144,7 +143,7 @@ export default function DetalleAvisoPage() {
   }
 
   const isOwner   = !!user && !!post.user_id && user.id === post.user_id;
-  const isAdmin   = !!user && user.email === ADMIN_EMAIL;
+  const isAdmin   = userIsAdmin;
   const canManage = isOwner || isAdmin;
   const resuelto  = post.estado === 'resuelto';
 
@@ -249,6 +248,7 @@ export default function DetalleAvisoPage() {
       ? new Date().toISOString().slice(0, 10)
       : loViOtroDia;
     if (!calleEfectiva || !loViHora.trim() || !fechaEfectiva) return;
+    if (isOwner) return;
     setLoViLoading(true);
     setLoViError('');
     try {
@@ -643,17 +643,42 @@ export default function DetalleAvisoPage() {
                   )}
 
                   {/* Acción: Renovar (Lo sigo buscando) — solo si activo */}
-                  {!resuelto && (
+                  {!resuelto && !confirmRenovar && (
                     <button
                       type="button"
                       disabled={accionando}
-                      onClick={handleRenovar}
+                      onClick={() => setConfirmRenovar(true)}
                       className="flex w-full items-center gap-2 rounded-xl border-2 border-brand-primary/30 bg-brand-primary/5 px-3 py-2.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 disabled:opacity-60"
                     >
                       <RefreshCw className={`h-4 w-4 shrink-0 ${accionando ? 'animate-spin' : ''}`} />
                       {LABEL_RENOVAR[post.categoria] ?? t.pubRenovarDefault}
                       <span className="ml-auto text-[10px] font-normal text-brand-primary/60">{t.pubRenovarHint}</span>
                     </button>
+                  )}
+
+                  {/* Confirm: renovar */}
+                  {!resuelto && confirmRenovar && (
+                    <div className="rounded-xl bg-brand-primary/8 p-3">
+                      <p className="text-xs font-bold text-ink">¿Subir este aviso al tope de la lista?</p>
+                      <p className="mt-1 text-[11px] text-ink-muted">El aviso va a aparecer primero para más personas.</p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          disabled={accionando}
+                          onClick={() => { setConfirmRenovar(false); handleRenovar(); }}
+                          className="flex-1 rounded-xl bg-brand-primary px-3 py-2 text-xs font-extrabold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
+                        >
+                          {accionando ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Sí, renovar'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRenovar(false)}
+                          className="flex-1 rounded-xl bg-black/8 px-3 py-2 text-xs font-bold text-ink transition hover:bg-black/12"
+                        >
+                          {t.pubCancel}
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* Acción: Marcar resuelto — solo si activo */}

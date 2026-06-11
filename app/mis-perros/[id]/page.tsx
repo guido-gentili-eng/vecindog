@@ -51,7 +51,7 @@ import {
   type ContactoEmergencia, type ContactoInput,
 } from '@/lib/contactos-emergencia';
 import {
-  obtenerGrooming, guardarGrooming,
+  obtenerGrooming, guardarGrooming, eliminarGrooming,
   type Grooming, type TipoGrooming,
 } from '@/lib/grooming';
 import { type EstadoSalud } from '@/lib/perros';
@@ -272,6 +272,12 @@ export default function PerroDetallePage() {
     if (!perro) return;
     const g = await guardarGrooming(perro.id, data);
     setGrooming(g);
+  }
+
+  async function handleEliminarGrooming() {
+    if (!perro) return;
+    await eliminarGrooming(perro.id);
+    setGrooming(null);
   }
 
   async function handleCompartirStories() {
@@ -1123,6 +1129,7 @@ export default function PerroDetallePage() {
             perroId={perro.id}
             grooming={grooming}
             onGuardar={handleGuardarGrooming}
+            onEliminar={handleEliminarGrooming}
             locked={!isPro}
           />
 
@@ -4471,15 +4478,18 @@ function DietaSection({ perro, onGuardar, locked }: {
 }
 
 /* ── Grooming / Baño ── */
-function GroomingSection({ perroId, grooming, onGuardar, locked }: {
-  perroId:   string;
-  grooming:  Grooming | null;
-  onGuardar: (d: Omit<Grooming,'id'|'created_at'>) => Promise<void>;
-  locked?:   boolean;
+function GroomingSection({ perroId, grooming, onGuardar, onEliminar, locked }: {
+  perroId:    string;
+  grooming:   Grooming | null;
+  onGuardar:  (d: Omit<Grooming,'id'|'created_at'>) => Promise<void>;
+  onEliminar: () => Promise<void>;
+  locked?:    boolean;
 }) {
   const { t } = useLanguage();
   const [editando, setEditando] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({ ultima_fecha: new Date().toISOString().slice(0,10), frecuencia_dias: 30, tipo: 'ambos' as TipoGrooming, notas:'' });
 
   useEffect(() => {
@@ -4500,6 +4510,13 @@ function GroomingSection({ perroId, grooming, onGuardar, locked }: {
     try { await onGuardar({ perro_id: perroId, ...form }); setEditando(false); }
     catch { /* silent */ }
     finally { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try { await onEliminar(); setConfirmando(false); }
+    catch { /* silent */ }
+    finally { setDeleting(false); }
   }
 
   const TIPOS: TipoGrooming[] = ['baño','peluquería','ambos'];
@@ -4554,6 +4571,26 @@ function GroomingSection({ perroId, grooming, onGuardar, locked }: {
             <span className="capitalize">{grooming.tipo}</span> · {t.mpdGroomingCadaCuantos.toLowerCase()} {grooming.frecuencia_dias}
             {grooming.notas && <span>· {grooming.notas}</span>}
           </div>
+          {!confirmando ? (
+            <button type="button" onClick={() => setConfirmando(true)}
+              className="mt-1 inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-bold text-ink-muted/50 hover:bg-bad/10 hover:text-bad transition">
+              <Trash2 className="h-3 w-3" /> Borrar registro
+            </button>
+          ) : (
+            <div className="mt-2 rounded-xl bg-bad/8 p-3">
+              <p className="text-xs font-bold text-ink">¿Borrar el registro de baño/peluquería?</p>
+              <div className="mt-2 flex gap-2">
+                <button type="button" disabled={deleting} onClick={handleDelete}
+                  className="flex-1 rounded-xl bg-bad px-3 py-1.5 text-xs font-extrabold text-white disabled:opacity-60">
+                  {deleting ? <Loader2 className="mx-auto h-3.5 w-3.5 animate-spin" /> : 'Sí, borrar'}
+                </button>
+                <button type="button" onClick={() => setConfirmando(false)}
+                  className="flex-1 rounded-xl bg-black/8 px-3 py-1.5 text-xs font-bold text-ink">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : <p className="text-sm text-ink-muted">{t.mpdSinGrooming}</p>}
     </div>

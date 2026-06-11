@@ -640,8 +640,8 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
               Red Vecindog ·{' '}
               {precioInfo.esPromo ? (
                 <>
-                  <span className="font-bold text-amber-600">${precioInfo.precioActual.toLocaleString('es-AR')} ARS/mes</span>
-                  <span className="ml-1 line-through text-ink-muted/50">${precioInfo.precioRegular.toLocaleString('es-AR')}</span>
+                  <span className="font-bold text-amber-600">3 meses gratis</span>
+                  <span className="ml-1 text-ink-muted/70">· luego ${precioInfo.precioRegular.toLocaleString('es-AR')}/mes</span>
                 </>
               ) : (
                 <span className="font-bold">${precioInfo.precioActual.toLocaleString('es-AR')} ARS/mes</span>

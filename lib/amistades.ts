@@ -39,62 +39,59 @@ export interface ResultadoBusquedaPerro {
 export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBusquedaPerro[]> {
   if (!nombre.trim()) return [];
 
-  // Buscar owners cuyo nombre/apellido coincida (para buscar por dueño)
+  // 1. Buscar owners cuyo nombre/apellido coincida
   const { data: profilesMatch } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, nombre, apellido, ciudad')
     .or(`nombre.ilike.%${nombre}%,apellido.ilike.%${nombre}%`)
     .limit(20);
-  const ownerIds = (profilesMatch ?? []).map((p) => p.id);
+  const ownerIds = (profilesMatch ?? []).map((p: Record<string, unknown>) => p.id as string);
 
-  // Queries en paralelo: por nombre del perro + por dueño (si hay matches)
-  const queries: Promise<{ data: unknown[] | null }>[] = [
-    supabase
-      .from('perros')
-      .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .ilike('nombre', `%${nombre}%`)
-      .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
-    supabase
-      .from('posts')
-      .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
-      .ilike('nombre', `%${nombre}%`)
-      .not('user_id', 'is', null)
-      .neq('estado', 'resuelto')
-      .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
-  ];
+  // 2. Buscar perros y posts por nombre (sin join — profiles se resuelve aparte)
+  const [r0, r1, r2, r3] = await Promise.all([
+    supabase.from('perros').select('id, nombre, raza, foto_url, user_id').ilike('nombre', `%${nombre}%`).limit(15),
+    supabase.from('posts').select('id, nombre, raza, images, user_id').ilike('nombre', `%${nombre}%`).not('user_id', 'is', null).neq('estado', 'resuelto').limit(15),
+    ownerIds.length > 0
+      ? supabase.from('perros').select('id, nombre, raza, foto_url, user_id').in('user_id', ownerIds).limit(15)
+      : Promise.resolve({ data: [] }),
+    ownerIds.length > 0
+      ? supabase.from('posts').select('id, nombre, raza, images, user_id').in('user_id', ownerIds).not('user_id', 'is', null).neq('estado', 'resuelto').limit(15)
+      : Promise.resolve({ data: [] }),
+  ]);
 
-  if (ownerIds.length > 0) {
-    queries.push(
-      supabase
-        .from('perros')
-        .select('id, nombre, raza, foto_url, user_id, profiles:user_id(nombre, apellido, ciudad)')
-        .in('user_id', ownerIds)
-        .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
-      supabase
-        .from('posts')
-        .select('id, nombre, raza, images, user_id, profiles:user_id(nombre, apellido, ciudad)')
-        .in('user_id', ownerIds)
-        .not('user_id', 'is', null)
-        .neq('estado', 'resuelto')
-        .limit(15) as unknown as Promise<{ data: unknown[] | null }>,
-    );
+  const perrosData = [...((r0.data ?? []) as Record<string, unknown>[]), ...((r2.data ?? []) as Record<string, unknown>[])];
+  const postsData  = [...((r1.data ?? []) as Record<string, unknown>[]), ...((r3.data ?? []) as Record<string, unknown>[])];
+
+  // 3. Construir mapa de perfiles por id (de la búsqueda inicial + dueños encontrados)
+  const allOwnerIds = [...new Set([
+    ...perrosData.map(d => d.user_id as string),
+    ...postsData.map(d => d.user_id as string),
+  ])].filter(Boolean);
+
+  let profilesMap: Record<string, Record<string, unknown>> = {};
+  if (allOwnerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, nombre, apellido, ciudad')
+      .in('id', allOwnerIds);
+    for (const p of (profiles ?? []) as Record<string, unknown>[]) {
+      profilesMap[p.id as string] = p;
+    }
+  }
+  // También incluir los ya buscados por nombre
+  for (const p of (profilesMatch ?? []) as Record<string, unknown>[]) {
+    profilesMap[p.id as string] = p;
   }
 
-  const results = await Promise.all(queries);
-  const perrosData  = [...(results[0].data ?? []), ...(results[2]?.data ?? [])] as Record<string, unknown>[];
-  const postsData   = [...(results[1].data ?? []), ...(results[3]?.data ?? [])] as Record<string, unknown>[];
-  const perrosRes = { data: perrosData };
-  const postsRes  = { data: postsData };
-
   const resultados: ResultadoBusquedaPerro[] = [];
-  const vistos = new Set<string>(); // key: owner_id|nombre_lower
+  const vistos = new Set<string>();
 
-  // De la tabla perros
-  for (const d of (perrosRes.data ?? []) as Record<string, unknown>[]) {
-    const profile = (d.profiles as Record<string, unknown> | null) ?? {};
+  for (const d of perrosData) {
+    if (!d.nombre) continue;
     const key = `${d.user_id}|${(d.nombre as string).toLowerCase()}`;
     if (vistos.has(key)) continue;
     vistos.add(key);
+    const profile = profilesMap[d.user_id as string] ?? {};
     resultados.push({
       perro_id:       d.id as string,
       nombre:         d.nombre as string,
@@ -107,14 +104,13 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
     });
   }
 
-  // De la tabla posts (avisos)
-  for (const d of (postsRes.data ?? []) as Record<string, unknown>[]) {
+  for (const d of postsData) {
     if (!d.nombre) continue;
-    const profile = (d.profiles as Record<string, unknown> | null) ?? {};
     const key = `${d.user_id}|${(d.nombre as string).toLowerCase()}`;
     if (vistos.has(key)) continue;
     vistos.add(key);
     const images = (d.images as string[] | null) ?? [];
+    const profile = profilesMap[d.user_id as string] ?? {};
     resultados.push({
       perro_id:       d.id as string,
       nombre:         d.nombre as string,

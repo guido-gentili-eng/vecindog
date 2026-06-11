@@ -70,7 +70,7 @@ export default function RedVecindogPage() {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
           <Star className="h-3.5 w-3.5" />
           {precioInfo.esPromo
-            ? `${t.rvnPromoChip} · $${precioInfo.precioActual.toLocaleString('es-AR')} ARS / mes`
+            ? `${t.rvnPromoChip} · 3 meses gratis`
             : `${t.rvnNetworkChip} · $${precioInfo.precioActual.toLocaleString('es-AR')} ARS / mes`}
         </span>
 

@@ -22,10 +22,10 @@ export default function Hero() {
         sizes="(max-width: 768px) 100vw, 900px"
       />
       {/* Overlay oscuro para legibilidad del texto */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-l from-black/65 via-black/40 to-black/5" />
 
       {/* Contenido */}
-      <div className="relative px-6 py-8 text-left md:px-10 md:py-12">
+      <div className="relative px-6 py-8 text-right md:px-10 md:py-12 flex flex-col items-end">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm ring-1 ring-white/30 backdrop-blur">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />

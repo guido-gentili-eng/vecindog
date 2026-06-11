@@ -64,7 +64,12 @@ export async function POST(req: NextRequest) {
   const { data: { user }, error } = await admin.auth.getUser(auth);
   if (error || !user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-  const { post_id, texto } = await req.json();
+  let post_id: string, texto: string;
+  try {
+    ({ post_id, texto } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   if (!post_id || !texto?.trim()) {
     return NextResponse.json({ error: 'post_id y texto son requeridos' }, { status: 400 });
   }

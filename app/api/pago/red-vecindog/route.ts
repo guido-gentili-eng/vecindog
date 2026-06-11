@@ -21,6 +21,11 @@ export async function POST(req: NextRequest) {
     if (!direccion?.trim()) return NextResponse.json({ error: 'Dirección requerida' }, { status: 400 });
     if (!email?.trim())     return NextResponse.json({ error: 'Email requerido' },     { status: 400 });
 
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_RE.test(email.trim())) {
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
+    }
+
     if (nombre.length  > 100) return NextResponse.json({ error: 'Nombre demasiado largo' },      { status: 400 });
     if (descripcion && descripcion.length > 200) return NextResponse.json({ error: 'Descripción demasiado larga' }, { status: 400 });
 

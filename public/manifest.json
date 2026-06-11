@@ -5,7 +5,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5EFE6",
-  "theme_color": "#B85C4A",
+  "theme_color": "#3F8B5C",
   "orientation": "portrait-primary",
   "lang": "es-AR",
   "categories": ["lifestyle", "social"],

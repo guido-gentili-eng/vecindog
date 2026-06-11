@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
   );
 
   const hoy    = new Date();
-  const en3    = new Date(hoy); en3.setDate(hoy.getDate() + 3);
   const en7    = new Date(hoy); en7.setDate(hoy.getDate() + 7);
 
   const hoyStr  = hoy.toISOString().slice(0, 10);

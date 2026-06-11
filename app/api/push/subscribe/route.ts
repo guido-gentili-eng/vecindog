@@ -13,7 +13,12 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(token);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-  const { endpoint, keys } = await req.json();
+  let endpoint: string, keys: { p256dh: string; auth: string };
+  try {
+    ({ endpoint, keys } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
   }
@@ -39,7 +44,12 @@ export async function DELETE(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(token);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-  const { endpoint } = await req.json();
+  let endpoint: string;
+  try {
+    ({ endpoint } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   await admin.from('push_subscriptions').delete().eq('user_id', user.id).eq('endpoint', endpoint);
   return NextResponse.json({ ok: true });
 }

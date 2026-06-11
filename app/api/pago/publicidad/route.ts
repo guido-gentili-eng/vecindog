@@ -41,6 +41,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Validar email del anunciante
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !EMAIL_RE.test(email)) {
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
+    }
+
     // Validar longitudes
     if (negocio && negocio.length > 100) return NextResponse.json({ error: 'Nombre demasiado largo' }, { status: 400 });
     if (tagline  && tagline.length  > 150) return NextResponse.json({ error: 'Tagline demasiado largo' }, { status: 400 });

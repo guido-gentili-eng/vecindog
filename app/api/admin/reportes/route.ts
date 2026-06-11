@@ -47,7 +47,12 @@ export async function POST(req: NextRequest) {
   const user = await checkAdmin(req);
   if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { reporte_id, accion } = await req.json();
+  let reporte_id: string, accion: string;
+  try {
+    ({ reporte_id, accion } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   // accion: 'desestimar' | 'eliminar_aviso'
 
   const admin = getAdmin();

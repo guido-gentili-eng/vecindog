@@ -11,7 +11,12 @@ export async function POST(req: NextRequest) {
   // Intencionalmente sin auth: quien encuentra un perro perdido escanea el QR del collar
   // y llega a /historia/[perroId] sin estar logueado — necesita poder notificar al dueño.
   // Mitigación: inputs acotados a 1000/200 chars, sin datos sensibles expuestos.
-  const { perroId, mensaje: rawMensaje, contacto: rawContacto } = await req.json();
+  let perroId: string, rawMensaje: unknown, rawContacto: unknown;
+  try {
+    ({ perroId, mensaje: rawMensaje, contacto: rawContacto } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   // Sanitizar inputs para evitar XSS en el email
   const mensaje  = rawMensaje  ? String(rawMensaje).slice(0, 1000)  : '';
   const contacto = rawContacto ? String(rawContacto).slice(0, 200) : '';
@@ -47,8 +52,8 @@ export async function POST(req: NextRequest) {
 
   const nombreDuenio = profile?.nombre ?? 'dueño';
   const mensajeNotif = contacto
-    ? `📍 Alguien encontró a ${perro.nombre}. Mensaje: "${mensaje || 'Sin mensaje'}". Contacto: ${contacto}`
-    : `📍 Alguien encontró a ${perro.nombre}. Mensaje: "${mensaje || 'Sin mensaje'}"`;
+    ? `📍 Alguien encontró a ${esc(perro.nombre)}. Mensaje: "${esc(mensaje) || 'Sin mensaje'}". Contacto: ${esc(contacto)}`
+    : `📍 Alguien encontró a ${esc(perro.nombre)}. Mensaje: "${esc(mensaje) || 'Sin mensaje'}"`;
 
   // Notificación in-app
   await admin.from('notifications').insert({

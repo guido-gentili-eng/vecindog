@@ -172,7 +172,7 @@ export async function buscarPostActivoDePerro(perroId: string): Promise<Post | n
   return data as Post | null;
 }
 
-/** Elimina el aviso y sus fotos del storage. */
+/** Lista los avisos resueltos más recientes, con un límite configurable. */
 export async function listarPostsResueltos(limite = 20): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')

@@ -52,7 +52,12 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
   const admin = getAdmin();
-  const { ad_id, titulo, texto, imagen_url } = await req.json();
+  let ad_id: string, titulo: string, texto: string, imagen_url: string;
+  try {
+    ({ ad_id, titulo, texto, imagen_url } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   if (!ad_id || !titulo?.trim()) {
     return NextResponse.json({ error: 'ad_id y titulo son requeridos' }, { status: 400 });
   }

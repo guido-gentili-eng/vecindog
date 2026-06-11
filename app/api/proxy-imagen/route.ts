@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
   const blob = await res.arrayBuffer();
   const ct   = res.headers.get('content-type') ?? 'image/png';
 
+  if (!ct.startsWith('image/')) {
+    return new NextResponse('tipo de contenido no permitido', { status: 403 });
+  }
+
   return new NextResponse(blob, {
     headers: {
       'Content-Type': ct,

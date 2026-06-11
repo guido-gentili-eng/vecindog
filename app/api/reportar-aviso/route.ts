@@ -15,7 +15,12 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(token);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-  const { post_id, motivo } = await req.json();
+  let post_id: string, motivo: string;
+  try {
+    ({ post_id, motivo } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
+  }
   if (!post_id || !motivo?.trim() || motivo.length > 500) {
     return NextResponse.json({ error: 'post_id y motivo son requeridos (máx 500 caracteres)' }, { status: 400 });
   }

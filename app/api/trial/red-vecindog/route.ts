@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (existingByUser && existingByUser.length > 0) {
-      return NextResponse.json({ error: 'Ya usaste el mes gratis.' }, { status: 409 });
+      return NextResponse.json({ error: 'Ya usaste los 3 meses gratis.' }, { status: 409 });
     }
 
     // Verificar también por email (compatibilidad con registros anteriores sin user_id)
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (existing && existing.length > 0) {
-      return NextResponse.json({ error: 'Ya usaste el mes gratis con este email.' }, { status: 409 });
+      return NextResponse.json({ error: 'Ya usaste los 3 meses gratis con este email.' }, { status: 409 });
     }
 
     let href = 'https://www.mivecindog.com.ar';
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     const hoy = new Date();
     const fin = new Date(hoy);
-    fin.setDate(fin.getDate() + 30);
+    fin.setDate(fin.getDate() + 90);
     const fechaInicioStr = hoy.toISOString().slice(0, 10);
     const fechaFinStr    = fin.toISOString().slice(0, 10);
 
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from: 'Vecindog <noreply@mivecindog.com.ar>',
         to: [email.trim()],
-        subject: `¡${nombre} ya está en Red Vecindog — primer mes gratis! 🐾`,
+        subject: `¡${nombre} ya está en Red Vecindog — 3 meses gratis! 🐾`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <div style="background:#B85C4A;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
             </div>
             <h2 style="color:#1a1a1a">¡Tu negocio ya está en la red!</h2>
             <p style="color:#555;font-size:16px;line-height:1.6">
-              <strong>${nombre}</strong> ya aparece en el mapa y en la Red Vecindog. Tu primer mes es completamente gratis hasta el <strong>${fechaFinLabel}</strong>.
+              <strong>${nombre}</strong> ya aparece en el mapa y en la Red Vecindog. Tus primeros 3 meses son completamente gratis hasta el <strong>${fechaFinLabel}</strong>.
             </p>
             <p style="color:#888;font-size:14px;line-height:1.6;margin-top:16px">
               3 días antes del vencimiento te avisamos para que puedas renovar tu membresía sin perder tu lugar en la red.

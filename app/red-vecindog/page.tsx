@@ -199,7 +199,7 @@ export default function RedVecindogPage() {
               </h2>
               <div className="mt-4">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-extrabold mb-3">
-                  🎁 Primer mes GRATIS
+                  🎁 Primeros 3 meses GRATIS
                 </div>
                 <div className="flex items-baseline gap-3">
                   <span className="font-display text-5xl font-black">
@@ -834,12 +834,12 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
           )}
 
           <p className="text-center text-xs text-ink-muted">
-            Sin costo el primer mes · después se renueva mensualmente
+            Sin costo los primeros 3 meses · después se renueva mensualmente
           </p>
 
           <button type="submit" disabled={loading}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-base font-bold text-white transition hover:bg-amber-600 disabled:opacity-60">
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CheckCircle2 className="h-5 w-5" /> Activar gratis — primer mes sin costo</>}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CheckCircle2 className="h-5 w-5" /> Activar gratis — 3 meses sin costo</>}
           </button>
         </form>
       </div>

@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +39,23 @@ export async function POST(req: NextRequest) {
 
   if (!perro) {
     return NextResponse.json({ error: 'Perro no encontrado' }, { status: 404 });
+  }
+
+  // Rate limit: máximo 1 notificación de perro_encontrado por dueño cada 30 minutos
+  const { data: reciente } = await admin
+    .from('notifications')
+    .select('created_at')
+    .eq('user_id', perro.user_id)
+    .eq('tipo', 'perro_encontrado')
+    .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString())
+    .limit(1)
+    .maybeSingle();
+
+  if (reciente) {
+    return NextResponse.json(
+      { error: 'Ya se envió una notificación en los últimos 30 minutos' },
+      { status: 429 }
+    );
   }
 
   const { data: userData } = await admin.auth.admin.getUserById(perro.user_id);

@@ -44,11 +44,16 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const { data: mensajes, error: err } = await admin
+  let query = admin
     .from('mensajes')
     .select('id, texto, created_at, sender_id, profiles(nombre, apellido, foto_url)')
-    .eq('post_id', postId)
-    .order('created_at', { ascending: true });
+    .eq('post_id', postId);
+
+  if (!isPostOwner && postData?.user_id) {
+    query = query.or(`sender_id.eq.${user.id},sender_id.eq.${postData.user_id}`);
+  }
+
+  const { data: mensajes, error: err } = await query.order('created_at', { ascending: true });
 
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
 
@@ -77,6 +82,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'El mensaje no puede superar los 2000 caracteres' }, { status: 400 });
   }
 
+  // ALTO: Verificar que el post existe antes de insertar el mensaje
+  const { data: post, error: postErr } = await admin
+    .from('posts')
+    .select('user_id, nombre, categoria')
+    .eq('id', post_id)
+    .single();
+
+  if (postErr || !post) {
+    return NextResponse.json({ error: 'Aviso no encontrado' }, { status: 404 });
+  }
+
+  // Prevenir que el dueño del post se envíe mensajes a sí mismo
+  if (post.user_id === user.id) {
+    return NextResponse.json({ error: 'No podés enviarte mensajes a vos mismo' }, { status: 400 });
+  }
+
   // Insertar mensaje
   const { data: nuevo, error: insErr } = await admin
     .from('mensajes')
@@ -86,30 +107,22 @@ export async function POST(req: NextRequest) {
 
   if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
 
-  // Notificar al dueño del post si no es el mismo que envía
-  const { data: post } = await admin
-    .from('posts')
-    .select('user_id, nombre, categoria')
-    .eq('id', post_id)
+  // Notificar al dueño del post
+  const { data: senderProfile } = await admin
+    .from('profiles')
+    .select('nombre')
+    .eq('id', user.id)
     .single();
+  const nombreSender = senderProfile?.nombre ?? 'Alguien';
+  const nombrePerro  = post.nombre ?? 'tu aviso';
 
-  if (post && post.user_id !== user.id) {
-    const { data: senderProfile } = await admin
-      .from('profiles')
-      .select('nombre')
-      .eq('id', user.id)
-      .single();
-    const nombreSender = senderProfile?.nombre ?? 'Alguien';
-    const nombrePerro = post.nombre ?? 'tu aviso';
-
-    await admin.from('notifications').insert({
-      user_id: post.user_id,
-      post_id,
-      tipo: 'mensaje',
-      mensaje: `💬 ${nombreSender} te envió un mensaje sobre ${nombrePerro}.`,
-      leida: false,
-    });
-  }
+  await admin.from('notifications').insert({
+    user_id: post.user_id,
+    post_id,
+    tipo:    'mensaje',
+    mensaje: `💬 ${nombreSender} te envió un mensaje sobre ${nombrePerro}.`,
+    leida:   false,
+  });
 
   return NextResponse.json({ mensaje: nuevo });
 }

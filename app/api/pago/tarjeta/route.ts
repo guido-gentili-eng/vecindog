@@ -3,7 +3,8 @@ import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
 /* ── Precios en ARS ── */
-const PRECIO_PRO = 1000;
+const PRECIO_PRO_RAW = Number(process.env.PRECIO_PRO);
+const PRECIO_PRO = Number.isFinite(PRECIO_PRO_RAW) && PRECIO_PRO_RAW > 0 ? PRECIO_PRO_RAW : 0;
 
 /* ── Mensajes de rechazo ── */
 const RECHAZO: Record<string, string> = {
@@ -63,7 +64,12 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
 
-    /* ── 4. Idempotencia: verificar si ya tiene plan activo ── */
+    /* ── 4. Validar precio ── */
+    if (PRECIO_PRO <= 0) {
+      return NextResponse.json({ error: 'Configuración de precio inválida' }, { status: 500 });
+    }
+
+    /* ── 5-old. Idempotencia: verificar si ya tiene plan activo ── */
     const { data: profile } = await admin
       .from('profiles')
       .select('plan, plan_vencimiento')
@@ -78,6 +84,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* ── 5. Crear pago en Mercado Pago ── */
+    // (Nota: el número de paso anterior se re-numeró)
     if (!user.email) return NextResponse.json({ error: 'Usuario sin email registrado' }, { status: 403 });
     const mp     = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
     const pagoCl = new Payment(mp);
@@ -121,6 +128,17 @@ export async function POST(req: NextRequest) {
         console.error('[pago/tarjeta] error actualizando plan:', updErr.message);
         return NextResponse.json({ error: 'Pago aprobado pero error al activar el plan. Contactá a soporte.' }, { status: 500 });
       }
+
+      // Registrar pago para idempotencia
+      await admin.from('pagos_procesados').insert({
+        payment_id: String(pago.id),
+        user_id:    user.id,
+        tipo:       'pro',
+      }).then(({ error: insErr }) => {
+        if (insErr && insErr.code !== '23505') {
+          console.error('[pago/tarjeta] pagos_procesados insert error:', insErr.message);
+        }
+      });
 
       return NextResponse.json({ ok: true, paymentId: pago.id, vencimiento: vencimientoStr });
     }

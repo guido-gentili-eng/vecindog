@@ -76,11 +76,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mensajes inválidos' }, { status: 400 });
     }
 
+    const validRoles = new Set(['user', 'assistant']);
+    const sanitized = messages.filter(
+      (m): m is { role: 'user' | 'assistant'; content: string } =>
+        m != null &&
+        typeof m === 'object' &&
+        validRoles.has(m.role) &&
+        typeof m.content === 'string' &&
+        m.content.trim().length > 0
+    );
+    if (sanitized.length === 0) {
+      return NextResponse.json({ error: 'Mensajes inválidos' }, { status: 400 });
+    }
+
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: SYSTEM_PROMPT,
-      messages: messages.slice(-10),
+      messages: sanitized.slice(-10),
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';

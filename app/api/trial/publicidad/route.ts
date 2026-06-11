@@ -132,7 +132,8 @@ export async function POST(req: NextRequest) {
     }).catch(() => null);
 
     return NextResponse.json({ ok: true, ad_ids: adIds, plan, vencimiento: fechaFinStr });
-  } catch {
+  } catch (err) {
+    console.error('[trial/publicidad]', err);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }

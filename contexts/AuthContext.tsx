@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  createContext, useContext, useEffect, useState, type ReactNode
+  createContext, useContext, useEffect, useMemo, useState, type ReactNode
 } from 'react';
 import { type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -115,10 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsGuest(false);
         setProfileLoading(true);
         if (typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);
-        fetchProfile(confirmedUser.id);
+        fetchProfile(confirmedUser.id).finally(() => setLoading(false));
       } else {
         setProfile(null);
         setProfileLoading(false);
+        setLoading(false);
       }
     });
 
@@ -207,7 +208,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return error.message;
     }
-    setProfile({ id: user.id, ...data });
+    // MEDIO: Re-fetch desde DB en vez de setear el input directamente,
+    // para reflejar campos generados server-side (lat/lng, defaults, triggers)
+    await fetchProfile(user.id);
     return null;
   };
 
@@ -221,9 +224,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const enterAsGuest = () => {
+    // BAJO: No permitir modo guest si ya hay sesión activa para evitar estado inconsistente
+    if (user) return;
     if (typeof window !== 'undefined') localStorage.setItem(GUEST_KEY, 'true');
     setIsGuest(true);
   };
+
+  // MEDIO: Memoizar para evitar crear new Date() en cada render de cada componente consumidor
+  const isPro = useMemo(
+    () => (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || profile?.is_admin === true,
+    [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]
+  );
+  const isSuspendido = useMemo(
+    () => profile?.suspendido === true && profile?.is_admin !== true,
+    [profile?.suspendido, profile?.is_admin]
+  );
 
   return (
     <AuthContext.Provider value={{
@@ -232,8 +247,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasChosen:       !!user || isGuest,
       hasProfile:      !!profile,
       isAdmin:         profile?.is_admin === true,
-      isPro:           (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || profile?.is_admin === true,
-      isSuspendido:    profile?.suspendido === true && profile?.is_admin !== true,
+      isPro,
+      isSuspendido,
       ciudad,
       hasCity:         !!ciudad,
       setCiudad,

@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!result.init_point) {
+      if (adIds.length) await admin.from('ads').delete().in('id', adIds);
       return NextResponse.json({ error: 'Mercado Pago no devolvió URL de pago' }, { status: 502 });
     }
     return NextResponse.json({ url: result.init_point });

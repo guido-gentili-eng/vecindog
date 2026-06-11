@@ -109,7 +109,17 @@ export async function activarAds(adIds: string[]): Promise<void> {
   if (failed.length > 0) throw new Error(`activarAds: ${failed.length} ad(s) no se pudieron activar`);
 }
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+function validarImagen(file: File): void {
+  // BAJO: Validar MIME type real (no solo extensión del nombre) para evitar uploads maliciosos
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Tipo de archivo no permitido. Solo se aceptan imágenes JPG, PNG, WebP o GIF.');
+  }
+}
+
 export async function subirLogoAd(file: File): Promise<string> {
+  validarImagen(file);
   const ext  = file.name.split('.').pop() ?? 'jpg';
   const path = `ads/logo-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabase.storage.from('posts').upload(path, file, { upsert: false });
@@ -119,6 +129,7 @@ export async function subirLogoAd(file: File): Promise<string> {
 }
 
 export async function subirImagenAd(file: File): Promise<string> {
+  validarImagen(file);
   const ext  = file.name.split('.').pop() ?? 'jpg';
   const path = `ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabase.storage.from('posts').upload(path, file, { upsert: false });

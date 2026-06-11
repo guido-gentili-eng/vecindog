@@ -146,7 +146,8 @@ export async function POST(req: NextRequest) {
     }).catch(() => null);
 
     return NextResponse.json({ ok: true, ad_id: data.id, vencimiento: fechaFinStr });
-  } catch {
+  } catch (err) {
+    console.error('[trial/red-vecindog]', err);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }

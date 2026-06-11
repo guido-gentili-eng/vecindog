@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, vencimiento: vencimientoStr });
-  } catch {
+  } catch (err) {
+    console.error('[trial/pro]', err);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }

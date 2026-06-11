@@ -161,63 +161,68 @@ export async function POST(req: NextRequest) {
       if (r.status === 'rejected') console.error(`[push vecinos ${i}]:`, r.reason);
     });
 
-    // ── Enviar emails ────────────────────────────────────────────────
+    // ── Enviar emails en paralelo ────────────────────────────────────
+    const perfilesConEmail = (cercanos as Array<{ id: string; nombre: string }>)
+      .filter(p => emailsMap[p.id]);
+
+    const zonaEsc  = esc(zonaLabel);
+    const postUrl  = `https://www.mivecindog.com.ar/publicaciones/${esc(postIdS)}`;
+    const nombreEsc = nombrePerroS ? `<strong>${esc(nombrePerroS)}</strong>` : 'un perro';
+
+    const emailResults = await Promise.allSettled(
+      perfilesConEmail.map(perfil => {
+        const email  = emailsMap[perfil.id];
+        const saludo = esc(perfil.nombre ?? 'Vecino');
+        return fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Vecindog <noreply@mivecindog.com.ar>',
+            to: [email],
+            subject: `🐾 Aviso de ${categoriaLabel} cerca de tu casa`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
+                <div style="background: #EE5A3B; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                  <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
+                </div>
+                <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">
+                  Se publicó un aviso de <strong>${esc(categoriaLabel)}</strong> cerca de tu hogar:
+                </p>
+                <div style="background: #FFF8F0; border-radius: 12px; padding: 16px; margin: 16px 0; border-left: 4px solid #EE5A3B;">
+                  <p style="margin: 0; font-size: 16px;">🐶 ${nombreEsc}</p>
+                  <p style="margin: 4px 0 0; color: #888; font-size: 14px;">📍 ${zonaEsc}</p>
+                </div>
+                <p style="color: #555; font-size: 15px;">
+                  Si lo viste o podés ayudar, entrá al aviso y contactá al dueño.
+                </p>
+                <div style="text-align: center; margin-top: 24px;">
+                  <a href="${postUrl}"
+                     style="background: #EE5A3B; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px;">
+                    Ver aviso
+                  </a>
+                </div>
+                <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
+                  Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso cerca de tu casa.<br/>
+                  <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Actualizar mi perfil</a>
+                </p>
+              </div>
+            `,
+          }),
+        });
+      })
+    );
+
     let enviados = 0;
-    for (const perfil of cercanos as Array<{ id: string; nombre: string }>) {
-      const email = emailsMap[perfil.id];
-      if (!email) continue;
-
-      const saludo    = esc(perfil.nombre ?? 'Vecino');
-      const nombreEsc = nombrePerroS ? `<strong>${esc(nombrePerroS)}</strong>` : 'un perro';
-      const zonaEsc   = esc(zonaLabel);
-      const postUrl   = `https://www.mivecindog.com.ar/publicaciones/${esc(postIdS)}`;
-
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Vecindog <noreply@mivecindog.com.ar>',
-          to: [email],
-          subject: `🐾 Aviso de ${categoriaLabel} cerca de tu casa`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
-              <div style="background: #EE5A3B; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
-              </div>
-              <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
-              <p style="color: #555; font-size: 16px; line-height: 1.6;">
-                Se publicó un aviso de <strong>${esc(categoriaLabel)}</strong> cerca de tu hogar:
-              </p>
-              <div style="background: #FFF8F0; border-radius: 12px; padding: 16px; margin: 16px 0; border-left: 4px solid #EE5A3B;">
-                <p style="margin: 0; font-size: 16px;">🐶 ${nombreEsc}</p>
-                <p style="margin: 4px 0 0; color: #888; font-size: 14px;">📍 ${zonaEsc}</p>
-              </div>
-              <p style="color: #555; font-size: 15px;">
-                Si lo viste o podés ayudar, entrá al aviso y contactá al dueño.
-              </p>
-              <div style="text-align: center; margin-top: 24px;">
-                <a href="${postUrl}"
-                   style="background: #EE5A3B; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px;">
-                  Ver aviso
-                </a>
-              </div>
-              <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
-                Recibís este email porque registraste tu domicilio en Vecindog y hay un aviso cerca de tu casa.<br/>
-                <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Actualizar mi perfil</a>
-              </p>
-            </div>
-          `,
-        }),
-      });
-
-      if (res.ok) {
+    for (const r of emailResults) {
+      if (r.status === 'fulfilled' && r.value.ok) {
         enviados++;
       } else {
-        const body = await res.text().catch(() => '');
-        console.error(`[notificar-vecinos] Resend error ${res.status} para ${email}:`, body);
+        const reason = r.status === 'rejected' ? r.reason : `HTTP ${(r.value as Response).status}`;
+        console.error('[notificar-vecinos] Resend error:', reason);
       }
     }
 

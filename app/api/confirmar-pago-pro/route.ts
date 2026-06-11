@@ -20,6 +20,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'payment_id requerido' }, { status: 400 });
     }
 
+    // CRÍTICO: Idempotencia — verificar que este pago no fue procesado antes
+    const { data: existing } = await adminClient
+      .from('pagos_procesados')
+      .select('payment_id')
+      .eq('payment_id', String(payment_id))
+      .maybeSingle();
+
+    if (existing) {
+      // El pago ya fue procesado (posiblemente por el webhook). Retornar el estado actual.
+      const { data: currentProfile } = await adminClient
+        .from('profiles')
+        .select('plan_vencimiento')
+        .eq('id', user.id)
+        .single();
+      return NextResponse.json({ ok: true, vencimiento: currentProfile?.plan_vencimiento, cached: true });
+    }
+
     const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
     const paymentClient = new Payment(mp);
     const payment = await paymentClient.get({ id: String(payment_id) });
@@ -38,7 +55,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, reason: 'usuario no coincide' }, { status: 403 });
     }
 
-    const vencimiento = new Date();
+    const { data: currentProfile } = await adminClient
+      .from('profiles')
+      .select('plan_vencimiento')
+      .eq('id', meta.user_id)
+      .single();
+
+    const currentExpiry = currentProfile?.plan_vencimiento
+      ? new Date(currentProfile.plan_vencimiento)
+      : new Date(0);
+    const base = currentExpiry > new Date() ? currentExpiry : new Date();
+    const vencimiento = new Date(base);
     vencimiento.setDate(vencimiento.getDate() + 30);
     const vencimientoStr = vencimiento.toISOString().slice(0, 10);
 
@@ -52,8 +79,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
 
+    // Registrar el pago como procesado para garantizar idempotencia futura
+    await adminClient.from('pagos_procesados').insert({
+      payment_id: String(payment_id),
+      user_id:    meta.user_id,
+      tipo:       'pro',
+    });
+
     return NextResponse.json({ ok: true, vencimiento: vencimientoStr });
-  } catch {
+  } catch (err) {
+    console.error('[confirmar-pago-pro]', err);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }

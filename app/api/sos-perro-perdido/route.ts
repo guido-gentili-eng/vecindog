@@ -1,5 +1,7 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function esc(s: string): string {
   return s
@@ -19,24 +21,42 @@ export async function POST(req: NextRequest) {
     }
     const token = authHeader.slice(7);
 
-    const anonClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
-    if (authError || !user) {
-      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
     // ── Input ────────────────────────────────────────────────────────
     const body = await req.json();
     const nombrePerro = String(body.nombre_perro ?? '').slice(0, 80).trim();
-    const postId      = body.post_id ? String(body.post_id).slice(0, 64) : null;
+    // BAJO: Validar postId como UUID para evitar path injection en URLs de email
+    const rawPostId = body.post_id ? String(body.post_id) : null;
+    const postId    = rawPostId && UUID_RE.test(rawPostId) ? rawPostId : null;
+
+    // CRÍTICO: Rate limiting — máximo 1 alerta SOS por post por hora para evitar spam.
+    // Chequeamos si ya existe una notificación tipo 'amigo_perdido' para este post
+    // en la última hora (se inserta al final de esta misma función).
+    if (postId) {
+      const { data: sosReciente } = await admin
+        .from('notifications')
+        .select('created_at')
+        .eq('tipo', 'amigo_perdido')
+        .eq('post_id', postId)
+        .gte('created_at', new Date(Date.now() - 3_600_000).toISOString())
+        .limit(1)
+        .maybeSingle();
+
+      if (sosReciente) {
+        return NextResponse.json(
+          { ok: false, error: 'Ya enviaste una alerta SOS en la última hora para este aviso' },
+          { status: 429 }
+        );
+      }
+    }
 
     // ── Perfil del dueño ─────────────────────────────────────────────
     const { data: ownerProfile } = await admin
@@ -74,9 +94,15 @@ export async function POST(req: NextRequest) {
 
     // ── Emails de amigos ─────────────────────────────────────────────
     const emailMap: Record<string, string> = {};
-    const { data: listData } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    for (const u of listData?.users ?? []) {
-      if (amigosIds.includes(u.id) && u.email) emailMap[u.id] = u.email;
+    let authPage = 1;
+    while (true) {
+      const { data: listData } = await admin.auth.admin.listUsers({ perPage: 1000, page: authPage });
+      for (const u of listData?.users ?? []) {
+        if (amigosIds.includes(u.id) && u.email) emailMap[u.id] = u.email;
+      }
+      // ALTO: usar optional chaining para evitar TypeError si listData es null
+      if ((listData?.users?.length ?? 0) < 1000) break;
+      authPage++;
     }
 
     // ── Notificaciones in-app ────────────────────────────────────────
@@ -94,63 +120,69 @@ export async function POST(req: NextRequest) {
 
     // ── Emails ───────────────────────────────────────────────────────
     const postUrl = postId
-      ? `https://www.mivecindog.com.ar/publicaciones/${esc(postId)}`
+      ? `https://www.mivecindog.com.ar/publicaciones/${postId}`
       : `https://www.mivecindog.com.ar/buscar`;
 
+    const duenioE = esc(ownerNombre);
+    const perroE  = esc(nombreStr);
+
+    // ALTO: Enviar emails en paralelo en vez de secuencialmente (evita timeout de Vercel)
+    const amigosConEmail = amigosIds.filter((id) => emailMap[id]);
+    const resultados = await Promise.allSettled(
+      amigosConEmail.map((amigoId) => {
+        const email  = emailMap[amigoId];
+        const saludo = esc(perfilMap[amigoId] ?? 'Vecino');
+        return fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Vecindog <noreply@mivecindog.com.ar>',
+            to: [email],
+            subject: `🚨 ${perroE} se escapó — ayudá a ${duenioE} a encontrarlo`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
+                <div style="background: #D7503A; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                  <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
+                </div>
+                <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">
+                  Tu amigo <strong>${duenioE}</strong> perdió a su perro y necesita tu ayuda:
+                </p>
+                <div style="background: #FFF0EE; border-radius: 12px; padding: 20px; margin: 16px 0; border-left: 4px solid #D7503A; text-align: center;">
+                  <p style="margin: 0; font-size: 28px;">🐶</p>
+                  <p style="margin: 8px 0 0; font-size: 20px; font-weight: bold; color: #1a1a1a;">${perroE}</p>
+                  <p style="margin: 4px 0 0; color: #888; font-size: 14px;">se escapó y está perdido</p>
+                </div>
+                <p style="color: #555; font-size: 15px; line-height: 1.6;">
+                  Si lo ves, avisale a <strong>${duenioE}</strong> de inmediato. También podés compartir el aviso para que más vecinos lo busquen.
+                </p>
+                <div style="text-align: center; margin-top: 24px;">
+                  <a href="${postUrl}"
+                     style="background: #D7503A; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px;">
+                    Ver aviso completo
+                  </a>
+                </div>
+                <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
+                  Recibís este email porque sos amigo de ${duenioE} en Vecindog.<br/>
+                  <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Ir a mi perfil</a>
+                </p>
+              </div>
+            `,
+          }),
+        });
+      })
+    );
+
     let enviados = 0;
-    for (const amigoId of amigosIds) {
-      const email = emailMap[amigoId];
-      if (!email) continue;
-      const saludo   = esc(perfilMap[amigoId] ?? 'Vecino');
-      const duenioE  = esc(ownerNombre);
-      const perroE   = esc(nombreStr);
-
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Vecindog <noreply@mivecindog.com.ar>',
-          to: [email],
-          subject: `🚨 ${perroE} se escapó — ayudá a ${duenioE} a encontrarlo`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
-              <div style="background: #D7503A; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
-              </div>
-              <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
-              <p style="color: #555; font-size: 16px; line-height: 1.6;">
-                Tu amigo <strong>${duenioE}</strong> perdió a su perro y necesita tu ayuda:
-              </p>
-              <div style="background: #FFF0EE; border-radius: 12px; padding: 20px; margin: 16px 0; border-left: 4px solid #D7503A; text-align: center;">
-                <p style="margin: 0; font-size: 28px;">🐶</p>
-                <p style="margin: 8px 0 0; font-size: 20px; font-weight: bold; color: #1a1a1a;">${perroE}</p>
-                <p style="margin: 4px 0 0; color: #888; font-size: 14px;">se escapó y está perdido</p>
-              </div>
-              <p style="color: #555; font-size: 15px; line-height: 1.6;">
-                Si lo ves, avisale a <strong>${duenioE}</strong> de inmediato. También podés compartir el aviso para que más vecinos lo busquen.
-              </p>
-              <div style="text-align: center; margin-top: 24px;">
-                <a href="${postUrl}"
-                   style="background: #D7503A; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 15px;">
-                  Ver aviso completo
-                </a>
-              </div>
-              <p style="color: #aaa; font-size: 12px; margin-top: 32px; text-align: center;">
-                Recibís este email porque sos amigo de ${duenioE} en Vecindog.<br/>
-                <a href="https://www.mivecindog.com.ar/mi-perfil" style="color: #EE5A3B;">Ir a mi perfil</a>
-              </p>
-            </div>
-          `,
-        }),
-      });
-
-      if (res.ok) enviados++;
-      else {
-        const txt = await res.text().catch(() => '');
-        console.error(`[sos-perro-perdido] Resend error ${res.status} para ${email}:`, txt);
+    for (const r of resultados) {
+      if (r.status === 'fulfilled' && r.value.ok) {
+        enviados++;
+      } else {
+        const reason = r.status === 'rejected' ? r.reason : `HTTP ${(r.value as Response).status}`;
+        console.error('[sos-perro-perdido] Resend error:', reason);
       }
     }
 

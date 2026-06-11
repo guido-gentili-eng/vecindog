@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-const PRECIO_PRO = 1000;
-
 export async function POST(req: NextRequest) {
   try {
+    const PRECIO_PRO = Number(process.env.PRECIO_PRO);
+    if (!Number.isFinite(PRECIO_PRO) || PRECIO_PRO <= 0) {
+      return NextResponse.json({ error: 'Configuración de precio inválida' }, { status: 500 });
+    }
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -52,7 +54,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mercado Pago no devolvió URL de pago' }, { status: 502 });
     }
     return NextResponse.json({ url: result.init_point });
-  } catch {
+  } catch (err) {
+    console.error('[pago/pro]', err);
     return NextResponse.json({ error: 'Error al crear preferencia de pago' }, { status: 500 });
   }
 }

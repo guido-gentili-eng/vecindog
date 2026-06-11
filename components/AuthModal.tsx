@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Dog, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, LanguageSwitcher } from '@/contexts/LanguageContext';
@@ -10,7 +10,7 @@ type Step = 'form' | 'confirm' | 'forgot';
 
 // Rutas públicas donde NO debe aparecer el modal de login
 const PUBLIC_PATHS = [
-  '/historia/',
+  '/historia',
   '/reencontrados',
   '/terminos',
   '/privacidad',
@@ -27,6 +27,7 @@ export default function AuthModal() {
   const { hasChosen, loading, signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, enterAsGuest } = useAuth();
   const { t } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
 
   const [mode,       setMode]       = useState<'login' | 'register'>('register');
   const [step,       setStep]       = useState<Step>('form');
@@ -78,7 +79,8 @@ export default function AuthModal() {
             setError(tradError(err));
           }
         } else {
-          window.location.href = '/';
+          // BAJO: usar router.push para navegación SPA sin recarga completa
+          router.push('/');
         }
       } else {
         const { error: err, needsConfirm } = await signUp(email, password);
@@ -116,8 +118,13 @@ export default function AuthModal() {
 
   async function handleResend() {
     setError(''); setInfo('');
-    await resendConfirm(email);
-    setInfo(t.infoResentOk);
+    // MEDIO: verificar el resultado en vez de asumir éxito siempre
+    const err = await resendConfirm(email);
+    if (err) {
+      setError(tradError(err));
+    } else {
+      setInfo(t.infoResentOk);
+    }
   }
 
   async function handleForgot(e: React.FormEvent) {

@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     const hoy = new Date().toISOString().slice(0, 10);
     const isPro = profile?.plan === 'pro' &&
       (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
-    const adminEmail = process.env.ADMIN_EMAIL ?? '';
-    if (!isPro && user.email !== adminEmail) {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!isPro && (!adminEmail || user.email !== adminEmail)) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
     }
 
@@ -33,11 +33,17 @@ export async function POST(req: NextRequest) {
     if (!foto_url || typeof foto_url !== 'string') {
       return NextResponse.json({ error: 'foto_url requerida' }, { status: 400 });
     }
+    // Validar que la URL pertenece a dominios confiables para evitar SSRF y abuso de cuota
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+    const trustedPrefixes = [SUPABASE_URL, 'https://www.mivecindog.com.ar', 'https://mivecindog.com.ar'];
+    if (!foto_url.startsWith('https://') || !trustedPrefixes.some(p => p && foto_url.startsWith(p))) {
+      return NextResponse.json({ error: 'URL de imagen no permitida' }, { status: 400 });
+    }
 
     const VALID_STYLES = ['3D', 'Emoji', 'Video game', 'Pixels', 'Clay', 'Toy'];
     const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
 
-    if (perro_id && user.email !== adminEmail) {
+    if (perro_id && (!adminEmail || user.email !== adminEmail)) {
       const { data: perroData } = await admin
         .from('perros').select('cartoon_generado_at').eq('id', perro_id).single();
       if (perroData?.cartoon_generado_at) {

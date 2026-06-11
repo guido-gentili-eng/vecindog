@@ -4,15 +4,19 @@ import { createClient } from '@supabase/supabase-js';
 import { createHmac } from 'crypto';
 import { activarAds } from '@/lib/ads';
 
+function escHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function verifyMpSignature(req: NextRequest, rawBody: string): boolean {
   const secret = process.env.MP_WEBHOOK_SECRET;
   if (!secret) {
-    // En producción, rechazar si no está configurado el secret
-    if (process.env.NODE_ENV === 'production') {
-      console.error('[MP webhook] MP_WEBHOOK_SECRET no configurado en producción');
-      return false;
-    }
-    return true; // solo permitir sin secret en desarrollo
+    console.error('[MP webhook] MP_WEBHOOK_SECRET no configurado');
+    return false;
   }
 
   const xSignature = req.headers.get('x-signature');
@@ -70,22 +74,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, reason: `status: ${payment.status}` });
     }
 
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     const meta = payment.metadata as Record<string, unknown> | null;
 
     // ── Pago de suscripción Pro ──────────────────────────────────────
     if (meta?.tipo === 'pro' && meta?.user_id) {
-      // Validar que el monto sea el correcto para evitar pagos de $1
-      const PRECIO_PRO = Number(process.env.PRECIO_PRO ?? 1000);
+      // CRÍTICO: Validar que PRECIO_PRO sea un número finito para evitar bypass con NaN
+      const PRECIO_PRO = Number(process.env.PRECIO_PRO);
+      if (!Number.isFinite(PRECIO_PRO) || PRECIO_PRO <= 0) {
+        console.error('[MP webhook] PRECIO_PRO no configurado o inválido:', process.env.PRECIO_PRO);
+        return NextResponse.json({ ok: false, reason: 'config error' }, { status: 500 });
+      }
       const montoAbonado = payment.transaction_amount ?? 0;
       if (montoAbonado < PRECIO_PRO) {
         console.warn('[MP webhook] monto insuficiente para Pro:', montoAbonado);
         return NextResponse.json({ ok: false, reason: 'monto insuficiente' }, { status: 400 });
       }
 
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
+      // CRÍTICO: Idempotencia — evitar procesar el mismo pago dos veces
+      const { data: existing } = await admin
+        .from('pagos_procesados')
+        .select('payment_id')
+        .eq('payment_id', String(paymentId))
+        .maybeSingle();
+
+      if (existing) {
+        return NextResponse.json({ ok: true, tipo: 'pro', cached: true });
+      }
 
       // Verificar que el user_id existe en auth.users antes de actualizar
       const { data: authUser } = await admin.auth.admin.getUserById(String(meta.user_id));
@@ -94,12 +113,36 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, reason: 'usuario no encontrado' }, { status: 400 });
       }
 
-      const vencimiento = new Date();
+      // Acumular el vencimiento desde el plan actual (igual que confirmar-pago-pro)
+      const { data: currentProfile } = await admin
+        .from('profiles')
+        .select('plan_vencimiento')
+        .eq('id', String(meta.user_id))
+        .single();
+
+      const currentExpiry = currentProfile?.plan_vencimiento
+        ? new Date(currentProfile.plan_vencimiento)
+        : new Date(0);
+      const base = currentExpiry > new Date() ? currentExpiry : new Date();
+      const vencimiento = new Date(base);
       vencimiento.setDate(vencimiento.getDate() + 30);
-      await admin
+
+      const { error: updateErr } = await admin
         .from('profiles')
         .update({ plan: 'pro', plan_vencimiento: vencimiento.toISOString().slice(0, 10) })
         .eq('id', String(meta.user_id));
+      if (updateErr) {
+        console.error('[MP webhook] Error al actualizar plan Pro:', updateErr.message);
+        return NextResponse.json({ ok: false, error: 'Error al actualizar perfil' }, { status: 500 });
+      }
+
+      // Registrar idempotencia
+      await admin.from('pagos_procesados').insert({
+        payment_id: String(paymentId),
+        user_id:    String(meta.user_id),
+        tipo:       'pro',
+      });
+
       return NextResponse.json({ ok: true, tipo: 'pro' });
     }
 
@@ -110,10 +153,6 @@ export async function POST(req: NextRequest) {
 
     // ── Renovación de publicidad ─────────────────────────────────────
     if ((meta as Record<string, unknown>)?.tipo === 'renovacion') {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
       const nuevaFin = new Date();
       nuevaFin.setDate(nuevaFin.getDate() + 30);
       await admin
@@ -132,7 +171,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Nueva publicidad / comercio ──────────────────────────────────
-    await activarAds(adIds);
+    try {
+      await activarAds(adIds);
+    } catch (err) {
+      console.error('[MP webhook] Error activando ads, MP reintentará:', err);
+      // Retornar 500 para que MercadoPago reintente el webhook automáticamente
+      return NextResponse.json({ ok: false, error: 'Error activando ads' }, { status: 500 });
+    }
 
     const metaMap = (meta ?? {}) as Record<string, string>;
 
@@ -146,10 +191,6 @@ export async function POST(req: NextRequest) {
 
     // Si es un comercio de Red Vecindog → notificar a todos los usuarios
     if (metaMap.tipo === 'comercio') {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
       // Traer datos del comercio para la notificación
       const { data: adData } = await admin
         .from('ads')
@@ -187,6 +228,11 @@ async function notificarAdmin({
   negocio, plan, email, paymentId, renovacion = false,
 }: { negocio: string; plan: string; email: string; paymentId: string; renovacion?: boolean }) {
   try {
+    // ALTO: Escapar HTML para prevenir inyección en el email del admin
+    const n = escHtml(negocio);
+    const p = escHtml(plan);
+    const e = escHtml(email);
+    const id = escHtml(paymentId);
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -196,14 +242,14 @@ async function notificarAdmin({
       body: JSON.stringify({
         from: 'Vecindog <noreply@mivecindog.com.ar>',
         to: [process.env.ADMIN_EMAIL ?? ''],
-        subject: renovacion ? `🔄 Renovación publicidad: ${negocio} (${plan})` : `💰 Nuevo anunciante: ${negocio} (${plan})`,
+        subject: renovacion ? `🔄 Renovación publicidad: ${n} (${p})` : `💰 Nuevo anunciante: ${n} (${p})`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <h2>Nuevo pago confirmado en Vecindog</h2>
-            <p><strong>Negocio:</strong> ${negocio}</p>
-            <p><strong>Plan:</strong> ${plan}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Payment ID:</strong> ${paymentId}</p>
+            <p><strong>Negocio:</strong> ${n}</p>
+            <p><strong>Plan:</strong> ${p}</p>
+            <p><strong>Email:</strong> ${e}</p>
+            <p><strong>Payment ID:</strong> ${id}</p>
             <p>Los espacios publicitarios ya están activos.</p>
             <a href="https://www.mivecindog.com.ar/admin/publicidad"
                style="display:inline-block;margin-top:16px;background:#B85C4A;color:white;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold">

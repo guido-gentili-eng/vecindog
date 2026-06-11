@@ -2,6 +2,7 @@
 -- usuarios. Necesario para la búsqueda de amigos (AmigosPanel) y para el
 -- escaneo de QR / página pública de historia del perro.
 -- Las políticas de INSERT/UPDATE/DELETE siguen restringidas al dueño.
-create policy if not exists "ver perros publicamente"
+drop policy if exists "ver perros publicamente" on public.perros;
+create policy "ver perros publicamente"
   on public.perros for select
   using (true);

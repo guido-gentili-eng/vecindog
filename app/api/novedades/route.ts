@@ -108,7 +108,8 @@ export async function DELETE(req: NextRequest) {
     if (!esOwner) return NextResponse.json({ error: 'Sin permisos' }, { status: 403 });
   }
 
-  await admin.from('novedades').delete().eq('id', novedadId);
+  const { error: delErr } = await admin.from('novedades').delete().eq('id', novedadId);
+  if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

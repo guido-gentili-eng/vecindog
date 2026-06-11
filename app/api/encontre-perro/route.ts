@@ -8,6 +8,9 @@ function esc(s: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Intencionalmente sin auth: quien encuentra un perro perdido escanea el QR del collar
+  // y llega a /historia/[perroId] sin estar logueado — necesita poder notificar al dueño.
+  // Mitigación: inputs acotados a 1000/200 chars, sin datos sensibles expuestos.
   const { perroId, mensaje: rawMensaje, contacto: rawContacto } = await req.json();
   // Sanitizar inputs para evitar XSS en el email
   const mensaje  = rawMensaje  ? String(rawMensaje).slice(0, 1000)  : '';

@@ -22,6 +22,8 @@ export async function listarPesos(perroId: string): Promise<Peso[]> {
 }
 
 export async function agregarPeso(perroId: string, input: PesoInput): Promise<Peso> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { data, error } = await supabase
     .from('pesos')
     .insert({

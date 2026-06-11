@@ -9,7 +9,19 @@ import { useLanguage, LanguageSwitcher } from '@/contexts/LanguageContext';
 type Step = 'form' | 'confirm' | 'forgot';
 
 // Rutas públicas donde NO debe aparecer el modal de login
-const PUBLIC_PATHS = ['/historia/'];
+const PUBLIC_PATHS = [
+  '/historia/',
+  '/reencontrados',
+  '/terminos',
+  '/privacidad',
+  '/planes',
+  '/reset-password',
+  '/verificar',
+  '/buscar',
+  '/mapa',
+  '/calculadora-edad',
+  '/adoptar',
+];
 
 export default function AuthModal() {
   const { hasChosen, loading, signIn, signUp, signInWithGoogle, verifyOtp, resendConfirm, resetPassword, enterAsGuest } = useAuth();

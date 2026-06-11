@@ -74,7 +74,8 @@ export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' |
 /* ─────────────────── Consultas ─────────────────── */
 
 export async function listarMisPerros(): Promise<Perro[]> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
   if (!user) return [];
   const { data, error } = await supabase
     .from('perros')
@@ -203,6 +204,8 @@ export async function eliminarPerro(id: string): Promise<void> {
 /* ─────────────────── CRUD vacunas ─────────────────── */
 
 export async function agregarVacuna(perroId: string, input: VacunaInput): Promise<Vacuna> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { data, error } = await supabase.from('vacunas').insert({
     perro_id:    perroId,
     nombre:      input.nombre,

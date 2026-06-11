@@ -215,9 +215,12 @@ export async function notificarAmigosPerroPerdido(params: {
 
 /** Rechaza o elimina una amistad */
 export async function rechazarEliminarAmistad(amistadId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
   const { error } = await supabase
     .from('amistades')
     .delete()
-    .eq('id', amistadId);
+    .eq('id', amistadId)
+    .or(`solicitante_id.eq.${user.id},receptor_id.eq.${user.id}`);
   if (error) throw error;
 }

@@ -545,8 +545,12 @@ export default function PerroDetallePage() {
 
   async function handleDeletePerro() {
     if (!perro) return;
-    await eliminarPerro(perro.id);
-    router.push('/mis-perros');
+    try {
+      await eliminarPerro(perro.id);
+      router.push('/mis-perros');
+    } catch {
+      alert('No se pudo eliminar el perro. Intentá de nuevo.');
+    }
   }
 
   const sortDesparas = (list: Desparasitacion[]) =>

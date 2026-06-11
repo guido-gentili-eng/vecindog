@@ -208,9 +208,10 @@ export default function MiComercioPage() {
 
         <div className="rounded-[24px] bg-white border border-black/5 overflow-hidden">
           {comercio.imagen_url && (
-            <div className="relative h-44 w-full overflow-hidden">
-              <Image src={comercio.imagen_url} alt={comercio.titulo} fill className="object-cover object-center" sizes="(max-width:768px) 100vw, 600px" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="relative h-44 w-full bg-[#f5f0eb] overflow-hidden">
+              <div className="absolute inset-6">
+                <Image src={comercio.imagen_url} alt={comercio.titulo} fill className="object-contain object-center" sizes="(max-width:768px) 100vw, 600px" />
+              </div>
             </div>
           )}
           <div className="px-5 py-4">

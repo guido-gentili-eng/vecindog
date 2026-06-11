@@ -200,20 +200,9 @@ export default function RedVecindogPage() {
                 </div>
                 <div className="flex items-baseline gap-3">
                   <span className="font-display text-5xl font-black">
-                    ${precioInfo.precioActual.toLocaleString('es-AR')}
+                    ${precioInfo.precioRegular.toLocaleString('es-AR')}
                   </span>
-                  <div>
-                    {precioInfo.esPromo ? (
-                      <>
-                        <span className="block text-white/70 text-sm">a partir del 4.° mes</span>
-                        <span className="block text-white/50 text-xs line-through">
-                          ${precioInfo.precioRegular.toLocaleString('es-AR')}{t.rvnPricingPromoStrike}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="block text-white/70 text-sm">a partir del 4.° mes</span>
-                    )}
-                  </div>
+                  <span className="block text-white/70 text-sm">/ mes a partir del 4.° mes</span>
                 </div>
               </div>
               <p className="mt-3 text-white/70 leading-relaxed">

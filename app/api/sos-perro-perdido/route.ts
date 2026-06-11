@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 function esc(s: string): string {
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
           html: `
             <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
               <div style="background: #D7503A; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-                <h1 style="color: white; margin: 0; font-size: 22px;">🚨 Alerta de amigo — Vecindog</h1>
+                <img src="https://www.mivecindog.com.ar/logo.svg" alt="Vecindog" width="160" height="40" style="display:block;margin:0 auto;" />
               </div>
               <h2 style="color: #1a1a1a;">Hola ${saludo},</h2>
               <p style="color: #555; font-size: 16px; line-height: 1.6;">

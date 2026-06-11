@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 
 function esc(s: string): string {
   return s
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         html: `
           <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
             <div style="background: #EE5A3B; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-              <h1 style="color: white; margin: 0; font-size: 22px;">🐾 Vecindog — Solicitud de Cotización</h1>
+              <img src="https://www.mivecindog.com.ar/logo.svg" alt="Vecindog" width="160" height="40" style="display:block;margin:0 auto;" />
             </div>
             <h2 style="color: #1a1a1a; margin-top: 0;">Nueva solicitud de análisis de laboratorio</h2>
             <div style="background: #FFF8F0; border-radius: 12px; padding: 20px; margin: 16px 0; border-left: 4px solid #EE5A3B;">

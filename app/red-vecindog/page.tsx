@@ -173,12 +173,9 @@ export default function RedVecindogPage() {
                 </p>
                 <p className="mt-3 flex items-baseline gap-2 flex-wrap">
                   <span className="font-display text-3xl font-black text-amber-600">
-                    ${precioInfo.precioPromo.toLocaleString('es-AR')}
+                    GRATIS
                   </span>
                   <span className="text-sm font-semibold text-ink-muted">{t.rvnPromoMonths}</span>
-                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
-                    {t.rvnPromoLuego} ${precioInfo.precioRegular.toLocaleString('es-AR')}/mes
-                  </span>
                 </p>
               </div>
             </div>
@@ -208,13 +205,13 @@ export default function RedVecindogPage() {
                   <div>
                     {precioInfo.esPromo ? (
                       <>
-                        <span className="block text-white/70 text-sm">a partir del 2.° mes</span>
+                        <span className="block text-white/70 text-sm">a partir del 4.° mes</span>
                         <span className="block text-white/50 text-xs line-through">
                           ${precioInfo.precioRegular.toLocaleString('es-AR')}{t.rvnPricingPromoStrike}
                         </span>
                       </>
                     ) : (
-                      <span className="block text-white/70 text-sm">a partir del 2.° mes</span>
+                      <span className="block text-white/70 text-sm">a partir del 4.° mes</span>
                     )}
                   </div>
                 </div>

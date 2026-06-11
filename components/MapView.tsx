@@ -27,27 +27,35 @@ const CAT_LABEL: Record<string, string> = {
 
 /* ──────────────────── Íconos ──────────────────── */
 
-/** Pin Vecindog con color de categoría */
+/** Pin Vecindog con color de categoría (SVG oficial) */
 function createPinIcon(categoria: string) {
-  const pinColor  = CAT_COLOR[categoria] ?? '#6b7280';
-  const dogColor  = '#1A1A1A';
-  const eyeColor  = '#F5EFE6';
+  const pinColor = CAT_COLOR[categoria] ?? '#6b7280';
+  const pinDark  = shadeHex(pinColor, -0.25);
+  const pawColor = '#413f3f';
   const html = `
-    <div style="width:36px;height:44px;cursor:pointer;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.40))">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="36" height="44">
-        <path d="M50 4 C72 4 90 22 90 44 C90 66 50 116 50 116 C50 116 10 66 10 44 C10 22 28 4 50 4 Z" fill="${pinColor}"/>
-        <circle cx="50" cy="44" r="30" fill="#F5EFE6"/>
-        <g transform="translate(50 44)" fill="${dogColor}">
-          <ellipse cx="-13" cy="-8" rx="7" ry="13" transform="rotate(-22 -13 -8)"/>
-          <ellipse cx="-2" cy="0" rx="18" ry="14"/>
-          <ellipse cx="14" cy="3" rx="10" ry="7.5"/>
-          <ellipse cx="22" cy="2" rx="2.5" ry="2"/>
+    <div style="width:32px;height:48px;cursor:pointer;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.40))">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 59.57 89.72" width="32" height="48">
+        <path fill="${pinColor}" d="M29.79,0C13.34,0,0,13.34,0,29.79,0,53.16,21.13,65.1,29.79,89.72c8.66-24.62,29.79-36.56,29.79-59.93C59.57,13.34,46.24,0,29.79,0ZM35.22,51.3c-.29.07-.58.14-.87.2-.57,3.35-.69,7.15-.66,7.26,0,0,0,0,0,0-.07.04-3.33-2.52-5.14-5.57-.14-.23-.26-.45-.38-.67-8.91-.35-16.29-6.5-18.57-15.58-2.77-11.04,3.93-22.24,14.97-25.01s22.24,3.93,25.01,14.97c2.77,11.04-3.32,21.63-14.36,24.4Z"/>
+        <g fill="${pawColor}">
+          <path d="M23.05,33.88c-1.24.15-2.39-.95-2.57-2.46-.24-1.96.54-3.89,1.77-4.04,1.24-.15,2.48,1.67,2.7,3.49.19,1.51-.66,2.86-1.9,3.01Z"/>
+          <path d="M32.78,40.28c-1.76-.04-2.43-.82-3.56-.84-1.13-.02-1.83.73-3.59.7-2.3-.05-3.96-2.94-1.83-4.79,2.65-2.3,3.45-5.24,5.61-5.19,2.17.04,2.84,3.02,5.39,5.42,2.05,1.94.28,4.76-2.02,4.71Z"/>
+          <path d="M30.05,26.32c.19-1.82,1.41-3.67,2.64-3.53,1.24.13,2.05,2.05,1.84,4.01-.16,1.51-1.3,2.63-2.53,2.5-1.24-.13-2.11-1.47-1.95-2.98Z"/>
+          <path d="M24.42,26.59c-.13-1.97.76-3.85,2-3.93,1.24-.08,2.38,1.81,2.49,3.64.1,1.52-.83,2.82-2.07,2.9-1.24.08-2.33-1.09-2.43-2.61Z"/>
+          <path d="M35.61,34.14c-1.23-.2-2.02-1.59-1.77-3.09.3-1.81,1.62-3.58,2.84-3.37,1.23.2,1.93,2.16,1.6,4.11-.25,1.5-1.45,2.56-2.67,2.35Z"/>
         </g>
-        <circle cx="46" cy="40" r="1.8" fill="${eyeColor}"/>
-        <path d="M72 49 Q78 55 78 62 Q78 68 74 68 Q70 68 70 62 Q70 56 72 52" fill="none" stroke="${dogColor}" stroke-width="3" stroke-linecap="round"/>
+        <path fill="${pinDark}" d="M28.55,53.2c-.14-.23-.26-.45-.38-.67-8.91-.35-16.29-6.5-18.57-15.58-2.77-11.04,3.93-22.24,14.97-25.01,1.75-.44,3.49-.61,5.21-.6V0C13.34,0,0,13.34,0,29.79c0,23.37,21.13,35.31,29.79,59.93v-34.77c-.44-.56-.87-1.14-1.24-1.75Z"/>
       </svg>
     </div>`;
-  return L.divIcon({ className: '', html, iconSize: [36, 44], iconAnchor: [18, 44], popupAnchor: [0, -46] });
+  return L.divIcon({ className: '', html, iconSize: [32, 48], iconAnchor: [16, 48], popupAnchor: [0, -50] });
+}
+
+/** Oscurece un color hex en un factor (negativo = más oscuro) */
+function shadeHex(hex: string, factor: number): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, Math.min(255, Math.round(((n >> 16) & 0xff) * (1 + factor))));
+  const g = Math.max(0, Math.min(255, Math.round(((n >> 8)  & 0xff) * (1 + factor))));
+  const b = Math.max(0, Math.min(255, Math.round(((n)       & 0xff) * (1 + factor))));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
 
 /** Ícono de veterinaria: cuadrado teal con cruz blanca */

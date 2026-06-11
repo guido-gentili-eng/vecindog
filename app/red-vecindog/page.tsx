@@ -536,6 +536,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
 
 function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInfo: PrecioInfo }) {
   const { t }    = useLanguage();
+  const { user } = useAuth();
   const fileRef  = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -594,9 +595,15 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
     const digitos = telefono.replace(/\D/g, '');
     if (digitos.length < 10) { setError(t.rvnErrPhoneDigits); return; }
 
+    if (!user) { setError('Tenés que iniciar sesión para registrar tu negocio.'); return; }
+
     setError(''); setLoading(true);
 
     try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setError('Sesión expirada. Volvé a iniciar sesión.'); setLoading(false); return; }
+
       let imagen_url = '';
       if (fotoFile) {
         const { subirImagenAd } = await import('@/lib/ads');
@@ -605,7 +612,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
 
       const res = await fetch('/api/trial/red-vecindog', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
         body: JSON.stringify({
           nombre, categoria, telefono, direccion, localidad,
           lat: adLat ?? localidadLat, lng: adLng ?? localidadLng,

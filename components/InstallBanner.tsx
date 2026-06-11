@@ -33,7 +33,7 @@ export default function InstallBanner() {
     // No mostrar si ya está instalado o en SSR
     if (typeof window === 'undefined') return;
     if (isInStandaloneMode()) { setInstalled(true); return; }
-    if (sessionStorage.getItem('install_dismissed')) { setDismissed(true); return; }
+    if (localStorage.getItem('install_dismissed')) { setDismissed(true); return; }
 
     if (isIOS()) setPlatform('ios');
     else if (isAndroid()) setPlatform('android');
@@ -59,7 +59,7 @@ export default function InstallBanner() {
 
   function handleDismiss() {
     setDismissed(true);
-    sessionStorage.setItem('install_dismissed', '1');
+    localStorage.setItem('install_dismissed', '1');
     window.dispatchEvent(new Event('install-banner-dismissed'));
   }
 
@@ -76,15 +76,7 @@ export default function InstallBanner() {
 
           {/* Header del banner */}
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-primary shadow">
-              <svg viewBox="0 0 32 32" className="h-6 w-6" fill="white">
-                <ellipse cx="7"  cy="11" rx="3" ry="4" />
-                <ellipse cx="14" cy="6"  rx="3" ry="4" />
-                <ellipse cx="22" cy="6"  rx="3" ry="4" />
-                <ellipse cx="29" cy="11" rx="3" ry="4" />
-                <path d="M18 14c-6 0-10 5-10 9 0 4 4 6 10 6s10-2 10-6c0-4-9-9-10-9z" />
-              </svg>
-            </div>
+            <img src="/icons/icon-96x96.png" alt="Vecindog" className="h-11 w-11 rounded-2xl shadow" />
             <div className="flex-1">
               <p className="font-display font-black text-sm text-ink">Instalá Vecindog gratis</p>
               <p className="text-xs text-ink-muted">Agregala a tu pantalla de inicio</p>
@@ -145,15 +137,7 @@ export default function InstallBanner() {
             </button>
 
             <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary">
-                <svg viewBox="0 0 32 32" className="h-7 w-7" fill="white">
-                  <ellipse cx="7"  cy="11" rx="3" ry="4" />
-                  <ellipse cx="14" cy="6"  rx="3" ry="4" />
-                  <ellipse cx="22" cy="6"  rx="3" ry="4" />
-                  <ellipse cx="29" cy="11" rx="3" ry="4" />
-                  <path d="M18 14c-6 0-10 5-10 9 0 4 4 6 10 6s10-2 10-6c0-4-9-9-10-9z" />
-                </svg>
-              </div>
+              <img src="/icons/icon-96x96.png" alt="Vecindog" className="h-12 w-12 rounded-2xl" />
               <div>
                 <p className="font-display text-lg font-black text-ink">Instalá Vecindog</p>
                 <p className="text-xs text-ink-muted">En 3 pasos desde Safari</p>

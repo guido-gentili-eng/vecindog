@@ -16,7 +16,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/15 to-transparent" />
 
       <div className="relative px-6 py-6 text-right md:px-10 md:py-8 flex flex-col items-end justify-center min-h-[260px] md:min-h-[320px]">
-        <h1 className="font-display font-bold leading-snug tracking-tight text-white/90 text-lg md:text-2xl">
+        <h1 className="font-display font-bold tracking-tight text-white/90" style={{ fontSize: '41pt', lineHeight: '41pt' }}>
           <span className="block">Buscá.</span>
           <span className="block">Encontrá.</span>
           <span className="block">Adoptá.</span>

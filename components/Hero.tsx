@@ -18,7 +18,8 @@ export default function Hero() {
         alt="Persona abrazando a su perro"
         fill
         priority
-        className="object-cover object-center scale-x-[-1]"
+        className="object-cover object-center"
+        style={{ transform: 'scaleX(-1)' }}
         sizes="(max-width: 768px) 100vw, 900px"
       />
       {/* Overlay oscuro para legibilidad del texto */}

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { nombreCorto } from '@/lib/ciudades';
@@ -10,50 +11,39 @@ export default function Hero() {
   const cityLabel = ciudad ? nombreCorto(ciudad) : 'Argentina';
 
   return (
-    <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-brand-cream-soft via-brand-cream to-[#FBDFD2] px-6 py-6 text-center shadow-soft ring-1 ring-black/5 md:px-10 md:py-8">
-      <Decoraciones />
-      <div className="relative mx-auto max-w-3xl">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-xs font-bold text-brand-primary shadow-sm ring-1 ring-black/5 backdrop-blur">
+    <section className="relative overflow-hidden rounded-[28px] shadow-soft ring-1 ring-black/10">
+      {/* Foto de fondo */}
+      <Image
+        src="/hero.jpg"
+        alt="Persona abrazando a su perro"
+        fill
+        priority
+        className="object-cover object-center"
+        sizes="(max-width: 768px) 100vw, 900px"
+      />
+      {/* Overlay oscuro para legibilidad del texto */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/10" />
+
+      {/* Contenido */}
+      <div className="relative px-6 py-8 text-left md:px-10 md:py-12">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm ring-1 ring-white/30 backdrop-blur">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-primary/60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-primary" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
           </span>
           {t.heroChip} · {cityLabel}
         </span>
 
-        <h1 className="mt-3 font-display text-3xl font-black leading-[1.05] tracking-tight text-ink md:text-5xl">
-          {t.heroTitle} <span className="text-brand-primary">{t.heroTitleAccent}</span>
+        <h1 className="mt-3 font-display text-3xl font-black leading-[1.05] tracking-tight text-white md:text-5xl">
+          {t.heroTitle}{' '}
+          <span className="text-[#ff6b6b]">{t.heroTitleAccent}</span>
         </h1>
 
-        <p className="mx-auto mt-2 max-w-xl text-sm text-ink md:text-base">
+        <p className="mt-2 max-w-sm text-sm text-white/85 md:text-base">
           {t.heroSub}{' '}
-          <strong className="font-bold">{t.heroSubBold}</strong>.
+          <strong className="font-bold text-white">{t.heroSubBold}</strong>.
         </p>
       </div>
     </section>
-  );
-}
-
-function Decoraciones() {
-  return (
-    <>
-      <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand-primary/10" />
-      <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-adopt/10" />
-      <PawSvg className="pointer-events-none absolute right-5 top-5 h-5 w-5 rotate-12 text-brand-primary/25 md:h-6 md:w-6" />
-      <PawSvg className="pointer-events-none absolute bottom-5 left-5 h-5 w-5 -rotate-12 text-brand-primary/20 md:h-7 md:w-7" />
-      <PawSvg className="pointer-events-none absolute left-1/4 top-6 hidden h-4 w-4 -rotate-12 text-brand-primary/15 sm:block" />
-    </>
-  );
-}
-
-function PawSvg({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} fill="currentColor" aria-hidden="true">
-      <ellipse cx="7"  cy="11" rx="3" ry="4" />
-      <ellipse cx="14" cy="6"  rx="3" ry="4" />
-      <ellipse cx="22" cy="6"  rx="3" ry="4" />
-      <ellipse cx="29" cy="11" rx="3" ry="4" />
-      <path d="M18 14c-6 0-10 5-10 9 0 4 4 6 10 6s10-2 10-6c0-4-4-9-10-9z" />
-    </svg>
   );
 }

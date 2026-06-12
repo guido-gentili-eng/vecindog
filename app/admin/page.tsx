@@ -111,7 +111,12 @@ export default function AdminPage() {
   const [nuevoAd,       setNuevoAd]       = useState(false);
   const [nuevoAdLoad,   setNuevoAdLoad]   = useState(false);
   const [nuevoAdErr,    setNuevoAdErr]    = useState('');
+  const [naVariant,     setNaVariant]     = useState<'leaderboard'|'card'|'sidebar'|'comercio'>('leaderboard');
   const [naTitulo,      setNaTitulo]      = useState('');
+  const [naSubtitulo,   setNaSubtitulo]   = useState('');
+  const [naHref,        setNaHref]        = useState('');
+  const [naCta,         setNaCta]         = useState('');
+  const [naImagenUrl,   setNaImagenUrl]   = useState('');
   const [naCategoria,   setNaCategoria]   = useState('pet-shop');
   const [naLocalidad,   setNaLocalidad]   = useState('');
   const [naTelefono,    setNaTelefono]    = useState('');
@@ -135,37 +140,38 @@ export default function AdminPage() {
     if (!naTitulo.trim() || !naFechaFin) return;
     setNuevoAdLoad(true); setNuevoAdErr('');
     try {
+      const esComercio = naVariant === 'comercio';
       await crearAd({
-        variant: 'comercio',
+        variant: naVariant,
         titulo: naTitulo.trim(),
-        subtitulo: naLocalidad ? `${naCategoria} · ${naLocalidad}` : null,
-        imagen_url: null,
-        href: '',
-        cta: null,
+        subtitulo: naSubtitulo.trim() || (esComercio && naLocalidad ? `${naCategoria} · ${naLocalidad}` : null),
+        imagen_url: naImagenUrl.trim() || null,
+        href: naHref.trim(),
+        cta: naCta.trim() || null,
         fecha_inicio: new Date().toISOString().slice(0, 10),
         anunciante: naAnunciante.trim() || null,
-        plan: 'comercio',
+        plan: esComercio ? 'comercio' : 'basico',
         activo: true,
         fecha_fin: naFechaFin,
-        telefono_comercio: naTelefono.trim() || null,
-        direccion_comercio: naDireccion.trim() || null,
+        telefono_comercio: esComercio ? (naTelefono.trim() || null) : null,
+        direccion_comercio: esComercio ? (naDireccion.trim() || null) : null,
         horario_apertura: null,
         horario_cierre: null,
-        categoria_local: naCategoria,
+        categoria_local: esComercio ? naCategoria : null,
         descripcion_comercio: null,
-        localidad_comercio: naLocalidad.trim() || null,
+        localidad_comercio: esComercio ? (naLocalidad.trim() || null) : null,
         lat: null,
         lng: null,
       });
       // Reset form
-      setNaTitulo(''); setNaCategoria('pet-shop'); setNaLocalidad('');
+      setNaTitulo(''); setNaSubtitulo(''); setNaHref(''); setNaCta(''); setNaImagenUrl('');
+      setNaCategoria('pet-shop'); setNaLocalidad('');
       setNaTelefono(''); setNaDireccion(''); setNaAnunciante(''); setNaFechaFin('');
       setNuevoAd(false);
-      // Refrescar lista
       const data = await listarAds();
       setAdsData(data);
     } catch {
-      setNuevoAdErr('Error al crear el comercio. Intentá de nuevo.');
+      setNuevoAdErr('Error al crear el anuncio. Intentá de nuevo.');
     } finally {
       setNuevoAdLoad(false);
     }
@@ -846,37 +852,60 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Formulario nuevo comercio */}
+            {/* Formulario nuevo anuncio */}
             {nuevoAd && (
               <div className="border-b border-black/8 bg-[#faf7f4] px-5 py-4 space-y-3">
-                <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">Nuevo comercio (sin pago)</p>
+                <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">Nuevo anuncio (sin pago)</p>
+
+                {/* Tipo */}
+                <div className="flex gap-1.5 flex-wrap">
+                  {(['leaderboard','card','sidebar','comercio'] as const).map((v) => (
+                    <button key={v} type="button" onClick={() => setNaVariant(v)}
+                      className={`rounded-xl px-3 py-1 text-xs font-bold transition ${naVariant === v ? 'bg-brand-primary text-white' : 'bg-white border border-black/10 text-ink-muted hover:border-brand-primary/40'}`}>
+                      {v === 'leaderboard' ? 'Banner' : v === 'card' ? 'Card' : v === 'sidebar' ? 'Sidebar' : 'Comercio'}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
-                  <input className="field col-span-2" placeholder="Nombre del comercio *" value={naTitulo} onChange={(e) => setNaTitulo(e.target.value)} />
-                  <select className="field" value={naCategoria} onChange={(e) => setNaCategoria(e.target.value)}>
-                    <option value="veterinaria">Veterinaria</option>
-                    <option value="pet-shop">Pet Shop</option>
-                    <option value="peluqueria-canina">Peluquería Canina</option>
-                    <option value="adiestrador">Adiestrador</option>
-                    <option value="paseador">Paseador</option>
-                    <option value="guarderia-hotel">Guardería / Hotel</option>
-                    <option value="refugio-rescate">Refugio / Rescate</option>
-                    <option value="tienda-mascotas">Tienda de Mascotas</option>
-                    <option value="farmacia-veterinaria">Farmacia Veterinaria</option>
-                  </select>
-                  <input className="field" placeholder="Ciudad" value={naLocalidad} onChange={(e) => setNaLocalidad(e.target.value)} />
-                  <input className="field" placeholder="Teléfono" value={naTelefono} onChange={(e) => setNaTelefono(e.target.value)} />
-                  <input className="field" placeholder="Email anunciante" value={naAnunciante} onChange={(e) => setNaAnunciante(e.target.value)} />
-                  <input className="field col-span-2" placeholder="Dirección" value={naDireccion} onChange={(e) => setNaDireccion(e.target.value)} />
+                  {/* Campos comunes */}
+                  <input className="field col-span-2" placeholder="Título *" value={naTitulo} onChange={(e) => setNaTitulo(e.target.value)} />
+                  <input className="field col-span-2" placeholder="Subtítulo / tagline" value={naSubtitulo} onChange={(e) => setNaSubtitulo(e.target.value)} />
+                  <input className="field col-span-2" placeholder="URL destino (href)" value={naHref} onChange={(e) => setNaHref(e.target.value)} />
+                  <input className="field" placeholder="Texto del botón CTA" value={naCta} onChange={(e) => setNaCta(e.target.value)} />
+                  <input className="field" placeholder="URL imagen / banner" value={naImagenUrl} onChange={(e) => setNaImagenUrl(e.target.value)} />
+                  <input className="field col-span-2" placeholder="Email anunciante" value={naAnunciante} onChange={(e) => setNaAnunciante(e.target.value)} />
+
+                  {/* Campos exclusivos de Comercio */}
+                  {naVariant === 'comercio' && (<>
+                    <select className="field" value={naCategoria} onChange={(e) => setNaCategoria(e.target.value)}>
+                      <option value="veterinaria">Veterinaria</option>
+                      <option value="pet-shop">Pet Shop</option>
+                      <option value="peluqueria-canina">Peluquería Canina</option>
+                      <option value="adiestrador">Adiestrador</option>
+                      <option value="paseador">Paseador</option>
+                      <option value="guarderia-hotel">Guardería / Hotel</option>
+                      <option value="refugio-rescate">Refugio / Rescate</option>
+                      <option value="tienda-mascotas">Tienda de Mascotas</option>
+                      <option value="farmacia-veterinaria">Farmacia Veterinaria</option>
+                    </select>
+                    <input className="field" placeholder="Ciudad" value={naLocalidad} onChange={(e) => setNaLocalidad(e.target.value)} />
+                    <input className="field" placeholder="Teléfono" value={naTelefono} onChange={(e) => setNaTelefono(e.target.value)} />
+                    <input className="field" placeholder="Dirección" value={naDireccion} onChange={(e) => setNaDireccion(e.target.value)} />
+                  </>)}
+
+                  {/* Fecha vencimiento */}
                   <div className="col-span-2">
-                    <label className="mb-1 block text-[10px] font-bold text-ink-muted uppercase tracking-wide">Fecha de vencimiento *</label>
+                    <label className="mb-1 block text-[10px] font-bold text-ink-muted uppercase tracking-wide">Vence *</label>
                     <input type="date" className="field w-full" value={naFechaFin} onChange={(e) => setNaFechaFin(e.target.value)} />
                   </div>
                 </div>
+
                 {nuevoAdErr && <p className="text-xs font-semibold text-bad">{nuevoAdErr}</p>}
                 <div className="flex gap-2">
                   <button type="button" onClick={handleCrearAd} disabled={!naTitulo.trim() || !naFechaFin || nuevoAdLoad}
                     className="flex-1 rounded-2xl bg-brand-primary py-2 text-sm font-bold text-white disabled:opacity-50 transition hover:bg-brand-primary/90">
-                    {nuevoAdLoad ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Crear comercio'}
+                    {nuevoAdLoad ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Crear anuncio'}
                   </button>
                   <button type="button" onClick={() => setNuevoAd(false)}
                     className="rounded-2xl border-2 border-black/10 px-4 py-2 text-sm font-bold text-ink-muted hover:border-black/20 transition">

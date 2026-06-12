@@ -36,7 +36,8 @@ export async function GET(req: NextRequest) {
   const tasks = perros.map(async (perro) => {
     if (!perro.fecha_nac) return false;
 
-    const anioNac = parseInt(perro.fecha_nac.slice(0, 4));
+    const anioNac = parseInt(perro.fecha_nac.slice(0, 4), 10);
+    if (!Number.isFinite(anioNac)) return false;
     const edad = hoy.getFullYear() - anioNac;
 
     const { data: existente } = await admin

@@ -231,10 +231,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // MEDIO: Memoizar para evitar crear new Date() en cada render de cada componente consumidor
-  const isPro = useMemo(
-    () => (profile?.plan === 'pro' && (!profile.plan_vencimiento || new Date(profile.plan_vencimiento) > new Date())) || profile?.is_admin === true,
-    [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]
-  );
+  const isPro = useMemo(() => {
+    if (profile?.is_admin === true) return true;
+    if (profile?.plan !== 'pro') return false;
+    if (!profile.plan_vencimiento) return true;
+    const exp = new Date(profile.plan_vencimiento);
+    return !isNaN(exp.getTime()) && exp > new Date();
+  }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
   const isSuspendido = useMemo(
     () => profile?.suspendido === true && profile?.is_admin !== true,
     [profile?.suspendido, profile?.is_admin]

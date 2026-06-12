@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
 
   // Vistas por día (últimos 14 días) para el mini gráfico
   const daily: Record<string, number> = {};
-  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(Date.now() - 13 * 24 * 60 * 60 * 1000);
   for (let i = 0; i < 14; i++) {
     const d = new Date(fourteenDaysAgo);
     d.setDate(d.getDate() + i);

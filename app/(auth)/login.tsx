@@ -193,6 +193,7 @@ export default function LoginScreen() {
         </View>
 
         {mode === 'register' && (
+          <>
           <TouchableOpacity
             style={styles.consentRow}
             onPress={() => setAceptoTerminos((v) => !v)}
@@ -232,6 +233,7 @@ export default function LoginScreen() {
               Confirmo que tengo 13 años o más. Las personas menores de 13 años no pueden registrarse en Vecindog.
             </Text>
           </TouchableOpacity>
+          </>
         )}
 
       </ScrollView>

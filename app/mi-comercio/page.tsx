@@ -376,6 +376,7 @@ function NovedadesPanel({ adId, novedades, onRefresh }: { adId: string; novedade
       if (!res.ok) throw new Error();
       setTitulo(''); setTexto(''); setCreando(false);
       onRefresh();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       setError(t.mcomNovError);
     } finally {

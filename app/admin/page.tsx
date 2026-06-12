@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus } from 'lucide-react';
-import { listarAds, crearAd, type Ad } from '@/lib/ads';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus } from 'lucide-react';
+import { listarAds, crearAd, subirImagenAd, type Ad, type AdVariant } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
 import { type Perro as PerroCompleto } from '@/lib/perros';
@@ -111,18 +111,42 @@ export default function AdminPage() {
   const [nuevoAd,       setNuevoAd]       = useState(false);
   const [nuevoAdLoad,   setNuevoAdLoad]   = useState(false);
   const [nuevoAdErr,    setNuevoAdErr]    = useState('');
-  const [naVariant,     setNaVariant]     = useState<'leaderboard'|'card'|'sidebar'|'comercio'>('leaderboard');
+  const [naVariant,     setNaVariant]     = useState<AdVariant>('leaderboard');
   const [naTitulo,      setNaTitulo]      = useState('');
   const [naSubtitulo,   setNaSubtitulo]   = useState('');
   const [naHref,        setNaHref]        = useState('');
   const [naCta,         setNaCta]         = useState('');
   const [naImagenUrl,   setNaImagenUrl]   = useState('');
+  const [naImagenLoad,  setNaImagenLoad]  = useState(false);
   const [naCategoria,   setNaCategoria]   = useState('pet-shop');
   const [naLocalidad,   setNaLocalidad]   = useState('');
   const [naTelefono,    setNaTelefono]    = useState('');
   const [naDireccion,   setNaDireccion]   = useState('');
   const [naAnunciante,  setNaAnunciante]  = useState('');
   const [naFechaFin,    setNaFechaFin]    = useState('');
+  const naFileRef = useRef<HTMLInputElement>(null);
+
+  const AD_SIZE_HINT: Record<AdVariant, string> = {
+    leaderboard: '1200 × 300 px (ratio 4:1) — banner horizontal',
+    card:        '600 × 400 px (ratio 3:2) — imagen cuadrada/horizontal',
+    sidebar:     '300 × 250 px — rectángulo vertical',
+    comercio:    '800 × 400 px — portada del comercio',
+  };
+
+  async function handleNaImagen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNaImagenLoad(true);
+    try {
+      const url = await subirImagenAd(file);
+      setNaImagenUrl(url);
+    } catch {
+      setNuevoAdErr('Error al subir la imagen.');
+    } finally {
+      setNaImagenLoad(false);
+      e.target.value = '';
+    }
+  }
 
   async function abrirAdsModal() {
     setAdsModal(true);
@@ -164,7 +188,7 @@ export default function AdminPage() {
         lng: null,
       });
       // Reset form
-      setNaTitulo(''); setNaSubtitulo(''); setNaHref(''); setNaCta(''); setNaImagenUrl('');
+      setNaTitulo(''); setNaSubtitulo(''); setNaHref(''); setNaCta(''); setNaImagenUrl(''); setNuevoAdErr('');
       setNaCategoria('pet-shop'); setNaLocalidad('');
       setNaTelefono(''); setNaDireccion(''); setNaAnunciante(''); setNaFechaFin('');
       setNuevoAd(false);
@@ -872,8 +896,30 @@ export default function AdminPage() {
                   <input className="field col-span-2" placeholder="Título *" value={naTitulo} onChange={(e) => setNaTitulo(e.target.value)} />
                   <input className="field col-span-2" placeholder="Subtítulo / tagline" value={naSubtitulo} onChange={(e) => setNaSubtitulo(e.target.value)} />
                   <input className="field col-span-2" placeholder="URL destino (href)" value={naHref} onChange={(e) => setNaHref(e.target.value)} />
-                  <input className="field" placeholder="Texto del botón CTA" value={naCta} onChange={(e) => setNaCta(e.target.value)} />
-                  <input className="field" placeholder="URL imagen / banner" value={naImagenUrl} onChange={(e) => setNaImagenUrl(e.target.value)} />
+                  <input className="field col-span-2" placeholder='Texto del botón (ej: "Ver más →", "Reservar turno")' value={naCta} onChange={(e) => setNaCta(e.target.value)} />
+
+                  {/* Upload imagen */}
+                  <div className="col-span-2 space-y-1.5">
+                    <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wide">
+                      Imagen del anuncio — <span className="normal-case font-normal">{AD_SIZE_HINT[naVariant]}</span>
+                    </p>
+                    <input ref={naFileRef} type="file" accept="image/*" className="hidden" onChange={handleNaImagen} />
+                    {naImagenUrl ? (
+                      <div className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={naImagenUrl} alt="preview" className="w-full rounded-xl object-cover max-h-28" />
+                        <button type="button" onClick={() => setNaImagenUrl('')}
+                          className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/50 text-white hover:bg-black/70 transition">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => naFileRef.current?.click()} disabled={naImagenLoad}
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-black/15 py-4 text-sm font-semibold text-ink-muted hover:border-brand-primary/40 hover:text-brand-primary transition disabled:opacity-50">
+                        {naImagenLoad ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ImagePlus className="h-4 w-4" /> Subir imagen</>}
+                      </button>
+                    )}
+                  </div>
                   <input className="field col-span-2" placeholder="Email anunciante" value={naAnunciante} onChange={(e) => setNaAnunciante(e.target.value)} />
 
                   {/* Campos exclusivos de Comercio */}

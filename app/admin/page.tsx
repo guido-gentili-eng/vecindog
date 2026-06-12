@@ -894,8 +894,8 @@ export default function AdminPage() {
                 <div className="grid grid-cols-2 gap-2">
                   {/* Campos comunes */}
                   <input className="field col-span-2" placeholder="Título *" value={naTitulo} onChange={(e) => setNaTitulo(e.target.value)} />
-                  <input className="field col-span-2" placeholder="Subtítulo / tagline" value={naSubtitulo} onChange={(e) => setNaSubtitulo(e.target.value)} />
-                  <input className="field col-span-2" placeholder="URL destino (href)" value={naHref} onChange={(e) => setNaHref(e.target.value)} />
+                  <input className="field col-span-2" placeholder='Descripción corta (ej: "Vacunas · Cirugía · Turnos online")' value={naSubtitulo} onChange={(e) => setNaSubtitulo(e.target.value)} />
+                  <input className="field col-span-2" placeholder='Link al hacer clic (ej: https://instagram.com/tunegocio)' value={naHref} onChange={(e) => setNaHref(e.target.value)} />
                   <input className="field col-span-2" placeholder='Texto del botón (ej: "Ver más →", "Reservar turno")' value={naCta} onChange={(e) => setNaCta(e.target.value)} />
 
                   {/* Upload imagen */}

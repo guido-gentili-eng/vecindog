@@ -74,7 +74,7 @@ export default async function PerfilComercioPage({ params }: Props) {
             <img
               src={comercio.imagen_url}
               alt={comercio.titulo}
-              className="h-44 w-full object-cover"
+              className="h-44 w-full object-contain bg-brand-cream"
             />
           ) : (
             <div className="h-32 w-full bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-5xl">

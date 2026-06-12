@@ -227,6 +227,8 @@ export async function POST(req: NextRequest) {
 async function notificarAdmin({
   negocio, plan, email, paymentId, renovacion = false,
 }: { negocio: string; plan: string; email: string; paymentId: string; renovacion?: boolean }) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
   try {
     // ALTO: Escapar HTML para prevenir inyección en el email del admin
     const n = escHtml(negocio);
@@ -241,7 +243,7 @@ async function notificarAdmin({
       },
       body: JSON.stringify({
         from: 'Vecindog <noreply@mivecindog.com.ar>',
-        to: [process.env.ADMIN_EMAIL ?? ''],
+        to: [adminEmail],
         subject: renovacion ? `🔄 Renovación publicidad: ${n} (${p})` : `💰 Nuevo anunciante: ${n} (${p})`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">

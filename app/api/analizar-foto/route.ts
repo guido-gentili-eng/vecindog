@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     const isPro = profile?.plan === 'pro' &&
       (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
 
-    const adminEmail = process.env.ADMIN_EMAIL ?? '';
-    if (!isPro && user.email !== adminEmail) {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!isPro && (!adminEmail || user.email !== adminEmail)) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
     }
 

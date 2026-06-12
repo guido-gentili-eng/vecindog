@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? '';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 export const dynamic = 'force-dynamic';
 
 async function checkAdmin(req: NextRequest) {
@@ -12,7 +12,7 @@ async function checkAdmin(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { data: { user } } = await anon.auth.getUser(token);
-  return user?.email === ADMIN_EMAIL ? user : null;
+  return (ADMIN_EMAIL && user?.email === ADMIN_EMAIL) ? user : null;
 }
 
 function getAdmin() {

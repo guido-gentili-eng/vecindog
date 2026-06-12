@@ -96,7 +96,8 @@ export async function POST(req: NextRequest) {
       messages: sanitized.slice(-10),
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const first = response.content[0];
+    const text = first?.type === 'text' ? first.text : '';
     return NextResponse.json({ reply: text });
   } catch (err) {
     console.error('[ai-help]', err);

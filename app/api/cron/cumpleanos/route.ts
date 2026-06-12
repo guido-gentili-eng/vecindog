@@ -31,17 +31,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, procesados: 0 });
   }
 
-  let enviados = 0;
+  const hoyStr = hoy.toISOString().slice(0, 10);
 
-  for (const perro of perros) {
-    if (!perro.fecha_nac) continue;
+  const tasks = perros.map(async (perro) => {
+    if (!perro.fecha_nac) return false;
 
     const anioNac = parseInt(perro.fecha_nac.slice(0, 4));
     const edad = hoy.getFullYear() - anioNac;
 
-    // Notificación in-app (una por día) — buscamos por perro.id para evitar
-    // falsos positivos con nombres que son substring de otros (ej: "Toto" vs "Totona")
-    const hoyStr = hoy.toISOString().slice(0, 10);
     const { data: existente } = await admin
       .from('notifications')
       .select('id')
@@ -56,16 +53,14 @@ export async function GET(req: NextRequest) {
         user_id: perro.user_id,
         post_id: null,
         tipo: 'cumpleanos',
-        // El [perro.id] al final permite deduplicación exacta sin depender del nombre
         mensaje: `🎂 ¡Hoy cumple ${edad} año${edad === 1 ? '' : 's'} ${perro.nombre}! Feliz cumpleaños. [${perro.id}]`,
         leida: false,
       });
     }
 
-    // Email al dueño
     const { data: userData } = await admin.auth.admin.getUserById(perro.user_id);
     const email = userData?.user?.email;
-    if (!email) continue;
+    if (!email) return false;
 
     const { data: profile } = await admin
       .from('profiles')
@@ -115,10 +110,13 @@ export async function GET(req: NextRequest) {
           </div>
         `,
       }),
-    });
+    }).catch(e => { console.error('[cumpleanos] email error:', e); return { ok: false }; });
 
-    if (res.ok) enviados++;
-  }
+    return res.ok;
+  });
+
+  const results = await Promise.allSettled(tasks);
+  const enviados = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
 
   return NextResponse.json({ ok: true, procesados: perros.length, enviados });
 }

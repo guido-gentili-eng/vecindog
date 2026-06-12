@@ -23,6 +23,9 @@ async function track(adId: string, event_type: string) {
 export default function TrackComercio({ adId, telefono, direccion, href }: Props) {
   useEffect(() => {
     track(adId, 'view');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('ref') === 'mapa') {
+      track(adId, 'click_mapa');
+    }
   }, [adId]);
 
   return (

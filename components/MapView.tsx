@@ -380,7 +380,7 @@ function agregarMarcadorComercio(map: L.Map, comercio: Ad): L.Marker {
       ${categoria}
       <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${esc(comercio.titulo)}</div>
       ${direccion}${telefono}${horario}
-      <a href="/comercio/${encodeURIComponent(comercio.id)}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver comercio →</a>
+      <a href="/comercio/${encodeURIComponent(comercio.id)}?ref=mapa" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver comercio →</a>
     </div>`;
 
   return L.marker([comercio.lat!, comercio.lng!], { icon: vetIcon })

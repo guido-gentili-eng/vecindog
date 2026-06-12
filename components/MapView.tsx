@@ -380,10 +380,10 @@ function agregarMarcadorComercio(map: L.Map, comercio: Ad): L.Marker {
       ${categoria}
       <div style="font-weight:800;font-size:13px;color:#0d9488;line-height:1.3">${esc(comercio.titulo)}</div>
       ${direccion}${telefono}${horario}
-      <a href="/red-vecindog/${encodeURIComponent(comercio.categoria_local ?? '')}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver en Red Vecindog →</a>
+      <a href="/comercio/${encodeURIComponent(comercio.id)}" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0d9488">Ver comercio →</a>
     </div>`;
 
   return L.marker([comercio.lat!, comercio.lng!], { icon: vetIcon })
-    .bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -44], opacity: 1 })
+    .bindPopup(tooltipHtml, { maxWidth: 240 })
     .addTo(map);
 }

@@ -185,73 +185,73 @@ export default function MiPerfilPage() {
     <div className="mx-auto max-w-2xl py-8 md:py-10 space-y-6">
 
       {/* ── HEADER con avatar ── */}
-      <div className="flex items-start gap-4">
-        {/* Avatar */}
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="relative h-20 w-20 overflow-hidden rounded-2xl bg-brand-cream ring-2 ring-brand-primary/20 transition hover:ring-brand-primary"
-          >
-            {fotoUrl ? (
-              <Image src={fotoUrl} alt="Avatar" fill className="object-cover" sizes="80px" />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-1">
-                <User className="h-8 w-8 text-brand-primary/40" />
+      <div className="space-y-3">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="relative h-20 w-20 overflow-hidden rounded-2xl bg-brand-cream ring-2 ring-brand-primary/20 transition hover:ring-brand-primary"
+            >
+              {fotoUrl ? (
+                <Image src={fotoUrl} alt="Avatar" fill className="object-cover" sizes="80px" />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-1">
+                  <User className="h-8 w-8 text-brand-primary/40" />
+                </div>
+              )}
+              {avatarLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                </div>
+              )}
+              <div className="absolute bottom-0 inset-x-0 flex items-center justify-center bg-black/30 py-1">
+                <Camera className="h-3.5 w-3.5 text-white" />
               </div>
-            )}
-            {avatarLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
-              </div>
-            )}
-            <div className="absolute bottom-0 inset-x-0 flex items-center justify-center bg-black/30 py-1">
-              <Camera className="h-3.5 w-3.5 text-white" />
-            </div>
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
-        </div>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
+          </div>
 
-        {/* Nombre + acciones */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-              <User className="h-3.5 w-3.5" /> {t.mipChip}
-            </span>
-            {isPro ? (
-              <button type="button" onClick={() => setQrOpen(true)}
-                className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
-                <QrCode className="h-3.5 w-3.5" /> QR
-              </button>
-            ) : (
-              <Link href="/planes"
-                className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
-                <QrCode className="h-3.5 w-3.5" /> QR
-              </Link>
+          {/* Nombre + acciones */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
+                <User className="h-3.5 w-3.5" /> {t.mipChip}
+              </span>
+              {isPro ? (
+                <button type="button" onClick={() => setQrOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                  <QrCode className="h-3.5 w-3.5" /> QR
+                </button>
+              ) : (
+                <Link href="/planes"
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-primary transition hover:bg-brand-primary/10">
+                  <QrCode className="h-3.5 w-3.5" /> QR
+                </Link>
+              )}
+            </div>
+            <h1 className="mt-1 font-display text-2xl font-black tracking-tight text-ink truncate">
+              {profile ? `${profile.nombre} ${profile.apellido}` : t.mipChip}
+            </h1>
+            {profile?.bio && (
+              <p className="mt-0.5 text-sm text-ink-muted line-clamp-2">{profile.bio}</p>
             )}
           </div>
-          <h1 className="mt-1 font-display text-2xl font-black tracking-tight text-ink truncate">
-            {profile ? `${profile.nombre} ${profile.apellido}` : t.mipChip}
-          </h1>
-          {profile?.bio && (
-            <p className="mt-0.5 text-sm text-ink-muted line-clamp-2">{profile.bio}</p>
-          )}
         </div>
 
-        {/* Botón Obediencia */}
-        <div className="shrink-0">
-          {isPro ? (
-            <a href="/plan-obediencia-canina.pdf" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
-              <BookOpen className="h-4 w-4" /> {t.mipObediencia}
-            </a>
-          ) : (
-            <Link href="/planes"
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
-              <BookOpen className="h-4 w-4" /> {t.mipObediencia}
-            </Link>
-          )}
-        </div>
+        {/* Botón Obediencia — fila separada */}
+        {isPro ? (
+          <a href="/plan-obediencia-canina.pdf" target="_blank" rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
+            <BookOpen className="h-4 w-4" /> {t.mipObediencia}
+          </a>
+        ) : (
+          <Link href="/planes"
+            className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-primary/90">
+            <BookOpen className="h-4 w-4" /> {t.mipObediencia}
+          </Link>
+        )}
       </div>
 
       {/* Modal QR */}

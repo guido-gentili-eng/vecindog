@@ -44,17 +44,22 @@ export async function POST(req: NextRequest) {
     const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
 
     if (perro_id && (!adminEmail || user.email !== adminEmail)) {
-      const { data: perroData } = await admin
-        .from('perros').select('cartoon_generado_at').eq('id', perro_id).single();
-      if (perroData?.cartoon_generado_at) {
-        const generadoAt = new Date(perroData.cartoon_generado_at);
-        const ahora = new Date();
-        if (generadoAt.getFullYear() === ahora.getFullYear() && generadoAt.getMonth() === ahora.getMonth()) {
-          return NextResponse.json(
-            { error: 'Ya generaste un avatar este mes para este perro. Volvé el mes que viene 🐾' },
-            { status: 429 }
-          );
-        }
+      // Claim atómico: actualiza solo si el mes actual no fue usado aún.
+      // Previene race condition donde dos requests paralelos pasan el check simultáneamente.
+      const ahora = new Date();
+      const primeroDeMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString();
+      const { data: claimed } = await admin
+        .from('perros')
+        .update({ cartoon_generado_at: ahora.toISOString() })
+        .eq('id', perro_id)
+        .or(`cartoon_generado_at.is.null,cartoon_generado_at.lt.${primeroDeMes}`)
+        .select('id');
+
+      if (!claimed?.length) {
+        return NextResponse.json(
+          { error: 'Ya generaste un avatar este mes para este perro. Volvé el mes que viene 🐾' },
+          { status: 429 }
+        );
       }
     }
 

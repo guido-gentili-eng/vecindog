@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
         .update({ activo: true, fecha_inicio: new Date().toISOString().slice(0, 10), fecha_fin: nuevaFin.toISOString().slice(0, 10) })
         .in('id', adIds);
 
-      await notificarAdmin({
+      notificarAdmin({
         negocio:   (meta as Record<string, string>)?.negocio ?? '',
         plan:      (meta as Record<string, string>)?.plan ?? '',
         email:     (meta as Record<string, string>)?.email ?? '',

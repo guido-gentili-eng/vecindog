@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search } from 'lucide-react';
-import { listarAds, type Ad } from '@/lib/ads';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus } from 'lucide-react';
+import { listarAds, crearAd, type Ad } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
 import { type Perro as PerroCompleto } from '@/lib/perros';
@@ -108,6 +108,16 @@ export default function AdminPage() {
   const [reportes,      setReportes]      = useState<ReporteAdmin[]>([]);
   const [reportesOpen,  setReportesOpen]  = useState(false);
   const [reportesLoad,  setReportesLoad]  = useState(false);
+  const [nuevoAd,       setNuevoAd]       = useState(false);
+  const [nuevoAdLoad,   setNuevoAdLoad]   = useState(false);
+  const [nuevoAdErr,    setNuevoAdErr]    = useState('');
+  const [naTitulo,      setNaTitulo]      = useState('');
+  const [naCategoria,   setNaCategoria]   = useState('pet-shop');
+  const [naLocalidad,   setNaLocalidad]   = useState('');
+  const [naTelefono,    setNaTelefono]    = useState('');
+  const [naDireccion,   setNaDireccion]   = useState('');
+  const [naAnunciante,  setNaAnunciante]  = useState('');
+  const [naFechaFin,    setNaFechaFin]    = useState('');
 
   async function abrirAdsModal() {
     setAdsModal(true);
@@ -118,6 +128,46 @@ export default function AdminPage() {
       setAdsData(data);
     } finally {
       setAdsLoading(false);
+    }
+  }
+
+  async function handleCrearAd() {
+    if (!naTitulo.trim() || !naFechaFin) return;
+    setNuevoAdLoad(true); setNuevoAdErr('');
+    try {
+      await crearAd({
+        variant: 'comercio',
+        titulo: naTitulo.trim(),
+        subtitulo: naLocalidad ? `${naCategoria} · ${naLocalidad}` : null,
+        imagen_url: null,
+        href: '',
+        cta: null,
+        fecha_inicio: new Date().toISOString().slice(0, 10),
+        anunciante: naAnunciante.trim() || null,
+        plan: 'comercio',
+        activo: true,
+        fecha_fin: naFechaFin,
+        telefono_comercio: naTelefono.trim() || null,
+        direccion_comercio: naDireccion.trim() || null,
+        horario_apertura: null,
+        horario_cierre: null,
+        categoria_local: naCategoria,
+        descripcion_comercio: null,
+        localidad_comercio: naLocalidad.trim() || null,
+        lat: null,
+        lng: null,
+      });
+      // Reset form
+      setNaTitulo(''); setNaCategoria('pet-shop'); setNaLocalidad('');
+      setNaTelefono(''); setNaDireccion(''); setNaAnunciante(''); setNaFechaFin('');
+      setNuevoAd(false);
+      // Refrescar lista
+      const data = await listarAds();
+      setAdsData(data);
+    } catch {
+      setNuevoAdErr('Error al crear el comercio. Intentá de nuevo.');
+    } finally {
+      setNuevoAdLoad(false);
     }
   }
 
@@ -775,6 +825,10 @@ export default function AdminPage() {
                 <Megaphone className="h-5 w-5 text-brand-primary" /> Anuncios
               </h3>
               <div className="flex items-center gap-2">
+                <button type="button" onClick={() => { setNuevoAd((v) => !v); setNuevoAdErr(''); }}
+                  className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold transition ${nuevoAd ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20'}`}>
+                  <Plus className="h-3.5 w-3.5" /> Nuevo
+                </button>
                 <div className="flex rounded-xl border border-black/10 overflow-hidden text-xs font-bold">
                   <button type="button" onClick={() => setAdsOrden('az')}
                     className={`flex items-center gap-1 px-3 py-1.5 transition ${adsOrden === 'az' ? 'bg-brand-primary text-white' : 'text-ink-muted hover:bg-brand-cream'}`}>
@@ -791,6 +845,46 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
+
+            {/* Formulario nuevo comercio */}
+            {nuevoAd && (
+              <div className="border-b border-black/8 bg-[#faf7f4] px-5 py-4 space-y-3">
+                <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">Nuevo comercio (sin pago)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input className="field col-span-2" placeholder="Nombre del comercio *" value={naTitulo} onChange={(e) => setNaTitulo(e.target.value)} />
+                  <select className="field" value={naCategoria} onChange={(e) => setNaCategoria(e.target.value)}>
+                    <option value="veterinaria">Veterinaria</option>
+                    <option value="pet-shop">Pet Shop</option>
+                    <option value="peluqueria-canina">Peluquería Canina</option>
+                    <option value="adiestrador">Adiestrador</option>
+                    <option value="paseador">Paseador</option>
+                    <option value="guarderia-hotel">Guardería / Hotel</option>
+                    <option value="refugio-rescate">Refugio / Rescate</option>
+                    <option value="tienda-mascotas">Tienda de Mascotas</option>
+                    <option value="farmacia-veterinaria">Farmacia Veterinaria</option>
+                  </select>
+                  <input className="field" placeholder="Ciudad" value={naLocalidad} onChange={(e) => setNaLocalidad(e.target.value)} />
+                  <input className="field" placeholder="Teléfono" value={naTelefono} onChange={(e) => setNaTelefono(e.target.value)} />
+                  <input className="field" placeholder="Email anunciante" value={naAnunciante} onChange={(e) => setNaAnunciante(e.target.value)} />
+                  <input className="field col-span-2" placeholder="Dirección" value={naDireccion} onChange={(e) => setNaDireccion(e.target.value)} />
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold text-ink-muted uppercase tracking-wide">Fecha de vencimiento *</label>
+                    <input type="date" className="field w-full" value={naFechaFin} onChange={(e) => setNaFechaFin(e.target.value)} />
+                  </div>
+                </div>
+                {nuevoAdErr && <p className="text-xs font-semibold text-bad">{nuevoAdErr}</p>}
+                <div className="flex gap-2">
+                  <button type="button" onClick={handleCrearAd} disabled={!naTitulo.trim() || !naFechaFin || nuevoAdLoad}
+                    className="flex-1 rounded-2xl bg-brand-primary py-2 text-sm font-bold text-white disabled:opacity-50 transition hover:bg-brand-primary/90">
+                    {nuevoAdLoad ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Crear comercio'}
+                  </button>
+                  <button type="button" onClick={() => setNuevoAd(false)}
+                    className="rounded-2xl border-2 border-black/10 px-4 py-2 text-sm font-bold text-ink-muted hover:border-black/20 transition">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Lista */}
             <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2">

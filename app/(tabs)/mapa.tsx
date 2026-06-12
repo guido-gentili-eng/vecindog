@@ -32,14 +32,21 @@ export default function MapaScreen() {
     pedirUbicacion();
   }, []);
 
-  async function cargarPosts() {
+  async function cargarPosts(r = region) {
+    // Carga solo los markers dentro de la región visible + 50% de margen
+    const latMargin = r.latitudeDelta  * 0.5;
+    const lngMargin = r.longitudeDelta * 0.5;
     const { data } = await supabase
       .from('posts')
       .select('id, categoria, nombre, zona, lat, lng')
       .eq('estado', 'activo')
       .not('lat', 'is', null)
       .not('lng', 'is', null)
-      .limit(100);
+      .gte('lat', r.latitude  - r.latitudeDelta  / 2 - latMargin)
+      .lte('lat', r.latitude  + r.latitudeDelta  / 2 + latMargin)
+      .gte('lng', r.longitude - r.longitudeDelta / 2 - lngMargin)
+      .lte('lng', r.longitude + r.longitudeDelta / 2 + lngMargin)
+      .limit(200);
     setPosts(data ?? []);
     setLoading(false);
   }
@@ -81,7 +88,7 @@ export default function MapaScreen() {
       <MapView
         style={styles.map}
         region={region}
-        onRegionChangeComplete={setRegion}
+        onRegionChangeComplete={(r) => { setRegion(r); cargarPosts(r); }}
         showsUserLocation
         showsMyLocationButton
       >

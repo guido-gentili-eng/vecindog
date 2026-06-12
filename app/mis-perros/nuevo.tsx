@@ -4,7 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Alert, Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import { resizeForUpload } from '@/lib/imageUtils';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,13 +40,10 @@ export default function NuevoPerroScreen() {
     try {
       let foto_url = '';
       if (fotoUri) {
-        const ext  = fotoUri.split('.').pop() ?? 'jpg';
-        const path = `perros/${Date.now()}.${ext}`;
-        const base64 = await FileSystem.readAsStringAsync(fotoUri, { encoding: FileSystem.EncodingType.Base64 });
-        const binary = atob(base64);
-        const bytes  = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const { error: upErr } = await supabase.storage.from('perros').upload(path, bytes, { contentType: 'image/jpeg' });
+        const path    = `perros/${Date.now()}.jpg`;
+        const resized = await resizeForUpload(fotoUri);
+        const blob    = await fetch(resized).then((r) => r.blob());
+        const { error: upErr } = await supabase.storage.from('perros').upload(path, blob, { contentType: 'image/jpeg' });
         if (!upErr) {
           const { data } = supabase.storage.from('perros').getPublicUrl(path);
           foto_url = data.publicUrl;

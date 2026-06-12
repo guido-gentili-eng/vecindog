@@ -106,15 +106,27 @@ export default function PerfilScreen() {
               }
             </TouchableOpacity>
           </View>
+        ) : !profile?.nombre ? (
+          /* Perfil vacío — prompt de completado */
+          <View style={styles.emptyPrompt}>
+            <Text style={styles.emptyPromptEmoji}>👋</Text>
+            <Text style={styles.emptyPromptTitle}>Completá tu perfil</Text>
+            <Text style={styles.emptyPromptSub}>
+              Agregá tu nombre y teléfono para que los vecinos puedan contactarte cuando encontrés o perdás una mascota.
+            </Text>
+            <TouchableOpacity style={styles.emptyPromptBtn} onPress={iniciarEdicion}>
+              <Text style={styles.emptyPromptBtnText}>Completar ahora →</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <>
             {[
-              ['Nombre',    profile ? `${profile.nombre} ${profile.apellido}` : '—'],
-              ['Teléfono',  profile?.telefono  || '—'],
-              ['Ciudad',    profile?.ciudad    || '—'],
-              ['Provincia', profile?.provincia || '—'],
-              ['País',      profile?.pais      || '—'],
-              ['Dirección', profile?.direccion || '—'],
+              ['Nombre',    `${profile.nombre} ${profile.apellido}`],
+              ['Teléfono',  profile.telefono  || '—'],
+              ['Ciudad',    profile.ciudad    || '—'],
+              ['Provincia', profile.provincia || '—'],
+              ['País',      profile.pais      || '—'],
+              ['Dirección', profile.direccion || '—'],
             ].map(([label, value]) => (
               <View key={label} style={styles.row}>
                 <Text style={styles.rowLabel}>{label}</Text>
@@ -132,6 +144,12 @@ export default function PerfilScreen() {
           label="🗺️  Ver mis avisos publicados"
           onPress={() => router.push('/(tabs)/avisos')}
         />
+        {user?.email === process.env.EXPO_PUBLIC_ADMIN_EMAIL && (
+          <MenuItem
+            label="🛡️  Panel de reportes"
+            onPress={() => router.push('/admin/reportes')}
+          />
+        )}
         <MenuItem
           label="🌐  Abrir versión web"
           onPress={() => Linking.openURL('https://www.mivecindog.com.ar')}
@@ -213,5 +231,11 @@ const styles = StyleSheet.create({
   menuArrow:     { fontSize: 20, color: Colors.inkMuted },
   logoutBtn:     { backgroundColor: '#fee2e2', borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   logoutText:    { color: Colors.bad, fontWeight: '700', fontSize: 15 },
-  version:       { textAlign: 'center', color: Colors.inkMuted, fontSize: 11, marginTop: 20 },
+  version:          { textAlign: 'center', color: Colors.inkMuted, fontSize: 11, marginTop: 20 },
+  emptyPrompt:      { alignItems: 'center', paddingVertical: 20, gap: 8 },
+  emptyPromptEmoji: { fontSize: 36 },
+  emptyPromptTitle: { fontSize: 16, fontWeight: '800', color: Colors.ink },
+  emptyPromptSub:   { fontSize: 13, color: Colors.inkMuted, textAlign: 'center', lineHeight: 19 },
+  emptyPromptBtn:   { marginTop: 8, backgroundColor: Colors.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 },
+  emptyPromptBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
 });

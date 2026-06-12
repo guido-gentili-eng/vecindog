@@ -41,7 +41,7 @@ export default function TrackComercio({ adId, telefono, direccion, href }: Props
             {telefono}
           </a>
           <a
-            href={`https://wa.me/549${telefono.replace(/\D/g, '')}`}
+            href={`https://wa.me/549${telefono.replace(/\D/g, '').replace(/^(549|54|0)/, '')}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track(adId, 'click_telefono')}

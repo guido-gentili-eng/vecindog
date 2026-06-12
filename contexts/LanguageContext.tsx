@@ -2114,7 +2114,7 @@ const translations: Record<Lang, Translations> = {
     pubReportOtro: 'Otro',
     // Mi Perfil
     mipChip: 'Mi perfil',
-    mipObediencia: 'Obediencia',
+    mipObediencia: 'Plan de Obediencia canina',
     mipSosTitle: '🚨 Perro perdido — alertar ahora',
     mipSosSub: 'Notificá a tus amigos y publicá el aviso de emergencia.',
     mipDatosTitle: 'Datos personales',

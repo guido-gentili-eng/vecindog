@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Phone, MapPin, ExternalLink } from 'lucide-react';
+import { Phone, MapPin, ExternalLink, MessageCircle } from 'lucide-react';
 
 interface Props {
   adId: string;
@@ -31,14 +31,26 @@ export default function TrackComercio({ adId, telefono, direccion, href }: Props
   return (
     <div className="mt-4 space-y-2">
       {telefono && (
-        <a
-          href={`tel:${telefono}`}
-          onClick={() => track(adId, 'click_telefono')}
-          className="flex items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10"
-        >
-          <Phone className="h-4 w-4 shrink-0 text-brand-primary" />
-          {telefono}
-        </a>
+        <div className="flex gap-2">
+          <a
+            href={`tel:${telefono}`}
+            onClick={() => track(adId, 'click_telefono')}
+            className="flex flex-1 items-center gap-3 rounded-2xl bg-[#f5f0eb] px-4 py-3 text-sm font-semibold text-ink transition hover:bg-brand-primary/10"
+          >
+            <Phone className="h-4 w-4 shrink-0 text-brand-primary" />
+            {telefono}
+          </a>
+          <a
+            href={`https://wa.me/549${telefono.replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track(adId, 'click_telefono')}
+            className="flex items-center gap-2 rounded-2xl bg-[#25d366]/10 px-4 py-3 text-sm font-semibold text-[#25d366] transition hover:bg-[#25d366]/20"
+          >
+            <MessageCircle className="h-4 w-4 shrink-0" />
+            WA
+          </a>
+        </div>
       )}
 
       {direccion && (

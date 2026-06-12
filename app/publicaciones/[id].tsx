@@ -79,7 +79,7 @@ export default function PostDetailScreen() {
       const miContacto = myProfile?.telefono || user.email;
 
       if (pushToken) {
-        await fetch('https://exp.host/--/api/v2/push/send', {
+        const res = await fetch('https://exp.host/--/api/v2/push/send', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -89,6 +89,7 @@ export default function PostDetailScreen() {
             data:  { post_id: id },
           }),
         });
+        if (!res.ok) throw new Error('push_failed');
       }
 
       setSolicitado(true);
@@ -123,7 +124,7 @@ export default function PostDetailScreen() {
     );
   }
 
-  const waNumero = post.contacto?.replace(/[^0-9]/g, '');
+  const waNumero = post.contacto?.replace(/[^0-9]/g, '') ?? '';
   const waLink   = `https://wa.me/${waNumero}?text=${encodeURIComponent('Hola, te escribo por el aviso de Vecindog.')}`;
 
   const CAT_COLOR: Record<string, string> = {

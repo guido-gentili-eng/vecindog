@@ -85,11 +85,14 @@ export default function PublicitatePage() {
   const [totalUsuarios,   setTotalUsuarios]   = useState<number | null>(null);
 
   useEffect(() => {
-    supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .then(({ count }) => { if (count !== null) setTotalUsuarios(count); })
-      .catch(() => {});
+    (async () => {
+      try {
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        if (count !== null) setTotalUsuarios(count);
+      } catch { /* silencioso */ }
+    })();
   }, []);
 
   const statUsuarios = totalUsuarios === null ? '…' : `${totalUsuarios.toLocaleString('es-AR')}+`;

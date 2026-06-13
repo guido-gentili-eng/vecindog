@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus } from 'lucide-react';
 import { listarAds, crearAd, subirImagenAd, type Ad, type AdVariant } from '@/lib/ads';
+import { resizeAndCropImage } from '@/lib/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
 import { type Perro as PerroCompleto } from '@/lib/perros';
@@ -133,12 +134,21 @@ export default function AdminPage() {
     comercio:    '800 × 400 px — portada del comercio',
   };
 
+  const AD_SIZE_PX: Record<AdVariant, [number, number]> = {
+    leaderboard: [1200, 300],
+    card:        [600,  400],
+    sidebar:     [300,  250],
+    comercio:    [800,  400],
+  };
+
   async function handleNaImagen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setNaImagenLoad(true);
     try {
-      const url = await subirImagenAd(file);
+      const [w, h] = AD_SIZE_PX[naVariant];
+      const resized = await resizeAndCropImage(file, w, h);
+      const url = await subirImagenAd(resized);
       setNaImagenUrl(url);
     } catch {
       setNuevoAdErr('Error al subir la imagen.');

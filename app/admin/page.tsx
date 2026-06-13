@@ -917,7 +917,8 @@ export default function AdminPage() {
                     {naImagenUrl ? (
                       <div className="relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={naImagenUrl} alt="preview" className="w-full rounded-xl object-cover max-h-28" />
+                        <img src={naImagenUrl} alt="preview" className="w-full rounded-xl object-contain bg-black/5"
+                          style={{ aspectRatio: `${AD_SIZE_PX[naVariant][0]} / ${AD_SIZE_PX[naVariant][1]}` }} />
                         <button type="button" onClick={() => setNaImagenUrl('')}
                           className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/50 text-white hover:bg-black/70 transition">
                           <X className="h-3.5 w-3.5" />

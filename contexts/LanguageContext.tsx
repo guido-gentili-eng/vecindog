@@ -252,6 +252,33 @@ export type Translations = {
   plansLoginFirst: string;
   plansSubscribe: string;
   plansMpNote: string;
+  plansTrialBadge: string;
+  plansTrialAfter: string;
+  plansActivating: string;
+  plansStartFree: string;
+  plansPayNow: string;
+  plansTrialActive: string;
+  // free features
+  plansFeat1Dog: string;
+  plansFeat5Posts: string;
+  plansFeatBasicProfile: string;
+  plansFeatMapAccess: string;
+  // locked features
+  plansFeatTopEscapees: string;
+  plansFeatPhotoAI: string;
+  plansFeatAdvSearch: string;
+  plansFeatFriends: string;
+  plansFeatNotifs: string;
+  plansFeatSocial: string;
+  plansFeatBusinessMap: string;
+  plansFeatTransport: string;
+  plansFeatCare: string;
+  // pro features
+  plansProFeatAll: string;
+  plansProFeatUnlimitedDogs: string;
+  plansProFeatUnlimitedPosts: string;
+  plansProFeatFullProfile: string;
+  plansProFeatNetwork: string;
   // ── Common ───────────────────────────────────────────
   commonBack: string;
   commonSave: string;
@@ -1624,7 +1651,7 @@ const translations: Record<Lang, Translations> = {
   // ═══════════════════════════════════════════════════════
   es: {
     // AuthModal
-    welcome: 'Bienvenido a Vecindog',
+    welcome: 'Bienvenido/a a Vecindog',
     welcomeSub: 'Registrate para ver los datos de contacto de los avisos.',
     confirmEmail: 'Confirmá tu email',
     confirmEmailSub: 'Te enviamos un código de verificación a',
@@ -1868,6 +1895,30 @@ const translations: Record<Lang, Translations> = {
     plansLoginFirst: 'Iniciá sesión para suscribirte',
     plansSubscribe: 'Suscribirme',
     plansMpNote: 'Podés pagar con Mercado Pago (saldo, efectivo), tarjeta de débito o crédito.',
+    plansTrialBadge: '🎁 Primer mes GRATIS',
+    plansTrialAfter: 'Después',
+    plansActivating: 'Activando…',
+    plansStartFree: '🎁 Empezar gratis — primer mes sin costo',
+    plansPayNow: 'O pagar ahora',
+    plansTrialActive: '¡Tu primer mes gratis está activo! 🎉',
+    plansFeat1Dog: '1 perro registrado',
+    plansFeat5Posts: '5 publicaciones de avisos (perdido/encontrado)',
+    plansFeatBasicProfile: 'Perfil básico del perro (foto, nombre, raza, color)',
+    plansFeatMapAccess: 'Acceso a avisos, mapa y adopciones',
+    plansFeatTopEscapees: 'Los más escapistas',
+    plansFeatPhotoAI: 'Búsqueda por foto con IA',
+    plansFeatAdvSearch: 'Búsqueda avanzada por características',
+    plansFeatFriends: 'Panel de Amigos',
+    plansFeatNotifs: 'Notificaciones en tiempo real',
+    plansFeatSocial: 'Instagram y Facebook en el perfil',
+    plansFeatBusinessMap: 'Comercios adheridos en el mapa',
+    plansFeatTransport: 'Ofrecer servicio de transporte',
+    plansFeatCare: 'Ofrecer servicio de cuidado',
+    plansProFeatAll: 'Todo lo del plan Gratis',
+    plansProFeatUnlimitedDogs: 'Perros ilimitados',
+    plansProFeatUnlimitedPosts: 'Publicaciones ilimitadas',
+    plansProFeatFullProfile: 'Perfil completo (chip, vacunas, estudios, historial de peso, alergias…)',
+    plansProFeatNetwork: 'Acceso a Mi red Vecindog 🐾',
     // Common
     commonBack: 'Volver',
     commonSave: 'Guardar',
@@ -3434,7 +3485,7 @@ const translations: Record<Lang, Translations> = {
     plansCurrentPlan: 'Current plan',
     plansGoHome: 'Go to home',
     plansProLabel: 'VecindogPro',
-    plansProPrice: '$1,000',
+    plansProPrice: 'ARS $1,000',
     plansProSub: 'The full experience to find and care for your dog.',
     plansRecommended: 'RECOMMENDED',
     plansPerMonth: '/ month',
@@ -3443,6 +3494,30 @@ const translations: Record<Lang, Translations> = {
     plansLoginFirst: 'Sign in to subscribe',
     plansSubscribe: 'Subscribe',
     plansMpNote: 'You can pay with Mercado Pago (balance, cash), debit or credit card.',
+    plansTrialBadge: '🎁 First month FREE',
+    plansTrialAfter: 'Then',
+    plansActivating: 'Activating…',
+    plansStartFree: '🎁 Start free — first month at no cost',
+    plansPayNow: 'Or pay now',
+    plansTrialActive: 'Your first free month is active! 🎉',
+    plansFeat1Dog: '1 registered dog',
+    plansFeat5Posts: '5 alert posts (lost/found)',
+    plansFeatBasicProfile: 'Basic dog profile (photo, name, breed, color)',
+    plansFeatMapAccess: 'Access to alerts, map and adoptions',
+    plansFeatTopEscapees: 'Top Escapees',
+    plansFeatPhotoAI: 'AI photo search',
+    plansFeatAdvSearch: 'Advanced search by traits',
+    plansFeatFriends: 'Friends Panel',
+    plansFeatNotifs: 'Real-time notifications',
+    plansFeatSocial: 'Instagram and Facebook on profile',
+    plansFeatBusinessMap: 'Partner businesses on map',
+    plansFeatTransport: 'Offer transport service',
+    plansFeatCare: 'Offer care service',
+    plansProFeatAll: 'Everything in Free plan',
+    plansProFeatUnlimitedDogs: 'Unlimited dogs',
+    plansProFeatUnlimitedPosts: 'Unlimited posts',
+    plansProFeatFullProfile: 'Full profile (chip, vaccines, studies, weight history, allergies…)',
+    plansProFeatNetwork: 'Access to My Vecindog Network 🐾',
     // Common
     commonBack: 'Back',
     commonSave: 'Save',
@@ -5018,6 +5093,30 @@ const translations: Record<Lang, Translations> = {
     plansLoginFirst: 'Entre para se inscrever',
     plansSubscribe: 'Assinar',
     plansMpNote: 'Você pode pagar com Mercado Pago (saldo, dinheiro), cartão de débito ou crédito.',
+    plansTrialBadge: '🎁 Primeiro mês GRÁTIS',
+    plansTrialAfter: 'Depois',
+    plansActivating: 'Ativando…',
+    plansStartFree: '🎁 Começar grátis — primeiro mês sem custo',
+    plansPayNow: 'Ou pagar agora',
+    plansTrialActive: 'Seu primeiro mês grátis está ativo! 🎉',
+    plansFeat1Dog: '1 cão registrado',
+    plansFeat5Posts: '5 publicações de avisos (perdido/encontrado)',
+    plansFeatBasicProfile: 'Perfil básico do cão (foto, nome, raça, cor)',
+    plansFeatMapAccess: 'Acesso a avisos, mapa e adoções',
+    plansFeatTopEscapees: 'Os mais fujões',
+    plansFeatPhotoAI: 'Busca por foto com IA',
+    plansFeatAdvSearch: 'Busca avançada por características',
+    plansFeatFriends: 'Painel de Amigos',
+    plansFeatNotifs: 'Notificações em tempo real',
+    plansFeatSocial: 'Instagram e Facebook no perfil',
+    plansFeatBusinessMap: 'Comércios parceiros no mapa',
+    plansFeatTransport: 'Oferecer serviço de transporte',
+    plansFeatCare: 'Oferecer serviço de cuidado',
+    plansProFeatAll: 'Tudo do plano Gratuito',
+    plansProFeatUnlimitedDogs: 'Cães ilimitados',
+    plansProFeatUnlimitedPosts: 'Publicações ilimitadas',
+    plansProFeatFullProfile: 'Perfil completo (chip, vacinas, exames, histórico de peso, alergias…)',
+    plansProFeatNetwork: 'Acesso à Minha rede Vecindog 🐾',
     // Common
     commonBack: 'Voltar',
     commonSave: 'Salvar',

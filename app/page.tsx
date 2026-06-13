@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Hero from '@/components/Hero';
 import ActionCards from '@/components/ActionCards';
 import HowItWorks from '@/components/HowItWorks';
@@ -13,6 +14,16 @@ export default function HomePage() {
       <div className="space-y-4 md:space-y-5">
         <Hero />
         <ActionCards />
+      </div>
+
+      {/* CTA secundario: explorar sin crear aviso */}
+      <div className="mt-4 text-center">
+        <Link
+          href="/publicaciones"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-primary hover:underline"
+        >
+          Ver avisos activos →
+        </Link>
       </div>
 
       {/* Resto de la home (más respiro entre secciones) */}

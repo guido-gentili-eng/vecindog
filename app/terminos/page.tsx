@@ -93,7 +93,7 @@ export default function TerminosPage() {
         </Section>
 
         <Section title="11. Contacto">
-          <p>Para consultas relacionadas con estos Términos y Condiciones, el usuario puede comunicarse a través del correo electrónico: <strong>contacto@mivecindog.com.ar</strong></p>
+          <p>Para consultas relacionadas con estos Términos y Condiciones, el usuario puede comunicarse a través del correo electrónico: <strong>hola@mivecindog.com.ar</strong></p>
         </Section>
 
       </div>

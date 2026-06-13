@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BrandBadge } from '@/components/Logo';
 import { Heart, Megaphone, LifeBuoy } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { WHATSAPP_PUBLICIDAD, CONTACT_EMAIL } from '@/lib/contact';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -20,6 +21,7 @@ export default function Footer() {
       { href: '/publicaciones?cat=encontrado', label: t.footerLinkVistos },
       { href: '/publicaciones?cat=adopcion',   label: t.footerLinkAdopcion },
       { href: '/publicaciones?cat=transito',   label: t.footerLinkTransito },
+      { href: '/red-vecindog',                 label: 'Red Vecindog' },
     ],
   };
 
@@ -75,7 +77,7 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <a
-                href="mailto:hola@mivecindog.com.ar?subject=Ayuda%20Vecindog"
+                href={`mailto:${CONTACT_EMAIL}?subject=Ayuda%20Vecindog`}
                 className="inline-flex items-center gap-1.5 text-ink-muted hover:text-brand-primary transition"
               >
                 <LifeBuoy className="h-3.5 w-3.5 shrink-0" /> {t.footerLinkAyuda}
@@ -93,14 +95,14 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <a href="mailto:hola@mivecindog.com.ar" className="text-ink-muted hover:text-brand-primary">
-                hola@mivecindog.com.ar
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-ink-muted hover:text-brand-primary">
+                {CONTACT_EMAIL}
               </a>
             </li>
             <li>
               <p className="mb-1.5 text-xs text-ink-muted">WhatsApp</p>
               <a
-                href="https://wa.me/5492914050210?text=Hola%2C%20quiero%20publicitar%20mi%20negocio%20en%20Vecindog"
+                href={WHATSAPP_PUBLICIDAD}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-3 py-2 text-xs font-bold text-white transition hover:opacity-90"

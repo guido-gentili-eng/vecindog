@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { PRECIO_PRO_ARS } from '@/lib/planes';
 
 /* ─────────────────────────── Tipos globales MP ─────────────────────────── */
 declare global {
@@ -144,7 +145,7 @@ export default function PagoModal({
   isOpen,
   onClose,
   onMercadoPago,
-  precio    = 1000,
+  precio    = PRECIO_PRO_ARS,
   descripcion = 'VecindogPro — Suscripción 30 días',
 }: {
   isOpen:       boolean;

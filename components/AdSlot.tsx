@@ -2,17 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Megaphone, Phone, Star, ExternalLink, ArrowRight } from 'lucide-react';
+import { Megaphone, Star, ExternalLink, ArrowRight } from 'lucide-react';
 import { getAdForSlot, type Ad, type AdVariant } from '@/lib/ads';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { CONTACT_EMAIL, WHATSAPP_PUBLICIDAD } from '@/lib/contact';
 
 interface AdSlotProps {
   variant?: AdVariant;
   className?: string;
 }
-
-const CONTACT_EMAIL = 'hola@mivecindog.com.ar';
-const CONTACT_PHONE = '+54 9 291 000-0000';
 
 export default function AdSlot({ variant = 'leaderboard', className = '' }: AdSlotProps) {
   const [ad, setAd] = useState<Ad | null | 'loading'>('loading');
@@ -80,7 +78,8 @@ function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) 
             className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-coral px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-coral-dark">
             <Megaphone className="h-4 w-4" /> {t.adBannerCta}
           </Link>
-          <span className="flex items-center gap-1 text-xs text-white/50"><Phone className="h-3 w-3" /> {CONTACT_PHONE}</span>
+          <a href={WHATSAPP_PUBLICIDAD} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-white/50 hover:text-white/80 transition">WhatsApp</a>
         </div>
       </div>
     </div>

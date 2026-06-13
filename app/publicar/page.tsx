@@ -863,7 +863,7 @@ export default function PublicarPage() {
                 labelSi={t.pbrSi} labelNo={t.pbrNo} labelNs={t.pbrNoSe} />
             </div>
 
-            <Field label={t.pbrDescripcion}>
+            <Field label={t.pbrDescripcion} required>
               <textarea className="field min-h-[100px]"
                 placeholder={t.pbrDescripcionPh}
                 value={form.descripcion}
@@ -1205,10 +1205,12 @@ function StepCard({ n, titulo, subtitulo, children }: {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</span>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+        {label}{required && <span className="ml-0.5 text-bad">*</span>}
+      </span>
       {children}
     </label>
   );

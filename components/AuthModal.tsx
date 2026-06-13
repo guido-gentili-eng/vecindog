@@ -21,6 +21,8 @@ const PUBLIC_PATHS = [
   '/mapa',
   '/calculadora-edad',
   '/adoptar',
+  '/publicitate',
+  '/publicaciones',
 ];
 
 export default function AuthModal() {

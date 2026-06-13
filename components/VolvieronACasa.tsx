@@ -66,8 +66,8 @@ export default function VolvieronACasa() {
         </div>
       )}
 
-      {/* Contador motivacional */}
-      {!cargando && total > 0 && (
+      {/* Contador motivacional — solo visible cuando hay suficiente prueba social */}
+      {!cargando && total >= 10 && (
         <p className="mt-5 text-center text-sm text-ink-muted">
           🐾{' '}
           <span className="font-extrabold text-ink">{total} perro{total !== 1 ? 's' : ''}</span>

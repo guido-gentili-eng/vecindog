@@ -11,44 +11,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import PagoModal from '@/components/PagoModal';
+import { PRECIO_PRO_ARS } from '@/lib/planes';
 
 /* ── Features ── */
-
-const FEATURES_FREE = [
-  { icon: Dog,       label: '1 perro registrado' },
-  { icon: Check,     label: '5 publicaciones de avisos (perdido/encontrado)' },
-  { icon: Check,     label: 'Perfil básico del perro (foto, nombre, raza, color)' },
-  { icon: Check,     label: 'Acceso a avisos, mapa y adopciones' },
-];
-
-const FEATURES_BLOQUEADAS = [
-  { icon: Trophy,    label: 'Los más escapistas' },
-  { icon: Camera,    label: 'Búsqueda por foto con IA' },
-  { icon: ScanSearch,label: 'Búsqueda avanzada por características' },
-  { icon: Users,     label: 'Panel de Amigos' },
-  { icon: Bell,      label: 'Notificaciones en tiempo real' },
-  { icon: Lock,      label: 'Instagram y Facebook en el perfil' },
-  { icon: MapPin,    label: 'Comercios adheridos en el mapa' },
-  { icon: Car,       label: 'Ofrecer servicio de transporte' },
-  { icon: Heart,     label: 'Ofrecer servicio de cuidado' },
-];
-
-const FEATURES_PRO = [
-  { label: 'Todo lo del plan Gratis' },
-  { label: 'Perros ilimitados' },
-  { label: 'Publicaciones ilimitadas' },
-  { label: 'Perfil completo (chip, vacunas, estudios, historial de peso, alergias…)' },
-  { label: 'Los más escapistas 🏃' },
-  { label: 'Búsqueda por foto con IA 📷' },
-  { label: 'Búsqueda avanzada por características' },
-  { label: 'Panel de Amigos' },
-  { label: 'Notificaciones en tiempo real 🔔' },
-  { label: 'Instagram y Facebook en el perfil' },
-  { label: 'Acceso a Mi red Vecindog 🐾' },
-  { label: 'Comercios adheridos en el mapa 📍' },
-  { label: 'Ofrecer servicio de transporte 🚗' },
-  { label: 'Ofrecer servicio de cuidado 🐾' },
-];
 
 /* ── Página ── */
 
@@ -56,6 +21,42 @@ export default function PlanesPage() {
   const { profile, isPro, isAuthenticated, refreshProfile } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
+
+  const FEATURES_FREE = [
+    { icon: Dog,        label: t.plansFeat1Dog },
+    { icon: Check,      label: t.plansFeat5Posts },
+    { icon: Check,      label: t.plansFeatBasicProfile },
+    { icon: Check,      label: t.plansFeatMapAccess },
+  ];
+
+  const FEATURES_BLOQUEADAS = [
+    { icon: Trophy,     label: t.plansFeatTopEscapees },
+    { icon: Camera,     label: t.plansFeatPhotoAI },
+    { icon: ScanSearch, label: t.plansFeatAdvSearch },
+    { icon: Users,      label: t.plansFeatFriends },
+    { icon: Bell,       label: t.plansFeatNotifs },
+    { icon: Lock,       label: t.plansFeatSocial },
+    { icon: MapPin,     label: t.plansFeatBusinessMap },
+    { icon: Car,        label: t.plansFeatTransport },
+    { icon: Heart,      label: t.plansFeatCare },
+  ];
+
+  const FEATURES_PRO = [
+    { label: t.plansProFeatAll },
+    { label: t.plansProFeatUnlimitedDogs },
+    { label: t.plansProFeatUnlimitedPosts },
+    { label: t.plansProFeatFullProfile },
+    { label: `${t.plansFeatTopEscapees} 🏃` },
+    { label: `${t.plansFeatPhotoAI} 📷` },
+    { label: t.plansFeatAdvSearch },
+    { label: t.plansFeatFriends },
+    { label: `${t.plansFeatNotifs} 🔔` },
+    { label: t.plansFeatSocial },
+    { label: t.plansProFeatNetwork },
+    { label: `${t.plansFeatBusinessMap} 📍` },
+    { label: `${t.plansFeatTransport} 🚗` },
+    { label: `${t.plansFeatCare} 🐾` },
+  ];
 
   const [modalOpen,    setModalOpen]    = useState(false);
   const [error,        setError]        = useState('');
@@ -209,9 +210,9 @@ export default function PlanesPage() {
           {!trialUsado && !isPro ? (
             <div className="mt-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-extrabold text-white">
-                🎁 Primer mes GRATIS
+                {t.plansTrialBadge}
               </div>
-              <div className="mt-1 text-sm text-white/70">Después {t.plansProPrice}{t.plansPerMonth}</div>
+              <div className="mt-1 text-sm text-white/70">{t.plansTrialAfter} {t.plansProPrice}{t.plansPerMonth}</div>
             </div>
           ) : (
             <div className="mt-1">
@@ -235,7 +236,7 @@ export default function PlanesPage() {
           <div className="mt-8 space-y-3">
             {trialOk ? (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
-                <Check className="h-4 w-4" /> ¡Tu primer mes gratis está activo! 🎉
+                <Check className="h-4 w-4" /> {t.plansTrialActive}
               </div>
             ) : isPro ? (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/20 py-3 text-sm font-bold text-white">
@@ -251,11 +252,11 @@ export default function PlanesPage() {
                 <button type="button" onClick={handleTrialGratis} disabled={trialLoading}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-extrabold text-brand-primary shadow transition hover:opacity-90 disabled:opacity-60">
                   {trialLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  {trialLoading ? 'Activando…' : '🎁 Empezar gratis — primer mes sin costo'}
+                  {trialLoading ? t.plansActivating : t.plansStartFree}
                 </button>
                 <button type="button" onClick={handleSuscribirse}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/30 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10">
-                  O pagar ahora ({t.plansProPrice}/mes)
+                  {t.plansPayNow} ({t.plansProPrice}{t.plansPerMonth})
                 </button>
               </>
             ) : (
@@ -278,7 +279,7 @@ export default function PlanesPage() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onMercadoPago={handleMercadoPago}
-        precio={1000}
+        precio={PRECIO_PRO_ARS}
         descripcion="VecindogPro — Suscripción mensual · 30 días de acceso completo"
       />
     </div>

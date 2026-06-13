@@ -10,9 +10,10 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
+import { WHATSAPP_PUBLICIDAD, CONTACT_EMAIL } from '@/lib/contact';
 
-const WHATSAPP = '5492914050210';
-const EMAIL    = 'hola@mivecindog.com.ar';
+const WHATSAPP = WHATSAPP_PUBLICIDAD;
+const EMAIL    = CONTACT_EMAIL;
 
 const PAQUETES = [
   {
@@ -444,6 +445,37 @@ const FOTO_RECOMENDADA: Record<string, { ratio: string; medida: string; consejo:
   premium:  { ratio: '4:3',  medida: '800×600 px',  consejo: 'Foto horizontal — se usa como banner en la card, en el inicio y recortada como logo.' },
 };
 
+function resizeAndCropImage(file: File, targetW: number, targetH: number): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const targetRatio = targetW / targetH;
+      const srcRatio    = img.width / img.height;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (srcRatio > targetRatio) {
+        sw = Math.round(img.height * targetRatio);
+        sx = Math.round((img.width - sw) / 2);
+      } else {
+        sh = Math.round(img.width / targetRatio);
+        sy = Math.round((img.height - sh) / 2);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width  = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+      canvas.toBlob((blob) => {
+        if (!blob) { reject(new Error('canvas toBlob failed')); return; }
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.92);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const { t } = useLanguage();
   const planKey  = plan === 'estándar' ? 'estandar' : plan;
@@ -464,27 +496,54 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   const [previewLogo,   setPreviewLogo]   = useState('');
   const logoRef = useRef<HTMLInputElement>(null);
   const necesitaLogo = planKey === 'estandar' || planKey === 'premium';
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState('');
+  const [fotoLoading,  setFotoLoading]  = useState(false);
+  const [logoLoading,  setLogoLoading]  = useState(false);
+
+  const FOTO_SIZE: Record<string, [number, number]> = {
+    basico:   [400, 400],
+    estandar: [800, 600],
+    premium:  [800, 600],
+  };
+  const [fotoW, fotoH] = FOTO_SIZE[planKey] ?? [800, 600];
 
   useEffect(() => {
     modalRef.current?.scrollTo({ top: 0 });
   }, []);
 
-  function onFoto(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError(t.publModalErrFotoTam); return; }
-    setFotoFile(file);
-    setPreview(URL.createObjectURL(file));
+    if (file.size > 20 * 1024 * 1024) { setError(t.publModalErrFotoTam); return; }
+    setError('');
+    setFotoLoading(true);
+    try {
+      const resized = await resizeAndCropImage(file, fotoW, fotoH);
+      setFotoFile(resized);
+      setPreview(URL.createObjectURL(resized));
+    } catch {
+      setError('No se pudo procesar la imagen. Probá con otra.');
+    } finally {
+      setFotoLoading(false);
+    }
   }
 
-  function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError(t.publModalErrLogoTam); return; }
-    setLogoFile(file);
-    setPreviewLogo(URL.createObjectURL(file));
+    if (file.size > 20 * 1024 * 1024) { setError(t.publModalErrLogoTam); return; }
+    setError('');
+    setLogoLoading(true);
+    try {
+      const resized = await resizeAndCropImage(file, 400, 400);
+      setLogoFile(resized);
+      setPreviewLogo(URL.createObjectURL(resized));
+    } catch {
+      setError('No se pudo procesar el logo. Probá con otra imagen.');
+    } finally {
+      setLogoLoading(false);
+    }
   }
 
   async function handlePagar(e: React.FormEvent) {
@@ -571,9 +630,14 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream"
+              disabled={fotoLoading}
+              className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream disabled:opacity-60"
             >
-              {preview ? (
+              {fotoLoading ? (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+                  <Loader2 className="h-7 w-7 animate-spin text-brand-primary/60" />
+                </div>
+              ) : preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={preview} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
               ) : (
@@ -582,9 +646,11 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
                 </div>
               )}
               <div className="text-left">
-                <p className="font-bold text-ink">{preview ? t.publModalFotoCambiar : t.publModalFotoSubir}</p>
+                <p className="font-bold text-ink">
+                  {fotoLoading ? 'Ajustando imagen…' : preview ? t.publModalFotoCambiar : t.publModalFotoSubir}
+                </p>
                 <p className="text-xs text-ink-muted">
-                  PNG, JPG · Máx. 5 MB · Ratio {fotoRec.ratio} · {fotoRec.medida}
+                  PNG, JPG · Cualquier tamaño — ajustamos a {fotoRec.medida} automáticamente
                 </p>
               </div>
             </button>
@@ -601,9 +667,14 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
               <button
                 type="button"
                 onClick={() => logoRef.current?.click()}
-                className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream"
+                disabled={logoLoading}
+                className="relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-brand-primary/40 bg-brand-cream/60 px-5 py-4 transition hover:border-brand-primary hover:bg-brand-cream disabled:opacity-60"
               >
-                {previewLogo ? (
+                {logoLoading ? (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10">
+                    <Loader2 className="h-7 w-7 animate-spin text-brand-primary/60" />
+                  </div>
+                ) : previewLogo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={previewLogo} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
                 ) : (
@@ -612,8 +683,10 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
                   </div>
                 )}
                 <div className="text-left">
-                  <p className="font-bold text-ink">{previewLogo ? t.publModalLogoCambiar : t.publModalLogoSubir}</p>
-                  <p className="text-xs text-ink-muted">PNG, JPG · Ratio 1:1 · 400×400 px mín.</p>
+                  <p className="font-bold text-ink">
+                    {logoLoading ? 'Ajustando logo…' : previewLogo ? t.publModalLogoCambiar : t.publModalLogoSubir}
+                  </p>
+                  <p className="text-xs text-ink-muted">PNG, JPG · Cualquier tamaño — ajustamos a 400×400 px automáticamente</p>
                 </div>
               </button>
               <p className="mt-1.5 text-[11px] text-ink-muted">

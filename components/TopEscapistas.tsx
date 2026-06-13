@@ -159,7 +159,6 @@ export default function TopEscapistas() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary/10">
               <Lock className="h-6 w-6 text-brand-primary" />
             </div>
-            <p className="font-display text-base font-extrabold text-ink">{t.topEscapistasTitle}</p>
             <p className="text-xs text-ink-muted">Función exclusiva de VecindogPro</p>
             <Link href="/planes"
               className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-primary px-5 py-2.5 text-sm font-bold text-white shadow-soft transition hover:opacity-90">

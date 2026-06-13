@@ -25,7 +25,13 @@ module.exports = {
 
           primary:         '#B85C4A',
           'primary-dark':  '#8E4232',
-          ink:             '#1A1A1A'
+          ink:             '#1A1A1A',
+
+          purple:          '#5b21b6',
+          'purple-dark':   '#4c1d95',
+
+          amber:           '#d97706',
+          'amber-soft':    '#fffbeb'
         },
 
         ink:         '#1A1A1A',

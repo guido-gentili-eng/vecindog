@@ -11,7 +11,7 @@ const STEPS_IOS = [
   {
     icon: '🌐',
     title: 'Abrí Safari',
-    desc: 'Entrá a mivecindog.com.ar desde Safari (no Chrome). En iPhone, Safari es el navegador por defecto.',
+    desc: 'Entrá a https://mivecindog.com.ar desde Safari (no Chrome). En iPhone, Safari es el navegador por defecto.',
   },
   {
     icon: '⬆️',
@@ -167,6 +167,8 @@ export default function DescargasPage() {
           </p>
           <a
             href="https://mivecindog.com.ar"
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-primary mt-5 justify-center w-full"
           >
             Ir a mivecindog.com.ar

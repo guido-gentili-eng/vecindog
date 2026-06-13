@@ -161,6 +161,7 @@ export type Translations = {
   footerTerms: string;
   footerPrivacy: string;
   footerMadeWith: string;
+  footerLinkAyuda: string;
   footerLinkInicio: string;
   footerLinkAvisos: string;
   footerLinkPublicar: string;
@@ -876,6 +877,9 @@ export type Translations = {
   pbrGrande: string;
   pbrCollar: string;
   pbrChapita: string;
+  pbrSexo: string;
+  pbrMacho: string;
+  pbrHembra: string;
   pbrDescripcion: string;
   pbrDescripcionPh: string;
   pbrMatchTitle: string;
@@ -894,6 +898,7 @@ export type Translations = {
   pbrEnOtroLugar: string;
   pbrSinDireccion: string;
   pbrAgregarPerfil: string;
+  pbrIngresalaAbajo: string;
   pbrGpsOk: string;
   pbrGpsCambiar: string;
   pbrGpsCargando: string;
@@ -1706,7 +1711,7 @@ const translations: Record<Lang, Translations> = {
     navSalirCrearCuenta: 'Salir y crear cuenta',
     navSalir: 'Salir',
     navCambiarCiudad: 'Cambiar ciudad',
-    navRedVecindog: 'Red Vecindog',
+    navRedVecindog: 'Mi red Vecindog',
     navPublicitate: 'Publicitate',
     // Hero
     heroChip: 'Red vecinal',
@@ -1772,6 +1777,7 @@ const translations: Record<Lang, Translations> = {
     footerTerms: 'Términos y Condiciones',
     footerPrivacy: 'Política de Privacidad',
     footerMadeWith: 'Hecho con cariño en Argentina 🐾',
+    footerLinkAyuda: 'Contacto y ayuda',
     footerLinkInicio: 'Inicio',
     footerLinkAvisos: 'Avisos',
     footerLinkPublicar: 'Publicar',
@@ -2487,6 +2493,9 @@ const translations: Record<Lang, Translations> = {
     pbrGrande: 'Grande',
     pbrCollar: '¿Tenía collar?',
     pbrChapita: '¿Tenía chapita / plaquita identificadora?',
+    pbrSexo: 'Sexo',
+    pbrMacho: '♂ Macho',
+    pbrHembra: '♀ Hembra',
     pbrDescripcion: 'Descripción adicional',
     pbrDescripcionPh: 'Marcas especiales, manchas, comportamiento, collar rojo con chapita azul…',
     pbrMatchTitle: '¿Es alguno de estos perros que estaban buscando?',
@@ -2505,6 +2514,7 @@ const translations: Record<Lang, Translations> = {
     pbrEnOtroLugar: 'En otro lugar',
     pbrSinDireccion: 'No tenés dirección guardada.',
     pbrAgregarPerfil: 'Agregarla al perfil',
+    pbrIngresalaAbajo: 'o ingresala abajo.',
     pbrGpsOk: 'Ubicación GPS capturada',
     pbrGpsCambiar: 'Cambiar',
     pbrGpsCargando: 'Obteniendo ubicación…',
@@ -3342,6 +3352,7 @@ const translations: Record<Lang, Translations> = {
     footerTerms: 'Terms and Conditions',
     footerPrivacy: 'Privacy Policy',
     footerMadeWith: 'Made with love in Argentina 🐾',
+    footerLinkAyuda: 'Contact & help',
     footerLinkInicio: 'Home',
     footerLinkAvisos: 'Listings',
     footerLinkPublicar: 'Post',
@@ -4057,6 +4068,9 @@ const translations: Record<Lang, Translations> = {
     pbrGrande: 'Large',
     pbrCollar: 'Did it have a collar?',
     pbrChapita: 'Did it have an ID tag?',
+    pbrSexo: 'Sex',
+    pbrMacho: '♂ Male',
+    pbrHembra: '♀ Female',
     pbrDescripcion: 'Additional description',
     pbrDescripcionPh: 'Special marks, spots, behavior, red collar with blue tag…',
     pbrMatchTitle: 'Is it one of these dogs that were being searched for?',
@@ -4075,6 +4089,7 @@ const translations: Record<Lang, Translations> = {
     pbrEnOtroLugar: 'Somewhere else',
     pbrSinDireccion: "You don't have a saved address.",
     pbrAgregarPerfil: 'Add it to profile',
+    pbrIngresalaAbajo: 'or enter it below.',
     pbrGpsOk: 'GPS location captured',
     pbrGpsCambiar: 'Change',
     pbrGpsCargando: 'Getting location…',
@@ -4912,6 +4927,7 @@ const translations: Record<Lang, Translations> = {
     footerTerms: 'Termos e Condições',
     footerPrivacy: 'Política de Privacidade',
     footerMadeWith: 'Feito com carinho na Argentina 🐾',
+    footerLinkAyuda: 'Contato e ajuda',
     footerLinkInicio: 'Início',
     footerLinkAvisos: 'Anúncios',
     footerLinkPublicar: 'Publicar',
@@ -5627,6 +5643,9 @@ const translations: Record<Lang, Translations> = {
     pbrGrande: 'Grande',
     pbrCollar: 'Tinha coleira?',
     pbrChapita: 'Tinha plaquinha de identificação?',
+    pbrSexo: 'Sexo',
+    pbrMacho: '♂ Macho',
+    pbrHembra: '♀ Fêmea',
     pbrDescripcion: 'Descrição adicional',
     pbrDescripcionPh: 'Marcas especiais, manchas, comportamento, coleira vermelha com plaquinha azul…',
     pbrMatchTitle: 'É algum desses cães que estavam procurando?',
@@ -5645,6 +5664,7 @@ const translations: Record<Lang, Translations> = {
     pbrEnOtroLugar: 'Em outro lugar',
     pbrSinDireccion: 'Você não tem endereço salvo.',
     pbrAgregarPerfil: 'Adicionar ao perfil',
+    pbrIngresalaAbajo: 'ou insira abaixo.',
     pbrGpsOk: 'Localização GPS capturada',
     pbrGpsCambiar: 'Alterar',
     pbrGpsCargando: 'Obtendo localização…',

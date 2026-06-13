@@ -9,6 +9,7 @@ import {
   X, Loader2, AlertCircle, ImagePlus, ArrowLeft,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 const WHATSAPP = '5492914050210';
 const EMAIL    = 'hola@mivecindog.com.ar';
@@ -72,7 +73,7 @@ const POR_QUE_ITEMS = [
   ['Audiencia calificada', 'Solo dueños de mascotas activos en tu ciudad.'],
   ['Sin bots ni impresiones vacías', 'Usuarios reales buscando avisos activos.'],
   ['Activación en 24 hs', 'Tu ad publicado al día siguiente de pagar.'],
-  ['Reporte mensual', 'Te informamos cuántas veces se vio tu ad.'],
+  ['Reporte mensual', 'Te informamos cuántas veces se vio tu anuncio.'],
 ] as const;
 
 export default function PublicitatePage() {
@@ -81,12 +82,23 @@ export default function PublicitatePage() {
   const waLink   = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quiero publicitar mi negocio en Vecindog')}`;
   const mailLink = `mailto:${EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`;
   const [planSeleccionado, setPlanSeleccionado] = useState<string | null>(null);
+  const [totalUsuarios,   setTotalUsuarios]   = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .then(({ count }) => { if (count !== null) setTotalUsuarios(count); })
+      .catch(() => {});
+  }, []);
+
+  const statUsuarios = totalUsuarios === null ? '…' : `${totalUsuarios.toLocaleString('es-AR')}+`;
 
   const STATS = [
-    { value: '500+',     label: t.publStats0label, icon: Users },
-    { value: 'Todo',     label: t.publStats1label, icon: MapPin },
-    { value: '100%',     label: t.publStats2label, icon: TrendingUp },
-    { value: 'Directo',  label: t.publStats3label, icon: Target },
+    { value: statUsuarios, label: t.publStats0label, icon: Users },
+    { value: 'Todo',       label: t.publStats1label, icon: MapPin },
+    { value: '100%',       label: t.publStats2label, icon: TrendingUp },
+    { value: 'Directo',    label: t.publStats3label, icon: Target },
   ];
 
   return (
@@ -299,10 +311,10 @@ export default function PublicitatePage() {
           {PAQUETES.map(({ nombre, precio, moneda, usd, descripcion, slots, destacado, cta, slug }) => (
             <div
               key={nombre}
-              className={`card flex flex-col p-6 ${destacado ? 'ring-2 ring-brand-primary' : ''}`}
+              className={`relative card flex flex-col p-6 ${destacado ? 'ring-2 ring-brand-primary' : ''}`}
             >
               {destacado && (
-                <span className="-mt-9 mb-4 self-start rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-white">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-white">
                   {t.publMasElegido}
                 </span>
               )}
@@ -515,8 +527,9 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
       if (res.ok && data.ok && data.ad_ids?.length > 0) {
         window.location.href = `/publicitate/pago-exitoso?plan=${planKey}&ads=${data.ad_ids.join(',')}&trial=1`;
       } else if (res.ok && data.ok) {
-        setError('El anuncio se activó pero no se pudo obtener el ID. Revisá tu email de confirmación.');
-        setLoading(false);
+        console.error('[publicitate] trial activado sin ad_ids:', { plan: planKey, negocio, email });
+        window.location.href = `/publicitate/pago-exitoso?plan=${planKey}&trial=1`;
+        return;
       } else {
         setError(data.error ?? 'Error al procesar.');
         setLoading(false);

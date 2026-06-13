@@ -74,7 +74,7 @@ export default function ActionCards() {
       titulo: t.accionTransito,
       texto: t.accionTransitoText,
       chip: t.chipComunidad,
-      bg: 'bg-[#5b21b6]', text: 'text-white', iconBg: 'bg-white/22', accent: 'bg-[#4c1d95]',
+      bg: 'bg-brand-purple', text: 'text-white', iconBg: 'bg-white/22', accent: 'bg-brand-purple-dark',
     },
   ];
 

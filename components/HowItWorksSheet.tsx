@@ -61,7 +61,7 @@ export const HOW_IT_WORKS: Record<string, HowItWorksData> = {
     subtitulo: 'Ofrecé tu servicio de cuidado a dueños de tu ciudad.',
     pasos: [
       { emoji: '🐾', titulo: 'Publicá que podés cuidar', desc: 'Días disponibles, tipo de servicio y tu ubicación.' },
-      { emoji: '🏘️', titulo: 'Dueños de tu zona te encuentran', desc: 'Apareceés en los resultados de búsqueda de tu ciudad.' },
+      { emoji: '🏘️', titulo: 'Dueños de tu zona te encuentran', desc: 'Aparecés en los resultados de búsqueda de tu ciudad.' },
       { emoji: '📞', titulo: 'Acordás todo directamente', desc: 'El dueño te contacta por WhatsApp y coordinan los detalles.' },
     ],
     ctaLabel: 'Ofrecer cuidado',

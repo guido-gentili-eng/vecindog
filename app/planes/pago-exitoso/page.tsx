@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle, Sparkles, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
@@ -85,10 +85,26 @@ export default function PagoExitosoPro() {
         {estado === 'pendiente' && (
           <>
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-warn/10">
-              <Loader2 className="h-10 w-10 text-warn" />
+              <Clock className="h-10 w-10 text-warn" />
             </div>
             <h1 className="mt-5 font-display text-2xl font-black text-ink">{t.ppxPendienteTitle}</h1>
             <p className="mt-2 text-sm text-ink-muted">{t.ppxPendienteSub}</p>
+            <p className="mt-3 text-xs text-ink-muted">
+              Si en las próximas horas no recibís confirmación, escribinos a{' '}
+              <a href="mailto:hola@mivecindog.com.ar" className="font-bold text-brand-primary underline">
+                hola@mivecindog.com.ar
+              </a>
+              {' '}o por{' '}
+              <a
+                href="https://wa.me/5492914050210?text=Hola%2C%20hice%20un%20pago%20de%20VecindogPro%20y%20qued%C3%B3%20pendiente"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-brand-primary underline"
+              >
+                WhatsApp
+              </a>
+              .
+            </p>
             <Link href="/" className="mt-6 flex w-full items-center justify-center rounded-2xl border-2 border-black/10 py-3 text-sm font-bold text-ink-muted transition hover:border-black/20">
               {t.ppxVolver}
             </Link>

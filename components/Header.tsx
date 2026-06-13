@@ -76,7 +76,7 @@ export default function Header() {
           </Link>
           <Link
             href="/red-vecindog"
-            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-amber-600 transition hover:bg-amber-50"
+            className="inline-flex items-center gap-1 rounded-2xl px-3 py-1.5 text-sm font-bold text-brand-amber transition hover:bg-brand-amber-soft"
           >
             <Store className="h-3.5 w-3.5" /> {t.navRedVecindog}
           </Link>
@@ -153,7 +153,7 @@ export default function Header() {
                       </Link>
                       <Link href="/mi-comercio" onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition">
-                        <Store className="h-4 w-4 text-amber-600" /> {t.navMiComercio}
+                        <Store className="h-4 w-4 text-brand-amber" /> {t.navMiComercio}
                       </Link>
                       <button type="button" onClick={() => { clearCiudad(); setProfileOpen(false); }}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-cream transition w-full text-left">
@@ -248,7 +248,7 @@ export default function Header() {
             <Link
               href="/red-vecindog"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-amber-600 hover:bg-amber-50"
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-base font-bold text-brand-amber hover:bg-brand-amber-soft"
             >
               <Store className="h-4 w-4" /> {t.navRedVecindog}
             </Link>
@@ -285,7 +285,7 @@ export default function Header() {
                     </Link>
                     <Link href="/mi-comercio" onClick={() => setOpen(false)}
                       className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <Store className="h-4 w-4 text-amber-600" /> {t.navMiComercio}
+                      <Store className="h-4 w-4 text-brand-amber" /> {t.navMiComercio}
                     </Link>
                     <button type="button" onClick={() => { signOut(); setOpen(false); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">

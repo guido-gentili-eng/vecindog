@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Vecindog — Buscá. Encontrá. Adoptá.',
   description:
-    'La red vecinal para encontrar y adoptar mascotas cerca de vos. Disponible en todo Argentina.',
+    'La red vecinal para encontrar y adoptar mascotas cerca de vos. Disponible en toda Argentina.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -33,6 +33,14 @@ export const metadata: Metadata = {
     title: 'Vecindog',
     description: 'Buscá, encontrá y adoptá mascotas cerca de vos.',
     siteName: 'Vecindog',
+    url: 'https://www.mivecindog.com.ar',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Vecindog — Buscá. Encontrá. Adoptá.' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vecindog',
+    description: 'Buscá, encontrá y adoptá mascotas cerca de vos.',
+    images: ['/opengraph-image'],
   },
   icons: {
     icon: [

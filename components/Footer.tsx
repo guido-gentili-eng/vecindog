@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { BrandBadge } from '@/components/Logo';
-import { Heart, Megaphone } from 'lucide-react';
+import { Heart, Megaphone, LifeBuoy } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer() {
@@ -72,6 +72,17 @@ export default function Footer() {
           <h3 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink">
             {t.footerNegociosSection}
           </h3>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <a
+                href="mailto:hola@mivecindog.com.ar?subject=Ayuda%20Vecindog"
+                className="inline-flex items-center gap-1.5 text-ink-muted hover:text-brand-primary transition"
+              >
+                <LifeBuoy className="h-3.5 w-3.5 shrink-0" /> {t.footerLinkAyuda}
+              </a>
+            </li>
+          </ul>
+          <div className="my-3 border-t border-black/5" />
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link

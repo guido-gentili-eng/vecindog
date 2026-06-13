@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, ArrowRight, ImageIcon } from 'lucide-react';
-import { listarPostsResueltos, type Post } from '@/lib/posts';
+import { listarPostsResueltos, contarPostsResueltos, type Post } from '@/lib/posts';
 
 const EMOJI_CATEGORIA: Record<string, string> = {
   perdido:    '🏠 Volvió a casa',
@@ -17,10 +17,10 @@ export default function VolvieronACasa() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    listarPostsResueltos(4)
-      .then((data) => {
+    Promise.all([listarPostsResueltos(4), contarPostsResueltos()])
+      .then(([data, count]) => {
         setPosts(data);
-        setTotal(data.length); // placeholder; en el futuro podemos hacer count(*)
+        setTotal(count);
       })
       .finally(() => setCargando(false));
   }, []);

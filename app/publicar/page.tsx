@@ -121,6 +121,8 @@ export default function PublicarPage() {
   const [enviado,       setEnviado]       = useState(false);
   const [loading,       setLoading]       = useState(false);
   const publicandoRef = useRef(false);
+  const zonaRef       = useRef<HTMLDivElement>(null);
+  const contactoRef   = useRef<HTMLDivElement>(null);
   const [submitError,   setSubmitError]   = useState('');
   const [showWaConfirm, setShowWaConfirm] = useState(false);
   const [gpsEstado,   setGpsEstado]   = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
@@ -270,7 +272,7 @@ export default function PublicarPage() {
     // Zona obligatoria (necesaria para matching y notificaciones)
     if (!form.zona.trim()) {
       setSubmitError('Ingresá la zona o dirección donde ocurrió.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => zonaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
       return;
     }
 
@@ -286,7 +288,7 @@ export default function PublicarPage() {
       const digitos = form.contacto.replace(/\D/g, '');
       if (digitos.length < 10) {
         setSubmitError(t.pbrWhatsappError);
-        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        setTimeout(() => contactoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
         return;
       }
     }
@@ -295,7 +297,7 @@ export default function PublicarPage() {
       const count = await contarPostsActivosDelUsuario();
       if (count >= 5) {
         setSubmitError(t.pbrLimiteError);
-        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        setTimeout(() => contactoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
         return;
       }
     }
@@ -833,11 +835,11 @@ export default function PublicarPage() {
             </div>
 
             <div>
-              <label className="label">Sexo <span className="text-ink-muted font-normal">(opcional)</span></label>
+              <label className="label">{t.pbrSexo} <span className="text-ink-muted font-normal">({t.commonOptional})</span></label>
               <div className="flex gap-2">
-                {([['macho', '♂ Macho'], ['hembra', '♀ Hembra']] as const).map(([v, l]) => (
-                  <button key={v} type="button"
-                    onClick={() => handleChange('sexo', form.sexo === v ? '' : v)}
+                {([['macho', t.pbrMacho], ['hembra', t.pbrHembra], ['', t.pbrNoSe]] as const).map(([v, l]) => (
+                  <button key={v === '' ? 'no-se' : v} type="button"
+                    onClick={() => handleChange('sexo', v as 'macho' | 'hembra' | '')}
                     className={`flex-1 rounded-2xl border-2 py-2.5 text-sm font-bold transition ${
                       form.sexo === v
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
@@ -996,6 +998,7 @@ export default function PublicarPage() {
         )}
 
         {/* ── PASO 3/4: dónde y cuándo ── */}
+        <div ref={zonaRef}>
         <StepCard n={form.categoria === 'transito' ? 4 : 3}
           titulo={
             form.categoria === 'perdido'    ? t.pbrStep3Perdido :
@@ -1038,7 +1041,7 @@ export default function PublicarPage() {
                     <Link href={`/mis-perros/${perroData.id}`} className="font-bold text-brand-primary underline">
                       {t.pbrAgregarPerfil}
                     </Link>
-                    {' '}o ingresala abajo.
+                    {' '}{t.pbrIngresalaAbajo}
                   </p>
                 )}
               </div>
@@ -1125,8 +1128,10 @@ export default function PublicarPage() {
             )}
           </div>
         </StepCard>
+        </div>
 
         {/* ── PASO 4/5: contacto ── */}
+        <div ref={contactoRef}>
         <StepCard n={form.categoria === 'transito' ? 5 : 4} titulo={t.pbrContactoLabel}>
           {!sinContacto && (
             <Field label={t.pbrContactoLabel}>
@@ -1165,6 +1170,7 @@ export default function PublicarPage() {
             </button>
           )}
         </StepCard>
+        </div>
 
         {submitError && (
           <p className="flex items-start gap-1.5 text-sm text-bad">

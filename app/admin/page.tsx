@@ -128,10 +128,10 @@ export default function AdminPage() {
   const naFileRef = useRef<HTMLInputElement>(null);
 
   const AD_SIZE_HINT: Record<AdVariant, string> = {
-    leaderboard: '1200 × 300 px (ratio 4:1) — banner horizontal',
-    card:        '600 × 400 px (ratio 3:2) — imagen cuadrada/horizontal',
-    sidebar:     '300 × 250 px — rectángulo vertical',
-    comercio:    '800 × 400 px — portada del comercio',
+    leaderboard: 'Cualquier tamaño — ajustamos a 1200×300 px automáticamente',
+    card:        'Cualquier tamaño — ajustamos a 600×400 px automáticamente',
+    sidebar:     'Cualquier tamaño — ajustamos a 300×250 px automáticamente',
+    comercio:    'Cualquier tamaño — ajustamos a 800×400 px automáticamente',
   };
 
   const AD_SIZE_PX: Record<AdVariant, [number, number]> = {

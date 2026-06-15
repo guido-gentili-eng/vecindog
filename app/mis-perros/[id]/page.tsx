@@ -122,8 +122,10 @@ export default function PerroDetallePage() {
   const storiesCarnetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let mounted = true;
     obtenerPerro(id)
       .then((p) => {
+        if (!mounted) return null;
         setPerro(p);
         if (p) {
           // Restaurar caricatura guardada si la foto no cambió
@@ -147,31 +149,34 @@ export default function PerroDetallePage() {
             new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
           );
           setVacunas(sorted);
-          buscarPostActivoDePerro(p.id).then(setPostActivo);
+          buscarPostActivoDePerro(p.id)
+            .then((post) => { if (mounted) setPostActivo(post); })
+            .catch((e) => console.error('[mis-perros] buscarPostActivo falló:', e));
           const timeout = new Promise<void>(r => setTimeout(r, 12000)); // 12s max
           Promise.race([
             Promise.allSettled([
-              listarEstudios(p.id).then(setEstudios),
-              listarDesparasitaciones(p.id).then(setDesparasitaciones),
-              listarPesos(p.id).then(setPesos),
-              listarTurnos(p.id).then(setTurnos),
-              listarMedicamentos(p.id).then(setMedicamentos),
-              listarVisitasVet(p.id).then(setVisitasVet),
-              listarProcedimientos(p.id).then(setProcedimientos),
-              listarFotos(p.id).then(setFotos),
-              listarContactos(p.id).then(setContactos),
-              obtenerGrooming(p.id).then(setGrooming),
+              listarEstudios(p.id).then(d => { if (mounted) setEstudios(d); }),
+              listarDesparasitaciones(p.id).then(d => { if (mounted) setDesparasitaciones(d); }),
+              listarPesos(p.id).then(d => { if (mounted) setPesos(d); }),
+              listarTurnos(p.id).then(d => { if (mounted) setTurnos(d); }),
+              listarMedicamentos(p.id).then(d => { if (mounted) setMedicamentos(d); }),
+              listarVisitasVet(p.id).then(d => { if (mounted) setVisitasVet(d); }),
+              listarProcedimientos(p.id).then(d => { if (mounted) setProcedimientos(d); }),
+              listarFotos(p.id).then(d => { if (mounted) setFotos(d); }),
+              listarContactos(p.id).then(d => { if (mounted) setContactos(d); }),
+              obtenerGrooming(p.id).then(d => { if (mounted) setGrooming(d); }),
             ]).then((results) => {
               results.forEach((r, i) => {
                 if (r.status === 'rejected') console.error(`[mis-perros] sub-data[${i}] falló:`, r.reason);
               });
             }),
             timeout,
-          ]).finally(() => setSubDataLoaded(true));
+          ]).finally(() => { if (mounted) setSubDataLoaded(true); });
         }
         return null;
       })
-      .finally(() => setCargando(false));
+      .finally(() => { if (mounted) setCargando(false); });
+    return () => { mounted = false; };
   }, [id]);
 
   async function handleSubirEstudio(tipo: TipoEstudio, file: File) {
@@ -308,16 +313,16 @@ export default function PerroDetallePage() {
       canvas.height = SH;
       const ctx = canvas.getContext('2d')!;
 
-      // ── Fondo degradado alegre amarillo-naranja ──
-      const bg = ctx.createLinearGradient(0, 0, SW, SH);
-      bg.addColorStop(0,   '#FFD93D');
-      bg.addColorStop(0.45,'#FF9A3C');
-      bg.addColorStop(1,   '#FF6B35');
+      // ── Fondo degradado Rojo Vecindog ──
+      const bg = ctx.createLinearGradient(0, 0, 0, SH);
+      bg.addColorStop(0,   '#E3342F');
+      bg.addColorStop(0.55,'#C92A2A');
+      bg.addColorStop(1,   '#3F3D3D');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, SW, SH);
 
-      // Círculos decorativos de fondo festivos
-      ctx.globalAlpha = 0.10;
+      // Círculos decorativos de fondo
+      ctx.globalAlpha = 0.08;
       ctx.fillStyle = '#fff';
       ctx.beginPath(); ctx.arc(SW * 0.88, SH * 0.07, 240, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(SW * 0.08, SH * 0.18, 170, 0, Math.PI * 2); ctx.fill();
@@ -328,30 +333,29 @@ export default function PerroDetallePage() {
       // ── TEXTO SUPERIOR ──
       ctx.textAlign = 'center';
 
-      // Confetti / estrellas decorativas
-      const stars = ['⭐','🌟','✨','⭐','🌟','✨'];
+      // Huellas decorativas
+      const stars = ['🐾','✨','🐾','✨','🐾','✨'];
       ctx.font = '55px sans-serif';
       stars.forEach((s, i) => {
         const x = (SW / (stars.length + 1)) * (i + 1);
         ctx.fillText(s, x, 120);
       });
 
-      // "¡Hola! Soy..."
-      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      // "¡Hola! Mi nombre es"
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
       ctx.font      = '500 62px sans-serif';
       ctx.fillText('¡Hola! Mi nombre es', SW / 2, 220);
 
       // Nombre del perro — gigante y bold
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#FFFDF8';
       ctx.font      = 'bold 160px sans-serif';
-      // Sombra suave al nombre
-      ctx.shadowColor   = 'rgba(0,0,0,0.20)';
-      ctx.shadowBlur    = 12;
-      ctx.shadowOffsetY = 6;
+      ctx.shadowColor   = 'rgba(0,0,0,0.30)';
+      ctx.shadowBlur    = 14;
+      ctx.shadowOffsetY = 7;
       ctx.fillText(perro.nombre, SW / 2, 400);
       ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-      // Línea decorativa corazones bajo el nombre
+      // Línea decorativa bajo el nombre
       ctx.font = '48px sans-serif';
       ctx.fillText('🐾  ❤️  🐾', SW / 2, 470);
 
@@ -360,13 +364,13 @@ export default function PerroDetallePage() {
       const imgX    = (SW - imgSize) / 2;
       const imgY    = 520;
 
-      // Halo amarillo brillante
-      ctx.shadowColor   = 'rgba(255, 220, 0, 0.6)';
+      // Halo rojo suave
+      ctx.shadowColor   = 'rgba(227, 52, 47, 0.5)';
       ctx.shadowBlur    = 80;
       ctx.shadowOffsetY = 0;
 
-      // Marco circular blanco
-      ctx.fillStyle = '#fff';
+      // Marco circular crema
+      ctx.fillStyle = '#FFFDF8';
       ctx.beginPath();
       ctx.arc(SW / 2, imgY + imgSize / 2, imgSize / 2 + 22, 0, Math.PI * 2);
       ctx.fill();
@@ -383,35 +387,35 @@ export default function PerroDetallePage() {
       // ── TEXTO INFERIOR ──
       const textY = imgY + imgSize + 75;
 
-      // Chip "feliz y sano 🎉"
+      // Chip "feliz y sano 🎉" — fondo crema semitransparente
       const chipW = 460; const chipH = 72; const chipX = (SW - chipW) / 2;
       const chipGrad = ctx.createLinearGradient(chipX, 0, chipX + chipW, 0);
-      chipGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
-      chipGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+      chipGrad.addColorStop(0, 'rgba(255,253,248,0.25)');
+      chipGrad.addColorStop(1, 'rgba(255,253,248,0.12)');
       ctx.fillStyle = chipGrad;
       ctx.beginPath(); ctx.roundRect(chipX, textY - 50, chipW, chipH, 36); ctx.fill();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#FFFDF8';
       ctx.font      = 'bold 38px sans-serif';
       ctx.fillText('feliz y sano  🎉', SW / 2, textY + 6);
 
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#FFFDF8';
       ctx.font      = 'bold 56px sans-serif';
       ctx.fillText('Soy socio de Vecindog 🐾', SW / 2, textY + 100);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillStyle = 'rgba(255,253,248,0.80)';
       ctx.font      = '38px sans-serif';
       ctx.fillText('La red vecinal que une a las', SW / 2, textY + 170);
       ctx.fillText('mascotas felices del barrio 🏡', SW / 2, textY + 218);
 
-      // CTA pill
+      // CTA pill — crema con texto rojo
       const pillY = textY + 285;
       const pillW = 580; const pillH = 92; const pillX = (SW - pillW) / 2;
-      ctx.fillStyle = '#fff';
-      ctx.shadowColor = 'rgba(0,0,0,0.18)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 6;
+      ctx.fillStyle = '#FFFDF8';
+      ctx.shadowColor = 'rgba(0,0,0,0.20)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 6;
       ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 46); ctx.fill();
       ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-      ctx.fillStyle = '#FF6B35';
+      ctx.fillStyle = '#E3342F';
       ctx.font      = 'bold 40px sans-serif';
       ctx.fillText('www.mivecindog.com.ar', SW / 2, pillY + 60);
 

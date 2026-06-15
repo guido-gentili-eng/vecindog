@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const PLAN_SLOTS: Record<string, Array<'leaderboard' | 'card' | 'sidebar'>> = {
-  basico:   ['sidebar'],
-  estandar: ['sidebar', 'card'],
+  basico:   ['card'],
+  estandar: ['card', 'sidebar'],
   premium:  ['leaderboard', 'card', 'sidebar'],
 };
 

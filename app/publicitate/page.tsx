@@ -23,7 +23,7 @@ const PAQUETES = [
     moneda: 'ARS / mes',
     usd: '≈ USD 15',
     descripcion: 'Ideal para empezar a probar.',
-    slots: ['1 slot Sidebar (detalle de aviso)'],
+    slots: ['Card en grilla de avisos'],
     destacado: false,
     cta: 'Elegir Básico',
     slug: 'basico',
@@ -34,7 +34,7 @@ const PAQUETES = [
     moneda: 'ARS / mes',
     usd: '≈ USD 28',
     descripcion: 'El más elegido por negocios locales.',
-    slots: ['1 slot Sidebar', '1 slot Card en grilla'],
+    slots: ['Card en grilla de avisos', 'Panel lateral de contacto'],
     destacado: true,
     cta: 'Elegir Estándar',
     slug: 'estandar',
@@ -45,7 +45,7 @@ const PAQUETES = [
     moneda: 'ARS / mes',
     usd: '≈ USD 45',
     descripcion: 'Máxima presencia en toda la app.',
-    slots: ['Banner entre secciones (home)', 'Card en grilla de avisos', 'Sidebar en detalle'],
+    slots: ['Banner entre secciones (home)', 'Card en grilla de avisos', 'Panel lateral de contacto'],
     destacado: false,
     cta: 'Elegir Premium',
     slug: 'premium',
@@ -435,9 +435,9 @@ export default function PublicitatePage() {
 }
 
 const PLAN_INFO: Record<string, { label: string; precio: string; slots: string[] }> = {
-  basico:   { label: 'Plan Básico',    precio: '$15.000/mes', slots: ['Sidebar en detalle de aviso'] },
-  estandar: { label: 'Plan Estándar',  precio: '$28.000/mes', slots: ['Sidebar en detalle de aviso', 'Card en grilla de avisos'] },
-  premium:  { label: 'Plan Premium',   precio: '$45.000/mes', slots: ['Banner en inicio', 'Card en grilla', 'Sidebar en detalle'] },
+  basico:   { label: 'Plan Básico',    precio: '$15.000/mes', slots: ['Card en grilla de avisos'] },
+  estandar: { label: 'Plan Estándar',  precio: '$28.000/mes', slots: ['Card en grilla de avisos', 'Panel lateral de contacto'] },
+  premium:  { label: 'Plan Premium',   precio: '$45.000/mes', slots: ['Banner en inicio', 'Card en grilla', 'Panel lateral de contacto'] },
 };
 
 const FOTO_RECOMENDADA: Record<string, { ratio: string; medida: string; consejo: string }> = {

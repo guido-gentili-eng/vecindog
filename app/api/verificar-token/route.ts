@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-export function generarToken(userId: string, window30: number): string {
+function generarToken(userId: string, window30: number): string {
   const secret = process.env.VERIFICAR_SECRET ?? 'vecindog-fallback-secret';
   return createHmac('sha256', secret)
     .update(`${userId}:${window30}`)

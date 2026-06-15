@@ -27,13 +27,6 @@ function mensajeRechazo(statusDetail: string): string {
   return RECHAZO[statusDetail] ?? RECHAZO.cc_rejected_other_reason;
 }
 
-/* ── Calcular monto con cuotas ── */
-function montoConCuotas(base: number, cuotas: number): number {
-  if (cuotas <= 1) return base;
-  if (cuotas <= 3) return base;         // 0% interés
-  if (cuotas <= 6) return Math.ceil(base * 1.15); // 15%
-  return Math.ceil(base * 1.35);         // 35% para 12 cuotas
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,14 +42,13 @@ export async function POST(req: NextRequest) {
     if (authErr || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     /* ── 2. Body ── */
-    let cardToken: string, cuotas: number, paymentMethodId: string;
+    let cardToken: string, paymentMethodId: string;
     try {
-      ({ cardToken, cuotas = 1, paymentMethodId = 'visa' } = await req.json());
+      ({ cardToken, paymentMethodId = 'visa' } = await req.json());
     } catch {
       return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
     }
     if (!cardToken) return NextResponse.json({ error: 'cardToken requerido' }, { status: 400 });
-    const cuotasN = Math.min(Math.max(parseInt(String(cuotas), 10) || 1, 1), 12);
 
     /* ── 3. Cliente admin Supabase ── */
     const admin = createClient(
@@ -90,14 +82,12 @@ export async function POST(req: NextRequest) {
     const pagoCl = new Payment(mp);
     const origin = req.headers.get('origin') ?? 'https://www.mivecindog.com.ar';
 
-    const monto = montoConCuotas(PRECIO_PRO, cuotasN);
-
     const pago = await pagoCl.create({
       body: {
-        transaction_amount:   monto,
+        transaction_amount:   PRECIO_PRO,
         token:                cardToken,
         description:          'VecindogPro — Suscripción 30 días',
-        installments:         cuotasN,
+        installments:         1,
         payment_method_id:    paymentMethodId,
         payer:                { email: user.email },
         metadata:             { tipo: 'pro', user_id: user.id, email: user.email },

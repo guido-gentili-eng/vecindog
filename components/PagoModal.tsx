@@ -130,11 +130,10 @@ interface CardForm {
   vencimiento: string;
   cvv:         string;
   dni:         string;
-  cuotas:      number;
 }
 
 const FORM_VACIO: CardForm = {
-  numero: '', nombre: '', vencimiento: '', cvv: '', dni: '', cuotas: 1,
+  numero: '', nombre: '', vencimiento: '', cvv: '', dni: '',
 };
 
 type Step = 'metodo' | 'tarjeta' | 'procesando' | 'pendiente' | 'exito' | 'error';
@@ -286,7 +285,7 @@ export default function PagoModal({
         },
         body: JSON.stringify({
           cardToken:       tokenResult.id,
-          cuotas:          form.cuotas,
+          cuotas:          1,
           paymentMethodId: TIPO_MP_ID[tipo] ?? 'visa',
         }),
       });
@@ -507,21 +506,6 @@ export default function PagoModal({
                     <AlertCircle className="h-3 w-3 shrink-0" /> {errors.dni}
                   </p>
                 )}
-              </div>
-
-              {/* Fix #5: montos por cuota calculados correctamente */}
-              <div>
-                <label className="label">Cuotas</label>
-                <select
-                  className="field w-full"
-                  value={form.cuotas}
-                  onChange={(e) => campo('cuotas', parseInt(e.target.value, 10))}
-                >
-                  <option value={1}>1 cuota de ${precio.toLocaleString('es-AR')}</option>
-                  <option value={3}>3 cuotas de ${Math.ceil(precio / 3).toLocaleString('es-AR')} (sin interés)</option>
-                  <option value={6}>6 cuotas de ${Math.ceil(precio * 1.15 / 6).toLocaleString('es-AR')} (con interés · total ${Math.ceil(precio * 1.15).toLocaleString('es-AR')})</option>
-                  <option value={12}>12 cuotas de ${Math.ceil(precio * 1.35 / 12).toLocaleString('es-AR')} (con interés · total ${Math.ceil(precio * 1.35).toLocaleString('es-AR')})</option>
-                </select>
               </div>
 
               {/* Botón pagar */}

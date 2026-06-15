@@ -321,10 +321,21 @@ export default function HistoriaPage() {
             </div>
           )}
 
-          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', padding: '10px 20px 12px' }}>
-            <p style={{ margin: 0, fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontWeight: 600 }}>
-              Creado en mivecindog.com.ar · Red vecinal de mascotas · Argentina
+          <div style={{ padding: '10px 20px 12px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+              feliz y sano 🎉
             </p>
+            <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 900, color: '#fff' }}>
+              Soy socio de Vecindog 🐾
+            </p>
+            <p style={{ margin: '0 0 8px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
+              La red vecinal que une a las mascotas felices del barrio 🏡
+            </p>
+            <div style={{ background: '#fff', borderRadius: '20px', padding: '5px 18px', display: 'inline-block' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: 800, color: accent }}>
+                www.mivecindog.com.ar
+              </p>
+            </div>
           </div>
           <div style={{ height: '4px', background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
         </div>

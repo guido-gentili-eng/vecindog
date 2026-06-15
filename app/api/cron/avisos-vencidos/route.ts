@@ -3,9 +3,21 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const DIAS_PRIMER_AVISO  = 5;   // día 5: primer email
-const DIAS_SEGUNDO_AVISO = 6;   // día 6: segundo email (último aviso)
-const DIAS_BORRADO       = 7;   // día 7+: se marca como resuelto automáticamente
+// Perdido / encontrado: ventana corta de 7 días
+const DIAS_PRIMER_AVISO  = 5;
+const DIAS_SEGUNDO_AVISO = 6;
+const DIAS_BORRADO       = 7;
+
+// Adopción / tránsito / cuidador_disponible: ventana larga de 30 días
+const DIAS_LARGO_PRIMER_AVISO  = 27;
+const DIAS_LARGO_SEGUNDO_AVISO = 29;
+const DIAS_LARGO_BORRADO       = 30;
+
+const LABELS_LARGO: Record<string, { categoria: string; resuelto: string; renovar: string; notif: string }> = {
+  adopcion:           { categoria: 'adopción', resuelto: '¡Ya fue adoptado!', renovar: 'Sigo buscando hogar', notif: 'Tu aviso de adopción' },
+  transito:           { categoria: 'tránsito', resuelto: '¡Ya fue adoptado!', renovar: 'Sigue en tránsito',   notif: 'Tu aviso de tránsito' },
+  cuidador_disponible:{ categoria: 'cuidador disponible', resuelto: 'Ya no estoy disponible', renovar: 'Sigo disponible', notif: 'Tu aviso de cuidador' },
+};
 
 async function enviarEmailExpiracion(
   email: string,
@@ -74,6 +86,73 @@ async function enviarEmailExpiracion(
   return res.ok;
 }
 
+async function enviarEmailExpiracionLargo(
+  email: string,
+  saludo: string,
+  categoria: string,
+  nombrePerro: string,
+  zona: string,
+  postId: string,
+  esFinal: boolean,
+  labels: typeof LABELS_LARGO[string],
+): Promise<boolean> {
+  const asunto = esFinal
+    ? `🚨 Último aviso: tu publicación de ${labels.categoria}${nombrePerro} se cerrará mañana`
+    : `⏰ Tu aviso de ${labels.categoria}${nombrePerro} está por vencer`;
+
+  const intro = esFinal
+    ? `Este es el <strong>último aviso</strong>. Si no respondés hoy, el aviso se cerrará automáticamente mañana.`
+    : `Tu aviso lleva 27 días publicado. ¿Sigue vigente?`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Vecindog <noreply@mivecindog.com.ar>',
+      to:   [email],
+      subject: asunto,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+          <div style="background:${esFinal ? '#b91c1c' : '#EE5A3B'};border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
+          </div>
+          <h2 style="color:#1a1a1a">${saludo}</h2>
+          <p style="color:#555;font-size:16px;line-height:1.6">
+            Tu aviso de <strong>${labels.categoria}${nombrePerro}</strong> en <strong>${zona}</strong>.
+          </p>
+          <p style="color:${esFinal ? '#b91c1c' : '#555'};font-size:16px;font-weight:${esFinal ? 'bold' : 'normal'}">
+            ${intro}
+          </p>
+          <div style="display:flex;gap:12px;margin:24px 0;flex-direction:column">
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}?accion=encontrado"
+               style="background:#22c55e;color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;text-align:center;display:block">
+              ✅ ${labels.resuelto} — Cerrar aviso
+            </a>
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}?accion=renovar"
+               style="background:#EE5A3B;color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;text-align:center;display:block">
+              🔄 ${labels.renovar} — Renovar 30 días más
+            </a>
+          </div>
+          ${esFinal ? `
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;margin-top:16px">
+            <p style="color:#b91c1c;font-size:14px;margin:0;font-weight:bold">
+              ⚠️ Si no respondés antes de mañana, el aviso se cerrará automáticamente.
+            </p>
+          </div>` : ''}
+          <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center">
+            <a href="https://www.mivecindog.com.ar/publicaciones/${postId}" style="color:#EE5A3B">Ver aviso</a>
+          </p>
+        </div>
+      `,
+    }),
+  });
+
+  return res.ok;
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -90,7 +169,13 @@ export async function GET(req: NextRequest) {
   const dia6    = new Date(ahora); dia6.setDate(dia6.getDate() - DIAS_SEGUNDO_AVISO);
   const dia7    = new Date(ahora); dia7.setDate(dia7.getDate() - DIAS_BORRADO);
 
+  // Ventana larga (30 días)
+  const dia27   = new Date(ahora); dia27.setDate(dia27.getDate() - DIAS_LARGO_PRIMER_AVISO);
+  const dia29   = new Date(ahora); dia29.setDate(dia29.getDate() - DIAS_LARGO_SEGUNDO_AVISO);
+  const dia30   = new Date(ahora); dia30.setDate(dia30.getDate() - DIAS_LARGO_BORRADO);
+
   let notif1 = 0, notif2 = 0, borrados = 0;
+  let notifLargo1 = 0, notifLargo2 = 0, borradosLargo = 0;
 
   // ── ETAPA 1: Primer aviso (día 5) ────────────────────────────────
   const { data: postsDia5 } = await admin
@@ -210,7 +295,122 @@ export async function GET(req: NextRequest) {
     borrados = postsBorrar.length;
   }
 
-  // ── ETAPA 4: Cerrar busco_cuidador cuya fecha de devolución ya pasó ──
+  // ── ETAPAS 4-6: adopcion / transito / cuidador_disponible (30 días) ──
+
+  const CATEGORIAS_LARGO = ['adopcion', 'transito', 'cuidador_disponible'] as const;
+
+  // Primer aviso (día 27)
+  const { data: largosDia27 } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', CATEGORIAS_LARGO)
+    .eq('estado', 'activo')
+    .eq('notified_expiration', false)
+    .lte('created_at', dia27.toISOString());
+
+  // Segundo aviso (día 29)
+  const { data: largosDia29 } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', CATEGORIAS_LARGO)
+    .eq('estado', 'activo')
+    .eq('notified_expiration', true)
+    .lte('created_at', dia29.toISOString())
+    .gte('created_at', dia30.toISOString());
+
+  // Auto-cerrar (día 30+)
+  const { data: largosBorrar } = await admin
+    .from('posts')
+    .select('id, user_id, nombre, categoria, zona')
+    .in('categoria', CATEGORIAS_LARGO)
+    .eq('estado', 'activo')
+    .eq('notified_expiration', true)
+    .lt('created_at', dia30.toISOString());
+
+  // Recopilar user_ids de posts largos
+  const userIdsLargo = [
+    ...(largosDia27 ?? []).map((p: { user_id: string }) => p.user_id),
+    ...(largosDia29 ?? []).map((p: { user_id: string }) => p.user_id),
+  ].filter(Boolean);
+  const uniqueUserIdsLargo = [...new Set(userIdsLargo)].filter(
+    (id) => !uniqueUserIds.includes(id)
+  );
+
+  // Traer emails de user_ids aún no cargados
+  if (uniqueUserIdsLargo.length > 0) {
+    let page2 = 1;
+    while (true) {
+      const { data: listData } = await admin.auth.admin.listUsers({ page: page2, perPage: 1000 });
+      if (!listData?.users?.length) break;
+      for (const u of listData.users) {
+        if (uniqueUserIdsLargo.includes(u.id) && u.email) emailsMap[u.id] = u.email;
+      }
+      if (listData.users.length < 1000) break;
+      page2++;
+    }
+    const { data: profilesLargo } = await admin
+      .from('profiles')
+      .select('id, nombre')
+      .in('id', uniqueUserIdsLargo);
+    for (const p of profilesLargo ?? []) profilesMap[p.id] = p.nombre ?? '';
+  }
+
+  // Procesar día 27 (primer aviso largo)
+  for (const post of largosDia27 ?? []) {
+    if (!post.user_id) continue;
+    const labels = LABELS_LARGO[post.categoria];
+    if (!labels) continue;
+    const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
+
+    await admin.from('notifications').insert({
+      user_id: post.user_id, post_id: post.id,
+      tipo: 'expiracion',
+      mensaje: `⏰ ${labels.notif}${nombrePerro} en ${post.zona} está por vencer. ¿Sigue vigente?`,
+      leida: false,
+    });
+    await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
+
+    const email = emailsMap[post.user_id];
+    if (!email) continue;
+    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+    const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, false, labels);
+    if (ok) notifLargo1++;
+  }
+
+  // Procesar día 29 (segundo aviso largo)
+  for (const post of largosDia29 ?? []) {
+    if (!post.user_id) continue;
+    const labels = LABELS_LARGO[post.categoria];
+    if (!labels) continue;
+    const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
+
+    const email = emailsMap[post.user_id];
+    if (!email) continue;
+    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+    const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, true, labels);
+    if (ok) notifLargo2++;
+  }
+
+  // Auto-cerrar día 30+
+  if (largosBorrar?.length) {
+    const ids = largosBorrar.map((p: { id: string }) => p.id);
+    await admin.from('posts').update({ estado: 'resuelto' }).in('id', ids);
+
+    for (const post of largosBorrar) {
+      if (!post.user_id) continue;
+      const labels = LABELS_LARGO[post.categoria];
+      const nombrePerro = post.nombre ? ` para ${post.nombre}` : '';
+      await admin.from('notifications').insert({
+        user_id: post.user_id, post_id: post.id,
+        tipo: 'expiracion',
+        mensaje: `🗑️ Tu aviso de ${labels?.categoria ?? post.categoria}${nombrePerro} fue cerrado automáticamente por inactividad.`,
+        leida: false,
+      });
+    }
+    borradosLargo = largosBorrar.length;
+  }
+
+  // ── ETAPA 7: Cerrar busco_cuidador cuya fecha de devolución ya pasó ──
   const hoyStr = ahora.toISOString().slice(0, 10);
   const { data: cuidadoresVencidos } = await admin
     .from('posts')
@@ -240,6 +440,9 @@ export async function GET(req: NextRequest) {
     notif1,
     notif2,
     borrados,
+    notifLargo1,
+    notifLargo2,
+    borradosLargo,
     cuidadoresVencidos: cuidadoresVencidos?.length ?? 0,
   });
 }

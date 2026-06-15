@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   // Verificar que viene de Vercel Cron
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const _cs = process.env.CRON_SECRET; if (!_cs || authHeader !== `Bearer ${_cs}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -35,10 +35,10 @@ export async function GET(req: NextRequest) {
 
   let enviados = 0;
 
-  for (const v of vacunas) {
+  await Promise.allSettled(vacunas.map(async (v) => {
     const perrosRaw = v.perros;
     const perro = (Array.isArray(perrosRaw) ? perrosRaw[0] : perrosRaw) as { id: string; nombre: string; user_id: string } | null;
-    if (!perro?.user_id) continue;
+    if (!perro?.user_id) return;
 
     const diasRestantes = Math.round(
       (new Date(v.proxima).getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24)
@@ -68,21 +68,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Obtener email del usuario
-    const { data: userData } = await admin.auth.admin.getUserById(perro.user_id);
-    const email = userData?.user?.email;
-    if (!email) continue;
-
     // Solo enviar email si es hoy, en 3 días o en 7 días (no todos los días intermedios)
     const enviarEmail = diasRestantes === 0 || diasRestantes === 3 || diasRestantes === 7;
-    if (!enviarEmail) continue;
+    if (!enviarEmail) return;
 
-    // Obtener nombre del dueño
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('nombre')
-      .eq('id', perro.user_id)
-      .single();
+    // Obtener email y perfil en paralelo
+    const [{ data: userData }, { data: profile }] = await Promise.all([
+      admin.auth.admin.getUserById(perro.user_id),
+      admin.from('profiles').select('nombre').eq('id', perro.user_id).single(),
+    ]);
+    const email = userData?.user?.email;
+    if (!email) return;
 
     const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
     const asunto = diasRestantes === 0
@@ -135,7 +131,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (res.ok) enviados++;
-  }
+  }));
 
   return NextResponse.json({ ok: true, procesadas: vacunas.length, enviados });
 }

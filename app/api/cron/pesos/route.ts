@@ -9,7 +9,7 @@ const DIAS_SIN_PESO = 60;
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const _cs = process.env.CRON_SECRET; if (!_cs || authHeader !== `Bearer ${_cs}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -23,38 +23,42 @@ export async function GET(req: NextRequest) {
   const hace60   = new Date(hoy); hace60.setDate(hoy.getDate() - DIAS_SIN_PESO);
   const hace60Str = hace60.toISOString().slice(0, 10);
 
-  // Traer todos los perros con su último peso
+  // Traer solo perros sin peso reciente usando LEFT JOIN en una sola query
+  // Esto evita el N+1 de consultar pesos uno por uno
   const { data: perros } = await admin
     .from('perros')
-    .select('id, nombre, user_id');
+    .select('id, nombre, user_id, pesos(fecha, valor_kg)')
+    .not('user_id', 'is', null);
 
   if (!perros || perros.length === 0) {
     return NextResponse.json({ ok: true, procesadas: 0 });
   }
 
+  // Filtrar en memoria los que no tienen peso reciente
+  const sinPesoReciente = perros.filter((perro) => {
+    const pesosArr = (perro.pesos ?? []) as { fecha: string; valor_kg: number }[];
+    const ultimoPeso = pesosArr.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+    return !ultimoPeso || ultimoPeso.fecha < hace60Str;
+  });
+
+  if (sinPesoReciente.length === 0) {
+    return NextResponse.json({ ok: true, procesadas: 0 });
+  }
+
   let enviados = 0;
+  const hace7 = new Date(hoy); hace7.setDate(hoy.getDate() - 7);
 
-  for (const perro of perros) {
-    if (!perro.user_id) continue;
+  await Promise.allSettled(sinPesoReciente.map(async (perro) => {
+    if (!perro.user_id) return;
 
-    // Buscar el peso más reciente del perro
-    const { data: ultimoPeso } = await admin
-      .from('pesos')
-      .select('fecha, valor_kg')
-      .eq('perro_id', perro.id)
-      .order('fecha', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    // Si tiene un peso reciente (< 60 días), saltar
-    if (ultimoPeso && ultimoPeso.fecha >= hace60Str) continue;
+    const pesosArr = (perro.pesos ?? []) as { fecha: string; valor_kg: number }[];
+    const ultimoPeso = pesosArr.sort((a, b) => b.fecha.localeCompare(a.fecha))[0] ?? null;
 
     const mensaje = ultimoPeso
       ? `⚖️ Hace más de ${DIAS_SIN_PESO} días que no registrás el peso de ${perro.nombre}.`
       : `⚖️ Todavía no registraste ningún peso para ${perro.nombre}.`;
 
     // Evitar duplicados en los últimos 7 días
-    const hace7 = new Date(hoy); hace7.setDate(hoy.getDate() - 7);
     const { data: existing } = await admin
       .from('notifications')
       .select('id')
@@ -64,7 +68,7 @@ export async function GET(req: NextRequest) {
       .gte('created_at', hace7.toISOString())
       .limit(1);
 
-    if (existing && existing.length > 0) continue;
+    if (existing && existing.length > 0) return;
 
     await admin.from('notifications').insert({
       user_id: perro.user_id,
@@ -74,15 +78,13 @@ export async function GET(req: NextRequest) {
       leida:    false,
     });
 
-    const { data: userData } = await admin.auth.admin.getUserById(perro.user_id);
+    // Obtener email y perfil en paralelo
+    const [{ data: userData }, { data: profile }] = await Promise.all([
+      admin.auth.admin.getUserById(perro.user_id),
+      admin.from('profiles').select('nombre').eq('id', perro.user_id).single(),
+    ]);
     const email = userData?.user?.email;
-    if (!email) continue;
-
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('nombre')
-      .eq('id', perro.user_id)
-      .single();
+    if (!email) return;
 
     const saludo = profile?.nombre ? `Hola ${profile.nombre},` : 'Hola,';
 
@@ -132,9 +134,9 @@ export async function GET(req: NextRequest) {
     });
 
     if (res.ok) enviados++;
-  }
+  }));
 
-  return NextResponse.json({ ok: true, procesadas: perros.length, enviados });
+  return NextResponse.json({ ok: true, procesadas: sinPesoReciente.length, enviados });
 }
 
 function formatFecha(iso: string): string {

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 // Corre todos los días a las 8am (configurado en vercel.json)
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const _cs = process.env.CRON_SECRET; if (!_cs || authHeader !== `Bearer ${_cs}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

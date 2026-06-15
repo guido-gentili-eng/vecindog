@@ -39,10 +39,10 @@ export async function POST(req: NextRequest) {
 
   const anon = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
   const { data: { user: adminUser } } = await anon.auth.getUser(token);
-  if (adminUser?.email !== ADMIN_EMAIL) {
+  if (!ADMIN_EMAIL || adminUser?.email !== ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

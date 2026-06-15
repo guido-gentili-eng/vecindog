@@ -3,8 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function GET(req: NextRequest) {
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -14,17 +23,18 @@ export async function GET(req: NextRequest) {
   );
 
   // Rango: mes calendario anterior completo
-  const ahora    = new Date();
-  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
-  const finMes    = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-  const mesLabel  = inicioMes.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const ahora     = new Date();
+  const inicioMes = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth() - 1, 1));
+  const finMes    = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1));
+  const mesLabel  = inicioMes.toLocaleDateString('es-AR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-  // Traer todos los ads activos o que estuvieron activos el mes pasado
+  // Solo ads activos con fecha_fin futura o que vencieron en el último mes (pagaron el período)
   const { data: ads } = await admin
     .from('ads')
     .select('id, titulo, subtitulo, plan, anunciante, variant')
     .not('anunciante', 'is', null)
-    .filter('anunciante', 'like', '%@%');
+    .filter('anunciante', 'like', '%@%')
+    .gte('fecha_fin', inicioMes.toISOString().slice(0, 10)); // activos durante el mes del reporte
 
   if (!ads?.length) return NextResponse.json({ ok: true, enviados: 0 });
 
@@ -59,23 +69,21 @@ export async function GET(req: NextRequest) {
     leaderboard: 'Banner', card: 'Card', sidebar: 'Panel lateral', comercio: 'Perfil Red Vecindog',
   };
 
-  let enviados = 0;
-
-  for (const [email, adsAnunciante] of porAnunciante) {
-    // Solo enviar si tuvo al menos algún evento en el mes
+  // Construir y enviar todos los emails en paralelo
+  const sendTasks = Array.from(porAnunciante.entries()).map(async ([email, adsAnunciante]) => {
     const totalVistas = adsAnunciante.reduce((sum, a) => sum + (eventosPorAd[a.id]?.view ?? 0), 0);
     const totalClicks = adsAnunciante.reduce((sum, a) =>
       sum + (eventosPorAd[a.id]?.click_link ?? 0)
           + (eventosPorAd[a.id]?.click_telefono ?? 0)
           + (eventosPorAd[a.id]?.click_mapa ?? 0), 0);
 
-    // Siempre enviamos aunque sea 0 (el anunciante pagó, merece el reporte)
-    const negocio = adsAnunciante[0].titulo ?? 'tu negocio';
+    const negocio  = esc(adsAnunciante[0].titulo ?? 'tu negocio');
+    const planLabel = PLAN_LABEL[adsAnunciante[0].plan] ?? esc(adsAnunciante[0].plan);
 
     const filasAds = adsAnunciante.map((a) => {
       const stats = eventosPorAd[a.id] ?? { view: 0, click_link: 0, click_telefono: 0, click_mapa: 0 };
       const clics = stats.click_link + stats.click_telefono + stats.click_mapa;
-      const label = VARIANT_LABEL[a.variant] ?? a.variant;
+      const label = esc(VARIANT_LABEL[a.variant] ?? a.variant);
       return `
         <tr>
           <td style="padding:10px 12px;font-size:14px;color:#333;border-bottom:1px solid #f0ebe4">${label}</td>
@@ -83,8 +91,6 @@ export async function GET(req: NextRequest) {
           <td style="padding:10px 12px;font-size:14px;font-weight:bold;color:#B85C4A;text-align:center;border-bottom:1px solid #f0ebe4">${clics.toLocaleString('es-AR')}</td>
         </tr>`;
     }).join('');
-
-    const planLabel = PLAN_LABEL[adsAnunciante[0].plan] ?? adsAnunciante[0].plan;
 
     const html = `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a">
@@ -95,12 +101,11 @@ export async function GET(req: NextRequest) {
           <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Reporte mensual de publicidad</p>
         </div>
 
-        <h2 style="color:#1a1a1a;margin-bottom:4px">Reporte de ${mesLabel}</h2>
+        <h2 style="color:#1a1a1a;margin-bottom:4px">Reporte de ${esc(mesLabel)}</h2>
         <p style="color:#666;font-size:15px;margin-bottom:24px">
-          Hola equipo de <strong>${negocio}</strong> — acá está el resumen de rendimiento de ${planLabel} durante ${mesLabel}.
+          Hola equipo de <strong>${negocio}</strong> — acá está el resumen de rendimiento de ${esc(planLabel)} durante ${esc(mesLabel)}.
         </p>
 
-        <!-- Resumen -->
         <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
           <div style="flex:1;min-width:120px;background:#fff8f0;border:2px solid #f0d9c8;border-radius:14px;padding:18px;text-align:center">
             <p style="margin:0;font-size:32px;font-weight:900;color:#B85C4A">${totalVistas.toLocaleString('es-AR')}</p>
@@ -117,7 +122,6 @@ export async function GET(req: NextRequest) {
           </div>` : ''}
         </div>
 
-        <!-- Detalle por slot -->
         ${adsAnunciante.length > 1 ? `
         <h3 style="color:#1a1a1a;font-size:15px;margin-bottom:10px">Detalle por slot</h3>
         <table style="width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;margin-bottom:24px">
@@ -148,19 +152,26 @@ export async function GET(req: NextRequest) {
         </p>
       </div>`;
 
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'Vecindog <noreply@mivecindog.com.ar>',
-        to:   [email],
-        subject: `📊 Tu reporte de publicidad en Vecindog — ${mesLabel}`,
-        html,
-      }),
-    });
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Vecindog <noreply@mivecindog.com.ar>',
+          to:   [email],
+          subject: `📊 Tu reporte de publicidad en Vecindog — ${mesLabel}`,
+          html,
+        }),
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('[reporte-mensual] error enviando a', email, e);
+      return false;
+    }
+  });
 
-    if (res.ok) enviados++;
-  }
+  const results = await Promise.allSettled(sendTasks);
+  const enviados = results.filter(r => r.status === 'fulfilled' && r.value).length;
 
   return NextResponse.json({ ok: true, anunciantes: porAnunciante.size, enviados, mes: mesLabel });
 }

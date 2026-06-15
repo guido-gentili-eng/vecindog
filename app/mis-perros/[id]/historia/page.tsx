@@ -294,7 +294,7 @@ export default function HistoriaPage() {
                 </p>
               )}
               {profile?.telefono && (
-                <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0, filter: 'blur(5px)', userSelect: 'none' }}>
+                <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0, textDecoration: 'line-through', opacity: 0.6 }}>
                   {profile.telefono}
                 </p>
               )}

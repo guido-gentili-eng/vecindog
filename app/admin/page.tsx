@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus } from 'lucide-react';
-import { listarAds, crearAd, subirImagenAd, type Ad, type AdVariant } from '@/lib/ads';
+import { listarAds, crearAd, subirImagenAd, eliminarAd, type Ad, type AdVariant } from '@/lib/ads';
 import { resizeAndCropImage } from '@/lib/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
@@ -106,6 +106,8 @@ export default function AdminPage() {
   const [adsData,       setAdsData]       = useState<Ad[] | null>(null);
   const [adsOrden,      setAdsOrden]      = useState<'az' | 'recientes'>('az');
   const [adsLoading,    setAdsLoading]    = useState(false);
+  const [adEliminando,  setAdEliminando]  = useState<string | null>(null);
+  const [confirmarAd,   setConfirmarAd]   = useState<string | null>(null);
   const [reportes,      setReportes]      = useState<ReporteAdmin[]>([]);
   const [reportesOpen,  setReportesOpen]  = useState(false);
   const [reportesLoad,  setReportesLoad]  = useState(false);
@@ -277,6 +279,20 @@ export default function AdminPage() {
         .finally(() => setCargando(false));
     });
   }, [user, loading, router]);
+
+  async function handleEliminarAd(adId: string) {
+    setAdEliminando(adId);
+    setConfirmarAd(null);
+    try {
+      await eliminarAd(adId);
+      setAdsData((prev) => prev ? prev.filter((a) => a.id !== adId) : prev);
+    } catch {
+      setToast('No se pudo eliminar el anuncio. Intentá de nuevo.');
+      setTimeout(() => setToast(''), 3500);
+    } finally {
+      setAdEliminando(null);
+    }
+  }
 
   async function ejecutarAccion(uid: string, accion: 'pausar' | 'reactivar' | 'eliminar') {
     setAccionando(uid); setConfirmar(null);
@@ -1000,12 +1016,41 @@ export default function AdminPage() {
                     <span className="uppercase tracking-wide">{ad.variant}</span>
                     {ad.fecha_fin && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Vence {ad.fecha_fin}</span>}
                   </div>
-                  {ad.href && (
-                    <a href={ad.href} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-brand-primary hover:underline">
-                      <ExternalLink className="h-3 w-3" /> {ad.href}
-                    </a>
-                  )}
+                  <div className="flex items-center gap-2 pt-1">
+                    {ad.variant === 'comercio' && (
+                      <a href={`/comercio/${ad.id}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
+                        <ExternalLink className="h-3 w-3" /> Ver anuncio
+                      </a>
+                    )}
+                    {ad.href && ad.variant !== 'comercio' && (
+                      <a href={ad.href} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
+                        <ExternalLink className="h-3 w-3" /> Ver link
+                      </a>
+                    )}
+                    {confirmarAd === ad.id ? (
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <span className="text-[11px] font-bold text-bad">¿Eliminar?</span>
+                        <button type="button"
+                          onClick={() => handleEliminarAd(ad.id)}
+                          disabled={adEliminando === ad.id}
+                          className="rounded-xl bg-bad px-3 py-1.5 text-[11px] font-bold text-white hover:bg-bad/90 disabled:opacity-50 transition">
+                          {adEliminando === ad.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Sí, eliminar'}
+                        </button>
+                        <button type="button" onClick={() => setConfirmarAd(null)}
+                          className="rounded-xl bg-black/8 px-3 py-1.5 text-[11px] font-bold text-ink hover:bg-black/15 transition">
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button"
+                        onClick={() => setConfirmarAd(ad.id)}
+                        className="ml-auto inline-flex items-center gap-1 rounded-xl bg-bad/10 px-3 py-1.5 text-[11px] font-bold text-bad hover:bg-bad/20 transition">
+                        <Trash2 className="h-3 w-3" /> Eliminar
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

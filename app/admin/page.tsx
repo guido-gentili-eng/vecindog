@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus } from 'lucide-react';
+import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus, Star } from 'lucide-react';
 import { listarAds, crearAd, subirImagenAd, eliminarAd, type Ad, type AdVariant } from '@/lib/ads';
 import { resizeAndCropImage } from '@/lib/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -108,6 +108,7 @@ export default function AdminPage() {
   const [adsLoading,    setAdsLoading]    = useState(false);
   const [adEliminando,  setAdEliminando]  = useState<string | null>(null);
   const [confirmarAd,   setConfirmarAd]   = useState<string | null>(null);
+  const [previewAd,     setPreviewAd]     = useState<Ad | null>(null);
   const [reportes,      setReportes]      = useState<ReporteAdmin[]>([]);
   const [reportesOpen,  setReportesOpen]  = useState(false);
   const [reportesLoad,  setReportesLoad]  = useState(false);
@@ -1017,22 +1018,15 @@ export default function AdminPage() {
                     {ad.fecha_fin && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Vence {ad.fecha_fin}</span>}
                   </div>
                   <div className="flex items-center gap-2 pt-1">
+                    <button type="button"
+                      onClick={() => setPreviewAd(ad)}
+                      className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
+                      <ExternalLink className="h-3 w-3" /> Ver preview
+                    </button>
                     {ad.variant === 'comercio' && (
                       <a href={`/comercio/${ad.id}`} target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
-                        <ExternalLink className="h-3 w-3" /> Ver anuncio
-                      </a>
-                    )}
-                    {ad.imagen_url && (
-                      <a href={ad.imagen_url} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
-                        <ExternalLink className="h-3 w-3" /> Ver imagen
-                      </a>
-                    )}
-                    {ad.href && !ad.href.startsWith('tel:') && (
-                      <a href={ad.href} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
-                        <ExternalLink className="h-3 w-3" /> Ver link
+                        <ExternalLink className="h-3 w-3" /> Ver página
                       </a>
                     )}
                     {confirmarAd === ad.id ? (
@@ -1060,6 +1054,84 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal preview anuncio */}
+      {previewAd && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setPreviewAd(null)}>
+          <div className="w-full max-w-sm rounded-[28px] bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-display font-black text-ink">Preview — {previewAd.variant}</p>
+              <button type="button" onClick={() => setPreviewAd(null)}
+                className="grid h-8 w-8 place-items-center rounded-xl bg-black/8 text-ink-muted hover:bg-black/12">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Vista previa según variant */}
+            {previewAd.variant === 'sidebar' && (
+              <div className="flex items-center gap-3 rounded-2xl border border-black/8 bg-white p-4 shadow-soft">
+                {(previewAd.imagen_logo_url ?? previewAd.imagen_url) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={(previewAd.imagen_logo_url ?? previewAd.imagen_url)!} alt={previewAd.titulo} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                ) : (
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-primary/10">
+                    <Star className="h-6 w-6 text-brand-primary" />
+                  </span>
+                )}
+                <div className="flex-1 min-w-0">
+                  {previewAd.anunciante && <p className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">{previewAd.anunciante}</p>}
+                  <p className="font-bold text-sm text-ink leading-tight">{previewAd.titulo}</p>
+                  {previewAd.subtitulo && <p className="mt-0.5 truncate text-xs text-ink-muted">{previewAd.subtitulo}</p>}
+                </div>
+              </div>
+            )}
+
+            {(previewAd.variant === 'card' || previewAd.variant === 'comercio') && (
+              <div className="rounded-2xl border border-black/8 bg-white overflow-hidden shadow-soft">
+                {previewAd.imagen_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={previewAd.imagen_url} alt={previewAd.titulo} className="w-full object-cover" style={{ aspectRatio: '4/3' }} />
+                )}
+                <div className="p-4">
+                  {previewAd.anunciante && <p className="text-[11px] font-bold uppercase tracking-wider text-ink-muted">{previewAd.anunciante}</p>}
+                  <p className="mt-1 font-display text-lg font-black text-ink">{previewAd.titulo}</p>
+                  {previewAd.subtitulo && <p className="mt-1 text-sm text-ink-muted">{previewAd.subtitulo}</p>}
+                  {previewAd.cta && (
+                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-brand-primary">
+                      {previewAd.cta} <ExternalLink className="h-3.5 w-3.5" />
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {previewAd.variant === 'leaderboard' && (
+              <div className="flex items-center gap-4 rounded-2xl border border-black/8 bg-white p-4 shadow-soft">
+                {(previewAd.imagen_logo_url ?? previewAd.imagen_url) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={(previewAd.imagen_logo_url ?? previewAd.imagen_url)!} alt={previewAd.titulo} className="h-14 w-14 rounded-xl object-cover shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  {previewAd.anunciante && <p className="text-xs font-semibold text-ink-muted">{previewAd.anunciante}</p>}
+                  <p className="font-display text-lg font-black text-ink">{previewAd.titulo}</p>
+                  {previewAd.subtitulo && <p className="mt-0.5 truncate text-sm text-ink-muted">{previewAd.subtitulo}</p>}
+                </div>
+                <span className="shrink-0 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white">
+                  {previewAd.cta ?? 'Ver más'}
+                </span>
+              </div>
+            )}
+
+            {previewAd.href && !previewAd.href.startsWith('tel:') && (
+              <a href={previewAd.href} target="_blank" rel="noopener noreferrer"
+                className="mt-4 flex items-center justify-center gap-1.5 rounded-2xl bg-black/5 px-4 py-2.5 text-sm font-bold text-ink hover:bg-black/10 transition">
+                <ExternalLink className="h-4 w-4" /> Abrir link de destino
+              </a>
+            )}
           </div>
         </div>
       )}

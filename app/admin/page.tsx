@@ -1023,7 +1023,13 @@ export default function AdminPage() {
                         <ExternalLink className="h-3 w-3" /> Ver anuncio
                       </a>
                     )}
-                    {ad.href && ad.variant !== 'comercio' && (
+                    {ad.imagen_url && (
+                      <a href={ad.imagen_url} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
+                        <ExternalLink className="h-3 w-3" /> Ver imagen
+                      </a>
+                    )}
+                    {ad.href && !ad.href.startsWith('tel:') && (
                       <a href={ad.href} target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 rounded-xl bg-brand-primary/10 px-3 py-1.5 text-[11px] font-bold text-brand-primary hover:bg-brand-primary/20 transition">
                         <ExternalLink className="h-3 w-3" /> Ver link

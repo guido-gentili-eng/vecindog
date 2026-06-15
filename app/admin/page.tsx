@@ -290,11 +290,13 @@ export default function AdminPage() {
         headers: { 'Authorization': `Bearer ${await getToken()}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ad_id: adId, accion: 'eliminar' }),
       });
-      if (!res.ok) throw new Error('error');
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((json as { error?: string }).error ?? `HTTP ${res.status}`);
       setAdsData((prev) => prev ? prev.filter((a) => a.id !== adId) : prev);
-    } catch {
-      setToast('No se pudo eliminar el anuncio. Intentá de nuevo.');
-      setTimeout(() => setToast(''), 3500);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error desconocido';
+      setToast(`No se pudo eliminar: ${msg}`);
+      setTimeout(() => setToast(''), 6000);
     } finally {
       setAdEliminando(null);
     }

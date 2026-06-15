@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Users, Sparkles, Megaphone, TrendingUp, UserCheck, AlertTriangle, MapPin, Phone, Mail, ExternalLink, Crown, Dog, Syringe, ChevronDown, ChevronUp, ArrowDownAZ, Clock, PauseCircle, Trash2, PlayCircle, FileText, CheckCircle2, X, CreditCard, BadgeCheck, Search, Plus, ImagePlus, Star } from 'lucide-react';
-import { listarAds, crearAd, subirImagenAd, eliminarAd, type Ad, type AdVariant } from '@/lib/ads';
+import { listarAds, crearAd, subirImagenAd, type Ad, type AdVariant } from '@/lib/ads';
 import { resizeAndCropImage } from '@/lib/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { type Profile } from '@/contexts/AuthContext';
@@ -285,7 +285,12 @@ export default function AdminPage() {
     setAdEliminando(adId);
     setConfirmarAd(null);
     try {
-      await eliminarAd(adId);
+      const res = await fetch('/api/admin/ad-action', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${await getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ad_id: adId, accion: 'eliminar' }),
+      });
+      if (!res.ok) throw new Error('error');
       setAdsData((prev) => prev ? prev.filter((a) => a.id !== adId) : prev);
     } catch {
       setToast('No se pudo eliminar el anuncio. Intentá de nuevo.');

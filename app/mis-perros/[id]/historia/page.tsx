@@ -331,11 +331,9 @@ export default function HistoriaPage() {
             <p style={{ margin: '0 0 8px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
               La red vecinal que une a las mascotas felices del barrio 🏡
             </p>
-            <div style={{ background: '#fff', borderRadius: '20px', padding: '5px 18px', display: 'inline-block' }}>
-              <p style={{ margin: 0, fontSize: '10px', fontWeight: 800, color: accent }}>
-                www.mivecindog.com.ar
-              </p>
-            </div>
+            <p style={{ margin: 0, fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.5)' }}>
+              www.mivecindog.com.ar
+            </p>
           </div>
           <div style={{ height: '4px', background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
         </div>

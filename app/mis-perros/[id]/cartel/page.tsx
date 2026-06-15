@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { obtenerPerro, type Perro } from '@/lib/perros';
 import { buscarPostActivoDePerro } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Printer, ArrowLeft } from 'lucide-react';
+import { Loader2, Printer, ArrowLeft, Share2 } from 'lucide-react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,6 +25,11 @@ export default function CartelPage() {
   useEffect(() => {
     obtenerPerro(id)
       .then(async (p) => {
+        // Solo mostrar el cartel si el perro pertenece al usuario autenticado
+        if (p && profile && p.user_id !== profile.id) {
+          setPerro(null);
+          return;
+        }
         setPerro(p);
         if (p) {
           const post = await buscarPostActivoDePerro(p.id);
@@ -32,7 +37,7 @@ export default function CartelPage() {
         }
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, profile]);
 
   useEffect(() => {
     if (!profile?.telefono) return;
@@ -52,8 +57,10 @@ export default function CartelPage() {
   );
 
   if (!perro) return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-ink-muted">Perro no encontrado.</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
+      <p className="text-2xl">🔒</p>
+      <p className="font-bold text-ink">No tenés permiso para ver este cartel</p>
+      <p className="text-sm text-ink-muted">Este cartel pertenece a otro usuario.</p>
     </div>
   );
 
@@ -73,13 +80,22 @@ export default function CartelPage() {
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-muted hover:text-ink transition">
           <ArrowLeft className="h-4 w-4" /> {t.cartelVolver}
         </Link>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
-          style={{ background: accent }}
-        >
-          <Printer className="h-4 w-4" /> {t.cartelImprimir}
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href={`/mis-perros/${id}/historia`}
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition hover:opacity-80"
+            style={{ background: '#e6683c', color: '#fff' }}
+          >
+            <Share2 className="h-4 w-4" /> Historia IG
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
+            style={{ background: accent }}
+          >
+            <Printer className="h-4 w-4" /> {t.cartelImprimir}
+          </button>
+        </div>
       </div>
 
       {/* ═══════════════ DOCUMENTO ═══════════════ */}

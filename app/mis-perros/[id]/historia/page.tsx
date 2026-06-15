@@ -50,6 +50,7 @@ export default function HistoriaPage() {
   const [loading,    setLoading]    = useState(true);
   const [generando,  setGenerando]  = useState<Red | 'download' | null>(null);
   const [compartido, setCompartido] = useState<Red | null>(null);
+  const [mostrarTel, setMostrarTel] = useState(false);
 
   const [redes, setRedes] = useState<Record<Red, ConexionRed>>({
     instagram: { red: 'instagram', handle: '', editando: false, guardando: false },
@@ -294,8 +295,8 @@ export default function HistoriaPage() {
                 </p>
               )}
               {profile?.telefono && (
-                <p style={{ color: 'transparent', fontSize: '18px', fontWeight: 900, margin: 0, background: 'rgba(0,0,0,0.55)', borderRadius: '4px', letterSpacing: '2px', userSelect: 'none' }}>
-                  {profile.telefono}
+                <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900, margin: 0, letterSpacing: '1px' }}>
+                  {mostrarTel ? profile.telefono : profile.telefono.replace(/\d/g, '✱')}
                 </p>
               )}
             </div>
@@ -327,6 +328,18 @@ export default function HistoriaPage() {
           </div>
           <div style={{ height: '4px', background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
         </div>
+      </div>
+
+      <div className="mx-auto max-w-sm mb-3">
+        <label className="flex items-center justify-between gap-3 rounded-2xl bg-white/10 px-4 py-3 cursor-pointer select-none">
+          <span className="text-sm font-bold text-white">Mostrar teléfono en la imagen</span>
+          <div
+            onClick={() => setMostrarTel(v => !v)}
+            className={`relative h-6 w-11 rounded-full transition-colors ${mostrarTel ? 'bg-green-500' : 'bg-white/20'}`}
+          >
+            <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${mostrarTel ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </div>
+        </label>
       </div>
 
       <div className="mx-auto max-w-sm space-y-3">

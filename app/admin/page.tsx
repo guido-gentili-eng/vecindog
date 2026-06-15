@@ -927,9 +927,7 @@ export default function AdminPage() {
 
                   {/* Upload imagen */}
                   <div className="col-span-2 space-y-1.5">
-                    <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wide">
-                      Imagen del anuncio — <span className="normal-case font-normal">{AD_SIZE_HINT[naVariant]}</span>
-                    </p>
+                    <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wide">Imagen del anuncio</p>
                     <input ref={naFileRef} type="file" accept="image/*" className="hidden" onChange={handleNaImagen} />
                     {naImagenUrl ? (
                       <div className="relative">
@@ -947,6 +945,10 @@ export default function AdminPage() {
                         {naImagenLoad ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ImagePlus className="h-4 w-4" /> Subir imagen</>}
                       </button>
                     )}
+                    <p className="text-[10px] text-ink-muted leading-relaxed">
+                      Medida ideal: <span className="font-bold">{AD_SIZE_PX[naVariant][0]}×{AD_SIZE_PX[naVariant][1]} px</span>
+                      {' '}· Si tu imagen no tiene esas medidas exactas, la ajustamos automáticamente.
+                    </p>
                   </div>
                   <input className="field col-span-2" placeholder="Email anunciante" value={naAnunciante} onChange={(e) => setNaAnunciante(e.target.value)} />
 

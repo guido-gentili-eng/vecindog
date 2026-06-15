@@ -23,10 +23,10 @@ export async function GET(req: NextRequest) {
   avisoFin.setDate(avisoFin.getDate() + DIAS_AVISO);
   const avisoFinStr = avisoFin.toISOString().slice(0, 10);
 
-  // 1. Desactivar ads ya vencidos
+  // 1. Desactivar ads ya vencidos y enviarles email de vencimiento
   const { data: vencidos } = await admin
     .from('ads')
-    .select('id, titulo, anunciante')
+    .select('id, titulo, subtitulo, plan, anunciante')
     .eq('activo', true)
     .not('fecha_fin', 'is', null)
     .lt('fecha_fin', hoyStr);
@@ -36,6 +36,48 @@ export async function GET(req: NextRequest) {
       .from('ads')
       .update({ activo: false })
       .in('id', vencidos.map((a: { id: string }) => a.id));
+
+    // Email de vencimiento agrupado por anunciante
+    const gruposVencidos = new Map<string, typeof vencidos>();
+    for (const ad of vencidos) {
+      if (!ad.anunciante?.includes('@')) continue;
+      const key = `${ad.anunciante}|${ad.plan}`;
+      if (!gruposVencidos.has(key)) gruposVencidos.set(key, []);
+      gruposVencidos.get(key)!.push(ad);
+    }
+    await Promise.allSettled([...gruposVencidos.values()].map(async (adsGrupo) => {
+      const ad = adsGrupo[0];
+      const allIds = adsGrupo.map((a: { id: string }) => a.id).join(',');
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Vecindog <noreply@mivecindog.com.ar>',
+          to:   [ad.anunciante],
+          subject: `Tu publicidad en Vecindog venció hoy — Renovar ahora`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+              <div style="background:#B85C4A;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
+              </div>
+              <h2 style="color:#1a1a1a">Tu publicidad venció hoy</h2>
+              <p style="color:#555;font-size:16px;line-height:1.6">
+                La publicidad de <strong>${ad.titulo}</strong> venció hoy y fue desactivada. Para volver a aparecer en Vecindog, renovar tu plan.
+              </p>
+              <div style="text-align:center;margin-top:28px">
+                <a href="https://www.mivecindog.com.ar/publicitate/renovar?ads=${allIds}"
+                   style="background:#B85C4A;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block">
+                  Renovar ahora →
+                </a>
+              </div>
+              <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center">
+                ¿Tenés dudas? Escribinos a <a href="mailto:hola@mivecindog.com.ar" style="color:#B85C4A">hola@mivecindog.com.ar</a>
+              </p>
+            </div>
+          `,
+        }),
+      });
+    }));
   }
 
   // 2. Buscar ads que vencen en exactamente DIAS_AVISO días (para no enviar el mail más de una vez)

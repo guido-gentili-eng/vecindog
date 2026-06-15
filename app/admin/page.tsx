@@ -127,7 +127,10 @@ export default function AdminPage() {
   const [naTelefono,    setNaTelefono]    = useState('');
   const [naDireccion,   setNaDireccion]   = useState('');
   const [naAnunciante,  setNaAnunciante]  = useState('');
-  const [naFechaFin,    setNaFechaFin]    = useState('');
+  const [naFechaFin,    setNaFechaFin]    = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 30);
+    return d.toISOString().slice(0, 10);
+  });
   const naFileRef = useRef<HTMLInputElement>(null);
 
   const AD_SIZE_HINT: Record<AdVariant, string> = {
@@ -203,7 +206,9 @@ export default function AdminPage() {
       // Reset form
       setNaTitulo(''); setNaSubtitulo(''); setNaHref(''); setNaCta(''); setNaImagenUrl(''); setNuevoAdErr('');
       setNaCategoria('pet-shop'); setNaLocalidad('');
-      setNaTelefono(''); setNaDireccion(''); setNaAnunciante(''); setNaFechaFin('');
+      setNaTelefono(''); setNaDireccion(''); setNaAnunciante('');
+      const d = new Date(); d.setDate(d.getDate() + 30);
+      setNaFechaFin(d.toISOString().slice(0, 10));
       setNuevoAd(false);
       const data = await listarAds();
       setAdsData(data);

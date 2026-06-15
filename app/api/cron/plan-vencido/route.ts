@@ -16,6 +16,62 @@ export async function GET(req: NextRequest) {
 
   const hoy    = new Date();
   const hoyStr = hoy.toISOString().slice(0, 10);
+  const en3dias = new Date(hoy); en3dias.setDate(en3dias.getDate() + 3);
+  const en3diasStr = en3dias.toISOString().slice(0, 10);
+
+  // Aviso 3 días antes del vencimiento
+  const { data: proximosVencer } = await admin
+    .from('profiles')
+    .select('id, nombre')
+    .eq('plan', 'pro')
+    .eq('plan_vencimiento', en3diasStr);
+
+  if (proximosVencer?.length) {
+    await Promise.allSettled(proximosVencer.map(async (perfil: { id: string; nombre: string }) => {
+      const { data: userData } = await admin.auth.admin.getUserById(perfil.id);
+      const email = userData?.user?.email;
+      if (!email) return;
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from:    'Vecindog <noreply@mivecindog.com.ar>',
+          to:      [email],
+          subject: 'Tu VecindogPro vence en 3 días 🐾',
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+              <div style="background:#7c3aed;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;"><span style="color:#ffffff;">Vecin</span><span style="color:rgba(255,255,255,0.75);">dog</span></p>
+              </div>
+              <h2 style="color:#1a1a1a">Hola${perfil.nombre ? ` ${perfil.nombre}` : ''},</h2>
+              <p style="color:#555;font-size:16px;line-height:1.6">
+                Tu plan <strong>VecindogPro</strong> vence en <strong>3 días</strong>. Para no perder el acceso a todas las funciones premium, renovalo ahora.
+              </p>
+              <div style="background:#f5f0ff;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #7c3aed">
+                <p style="margin:0;font-size:15px;font-weight:bold;color:#1a1a1a">Lo que incluye tu Pro:</p>
+                <ul style="margin:10px 0 0;padding-left:18px;color:#666;font-size:14px;line-height:2">
+                  <li>Perros ilimitados y publicaciones ilimitadas</li>
+                  <li>Búsqueda por foto con IA</li>
+                  <li>Panel de Amigos y red Vecindog</li>
+                  <li>Notificaciones en tiempo real</li>
+                  <li>Registro como cuidador o transportador</li>
+                </ul>
+              </div>
+              <div style="text-align:center;margin-top:28px">
+                <a href="https://www.mivecindog.com.ar/planes"
+                   style="background:#7c3aed;color:white;padding:14px 36px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block">
+                  Renovar VecindogPro →
+                </a>
+              </div>
+              <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center">
+                ¿Tenés dudas? Escribinos a <a href="mailto:hola@mivecindog.com.ar" style="color:#7c3aed">hola@mivecindog.com.ar</a>
+              </p>
+            </div>
+          `,
+        }),
+      });
+    }));
+  }
 
   // Buscar usuarios Pro con plan vencido hoy o antes, que no se hayan pasado a free aún
   const { data: vencidos, error } = await admin

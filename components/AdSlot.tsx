@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Megaphone, Star, ExternalLink, ArrowRight } from 'lucide-react';
 import { getAdForSlot, type Ad, type AdVariant } from '@/lib/ads';
@@ -10,6 +10,32 @@ import { CONTACT_EMAIL, WHATSAPP_PUBLICIDAD } from '@/lib/contact';
 interface AdSlotProps {
   variant?: AdVariant;
   className?: string;
+}
+
+function trackAd(adId: string, eventType: string) {
+  fetch('/api/comercio-stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ad_id: adId, event_type: eventType }),
+  }).catch(() => {});
+}
+
+function useAdViewTracker(adId: string | undefined, ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!adId || !ref.current) return;
+    const el = ref.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          trackAd(adId, 'view');
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [adId, ref]);
 }
 
 export default function AdSlot({ variant = 'leaderboard', className = '' }: AdSlotProps) {
@@ -38,9 +64,12 @@ function AdBadge({ className = '' }: { className?: string }) {
 /* ── LEADERBOARD ── */
 function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) {
   const { t } = useLanguage();
+  const ref = useRef<HTMLAnchorElement>(null);
+  useAdViewTracker(ad?.id, ref as React.RefObject<HTMLElement | null>);
   if (ad) {
     return (
-      <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+      <a ref={ref} href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+        onClick={() => trackAd(ad.id, 'click_link')}
         className={`group relative flex items-center gap-4 overflow-hidden rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-card sm:p-5 ${className}`}>
         <AdBadge className="absolute right-3 top-2" />
         {(ad.imagen_logo_url ?? ad.imagen_url) ? (
@@ -88,9 +117,12 @@ function LeaderboardAd({ ad, className }: { ad: Ad | null; className: string }) 
 
 /* ── CARD ── */
 function CardAd({ ad, className }: { ad: Ad | null; className: string }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useAdViewTracker(ad?.id, ref as React.RefObject<HTMLElement | null>);
   if (ad) {
     return (
-      <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+      <a ref={ref} href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+        onClick={() => trackAd(ad.id, 'click_link')}
         className={`group card flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card ${className}`}>
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-cream">
           <AdBadge className="absolute right-2 top-2 z-10" />
@@ -134,9 +166,12 @@ function CardAd({ ad, className }: { ad: Ad | null; className: string }) {
 
 /* ── SIDEBAR ── */
 function SidebarAd({ ad, className }: { ad: Ad | null; className: string }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useAdViewTracker(ad?.id, ref as React.RefObject<HTMLElement | null>);
   if (ad) {
     return (
-      <a href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+      <a ref={ref} href={ad.href} target="_blank" rel="noopener noreferrer sponsored"
+        onClick={() => trackAd(ad.id, 'click_link')}
         className={`group card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-card ${className}`}>
         <AdBadge className="sr-only" />
         {(ad.imagen_logo_url ?? ad.imagen_url) ? (

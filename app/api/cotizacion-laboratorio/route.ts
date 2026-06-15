@@ -1,5 +1,18 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 
+const ipRateLimit = new Map<string, { count: number; resetAt: number }>();
+function checkIpLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipRateLimit.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipRateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= 5) return false;
+  entry.count++;
+  return true;
+}
+
 function esc(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -11,6 +24,11 @@ function esc(s: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    if (!checkIpLimit(ip)) {
+      return NextResponse.json({ ok: false, error: 'Demasiadas solicitudes. Esperá un momento.' }, { status: 429 });
+    }
+
     const body = await req.json();
 
     const nombre_apellido = String(body.nombre_apellido ?? '').trim().slice(0, 100);

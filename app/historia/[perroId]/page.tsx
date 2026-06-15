@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -49,12 +50,28 @@ export default async function HistoriaPublicaPage({ params }: Props) {
 
   if (!perro) notFound();
 
-  // Perfil del dueño (solo teléfono, para contacto)
+  // Verificar si el visitante es el dueño del perro para mostrar datos de contacto
+  let isOwner = false;
+  try {
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get('sb-access-token')?.value
+      ?? cookieStore.getAll().find(c => c.name.includes('auth-token'))?.value;
+    if (accessToken) {
+      const { data: { user: visitor } } = await admin.auth.getUser(accessToken);
+      isOwner = visitor?.id === perro.user_id;
+    }
+  } catch { /* visitante no autenticado — isOwner queda false */ }
+
+  // Perfil del dueño: teléfono solo visible para el propio dueño
   const { data: profile } = await admin
     .from('profiles')
     .select('nombre, apellido, telefono')
     .eq('id', perro.user_id)
     .single();
+  // Ocultar teléfono si el visitante no es el dueño
+  const safeProfile = profile
+    ? { nombre: profile.nombre, apellido: profile.apellido, telefono: isOwner ? profile.telefono : null }
+    : null;
 
   const labs   = (estudios ?? []).filter((e) => e.tipo === 'laboratorio');
   const radios = (estudios ?? []).filter((e) => e.tipo === 'radiografia');
@@ -62,7 +79,7 @@ export default async function HistoriaPublicaPage({ params }: Props) {
 
   const hoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  const nombreDuenio = [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') || 'Dueño';
+  const nombreDuenio = [safeProfile?.nombre, safeProfile?.apellido].filter(Boolean).join(' ') || 'Dueño';
 
   return (
     <div className="min-h-screen bg-[#f5f0eb] py-8 px-4">
@@ -98,7 +115,7 @@ export default async function HistoriaPublicaPage({ params }: Props) {
           perroNombre={perro.nombre}
           perroFoto={perro.foto_url}
           nombreDuenio={nombreDuenio}
-          telefonoDuenio={profile?.telefono ?? null}
+          telefonoDuenio={safeProfile?.telefono ?? null}
         />
 
         {/* Perfil */}

@@ -46,7 +46,7 @@ export default async function PerfilComercioPage({ params }: Props) {
 
   const { data: comercio } = await admin
     .from('ads')
-    .select('*')
+    .select('id, titulo, subtitulo, descripcion_comercio, imagen_url, imagen_logo_url, categoria_local, direccion_comercio, telefono_comercio, horario_apertura, horario_cierre, dias_atencion, href, lat, lng, fecha_fin, activo, variant')
     .eq('id', params.id)
     .eq('variant', 'comercio')
     .single();

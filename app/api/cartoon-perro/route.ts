@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         .from('perros')
         .update({ cartoon_generado_at: ahora.toISOString() })
         .eq('id', perro_id)
+        .eq('user_id', user.id)
         .or(`cartoon_generado_at.is.null,cartoon_generado_at.lt.${primeroDeMes}`)
         .select('id');
 
@@ -150,7 +151,9 @@ export async function GET(req: NextRequest) {
     const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
     // Marcar cupo solo al confirmar éxito desde polling
     if (perroId) {
-      await admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perroId);
+      await admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() })
+        .eq('id', perroId)
+        .eq('user_id', user.id);
     }
     return NextResponse.json({ ok: true, url: outputUrl });
   }

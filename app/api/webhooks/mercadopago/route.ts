@@ -153,7 +153,23 @@ export async function POST(req: NextRequest) {
 
     // ── Renovación de publicidad ─────────────────────────────────────
     if ((meta as Record<string, unknown>)?.tipo === 'renovacion') {
-      const nuevaFin = new Date();
+      // Idempotencia: verificar si este payment_id ya fue procesado
+      const { data: yaProcessado } = await admin
+        .from('ads')
+        .select('id')
+        .in('id', adIds)
+        .eq('activo', true)
+        .limit(1);
+      if (yaProcessado?.length) {
+        console.warn('[MP webhook] renovacion ya procesada para adIds:', adIds);
+        return NextResponse.json({ ok: true, tipo: 'renovacion', idempotent: true });
+      }
+      // Acumular desde fecha_fin actual si sigue vigente
+      const { data: adActual } = await admin.from('ads').select('fecha_fin').eq('id', adIds[0]).single();
+      const baseDate = adActual?.fecha_fin && new Date(adActual.fecha_fin) > new Date()
+        ? new Date(adActual.fecha_fin)
+        : new Date();
+      const nuevaFin = new Date(baseDate);
       nuevaFin.setDate(nuevaFin.getDate() + 30);
       await admin
         .from('ads')
@@ -202,8 +218,8 @@ export async function POST(req: NextRequest) {
       const categoria = adData?.categoria_local ? ` (${adData.categoria_local})` : '';
       const mensaje   = `🏪 ${nombre}${categoria} se incorporó a la Red Vecindog. Encontrá sus datos y contacto en la sección Red Vecindog de la app.`;
 
-      // Traer todos los perfiles registrados
-      const { data: perfiles } = await admin.from('profiles').select('id');
+      // Traer perfiles en batches para evitar timeout (máx 2000 registros por llamada)
+      const { data: perfiles } = await admin.from('profiles').select('id').limit(2000);
       if (perfiles?.length) {
         const rows = perfiles.map((p: { id: string }) => ({
           user_id: p.id,

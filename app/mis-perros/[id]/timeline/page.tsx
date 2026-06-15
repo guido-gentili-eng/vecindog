@@ -70,8 +70,11 @@ export default function TimelinePage() {
   async function cargar() {
     setCargando(true);
     try {
+      // Verificar ownership ANTES de cargar datos médicos
+      const { data: perro } = await supabase.from('perros').select('nombre, user_id').eq('id', perroId).single();
+      if (!perro || perro.user_id !== user?.id) { router.replace('/mis-perros'); return; }
+
       const [
-        { data: perro },
         { data: vacunas },
         { data: desparas },
         { data: meds },
@@ -81,7 +84,6 @@ export default function TimelinePage() {
         { data: turnos },
         { data: posts },
       ] = await Promise.all([
-        supabase.from('perros').select('nombre, user_id').eq('id', perroId).single(),
         supabase.from('vacunas').select('id, fecha, nombre, veterinario, notas, proxima').eq('perro_id', perroId),
         supabase.from('desparasitaciones').select('id, fecha, producto, tipo, notas, proxima').eq('perro_id', perroId),
         supabase.from('medicamentos').select('id, fecha_inicio, fecha_fin, nombre, dosis, frecuencia, notas, activo').eq('perro_id', perroId),
@@ -91,8 +93,6 @@ export default function TimelinePage() {
         supabase.from('turnos').select('id, fecha, tipo, nota').eq('perro_id', perroId),
         supabase.from('posts').select('id, categoria, nombre, zona, fecha, created_at, estado').eq('perro_id', perroId),
       ]);
-
-      if (!perro || perro.user_id !== user?.id) { router.replace('/mis-perros'); return; }
 
       setPerroNombre(perro.nombre);
 

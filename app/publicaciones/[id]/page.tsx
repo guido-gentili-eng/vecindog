@@ -76,9 +76,11 @@ export default function DetalleAvisoPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
+    let mounted = true;
     obtenerPost(id)
-      .then(setPost)
-      .finally(() => setCargando(false));
+      .then((p) => { if (mounted) setPost(p); })
+      .finally(() => { if (mounted) setCargando(false); });
+    return () => { mounted = false; };
   }, [id]);
 
   // Notifica al dueño cuando un usuario logueado (no dueño) visita el aviso

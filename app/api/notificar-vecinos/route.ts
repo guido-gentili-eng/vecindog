@@ -109,18 +109,17 @@ export async function POST(req: NextRequest) {
     });
     if (cercanos.length === 0) return NextResponse.json({ ok: true, enviados: 0 });
 
-    // ── Obtener emails en batch (paginando para soportar más de 1000 usuarios) ──
+    // ── Obtener emails solo de los usuarios cercanos (evita paginar toda la base) ──
     const ids = cercanos.map((p: { id: string }) => p.id);
+    const userLookups = await Promise.allSettled(
+      ids.map((id: string) => admin.auth.admin.getUserById(id))
+    );
     const emailsMap: Record<string, string> = {};
-    let authPage = 1;
-    while (true) {
-      const { data: listData, error: listError } = await admin.auth.admin.listUsers({ page: authPage, perPage: 1000 });
-      if (listError || !listData?.users?.length) break;
-      for (const u of listData.users) {
-        if (ids.includes(u.id) && u.email) emailsMap[u.id] = u.email;
+    for (let i = 0; i < ids.length; i++) {
+      const r = userLookups[i];
+      if (r.status === 'fulfilled' && r.value.data.user?.email) {
+        emailsMap[ids[i]] = r.value.data.user.email;
       }
-      if (listData.users.length < 1000) break;
-      authPage++;
     }
 
     const categoriaLabel =
@@ -169,7 +168,7 @@ export async function POST(req: NextRequest) {
     const postUrl  = `https://www.mivecindog.com.ar/publicaciones/${esc(postIdS)}`;
     const nombreEsc = nombrePerroS ? `<strong>${esc(nombrePerroS)}</strong>` : 'un perro';
 
-    const emailResults = await Promise.allSettled(
+    const emailSendResults = await Promise.allSettled(
       perfilesConEmail.map(perfil => {
         const email  = emailsMap[perfil.id];
         const saludo = esc(perfil.nombre ?? 'Vecino');
@@ -217,8 +216,8 @@ export async function POST(req: NextRequest) {
     );
 
     let enviados = 0;
-    for (const r of emailResults) {
-      if (r.status === 'fulfilled' && r.value.ok) {
+    for (const r of emailSendResults) {
+      if (r.status === 'fulfilled' && (r.value as Response).ok) {
         enviados++;
       } else {
         const reason = r.status === 'rejected' ? r.reason : `HTTP ${(r.value as Response).status}`;

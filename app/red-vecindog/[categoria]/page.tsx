@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,15 +41,23 @@ export default function CategoriaPage() {
 
   const [comercios, setComerciosState] = useState<Ad[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const cache = useRef<Record<string, Ad[]>>({});
 
   useEffect(() => {
     if (!cat || !ciudad) { setDataLoading(false); return; }
+
+    const cacheKey = `${catKey}:${ciudad}`;
+    if (cache.current[cacheKey]) {
+      setComerciosState(cache.current[cacheKey]);
+      setDataLoading(false);
+      return;
+    }
 
     const hoy = new Date().toISOString().slice(0, 10);
     Promise.resolve(
       supabase
         .from('ads')
-        .select('*')
+        .select('id, titulo, subtitulo, imagen_url, imagen_logo_url, categoria_local, direccion_comercio, telefono_comercio, horario_apertura, horario_cierre, dias_atencion, href, lat, lng, fecha_fin, activo')
         .eq('variant', 'comercio')
         .eq('activo', true)
         .eq('categoria_local', cat.slug)
@@ -57,7 +65,9 @@ export default function CategoriaPage() {
         .or(`fecha_fin.is.null,fecha_fin.gte.${hoy}`)
         .order('created_at', { ascending: false })
     ).then(({ data }) => {
-      setComerciosState((data as Ad[]) ?? []);
+      const result = (data as Ad[]) ?? [];
+      cache.current[cacheKey] = result;
+      setComerciosState(result);
     }).then(() => setDataLoading(false), () => setDataLoading(false));
   }, [catKey, cat, ciudad]);
 

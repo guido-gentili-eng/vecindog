@@ -90,11 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (saved) setCiudadState(saved);
     }
 
+    // Flag para evitar doble fetchProfile si getSession y onAuthStateChange
+    // resuelven el mismo userId en paralelo (race condition en OAuth redirect)
+    let initialFetchDone = false;
+
     supabase.auth.getSession().then(({ data }) => {
       const u = data.session?.user ?? null;
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
       if (confirmedUser) {
+        initialFetchDone = true;
         fetchProfile(confirmedUser.id).finally(() => setLoading(false));
       } else {
         setProfileLoading(false);
@@ -112,6 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const confirmedUser = u?.email_confirmed_at ? u : null;
       setUser(confirmedUser);
       if (confirmedUser) {
+        // Evitar doble fetchProfile si getSession ya lo inició para el mismo usuario
+        if (initialFetchDone) { initialFetchDone = false; return; }
         setIsGuest(false);
         setProfileLoading(true);
         if (typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);

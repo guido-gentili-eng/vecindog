@@ -298,7 +298,8 @@ export default function BuscarPorFotoPage() {
 
       setPaso(t.bpfSearching);
       const todos      = await listarPosts();
-      const candidatos = todos.filter(p => p.categoria !== 'adopcion');
+      const CATEGORIAS_BUSQUEDA = new Set(['perdido', 'encontrado']);
+      const candidatos = todos.filter(p => CATEGORIAS_BUSQUEDA.has(p.categoria));
 
       setPaso(t.bpfSearching);
       const scored = await Promise.all(

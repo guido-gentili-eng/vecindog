@@ -35,6 +35,7 @@ export default function ResetPasswordPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return; }
     if (password !== confirm) { setError(t.errPasswordMismatch); return; }
     setError(''); setSubmitting(true);
     try {
@@ -111,7 +112,7 @@ export default function ResetPasswordPage() {
               <Eye className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none" />
               <input
                 type={showPass ? 'text' : 'password'}
-                required minLength={6}
+                required minLength={8}
                 placeholder={t.newPasswordPlaceholder}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(''); }}
@@ -129,7 +130,7 @@ export default function ResetPasswordPage() {
               <Eye className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted pointer-events-none" />
               <input
                 type={showConf ? 'text' : 'password'}
-                required minLength={6}
+                required minLength={8}
                 placeholder={t.confirmPasswordPlaceholder}
                 value={confirm}
                 onChange={(e) => { setConfirm(e.target.value); setError(''); }}

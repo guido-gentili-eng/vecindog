@@ -1,17 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
 
 interface Props {
   params:      { userId: string };
-  searchParams: { t?: string };
+  searchParams: { t?: string; w?: string };
+}
+
+function verificarHmac(userId: string, window30: number, token: string): boolean {
+  const secret = process.env.VERIFICAR_SECRET ?? 'vecindog-fallback-secret';
+  const expected = createHmac('sha256', secret)
+    .update(`${userId}:${window30}`)
+    .digest('hex')
+    .slice(0, 16);
+  return expected === token;
 }
 
 export default async function VerificarPage({ params, searchParams }: Props) {
   const { userId } = params;
-  const tParam     = Number(searchParams.t ?? 0);
+  const tParam     = searchParams.t ?? '';
+  const wParam     = Number(searchParams.w ?? 0);
   const ahora      = Math.floor(Date.now() / 30000);
 
-  // Válido si el token es de esta ventana o la anterior (≤ 60 s de gracia)
-  const valido = tParam === ahora || tParam === ahora - 1;
+  // Válido si el HMAC coincide con la ventana actual o la anterior (≤ 60s de gracia)
+  const valido = (wParam === ahora || wParam === ahora - 1) && verificarHmac(userId, wParam, tParam);
 
   // Leer perfil (server-side con service role, nunca expuesto al cliente)
   let nombre   = '';

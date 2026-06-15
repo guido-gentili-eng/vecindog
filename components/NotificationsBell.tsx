@@ -33,21 +33,32 @@ export default function NotificationsBell() {
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
-    fetchNotifs();
+    let mounted = true;
 
-    // Suscripción realtime
+    // Suscribirse ANTES de fetchNotifs para no perder INSERTs que lleguen durante el fetch
     const channel = supabase
       .channel(`notifications-${user.id}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          setNotifs((prev) => [payload.new as Notification, ...prev]);
+          if (!mounted) return;
+          // Evitar duplicados: el INSERT puede llegar mientras el fetch inicial está en vuelo
+          setNotifs((prev) => {
+            const newNotif = payload.new as Notification;
+            if (prev.some(n => n.id === newNotif.id)) return prev;
+            return [newNotif, ...prev];
+          });
         }
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    fetchNotifs().then(() => { /* fetch setea notifs; el canal ya deduplicó eventuales INSERTs */ });
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
   }, [isAuthenticated, user]);
 
   // Cerrar al click afuera

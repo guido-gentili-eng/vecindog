@@ -59,11 +59,13 @@ export default function MiComercioPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) { router.replace('/'); return; }
-    cargar();
+    let cancelled = false;
+    cargar(cancelled);
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated]);
 
-  async function cargar() {
+  async function cargar(cancelled = false) {
     setCargando(true);
     try {
       const email = user?.email;
@@ -78,6 +80,7 @@ export default function MiComercioPage() {
         .limit(1)
         .maybeSingle();
 
+      if (cancelled) return;
       setComercio(data ?? null);
 
       if (data?.id) {
@@ -85,11 +88,12 @@ export default function MiComercioPage() {
           fetch(`/api/novedades?ad_id=${data.id}`).then((r) => r.json()),
           fetch(`/api/comercio-reviews?ad_id=${data.id}`).then((r) => r.json()),
         ]);
+        if (cancelled) return;
         setNovedades(novRes.novedades ?? []);
         setReviews({ promedio: revRes.promedio ?? 0, total: revRes.total ?? 0 });
       }
     } finally {
-      setCargando(false);
+      if (!cancelled) setCargando(false);
     }
   }
 

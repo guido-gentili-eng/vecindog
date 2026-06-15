@@ -855,9 +855,16 @@ function QRModal({ userId, nombre, onClose }: { userId: string; nombre: string; 
   const [countdown, setCountdown] = useState(0);
 
   const generarQR = useCallback(async () => {
-    const window30 = Math.floor(Date.now() / 30000);
-    const payload  = `https://www.mivecindog.com.ar/verificar/${userId}?t=${window30}`;
     try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch('/api/verificar-token', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) return;
+      const { token, window: w } = await res.json();
+      const payload = `https://www.mivecindog.com.ar/verificar/${userId}?t=${token}&w=${w}`;
       const url = await QRCode.toDataURL(payload, {
         width: 280, margin: 2,
         color: { dark: '#1e3a5f', light: '#ffffff' },

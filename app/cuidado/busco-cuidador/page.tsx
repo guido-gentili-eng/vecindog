@@ -45,6 +45,7 @@ export default function BuscoCuidadorPage() {
     if (!zona.trim()) { setError(t.cubcErrZona); return; }
     if (!contacto.trim()) { setError(t.cubcErrContacto); return; }
     if (contacto.replace(/\D/g, '').length < 10) { setError(t.cubcErrContactoShort); return; }
+    if (fechaDesde && fechaHasta && fechaHasta < fechaDesde) { setError('La fecha de fin no puede ser anterior a la fecha de inicio.'); return; }
 
     setEnviando(true);
     setError('');
@@ -187,7 +188,7 @@ export default function BuscoCuidadorPage() {
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-ink-muted">{t.cubcHasta}</label>
-              <input type="date" className="field w-full" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+              <input type="date" className="field w-full" value={fechaHasta} min={fechaDesde || undefined} onChange={(e) => setFechaHasta(e.target.value)} />
             </div>
           </div>
         </div>

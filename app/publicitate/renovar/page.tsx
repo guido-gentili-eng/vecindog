@@ -16,8 +16,8 @@ interface AdInfo {
   activo:     boolean;
 }
 
-const PRECIOS: Record<string, number>  = { basico: 15000, estandar: 28000, premium: 45000 };
-const LABELS:  Record<string, string>  = { basico: 'Plan Básico', estandar: 'Plan Estándar', premium: 'Plan Premium' };
+const PRECIOS: Record<string, number>  = { basico: 15000, estandar: 28000, premium: 45000, comercio: 12900 };
+const LABELS:  Record<string, string>  = { basico: 'Plan Básico', estandar: 'Plan Estándar', premium: 'Plan Premium', comercio: 'Red Vecindog' };
 
 export default function RenovarPage() {
   const searchParams = useSearchParams();

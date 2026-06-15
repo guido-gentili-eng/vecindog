@@ -904,7 +904,7 @@ export default function AdminPage() {
 
             {/* Formulario nuevo anuncio */}
             {nuevoAd && (
-              <div className="border-b border-black/8 bg-[#faf7f4] px-5 py-4 space-y-3">
+              <div className="border-b border-black/8 bg-[#faf7f4] px-5 py-4 space-y-3 overflow-y-auto max-h-[60vh]">
                 <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">Nuevo anuncio (sin pago)</p>
 
                 {/* Tipo */}

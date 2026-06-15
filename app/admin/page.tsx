@@ -131,17 +131,17 @@ export default function AdminPage() {
   const naFileRef = useRef<HTMLInputElement>(null);
 
   const AD_SIZE_HINT: Record<AdVariant, string> = {
-    leaderboard: 'Cualquier tamaño — ajustamos a 1200×300 px automáticamente',
-    card:        'Cualquier tamaño — ajustamos a 600×400 px automáticamente',
-    sidebar:     'Cualquier tamaño — ajustamos a 300×250 px automáticamente',
-    comercio:    'Cualquier tamaño — ajustamos a 800×400 px automáticamente',
+    leaderboard: 'Logo cuadrado — ajustamos a 300×300 px automáticamente',
+    card:        'Imagen horizontal — ajustamos a 600×450 px automáticamente',
+    sidebar:     'Logo cuadrado — ajustamos a 300×300 px automáticamente',
+    comercio:    'Imagen horizontal — ajustamos a 800×600 px automáticamente',
   };
 
   const AD_SIZE_PX: Record<AdVariant, [number, number]> = {
-    leaderboard: [1200, 300],
-    card:        [600,  400],
-    sidebar:     [300,  250],
-    comercio:    [800,  400],
+    leaderboard: [300, 300],
+    card:        [600, 450],
+    sidebar:     [300, 300],
+    comercio:    [800, 600],
   };
 
   async function handleNaImagen(e: React.ChangeEvent<HTMLInputElement>) {

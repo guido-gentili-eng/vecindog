@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (profile?.plan_trial_usado) {
-      return NextResponse.json({ error: 'Ya usaste el mes gratis anteriormente.' }, { status: 409 });
+      return NextResponse.json({ error: 'Ya usaste los 3 meses gratis anteriormente.' }, { status: 409 });
     }
     if (profile?.plan === 'pro') {
       return NextResponse.json({ error: 'Ya tenés un plan Pro activo.' }, { status: 409 });
     }
 
     const vencimiento = new Date();
-    vencimiento.setDate(vencimiento.getDate() + 30);
+    vencimiento.setDate(vencimiento.getDate() + 90);
     const vencimientoStr = vencimiento.toISOString().slice(0, 10);
 
     const { error } = await admin
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           from: 'Vecindog <noreply@mivecindog.com.ar>',
           to: [user.email],
-          subject: '¡Tu primer mes de VecindogPro es gratis! 🎉',
+          subject: '¡Tus primeros 3 meses de VecindogPro son gratis! 🎉',
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
               <div style="background:#B85C4A;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
               </div>
               <h2 style="color:#1a1a1a">¡Bienvenido/a a VecindogPro!</h2>
               <p style="color:#555;font-size:16px;line-height:1.6">
-                Tu primer mes es completamente <strong>gratis</strong>. Disfrutá de todas las funciones premium hasta el <strong>${fechaFin}</strong>.
+                Tus primeros 3 meses son completamente <strong>gratis</strong>. Disfrutá de todas las funciones premium hasta el <strong>${fechaFin}</strong>.
               </p>
               <div style="background:#FFF8F0;border-radius:12px;padding:20px;margin:20px 0;border-left:4px solid #B85C4A">
                 <p style="margin:0;font-size:15px;font-weight:bold;color:#1a1a1a">¿Qué incluye tu Pro?</p>

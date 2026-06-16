@@ -71,7 +71,7 @@ export default function PlanesPage() {
       })
     : null;
 
-  /* Activa el primer mes gratis sin pasar por MercadoPago */
+  /* Activa los 3 meses gratis sin pasar por MercadoPago */
   async function handleTrialGratis() {
     if (!isAuthenticated) { router.push('/'); return; }
     setError('');
@@ -283,7 +283,7 @@ export default function PlanesPage() {
         precio={PRECIO_PRO_ARS}
         descripcion={
           !trialUsado
-            ? `🎁 Tu 1° mes es GRATIS — después $${PRECIO_PRO_ARS.toLocaleString('es-AR')}/mes. Acceso completo a todas las funciones Pro.`
+            ? `🎁 Tus primeros 3 meses son GRATIS — después $${PRECIO_PRO_ARS.toLocaleString('es-AR')}/mes. Acceso completo a todas las funciones Pro.`
             : 'VecindogPro — Suscripción mensual · 30 días de acceso completo'
         }
       />

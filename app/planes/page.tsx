@@ -211,7 +211,7 @@ export default function PlanesPage() {
             <div className="mt-2">
               <div className="flex items-baseline gap-2">
                 <span className="font-display text-5xl font-black text-white">$0</span>
-                <span className="rounded-full bg-brand-gold px-2.5 py-0.5 text-xs font-extrabold text-[#5b3a0e]">1° MES GRATIS</span>
+                <span className="rounded-full bg-brand-gold px-2.5 py-0.5 text-xs font-extrabold text-[#5b3a0e]">3 MESES GRATIS</span>
               </div>
               <div className="mt-1 text-sm text-white/70">{t.plansTrialAfter}, {t.plansProPrice}{t.plansPerMonth}</div>
             </div>

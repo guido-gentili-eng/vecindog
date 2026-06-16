@@ -186,7 +186,23 @@ export default function AuthModal() {
                 maxLength={6}
                 placeholder="123456"
                 value={code}
-                onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setCode(val);
+                  setError('');
+                  if (val.length === 6) {
+                    setTimeout(() => {
+                      verifyOtp(email, val.trim()).then((err) => {
+                        if (err) {
+                          const isTokenError = err.includes('is invalid') || err.includes('Unable to validate') || err.includes('Token');
+                          setError(isTokenError ? t.errTokenExpired : tradError(err));
+                        }
+                        setSubmitting(false);
+                      });
+                      setSubmitting(true);
+                    }, 0);
+                  }
+                }}
                 className="field w-full text-center text-xl font-mono tracking-[0.3em] py-4"
                 autoComplete="one-time-code"
               />

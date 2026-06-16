@@ -57,6 +57,7 @@ export default function MisPerrosPage() {
       await eliminarPerro(eliminarTarget.id);
       setPerros((prev) => prev.filter((p) => p.id !== eliminarTarget.id));
       setEliminarTarget(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       setEliminarError(t.mpDeleteError);
     } finally {

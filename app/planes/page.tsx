@@ -208,11 +208,12 @@ export default function PlanesPage() {
           <div className="mb-1 text-xs font-bold uppercase tracking-widest text-white/60">Plan</div>
           <div className="font-display text-3xl font-black">{t.plansProLabel}</div>
           {!trialUsado && !isPro ? (
-            <div className="mt-1">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-extrabold text-white">
-                {t.plansTrialBadge}
+            <div className="mt-2">
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-5xl font-black text-white">$0</span>
+                <span className="rounded-full bg-brand-gold px-2.5 py-0.5 text-xs font-extrabold text-[#5b3a0e]">1° MES GRATIS</span>
               </div>
-              <div className="mt-1 text-sm text-white/70">{t.plansTrialAfter} {t.plansProPrice}{t.plansPerMonth}</div>
+              <div className="mt-1 text-sm text-white/70">{t.plansTrialAfter}, {t.plansProPrice}{t.plansPerMonth}</div>
             </div>
           ) : (
             <div className="mt-1">

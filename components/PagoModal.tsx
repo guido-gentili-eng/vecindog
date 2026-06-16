@@ -323,7 +323,11 @@ export default function PagoModal({
   async function handleMercadoPago() {
     setMpLoading(true);
     try { await onMercadoPago(); }
-    catch { setMpLoading(false); }
+    catch (err) {
+      const msg = err instanceof Error ? err.message : 'No se pudo conectar con Mercado Pago. Intentá con tarjeta.';
+      setErrorMsg(msg);
+      setStep('error');
+    }
   }
 
   function reset() {

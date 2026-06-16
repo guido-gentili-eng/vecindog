@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
+import { PRECIO_PRO_ARS } from '@/lib/planes';
 
 export async function POST(req: NextRequest) {
   try {
-    const PRECIO_PRO = Number(process.env.PRECIO_PRO);
+    const PRECIO_PRO = Number(process.env.PRECIO_PRO) || PRECIO_PRO_ARS;
     if (!Number.isFinite(PRECIO_PRO) || PRECIO_PRO <= 0) {
       return NextResponse.json({ error: 'Configuración de precio inválida' }, { status: 500 });
     }

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
+import { PRECIO_PRO_ARS } from '@/lib/planes';
 
 /* ── Precios en ARS ── */
 const PRECIO_PRO_RAW = Number(process.env.PRECIO_PRO);
-const PRECIO_PRO = Number.isFinite(PRECIO_PRO_RAW) && PRECIO_PRO_RAW > 0 ? PRECIO_PRO_RAW : 0;
+const PRECIO_PRO = Number.isFinite(PRECIO_PRO_RAW) && PRECIO_PRO_RAW > 0 ? PRECIO_PRO_RAW : PRECIO_PRO_ARS;
 
 /* ── Mensajes de rechazo ── */
 const RECHAZO: Record<string, string> = {

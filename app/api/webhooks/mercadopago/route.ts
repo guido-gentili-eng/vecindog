@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 import { createHmac } from 'crypto';
 import { activarAds } from '@/lib/ads';
+import { PRECIO_PRO_ARS } from '@/lib/planes';
 
 function escHtml(s: string): string {
   return String(s)
@@ -84,7 +85,8 @@ export async function POST(req: NextRequest) {
     // ── Pago de suscripción Pro ──────────────────────────────────────
     if (meta?.tipo === 'pro' && meta?.user_id) {
       // CRÍTICO: Validar que PRECIO_PRO sea un número finito para evitar bypass con NaN
-      const PRECIO_PRO = Number(process.env.PRECIO_PRO);
+      const PRECIO_PRO_RAW = Number(process.env.PRECIO_PRO);
+      const PRECIO_PRO = Number.isFinite(PRECIO_PRO_RAW) && PRECIO_PRO_RAW > 0 ? PRECIO_PRO_RAW : PRECIO_PRO_ARS;
       if (!Number.isFinite(PRECIO_PRO) || PRECIO_PRO <= 0) {
         console.error('[MP webhook] PRECIO_PRO no configurado o inválido:', process.env.PRECIO_PRO);
         return NextResponse.json({ ok: false, reason: 'config error' }, { status: 500 });

@@ -280,7 +280,11 @@ export default function PlanesPage() {
         onClose={() => setModalOpen(false)}
         onMercadoPago={handleMercadoPago}
         precio={PRECIO_PRO_ARS}
-        descripcion="VecindogPro — Suscripción mensual · 30 días de acceso completo"
+        descripcion={
+          !trialUsado
+            ? `🎁 Tu 1° mes es GRATIS — después $${PRECIO_PRO_ARS.toLocaleString('es-AR')}/mes. Acceso completo a todas las funciones Pro.`
+            : 'VecindogPro — Suscripción mensual · 30 días de acceso completo'
+        }
       />
     </div>
   );

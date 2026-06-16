@@ -214,7 +214,47 @@ export default function Header() {
       {/* Drawer mobile */}
       {open && (
         <div className="border-t border-black/5 bg-white lg:hidden">
-          <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+          <nav className="mx-auto flex max-w-6xl flex-col gap-1 overflow-y-auto px-4 py-3" style={{ maxHeight: 'calc(100dvh - 57px)' }}>
+
+            {/* Auth en mobile — al tope para que siempre sea visible */}
+            {!loading && (
+              <>
+                {isAuthenticated && (
+                  <div className="mb-2 border-b border-black/5 pb-2">
+                    <Link href="/mi-perfil" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <User className="h-4 w-4 text-brand-primary" /> {t.navEnterPerfil}
+                    </Link>
+                    <Link href="/planes" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <Megaphone className="h-4 w-4 text-brand-primary" />
+                      {isPro ? t.navMiPlanPro : t.navPlanes}
+                    </Link>
+                    <Link href="/mi-comercio" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
+                      <Store className="h-4 w-4 text-brand-amber" /> {t.navMiComercio}
+                    </Link>
+                    <button type="button" onClick={() => { signOut(); setOpen(false); }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">
+                      <LogOut className="h-4 w-4" /> {t.navCerrarSesion}
+                    </button>
+                  </div>
+                )}
+                {isGuest && (
+                  <div className="mb-2 border-b border-black/5 pb-2">
+                    <p className="px-3 py-1 text-xs font-semibold text-ink-muted">{t.navModoInvitado}</p>
+                    <button
+                      type="button"
+                      onClick={() => { signOut(); setOpen(false); }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5 transition"
+                    >
+                      <LogOut className="h-4 w-4" /> {t.navSalirCrearCuenta}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
             {navConPerros.map((item) =>
               item.href === '/mapa' ? (
                 <Link
@@ -274,50 +314,18 @@ export default function Header() {
               </div>
             </div>
 
-            {/* Auth en mobile */}
-            {!loading && (
-              <>
-                {isAuthenticated && (
-                  <div className="mt-2 border-t border-black/5 pt-2">
-                    <Link href="/mi-perfil" onClick={() => setOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <User className="h-4 w-4 text-brand-primary" /> {t.navEnterPerfil}
-                    </Link>
-                    <Link href="/mi-comercio" onClick={() => setOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-ink hover:bg-brand-cream">
-                      <Store className="h-4 w-4 text-brand-amber" /> {t.navMiComercio}
-                    </Link>
-                    <button type="button" onClick={() => { signOut(); setOpen(false); }}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5">
-                      <LogOut className="h-4 w-4" /> {t.navCerrarSesion}
-                    </button>
-                  </div>
-                )}
-                {isGuest && (
-                  <div className="mt-2 border-t border-black/5 pt-2">
-                    <p className="px-3 py-1 text-xs font-semibold text-ink-muted">{t.navModoInvitado}</p>
-                    <button
-                      type="button"
-                      onClick={() => { signOut(); setOpen(false); }}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-bad hover:bg-bad/5 transition"
-                    >
-                      <LogOut className="h-4 w-4" /> {t.navSalirCrearCuenta}
-                    </button>
-                  </div>
-                )}
-                {ciudad && (
-                  <div className="mt-2 border-t border-black/5 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => { clearCiudad(); setOpen(false); }}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-ink-muted hover:bg-brand-cream"
-                    >
-                      <MapPin className="h-4 w-4 text-brand-primary" />
-                      {nombreCorto(ciudad)} · <span className="text-brand-primary">{t.navCambiarCiudad}</span>
-                    </button>
-                  </div>
-                )}
-              </>
+            {/* Ciudad */}
+            {ciudad && (
+              <div className="mt-2 border-t border-black/5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { clearCiudad(); setOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-ink-muted hover:bg-brand-cream"
+                >
+                  <MapPin className="h-4 w-4 text-brand-primary" />
+                  {nombreCorto(ciudad)} · <span className="text-brand-primary">{t.navCambiarCiudad}</span>
+                </button>
+              </div>
             )}
           </nav>
         </div>

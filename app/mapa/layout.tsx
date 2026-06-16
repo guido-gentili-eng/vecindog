@@ -10,9 +10,9 @@ export default function MapaLayout({ children }: { children: React.ReactNode }) 
       style={{
         marginLeft:   'calc(-50vw + 50%)',
         marginRight:  'calc(-50vw + 50%)',
-        marginBottom: '-4rem',
+        marginBottom: '-9999px',
         width:        '100vw',
-        height:       'calc(100vh - 65px)',
+        height:       'calc(100svh - 57px)',
         overflow:     'hidden',
       }}
     >

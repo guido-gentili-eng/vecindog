@@ -228,6 +228,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setIsGuest(false);
     setProfile(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/?login=1';
+    }
   };
 
   const enterAsGuest = () => {

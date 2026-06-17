@@ -7,12 +7,14 @@ import AuthModal from '@/components/AuthModal';
 import CityModal from '@/components/CityModal';
 import ProfileModal from '@/components/ProfileModal';
 import CuentaPausadaModal from '@/components/CuentaPausadaModal';
+import ProTrialModal from '@/components/ProTrialModal';
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <LanguageProvider>
       <AuthProvider>
         <CuentaPausadaModal />
+        <ProTrialModal />
         <AuthModal />
         <ProfileModal />
         <CityModal />

@@ -51,7 +51,8 @@ export async function eliminarFoto(id: string): Promise<void> {
     .select('id, perros!inner(user_id)')
     .eq('id', id)
     .single();
-  const ownerId = (foto?.perros as { user_id: string } | null)?.user_id;
+  const perrosData = foto?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
   if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('fotos_perro').delete().eq('id', id);
   if (error) throw new Error(error.message);

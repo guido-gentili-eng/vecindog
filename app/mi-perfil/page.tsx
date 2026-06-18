@@ -68,7 +68,6 @@ export default function MiPerfilPage() {
   const [pais,          setPais]          = useState('Argentina');
   const [direccion,     setDireccion]     = useState('');
   const [instagram,     setInstagram]     = useState('');
-  const [facebook,      setFacebook]      = useState('');
   const [bio,           setBio]           = useState('');
   const [radioAlerta,   setRadioAlerta]   = useState(5);
   const [fotoUrl,       setFotoUrl]       = useState<string | null>(null);
@@ -83,7 +82,6 @@ export default function MiPerfilPage() {
       setProvincia(profile.provincia ?? '');
       setPais(profile.pais ?? 'Argentina');
       setInstagram(profile.instagram ?? '');
-      setFacebook(profile.facebook ?? '');
       setBio(profile.bio ?? '');
       setRadioAlerta(profile.radio_alerta_km ?? 5);
       setFotoUrl(profile.foto_url ?? null);
@@ -119,7 +117,7 @@ export default function MiPerfilPage() {
     setError(''); setSuccess(''); setSubmitting(true);
     const err = await saveProfile({
       nombre, apellido, telefono, ciudad: ciudadPerfil, provincia, pais, direccion,
-      instagram: instagram || null, facebook: facebook || null,
+      instagram: instagram || null,
       bio: bio || null,
       radio_alerta_km: radioAlerta,
       foto_url: fotoUrl ?? null,
@@ -424,11 +422,6 @@ export default function MiPerfilPage() {
                   <input type="text" placeholder="Instagram (ej: @usuario)" value={instagram}
                     onChange={(e) => setInstagram(e.target.value)} className="field pl-9" />
                 </div>
-                <div className="relative">
-                  <Facebook className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-                  <input type="text" placeholder="Facebook (ej: facebook.com/usuario)" value={facebook}
-                    onChange={(e) => setFacebook(e.target.value)} className="field pl-9" />
-                </div>
               </>
             ) : (
               <div className="flex items-center justify-between rounded-2xl border-2 border-dashed border-black/10 px-4 py-3">
@@ -506,10 +499,7 @@ export default function MiPerfilPage() {
                 {profile?.instagram && (
                   <InfoRow icon={<Instagram className="h-4 w-4 text-brand-primary" />} label="Instagram" value={profile.instagram} />
                 )}
-                {profile?.facebook && (
-                  <InfoRow icon={<Facebook className="h-4 w-4 text-brand-primary" />} label="Facebook" value={profile.facebook} />
-                )}
-                {!profile?.instagram && !profile?.facebook && (
+                {!profile?.instagram && (
                   <div className="flex items-center justify-between py-2 border-b border-black/5">
                     <div className="flex items-center gap-3">
                       <Instagram className="h-4 w-4 text-brand-primary shrink-0" />

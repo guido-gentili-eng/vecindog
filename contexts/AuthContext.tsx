@@ -19,7 +19,6 @@ export interface Profile {
   pais:              string;
   direccion:         string;
   instagram?:        string | null;
-  facebook?:         string | null;
   foto_url?:         string | null;
   bio?:              string | null;
   radio_alerta_km?:  number | null;

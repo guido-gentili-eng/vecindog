@@ -171,7 +171,8 @@ export default function DetalleAvisoPage() {
   async function handleRenovar() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
-      await renovarPost(post!.id);
+      if (!post) return;
+      await renovarPost(post.id);
       setMsgOk(t.pubRenovarOk);
       setConfirmBorrar(false); setConfirmResuelto(false);
     } catch {
@@ -185,10 +186,11 @@ export default function DetalleAvisoPage() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
       // Todos los casos: marcar como resuelto directamente
-      await resolverPost(post!.id);
+      if (!post) return;
+      await resolverPost(post.id);
       setPost((p) => p ? { ...p, estado: 'resuelto' } : p);
       setConfirmResuelto(false);
-      if (post!.categoria === 'perdido') {
+      if (post.categoria === 'perdido') {
         // Mostrar modal de celebración; al cerrarlo redirigir
         setShowFoundModal(true);
       } else {
@@ -204,7 +206,8 @@ export default function DetalleAvisoPage() {
   async function handleBorrar() {
     setAccionando(true); setMsgOk(''); setMsgErr('');
     try {
-      await eliminarPost(post!.id, post!.images);
+      if (!post) return;
+      await eliminarPost(post.id, post.images);
       router.push('/publicaciones');
     } catch {
       setMsgErr(t.pubDeleteErr);

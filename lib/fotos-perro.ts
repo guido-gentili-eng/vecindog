@@ -29,6 +29,11 @@ export async function subirFotoPerro(file: File): Promise<string> {
 export async function agregarFoto(
   perroId: string, url: string, descripcion?: string
 ): Promise<FotoPerro> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data: perro } = await supabase
+    .from('perros').select('id').eq('id', perroId).eq('user_id', user.id).single();
+  if (!perro) throw new Error('No autorizado');
   const { data, error } = await supabase
     .from('fotos_perro')
     .insert({ perro_id: perroId, url, descripcion: descripcion || null })
@@ -41,6 +46,13 @@ export async function agregarFoto(
 export async function eliminarFoto(id: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');
+  const { data: foto } = await supabase
+    .from('fotos_perro')
+    .select('id, perros!inner(user_id)')
+    .eq('id', id)
+    .single();
+  const ownerId = (foto?.perros as { user_id: string } | null)?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('fotos_perro').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

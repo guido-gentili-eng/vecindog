@@ -101,10 +101,7 @@ export async function POST(req: NextRequest) {
 
     if (prediction.status === 'succeeded' && prediction.output) {
       const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-      // Marcar cupo solo cuando hay imagen real
-      if (perro_id) {
-        await admin.from('perros').update({ cartoon_generado_at: new Date().toISOString() }).eq('id', perro_id);
-      }
+      // Cupo ya fue reclamado atómicamente al inicio — no actualizar de nuevo
       return NextResponse.json({ ok: true, url: outputUrl, prediction_id: prediction.id });
     }
 

@@ -164,10 +164,14 @@ function calcularScore(post: Post, f: BuscarForm): { score: number; max: number;
   }
 
   if (f.fecha && !excluir) {
-    max += 5;
-    const dias = Math.abs(new Date(post.fecha).getTime() - new Date(f.fecha).getTime()) / (1000 * 60 * 60 * 24);
-    if (dias <= 3) score += 5;
-    else if (dias <= 7) score += 3;
+    const tPost = new Date(post.fecha).getTime();
+    const tBusc = new Date(f.fecha).getTime();
+    if (!isNaN(tPost) && !isNaN(tBusc)) {
+      max += 5;
+      const dias = Math.abs(tPost - tBusc) / (1000 * 60 * 60 * 24);
+      if (dias <= 3) score += 5;
+      else if (dias <= 7) score += 3;
+    }
   }
 
   if (f.horario && post.horario && !excluir) {

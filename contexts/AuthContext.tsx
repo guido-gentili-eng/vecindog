@@ -100,13 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(confirmedUser);
       if (confirmedUser) {
         initialFetchDone = true;
-        fetchProfile(confirmedUser.id).finally(() => setLoading(false));
+        fetchProfile(confirmedUser.id).finally(() => { if (mounted) setLoading(false); });
       } else {
-        setProfileLoading(false);
-        if (typeof window !== 'undefined') {
+        if (mounted) setProfileLoading(false);
+        if (mounted && typeof window !== 'undefined') {
           setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
         }
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     });
 
@@ -115,18 +115,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'TOKEN_REFRESHED') return;
       const u = session?.user ?? null;
       const confirmedUser = u?.email_confirmed_at ? u : null;
-      setUser(confirmedUser);
+      if (mounted) setUser(confirmedUser);
       if (confirmedUser) {
         // Evitar doble fetchProfile si getSession ya lo inició para el mismo usuario
         if (initialFetchDone) { initialFetchDone = false; return; }
-        setIsGuest(false);
-        setProfileLoading(true);
-        if (typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);
-        fetchProfile(confirmedUser.id).finally(() => setLoading(false));
+        if (mounted) setIsGuest(false);
+        if (mounted) setProfileLoading(true);
+        if (mounted && typeof window !== 'undefined') localStorage.removeItem(GUEST_KEY);
+        fetchProfile(confirmedUser.id).finally(() => { if (mounted) setLoading(false); });
       } else {
-        setProfile(null);
-        setProfileLoading(false);
-        setLoading(false);
+        if (mounted) setProfile(null);
+        if (mounted) setProfileLoading(false);
+        if (mounted) setLoading(false);
       }
     });
 

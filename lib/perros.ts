@@ -234,7 +234,8 @@ export async function actualizarVacuna(id: string, input: VacunaInput): Promise<
     .select('perro_id, perros!inner(user_id)')
     .eq('id', id)
     .single();
-  if (!vacuna || (vacuna.perros as unknown as { user_id: string }).user_id !== user.id) {
+  const vacunaOwner = (vacuna?.perros as { user_id: string } | null)?.user_id;
+  if (!vacunaOwner || vacunaOwner !== user.id) {
     throw new Error('No autorizado');
   }
   const { error } = await supabase.from('vacunas').update({
@@ -257,7 +258,8 @@ export async function eliminarVacuna(id: string): Promise<void> {
     .select('perro_id, perros!inner(user_id)')
     .eq('id', id)
     .single();
-  if (!vacuna || (vacuna.perros as unknown as { user_id: string }).user_id !== user.id) {
+  const vacunaOwner2 = (vacuna?.perros as { user_id: string } | null)?.user_id;
+  if (!vacunaOwner2 || vacunaOwner2 !== user.id) {
     throw new Error('No autorizado');
   }
   const { error } = await supabase.from('vacunas').delete().eq('id', id);

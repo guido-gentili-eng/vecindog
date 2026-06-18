@@ -234,7 +234,8 @@ export async function actualizarVacuna(id: string, input: VacunaInput): Promise<
     .select('perro_id, perros!inner(user_id)')
     .eq('id', id)
     .single();
-  const vacunaOwner = (vacuna?.perros as { user_id: string } | null)?.user_id;
+  const perrosData1 = vacuna?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const vacunaOwner = Array.isArray(perrosData1) ? perrosData1[0]?.user_id : perrosData1?.user_id;
   if (!vacunaOwner || vacunaOwner !== user.id) {
     throw new Error('No autorizado');
   }
@@ -258,7 +259,8 @@ export async function eliminarVacuna(id: string): Promise<void> {
     .select('perro_id, perros!inner(user_id)')
     .eq('id', id)
     .single();
-  const vacunaOwner2 = (vacuna?.perros as { user_id: string } | null)?.user_id;
+  const perrosData2 = vacuna?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const vacunaOwner2 = Array.isArray(perrosData2) ? perrosData2[0]?.user_id : perrosData2?.user_id;
   if (!vacunaOwner2 || vacunaOwner2 !== user.id) {
     throw new Error('No autorizado');
   }

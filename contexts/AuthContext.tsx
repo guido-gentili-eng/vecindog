@@ -90,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (saved) setCiudadState(saved);
     }
 
+    let mounted = true;
     // Flag para evitar doble fetchProfile si getSession y onAuthStateChange
     // resuelven el mismo userId en paralelo (race condition en OAuth redirect)
     let initialFetchDone = false;
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
   const setCiudad = (c: string) => {

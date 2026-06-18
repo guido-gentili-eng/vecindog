@@ -70,9 +70,9 @@ export default function HistoriaPage() {
   useEffect(() => {
     setRedes((prev) => ({
       instagram: { ...prev.instagram, handle: profile?.instagram ?? '' },
-      facebook:  { ...prev.facebook,  handle: profile?.facebook  ?? '' },
+      facebook:  prev.facebook,
     }));
-  }, [profile?.instagram, profile?.facebook]);
+  }, [profile?.instagram]);
 
   function setHandle(red: Red, value: string) {
     setRedes((prev) => ({ ...prev, [red]: { ...prev[red], handle: value } }));
@@ -85,7 +85,9 @@ export default function HistoriaPage() {
     if (!user) return;
     setRedes((prev) => ({ ...prev, [red]: { ...prev[red], guardando: true } }));
     const handle = limpiarHandle(redes[red].handle);
-    await supabase.from('profiles').update({ [red]: handle || null }).eq('id', user.id);
+    if (red === 'instagram') {
+      await supabase.from('profiles').update({ instagram: handle || null }).eq('id', user.id);
+    }
     setRedes((prev) => ({
       ...prev,
       [red]: { ...prev[red], handle, editando: false, guardando: false },

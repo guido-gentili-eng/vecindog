@@ -145,7 +145,6 @@ export default function MiPerfilPage() {
         pais:             profile.pais,
         direccion:        profile.direccion,
         instagram:        profile.instagram ?? null,
-        facebook:         profile.facebook  ?? null,
         bio:              profile.bio       ?? null,
         radio_alerta_km:  profile.radio_alerta_km ?? null,
         foto_url: url,

@@ -1,4 +1,5 @@
 import './globals.css';
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -6,6 +7,7 @@ import Providers from '@/components/Providers';
 import InstallBanner from '@/components/InstallBanner';
 import AiHelpButton from '@/components/AiHelpButton';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export const viewport: Viewport = {
   themeColor: '#B85C4A',
@@ -59,6 +61,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es-AR">
       <body className="min-h-screen bg-brand-cream">
         <Providers>
+          <Suspense fallback={null}>
+            <ScrollToTop />
+          </Suspense>
           <Header />
           <main className="mx-auto max-w-6xl px-4 pb-16">{children}</main>
           <Footer />

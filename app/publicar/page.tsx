@@ -19,7 +19,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { nombreCorto } from '@/lib/ciudades';
-import { obtenerPerro, type Perro } from '@/lib/perros';
+import { obtenerPerro, listarMisPerros, type Perro } from '@/lib/perros';
 import { listarPosts, actualizarZonaPost, contarPostsActivosDelUsuario, type Post } from '@/lib/posts';
 import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
@@ -130,6 +130,7 @@ export default function PublicarPage() {
   const [perroData,         setPerroData]         = useState<Perro | null>(null);
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
   const [ubicacion,         setUbicacion]         = useState<'casa' | 'otro' | null>(null);
+  const [misPerros,         setMisPerros]         = useState<Perro[]>([]);
 
   const [sinContacto,     setSinContacto]     = useState(false);
 
@@ -168,22 +169,31 @@ export default function PublicarPage() {
     return () => { urlsRef.current.forEach((u) => URL.revokeObjectURL(u)); };
   }, []);
 
+  function aplicarPerro(p: Perro) {
+    setPerroData(p);
+    setPerroFotoRemovida(false);
+    setForm((prev) => ({
+      ...prev,
+      nombre:      p.nombre,
+      raza:        p.raza   || '',
+      color:       p.color  || '',
+      tamano:      (p.tamano as Tamano) || '',
+      sexo:        (p.sexo as 'macho' | 'hembra' | '') || '',
+      descripcion: generarDescripcion(p),
+    }));
+  }
+
   useEffect(() => {
     if (!perroId) return;
-    obtenerPerro(perroId).then((p) => {
-      if (!p) return;
-      setPerroData(p);
-      setForm((prev) => ({
-        ...prev,
-        nombre:      p.nombre,
-        raza:        p.raza   || '',
-        color:       p.color  || '',
-        tamano:      (p.tamano as Tamano) || '',
-        sexo:        (p.sexo as 'macho' | 'hembra' | '') || '',
-        descripcion: generarDescripcion(p),
-      }));
-    });
+    obtenerPerro(perroId).then((p) => { if (p) aplicarPerro(p); });
   }, [perroId]);
+
+  // Si entra sin perro preseleccionado (ej. desde el header), ofrecemos elegir
+  // entre los perros ya registrados para no obligar a tipear todo de nuevo.
+  useEffect(() => {
+    if (perroId || !user || form.categoria !== 'perdido') return;
+    listarMisPerros().then(setMisPerros).catch(() => {});
+  }, [perroId, user, form.categoria]);
 
   function handleChange<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm((f) => ({ ...f, [key]: val }));
@@ -672,6 +682,33 @@ export default function PublicarPage() {
             </Link>
           </div>
           <p className="mt-2.5 text-[11px] text-ink-muted">{t.pbrSiNoEncontras}</p>
+        </div>
+      )}
+
+      {/* Selector de perro registrado (cuando se entra sin &perro=) */}
+      {!perroData && misPerros.length > 0 && (
+        <div className="mb-5 rounded-2xl border border-black/8 bg-brand-cream/60 p-4">
+          <p className="mb-3 text-sm font-bold text-ink">¿A cuál de tus perros perdiste?</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {misPerros.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => aplicarPerro(p)}
+                className="flex items-center gap-3 rounded-xl border-2 border-black/10 bg-white p-3 text-left transition hover:border-brand-primary"
+              >
+                {p.foto_url ? (
+                  <Image src={p.foto_url} alt={p.nombre} width={40} height={40} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-primary/10">
+                    <Dog className="h-5 w-5 text-brand-primary" />
+                  </span>
+                )}
+                <span className="text-sm font-bold text-ink">{p.nombre}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-2.5 text-[11px] text-ink-muted">Esto completa el formulario con sus datos automáticamente.</p>
         </div>
       )}
 

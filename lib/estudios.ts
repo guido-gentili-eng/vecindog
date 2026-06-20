@@ -46,6 +46,14 @@ export async function agregarEstudio(
 export async function eliminarEstudio(id: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');
+  const { data: estudio } = await supabase
+    .from('estudios')
+    .select('archivo_url')
+    .eq('id', id)
+    .single();
   const { error } = await supabase.from('estudios').delete().eq('id', id);
   if (error) throw error;
+  // Borrar también el archivo del bucket para no acumular huérfanos en Storage.
+  const path = estudio?.archivo_url?.match(/\/storage\/v1\/object\/public\/estudios\/(.+)$/)?.[1];
+  if (path) await supabase.storage.from('estudios').remove([path]);
 }

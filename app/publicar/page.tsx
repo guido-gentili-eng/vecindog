@@ -303,7 +303,7 @@ export default function PublicarPage() {
       }
     }
 
-    if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
+    if (!isPro && user && ['perdido', 'encontrado', 'adopcion', 'transito'].includes(form.categoria)) {
       const count = await contarPostsActivosDelUsuario();
       if (count >= 5) {
         setSubmitError(t.pbrLimiteError);
@@ -328,7 +328,7 @@ export default function PublicarPage() {
     setShowWaConfirm(false);
     setLoading(true);
     try {
-      if (!isPro && user && ['perdido', 'encontrado', 'transito'].includes(form.categoria)) {
+      if (!isPro && user && ['perdido', 'encontrado', 'adopcion', 'transito'].includes(form.categoria)) {
         const countFinal = await contarPostsActivosDelUsuario();
         if (countFinal >= 5) {
           setSubmitError(t.pbrLimiteError);

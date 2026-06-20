@@ -48,7 +48,7 @@ export async function eliminarFoto(id: string): Promise<void> {
   if (!user) throw new Error('No autorizado');
   const { data: foto } = await supabase
     .from('fotos_perro')
-    .select('id, perros!inner(user_id)')
+    .select('id, url, perros!inner(user_id)')
     .eq('id', id)
     .single();
   const perrosData = foto?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
@@ -56,4 +56,7 @@ export async function eliminarFoto(id: string): Promise<void> {
   if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('fotos_perro').delete().eq('id', id);
   if (error) throw new Error(error.message);
+  // Borrar también el archivo del bucket para no acumular huérfanos en Storage.
+  const path = foto?.url?.match(/\/storage\/v1\/object\/public\/estudios\/(.+)$/)?.[1];
+  if (path) await supabase.storage.from('estudios').remove([path]);
 }

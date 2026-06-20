@@ -7,7 +7,8 @@ interface Props {
 }
 
 function verificarHmac(userId: string, window30: number, token: string): boolean {
-  const secret = process.env.VERIFICAR_SECRET ?? 'vecindog-fallback-secret';
+  const secret = process.env.VERIFICAR_SECRET;
+  if (!secret) return false;
   const expected = createHmac('sha256', secret)
     .update(`${userId}:${window30}`)
     .digest('hex')

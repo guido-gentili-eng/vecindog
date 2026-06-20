@@ -13,19 +13,30 @@ export async function POST(req: NextRequest) {
 
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    if (!user.email) return NextResponse.json({ error: 'Cuenta sin email asociado.' }, { status: 400 });
 
-    // Verificar que no usó el trial antes
     const { data: profile } = await admin
       .from('profiles')
-      .select('plan, plan_trial_usado')
+      .select('plan')
       .eq('id', user.id)
       .single();
-
-    if (profile?.plan_trial_usado) {
-      return NextResponse.json({ error: 'Ya usaste los 3 meses gratis anteriormente.' }, { status: 409 });
-    }
     if (profile?.plan === 'pro') {
       return NextResponse.json({ error: 'Ya tenés un plan Pro activo.' }, { status: 409 });
+    }
+
+    // Reclamo atómico por email (no por profile.id): la tabla trial_usado_por_email
+    // no se borra si el usuario elimina su cuenta, así que evita reclamar el
+    // trial de nuevo creando una cuenta nueva con el mismo email.
+    const emailNormalizado = user.email.trim().toLowerCase();
+    const { error: claimErr } = await admin
+      .from('trial_usado_por_email')
+      .insert({ email: emailNormalizado });
+    if (claimErr) {
+      // Violación de PK (23505) = ya se reclamó el trial con este email antes
+      if (claimErr.code === '23505') {
+        return NextResponse.json({ error: 'Ya usaste los 3 meses gratis anteriormente.' }, { status: 409 });
+      }
+      return NextResponse.json({ error: claimErr.message }, { status: 500 });
     }
 
     const vencimiento = new Date();

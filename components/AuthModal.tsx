@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Dog, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, LanguageSwitcher } from '@/contexts/LanguageContext';
-import TurnstileWidget from '@/components/TurnstileWidget';
 
 type Step = 'form' | 'confirm' | 'forgot';
 
@@ -41,8 +40,6 @@ export default function AuthModal() {
   const [error,      setError]      = useState('');
   const [info,       setInfo]       = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState('');
-  const [captchaReset, setCaptchaReset] = useState(0);
   const codeRef = useRef<HTMLInputElement>(null);
 
   if (loading || hasChosen) return null;
@@ -71,10 +68,6 @@ export default function AuthModal() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === 'register' && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !captchaToken) {
-      setError('Confirmá que no eres un robot.');
-      return;
-    }
     setError(''); setInfo(''); setSubmitting(true);
     try {
       if (mode === 'login') {
@@ -92,11 +85,9 @@ export default function AuthModal() {
           router.push('/');
         }
       } else {
-        const { error: err, needsConfirm } = await signUp(email, password, captchaToken);
+        const { error: err, needsConfirm } = await signUp(email, password);
         if (err) {
           setError(tradError(err));
-          setCaptchaToken('');
-          setCaptchaReset((n) => n + 1);
         } else if (needsConfirm) {
           setStep('confirm');
           setInfo('');
@@ -304,17 +295,6 @@ export default function AuthModal() {
                     className="text-xs font-bold text-brand-primary hover:underline">
                     {t.forgotLink}
                   </button>
-                </div>
-              )}
-
-              {/* Captcha anti-bot — solo en registro */}
-              {mode === 'register' && (
-                <div className="flex justify-center">
-                  <TurnstileWidget
-                    onVerify={setCaptchaToken}
-                    onExpire={() => setCaptchaToken('')}
-                    reset={captchaReset}
-                  />
                 </div>
               )}
 

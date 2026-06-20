@@ -45,8 +45,8 @@ interface AuthCtx {
   hasCity:         boolean;
   setCiudad:       (c: string) => void;
   clearCiudad:     () => void;
-  signIn:          (email: string, pw: string, captchaToken?: string) => Promise<string | null>;
-  signUp:          (email: string, pw: string, captchaToken?: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  signIn:          (email: string, pw: string) => Promise<string | null>;
+  signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signInWithGoogle: () => Promise<void>;
   verifyOtp:       (email: string, token: string) => Promise<string | null>;
   resendConfirm:   (email: string) => Promise<string | null>;
@@ -143,19 +143,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCiudadState(null);
   };
 
-  const signIn = async (email: string, pw: string, captchaToken?: string): Promise<string | null> => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email, password: pw,
-      options: captchaToken ? { captchaToken } : undefined,
-    });
+  const signIn = async (email: string, pw: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
     return error?.message ?? null;
   };
 
-  const signUp = async (email: string, pw: string, captchaToken?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email, password: pw,
-      options: captchaToken ? { captchaToken } : undefined,
-    });
+  const signUp = async (email: string, pw: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password: pw });
     if (error) return { error: error.message, needsConfirm: false };
     // Siempre cerrar la sesión inmediata para forzar confirmación por email
     if (data.session) await supabase.auth.signOut();

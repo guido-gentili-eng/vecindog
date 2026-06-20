@@ -33,16 +33,21 @@ export async function POST(req: NextRequest) {
     if (!foto_url || typeof foto_url !== 'string') {
       return NextResponse.json({ error: 'foto_url requerida' }, { status: 400 });
     }
-    // Validar que la URL pertenece a dominios confiables para evitar SSRF y abuso de cuota
-    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-    const trustedPrefixes = [SUPABASE_URL, 'https://www.mivecindog.com.ar', 'https://mivecindog.com.ar'];
-    if (!foto_url.startsWith('https://') || !trustedPrefixes.some(p => p && foto_url.startsWith(p))) {
+    // Validar que la URL pertenece a dominios confiables para evitar SSRF y abuso de cuota.
+    // Se compara el hostname exacto (no startsWith) para que dominios como
+    // "mivecindog.com.ar.evil.com" no pasen el filtro.
+    let fotoHost: string;
+    try { fotoHost = new URL(foto_url).hostname; } catch { fotoHost = ''; }
+    const SUPABASE_HOST = (() => { try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').hostname; } catch { return ''; } })();
+    const trustedHosts = [SUPABASE_HOST, 'www.mivecindog.com.ar', 'mivecindog.com.ar'];
+    if (!foto_url.startsWith('https://') || !trustedHosts.some((h) => h && fotoHost === h)) {
       return NextResponse.json({ error: 'URL de imagen no permitida' }, { status: 400 });
     }
 
     const VALID_STYLES = ['3D', 'Emoji', 'Video game', 'Pixels', 'Clay', 'Toy'];
     const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
 
+    let cupoReclamado = false;
     if (perro_id && (!adminEmail || user.email !== adminEmail)) {
       // Claim atómico: actualiza solo si el mes actual no fue usado aún.
       // Previene race condition donde dos requests paralelos pasan el check simultáneamente.
@@ -62,6 +67,7 @@ export async function POST(req: NextRequest) {
           { status: 429 }
         );
       }
+      cupoReclamado = true;
     }
 
     const STYLE_PROMPTS: Record<string, string> = {
@@ -74,7 +80,10 @@ export async function POST(req: NextRequest) {
     };
 
     const apiToken = process.env.REPLICATE_API_TOKEN;
-    if (!apiToken) return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
+    if (!apiToken) {
+      if (cupoReclamado) await liberarCupo(admin, perro_id, user.id);
+      return NextResponse.json({ error: 'REPLICATE_API_TOKEN no configurado' }, { status: 500 });
+    }
 
     // flux-kontext-apps/cartoonify — img2img cartoon
     const res = await fetch('https://api.replicate.com/v1/models/flux-kontext-apps/cartoonify/predictions', {
@@ -96,6 +105,7 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       console.error('[cartoon-perro] error:', res.status, JSON.stringify(prediction));
+      if (cupoReclamado) await liberarCupo(admin, perro_id, user.id);
       return NextResponse.json({ error: `Error ${res.status}: ${prediction?.detail || prediction?.error || JSON.stringify(prediction)}` }, { status: 500 });
     }
 
@@ -110,12 +120,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, pending: true, prediction_id: prediction.id, perro_id: perro_id ?? null });
     }
 
+    if (cupoReclamado) await liberarCupo(admin, perro_id, user.id);
     return NextResponse.json({ error: 'Respuesta inesperada de Replicate' }, { status: 500 });
 
   } catch (e) {
     console.error('[cartoon-perro]', e);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
+}
+
+/** Revierte el claim de cupo mensual cuando la generación falla, para no cobrarle el intento al usuario. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function liberarCupo(admin: any, perroId: string, userId: string) {
+  await admin
+    .from('perros')
+    .update({ cartoon_generado_at: null })
+    .eq('id', perroId)
+    .eq('user_id', userId);
 }
 
 export async function GET(req: NextRequest) {

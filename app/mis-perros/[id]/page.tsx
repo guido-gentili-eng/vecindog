@@ -1349,9 +1349,15 @@ export default function PerroDetallePage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    try {
-                      await navigator.share({ url: cartoonUrl!, title: `Caricatura de ${perro.nombre} — Vecindog` });
-                    } catch {
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({ url: cartoonUrl!, title: `Caricatura de ${perro.nombre} — Vecindog` });
+                      } catch (e) {
+                        // El usuario canceló el diálogo nativo — no hacer nada (no copiar al portapapeles).
+                        if (e instanceof Error && e.name === 'AbortError') return;
+                        await navigator.clipboard.writeText(cartoonUrl!);
+                      }
+                    } else {
                       await navigator.clipboard.writeText(cartoonUrl!);
                     }
                   }}

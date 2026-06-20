@@ -449,7 +449,7 @@ export default function PublicarPage() {
           : typeof err === 'object' && err !== null && 'message' in err
             ? String((err as { message: unknown }).message)
             : String(err);
-      setSubmitError('Error al publicar: ' + msg);
+      setSubmitError(msg.includes('Límite de 5 avisos activos') ? t.pbrLimiteError : 'Error al publicar: ' + msg);
     } finally {
       setLoading(false);
       publicandoRef.current = false;

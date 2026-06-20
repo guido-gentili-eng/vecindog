@@ -147,10 +147,14 @@ export default function NuevoPerroPage() {
           ? String((err as { message: unknown }).message)
           : String(err);
       const esMigracion = msg.toLowerCase().includes('column') || msg.toLowerCase().includes('schema');
+      const esLimite = msg.includes('Límite de 1 perro');
+      if (esLimite) setBloqueado(true);
       setError(
-        esMigracion
-          ? '⚠️ Error de base de datos: falta ejecutar la migración SQL en Supabase. El perro NO fue guardado.'
-          : msg || 'Ocurrió un error. Intentá de nuevo.'
+        esLimite
+          ? ''
+          : esMigracion
+            ? '⚠️ Error de base de datos: falta ejecutar la migración SQL en Supabase. El perro NO fue guardado.'
+            : msg || 'Ocurrió un error. Intentá de nuevo.'
       );
     } finally {
       setLoading(false);

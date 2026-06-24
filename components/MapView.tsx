@@ -99,18 +99,31 @@ const userIcon = L.divIcon({
 
 /* ──────────────────── Nominatim geocoding ──────────────────── */
 
-const SESSION_KEY = 'geo_cache_v3';
-function loadGeoCache(): Record<string, LatLng> {
-  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? '{}'); }
-  catch { return {}; }
+// localStorage (no sessionStorage): persiste entre sesiones para no volver a
+// pegarle a Nominatim por la misma zona en cada visita. TTL para que zonas
+// cuyas coordenadas cambien en OSM no queden cacheadas para siempre.
+const GEO_CACHE_KEY = 'geo_cache_v4';
+const GEO_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
+type GeoCacheEntry = LatLng & { ts: number };
+
+function loadGeoCache(): Record<string, GeoCacheEntry> {
+  try {
+    const raw: Record<string, GeoCacheEntry> = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) ?? '{}');
+    const now = Date.now();
+    const fresh: Record<string, GeoCacheEntry> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (now - v.ts < GEO_CACHE_TTL_MS) fresh[k] = v;
+    }
+    return fresh;
+  } catch { return {}; }
 }
-function saveGeoCache(c: Record<string, LatLng>) {
-  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(c)); } catch {}
+function saveGeoCache(c: Record<string, GeoCacheEntry>) {
+  try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(c)); } catch {}
 }
 
 async function geocodificarZona(
   zona: string,
-  cache: Record<string, LatLng>,
+  cache: Record<string, GeoCacheEntry>,
   ciudad?: string,
   centerHint?: LatLng,
 ): Promise<LatLng | null> {
@@ -142,7 +155,7 @@ async function geocodificarZona(
     const data = await res.json();
     if (data?.[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      cache[key] = coords;
+      cache[key] = { ...coords, ts: Date.now() };
       saveGeoCache(cache);
       return coords;
     }

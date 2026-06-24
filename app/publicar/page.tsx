@@ -835,7 +835,7 @@ export default function PublicarPage() {
           <div className="space-y-4">
 
             <Field label={t.pbrNombre}>
-              <input type="text" className="field" placeholder="Ej: Rocco"
+              <input type="text" className="field" placeholder="Ej: Rocco" maxLength={60}
                 value={form.nombre} onChange={(e) => handleChange('nombre', e.target.value)} />
             </Field>
 
@@ -905,6 +905,7 @@ export default function PublicarPage() {
                 placeholder={t.pbrDescripcionPh}
                 value={form.descripcion}
                 onChange={(e) => handleChange('descripcion', e.target.value)}
+                maxLength={1000}
                 required
               />
             </Field>

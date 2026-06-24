@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profileLoading, setProfileLoading] = useState(true);
   const [ciudad,         setCiudadState]    = useState<string | null>(null);
 
-  async function fetchProfile(userId: string) {
+  async function fetchProfile(userId: string, retried = false) {
     setProfileLoading(true);
     const { data, error } = await supabase
       .from('profiles')
@@ -75,8 +75,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('id', userId)
       .single();
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 = no rows found (usuario nuevo sin perfil todavía)
+      // PGRST116 = no rows found (usuario nuevo sin perfil todavía).
+      // Cualquier otro error (ej. de red) NO significa "sin perfil": reintentamos
+      // una vez para no dejar al usuario logueado con profile=null de forma
+      // indistinguible de un usuario nuevo real.
       console.warn('[AuthContext] fetchProfile error:', error.message);
+      if (!retried) {
+        await new Promise((r) => setTimeout(r, 800));
+        return fetchProfile(userId, true);
+      }
     }
     setProfile(data ?? null);
     setProfileLoading(false);

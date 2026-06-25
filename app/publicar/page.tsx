@@ -344,8 +344,13 @@ export default function PublicarPage() {
       for (const foto of fotos) {
         const ext  = foto.file.name.split('.').pop() ?? 'jpg';
         const path = `${form.categoria}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from('posts').upload(path, foto.file, { upsert: false });
-        if (upErr) throw upErr;
+        let { error: upErr } = await supabase.storage.from('posts').upload(path, foto.file, { upsert: false });
+        if (upErr) {
+          // Reintento único: a veces falla por un hiccup transitorio de red/CDN.
+          await new Promise((r) => setTimeout(r, 800));
+          ({ error: upErr } = await supabase.storage.from('posts').upload(path, foto.file, { upsert: false }));
+        }
+        if (upErr) throw new Error('No se pudo subir una de las fotos. Probá de nuevo o con otra foto.');
         const { data } = supabase.storage.from('posts').getPublicUrl(path);
         uploadedUrls.push(data.publicUrl);
       }

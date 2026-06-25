@@ -1358,9 +1358,9 @@ function Miniatura({ url, esPrincipal, pesoMb, onRemover, onHacerPrincipal, labe
 }) {
   const pesada = pesoMb > MAX_PESO_MB;
   return (
-    <div className={`relative aspect-square overflow-hidden rounded-2xl ring-1 ${esPrincipal ? 'ring-2 ring-brand-primary' : 'ring-black/10'}`}>
+    <div className={`relative aspect-square overflow-hidden rounded-2xl bg-black/5 ring-1 ${esPrincipal ? 'ring-2 ring-brand-primary' : 'ring-black/10'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={url} alt="" className="h-full w-full object-cover" />
+      <img src={url} alt="" className="h-full w-full object-contain" />
       {esPrincipal ? (
         <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-brand-primary px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
           <Star className="h-3 w-3 fill-current" /> {labelPrincipal}

@@ -166,7 +166,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'ad_ids no coinciden con el pago' }, { status: 403 });
     }
 
+    const adminIdem = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
+
+    // CRÍTICO: Idempotencia — evitar reactivar/extender los ads si este payment_id ya fue procesado
+    const { data: yaProcesado } = await adminIdem
+      .from('pagos_procesados')
+      .select('payment_id')
+      .eq('payment_id', String(payment_id))
+      .maybeSingle();
+
+    if (yaProcesado) {
+      return NextResponse.json({ ok: true, cached: true });
+    }
+
     await activarAds(ad_ids);
+
+    await adminIdem.from('pagos_procesados').insert({
+      payment_id: String(payment_id),
+      user_id:    user.id,
+      tipo:       'publicidad',
+    });
 
     // Mandar email de bienvenida al comercio (fire & forget)
     try {

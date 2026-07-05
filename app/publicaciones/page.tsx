@@ -19,6 +19,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const AD_INTERVAL = 4;
 /** Cantidad inicial y de incremento para paginación */
 const PAGE_SIZE = 24;
+/** Tamaño de lote al traer posts del servidor (se pide otro lote si el usuario agota el actual) */
+const PAGE_BATCH = 500;
 
 const CAT_VALIDAS: FiltroCategoria[] = [
   'todas', 'buscar', 'perdido', 'encontrado', 'adopcion', 'transito', 'busco_cuidador', 'cuidador_disponible'
@@ -82,6 +84,7 @@ export default function PublicacionesPage() {
   const [fetchErr,    setFetchErr]    = useState('');
   const [busqueda,    setBusqueda]    = useState('');
   const [visibles,    setVisibles]    = useState(PAGE_SIZE);
+  const [agotado,     setAgotado]     = useState(false); // true cuando el servidor ya no tiene más posts
   const [userCoords,  setUserCoords]  = useState<{ lat: number; lng: number } | null>(null);
   const [cercaniaOn,  setCercaniaOn]  = useState(false);
   const [gpsLoading,  setGpsLoading]  = useState(false);
@@ -147,11 +150,33 @@ export default function PublicacionesPage() {
   /* Cargar posts desde Supabase */
   useEffect(() => {
     setCargando(true);
-    listarPosts()
-      .then(setPosts)
+    listarPosts({ limit: PAGE_BATCH })
+      .then((data) => {
+        setPosts(data);
+        setAgotado(data.length < PAGE_BATCH);
+      })
       .catch((e) => setFetchErr(e.message ?? 'Error al cargar los avisos.'))
       .finally(() => setCargando(false));
   }, []);
+
+  /* Trae el siguiente lote del servidor cuando el usuario agota lo ya cargado */
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const cargarMasDelServidor = useCallback(() => {
+    if (cargandoMas || agotado) return;
+    setCargandoMas(true);
+    listarPosts({ offset: posts.length, limit: PAGE_BATCH })
+      .then((data) => {
+        // Dedupe por id: si se crearon posts nuevos entre cargas, el offset
+        // puede correrse y traer de nuevo algunos ya presentes.
+        setPosts((prev) => {
+          const vistos = new Set(prev.map((p) => p.id));
+          return [...prev, ...data.filter((p) => !vistos.has(p.id))];
+        });
+        if (data.length < PAGE_BATCH) setAgotado(true);
+      })
+      .catch(() => setAgotado(true))
+      .finally(() => setCargandoMas(false));
+  }, [posts.length, cargandoMas, agotado]);
 
   /* Filtros client-side */
   const resultados = useMemo(() => {
@@ -322,7 +347,7 @@ export default function PublicacionesPage() {
                 <React.Fragment key={p.id}>
                   <AnimalCard animal={postToAnimal(p)} />
                   {(i + 1) % AD_INTERVAL === 0 && (
-                    <AdSlot key={`ad-${i}`} variant="card" />
+                    <AdSlot key={`ad-${p.id}`} variant="card" />
                   )}
                 </React.Fragment>
               ))}
@@ -334,11 +359,19 @@ export default function PublicacionesPage() {
                 Mostrando <span className="font-bold text-ink">{visiblesSlice.length}</span> de{' '}
                 <span className="font-bold text-ink">{resultados.length}</span> {resultados.length !== 1 ? t.pubPostWordPlural : t.pubPostWord}
               </p>
-              {visibles < resultados.length && (
+              {(visibles < resultados.length || !agotado) && (
                 <button
-                  onClick={() => setVisibles((v) => v + PAGE_SIZE)}
+                  onClick={() => {
+                    setVisibles((v) => v + PAGE_SIZE);
+                    // Compara contra los resultados filtrados (no el total crudo): con un
+                    // filtro activo, resultados.length puede ser mucho menor que posts.length
+                    // y nunca se llegaría a pedir el siguiente lote al servidor.
+                    if (visibles + PAGE_SIZE >= resultados.length && !agotado) cargarMasDelServidor();
+                  }}
+                  disabled={cargandoMas}
                   className="btn-secondary inline-flex items-center gap-2"
                 >
+                  {cargandoMas ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   {t.pubShowMore}
                 </button>
               )}

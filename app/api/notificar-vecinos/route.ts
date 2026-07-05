@@ -91,6 +91,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     }
 
+    // CRÍTICO: Rate limiting — máximo 1 tanda de notificaciones por post por hora,
+    // para que el dueño no pueda re-spamear a todos los vecinos repetidamente.
+    const { data: notifReciente } = await admin
+      .from('notifications')
+      .select('created_at')
+      .eq('post_id', postIdS)
+      .in('tipo', ['perdido', 'encontrado', 'adopcion', 'transito'])
+      .gte('created_at', new Date(Date.now() - 3_600_000).toISOString())
+      .limit(1)
+      .maybeSingle();
+    if (notifReciente) {
+      return NextResponse.json(
+        { ok: false, error: 'Ya se notificó a los vecinos por este aviso en la última hora' },
+        { status: 429 }
+      );
+    }
+
     // ── Traer perfiles con coordenadas ───────────────────────────────
     let profilesQuery = admin
       .from('profiles')

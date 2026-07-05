@@ -62,14 +62,22 @@ const CATEGORIAS_AVISO = ['perdido', 'encontrado', 'adopcion', 'transito'];
 
 const POSTS_FIELDS = 'id,created_at,user_id,perro_id,categoria,especie,nombre,raza,color,tamano,sexo,collar,chapita,descripcion,zona,fecha,horario,contacto,images,estado,lat,lng,situacion_transito,fecha_limite_transito';
 
-export async function listarPosts(): Promise<Post[]> {
+/** Mismos campos que POSTS_FIELDS pero sin `contacto` — para listados públicos donde el
+ *  contacto solo debe revelarse en el detalle del aviso (vía ContactBlock), no en el
+ *  payload de la lista completa. */
+const POSTS_FIELDS_PUBLIC = 'id,created_at,user_id,perro_id,categoria,especie,nombre,raza,color,tamano,sexo,collar,chapita,descripcion,zona,fecha,horario,images,estado,lat,lng,situacion_transito,fecha_limite_transito';
+
+/** `opts.offset`/`opts.limit` permiten traer más de una página cuando hay muchos avisos activos. */
+export async function listarPosts(opts?: { offset?: number; limit?: number }): Promise<Post[]> {
+  const limit  = opts?.limit  ?? 500;
+  const offset = opts?.offset ?? 0;
   const { data, error } = await supabase
     .from('posts')
-    .select(POSTS_FIELDS)
+    .select(POSTS_FIELDS_PUBLIC)
     .neq('estado', 'resuelto')
     .in('categoria', CATEGORIAS_AVISO)
     .order('created_at', { ascending: false })
-    .limit(500);
+    .range(offset, offset + limit - 1);
   if (error) throw error;
   return (data ?? []) as Post[];
 }
@@ -78,7 +86,7 @@ export async function listarPosts(): Promise<Post[]> {
 export async function listarPostsMapa(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select(POSTS_FIELDS)
+    .select(POSTS_FIELDS_PUBLIC)
     .neq('estado', 'resuelto')
     .in('categoria', CATEGORIAS_AVISO)
     .not('lat', 'is', null)
@@ -186,7 +194,7 @@ export async function contarPostsResueltos(): Promise<number> {
 export async function listarPostsResueltos(limite = 20): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select(POSTS_FIELDS)
+    .select(POSTS_FIELDS_PUBLIC)
     .eq('estado', 'resuelto')
     .order('created_at', { ascending: false })
     .limit(limite);
@@ -203,7 +211,10 @@ export async function eliminarPost(id: string, images: string[]): Promise<void> 
     })
     .filter(Boolean) as string[];
   if (paths.length) {
-    await supabase.storage.from('posts').remove(paths);
+    const { error: storageError } = await supabase.storage.from('posts').remove(paths);
+    // No bloqueamos el borrado del aviso por un fallo de Storage (podría ser
+    // transitorio), pero lo dejamos visible para poder limpiar huérfanos después.
+    if (storageError) console.error('[eliminarPost] error borrando fotos del bucket:', storageError.message, paths);
   }
   const { error } = await supabase.from('posts').delete().eq('id', id);
   if (error) throw error;
@@ -231,7 +242,8 @@ export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador
     .select(POSTS_FIELDS)
     .eq('categoria', categoria)
     .neq('estado', 'resuelto')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(300);
   if (error) throw error;
   return (data ?? []) as Post[];
 }

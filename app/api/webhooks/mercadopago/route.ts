@@ -155,16 +155,16 @@ export async function POST(req: NextRequest) {
 
     // ── Renovación de publicidad ─────────────────────────────────────
     if ((meta as Record<string, unknown>)?.tipo === 'renovacion') {
-      // Idempotencia: verificar si este payment_id ya fue procesado
-      const { data: yaProcessado } = await admin
-        .from('ads')
-        .select('id')
-        .in('id', adIds)
-        .eq('activo', true)
-        .limit(1);
-      if (yaProcessado?.length) {
-        console.warn('[MP webhook] renovacion ya procesada para adIds:', adIds);
-        return NextResponse.json({ ok: true, tipo: 'renovacion', idempotent: true });
+      // CRÍTICO: Idempotencia por payment_id — no por estado "activo", que puede
+      // ya ser true antes de este pago (renovación normal antes del vencimiento)
+      // o puede volverse true de nuevo en un reintento sin que sea un pago nuevo.
+      const { data: yaProcesado } = await admin
+        .from('pagos_procesados')
+        .select('payment_id')
+        .eq('payment_id', String(paymentId))
+        .maybeSingle();
+      if (yaProcesado) {
+        return NextResponse.json({ ok: true, tipo: 'renovacion', cached: true });
       }
       // Acumular desde fecha_fin actual si sigue vigente
       const { data: adActual } = await admin.from('ads').select('fecha_fin').eq('id', adIds[0]).single();
@@ -178,6 +178,11 @@ export async function POST(req: NextRequest) {
         .update({ activo: true, fecha_inicio: new Date().toISOString().slice(0, 10), fecha_fin: nuevaFin.toISOString().slice(0, 10) })
         .in('id', adIds);
 
+      await admin.from('pagos_procesados').insert({
+        payment_id: String(paymentId),
+        tipo:       'renovacion',
+      });
+
       notificarAdmin({
         negocio:   (meta as Record<string, string>)?.negocio ?? '',
         plan:      (meta as Record<string, string>)?.plan ?? '',
@@ -189,6 +194,17 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Nueva publicidad / comercio ──────────────────────────────────
+    // Idempotencia: MP puede reintentar este webhook — sin esto, un reintento
+    // volvería a notificar "nuevo comercio" a todos los usuarios.
+    const { data: yaProcesadoNuevo } = await admin
+      .from('pagos_procesados')
+      .select('payment_id')
+      .eq('payment_id', String(paymentId))
+      .maybeSingle();
+    if (yaProcesadoNuevo) {
+      return NextResponse.json({ ok: true, cached: true });
+    }
+
     try {
       await activarAds(adIds);
     } catch (err) {
@@ -196,6 +212,11 @@ export async function POST(req: NextRequest) {
       // Retornar 500 para que MercadoPago reintente el webhook automáticamente
       return NextResponse.json({ ok: false, error: 'Error activando ads' }, { status: 500 });
     }
+
+    await admin.from('pagos_procesados').insert({
+      payment_id: String(paymentId),
+      tipo:       'publicidad',
+    });
 
     const metaMap = (meta ?? {}) as Record<string, string>;
 

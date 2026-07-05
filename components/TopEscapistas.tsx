@@ -44,7 +44,9 @@ export default function TopEscapistas() {
         const { data: posts } = await supabase
           .from('posts')
           .select('id, perro_id, nombre, zona, raza, color, tamano, images')
-          .eq('categoria', 'perdido');
+          .eq('categoria', 'perdido')
+          .order('created_at', { ascending: false })
+          .limit(1000);
 
         if (!posts?.length || cancelled) { setCargando(false); return; }
 

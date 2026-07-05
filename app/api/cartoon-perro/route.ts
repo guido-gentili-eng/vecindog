@@ -17,14 +17,13 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await admin
       .from('profiles')
-      .select('plan, plan_vencimiento')
+      .select('plan, plan_vencimiento, is_admin')
       .eq('id', user.id)
       .single();
     const hoy = new Date().toISOString().slice(0, 10);
     const isPro = profile?.plan === 'pro' &&
       (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (!isPro && (!adminEmail || user.email !== adminEmail)) {
+    if (!isPro && !profile?.is_admin) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
     }
 
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
     const style = VALID_STYLES.includes(styleInput) ? styleInput : '3D';
 
     let cupoReclamado = false;
-    if (perro_id && (!adminEmail || user.email !== adminEmail)) {
+    if (perro_id && !profile?.is_admin) {
       // Claim atómico: actualiza solo si el mes actual no fue usado aún.
       // Previene race condition donde dos requests paralelos pasan el check simultáneamente.
       const ahora = new Date();

@@ -156,7 +156,7 @@ export default async function HistoriaPublicaPage({ params }: Props) {
                   <div className="text-right shrink-0 ml-4">
                     <p className="text-xs font-bold text-ink-muted">{fmt(v.fecha)}</p>
                     {v.proxima && (
-                      <p className={`text-[11px] font-bold ${new Date(v.proxima) < new Date() ? 'text-bad' : 'text-good'}`}>
+                      <p className={`text-[11px] font-bold ${new Date(v.proxima + 'T00:00:00') < new Date() ? 'text-bad' : 'text-good'}`}>
                         Próx: {fmt(v.proxima)}
                       </p>
                     )}

@@ -102,6 +102,20 @@ function textosCoinciden(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+/** Corre `fn` sobre `items` con un máximo de `concurrencia` tareas en simultáneo. */
+async function mapConcurrencia<T, R>(items: T[], concurrencia: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const resultados: R[] = new Array(items.length);
+  let i = 0;
+  async function worker() {
+    while (i < items.length) {
+      const idx = i++;
+      resultados[idx] = await fn(items[idx]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrencia, items.length) }, worker));
+  return resultados;
+}
+
 /* ─────────────── Scoring ─────────────── */
 
 async function calcularScore(
@@ -126,7 +140,10 @@ async function calcularScore(
       colorPost = cache.get(url)!;
     } else {
       colorPost = await extraerColor(url);
-      cache?.set(url, colorPost);
+      if (cache) {
+        if (cache.size >= 200) cache.delete(cache.keys().next().value!); // evita crecimiento sin límite
+        cache.set(url, colorPost);
+      }
     }
     if (colorPost) score += Math.round((similitudColor(colorFoto, colorPost) / 100) * 20);
   }
@@ -302,8 +319,8 @@ export default function BuscarPorFotoPage() {
       const candidatos = todos.filter(p => CATEGORIAS_BUSQUEDA.has(p.categoria));
 
       setPaso(t.bpfSearching);
-      const scored = await Promise.all(
-        candidatos.map(post => calcularScore(post, colorFoto, colorElegido, raza, tamano, collar, chapita, colorCache.current))
+      const scored = await mapConcurrencia(candidatos, 6, post =>
+        calcularScore(post, colorFoto, colorElegido, raza, tamano, collar, chapita, colorCache.current)
       );
       setResultados(scored.sort((a, b) => b.score - a.score));
 

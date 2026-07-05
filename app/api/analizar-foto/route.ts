@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await admin
       .from('profiles')
-      .select('plan, plan_vencimiento')
+      .select('plan, plan_vencimiento, is_admin')
       .eq('id', user.id)
       .single();
 
@@ -27,8 +27,7 @@ export async function POST(req: NextRequest) {
     const isPro = profile?.plan === 'pro' &&
       (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
 
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (!isPro && (!adminEmail || user.email !== adminEmail)) {
+    if (!isPro && !profile?.is_admin) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
     }
 

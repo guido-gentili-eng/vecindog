@@ -62,6 +62,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'ad_id y estrellas (1-5) son requeridos' }, { status: 400 });
   }
 
+  const { data: ad } = await admin.from('ads').select('anunciante').eq('id', ad_id).single();
+  if (ad?.anunciante && user.email && ad.anunciante === user.email) {
+    return NextResponse.json({ error: 'No podés calificar tu propio negocio.' }, { status: 403 });
+  }
+
   const { error: upsertErr } = await admin
     .from('comercio_reviews')
     .upsert(

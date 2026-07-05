@@ -78,7 +78,7 @@ export default function PerroDetallePage() {
   const router        = useRouter();
   const searchParams  = useSearchParams();
   const esNuevo       = searchParams.get('nuevo') === '1';
-  const { ciudad, profile, isPro } = useAuth();
+  const { ciudad, profile, isPro, loading: authLoading } = useAuth();
   const { t } = useLanguage();
 
   const [perro,             setPerro]             = useState<Perro | null>(null);
@@ -122,10 +122,19 @@ export default function PerroDetallePage() {
   const storiesCarnetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Esperar a que resuelva el estado de auth antes de decidir: si no, un
+    // invitado (profile null mientras carga) vería el perfil completo del
+    // perro antes de que se pueda verificar que no es su dueño.
+    if (authLoading) return;
     let mounted = true;
     obtenerPerro(id)
       .then((p) => {
         if (!mounted) return null;
+        // Solo mostrar el perfil si el perro pertenece al usuario autenticado
+        if (!p || !profile || p.user_id !== profile.id) {
+          setPerro(null);
+          return null;
+        }
         setPerro(p);
         if (p) {
           // Restaurar caricatura guardada si la foto no cambió
@@ -177,7 +186,7 @@ export default function PerroDetallePage() {
       })
       .finally(() => { if (mounted) setCargando(false); });
     return () => { mounted = false; };
-  }, [id]);
+  }, [id, profile, authLoading]);
 
   async function handleSubirEstudio(tipo: TipoEstudio, file: File) {
     if (!perro) return;
@@ -797,13 +806,15 @@ export default function PerroDetallePage() {
           {(() => {
             const hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
             const en30 = new Date(hoy); en30.setDate(hoy.getDate() + 30);
+            // 'YYYY-MM-DD' se parsea como UTC medianoche, no local — agregar T00:00:00
+            // fuerza el parseo en hora local para comparar correctamente contra `hoy`.
             const vencidas = [
-              ...vacunas.filter((v) => v.proxima && new Date(v.proxima) < hoy).map((v) => v.nombre),
-              ...desparasitaciones.filter((d) => d.proxima && new Date(d.proxima) < hoy).map((d) => d.producto),
+              ...vacunas.filter((v) => v.proxima && new Date(v.proxima + 'T00:00:00') < hoy).map((v) => v.nombre),
+              ...desparasitaciones.filter((d) => d.proxima && new Date(d.proxima + 'T00:00:00') < hoy).map((d) => d.producto),
             ];
             const proximas = [
-              ...vacunas.filter((v) => { if (!v.proxima) return false; const d = new Date(v.proxima); return d >= hoy && d <= en30; }).map((v) => v.nombre),
-              ...desparasitaciones.filter((d) => { if (!d.proxima) return false; const dt = new Date(d.proxima); return dt >= hoy && dt <= en30; }).map((d) => d.producto),
+              ...vacunas.filter((v) => { if (!v.proxima) return false; const d = new Date(v.proxima + 'T00:00:00'); return d >= hoy && d <= en30; }).map((v) => v.nombre),
+              ...desparasitaciones.filter((d) => { if (!d.proxima) return false; const dt = new Date(d.proxima + 'T00:00:00'); return dt >= hoy && dt <= en30; }).map((d) => d.producto),
             ];
             if (vencidas.length === 0 && proximas.length === 0) return null;
             return (
@@ -3883,8 +3894,8 @@ function DesparasitacionesSection({
                       {TIPO_LABEL[d.tipo] ?? d.tipo}
                     </span>
                     {d.proxima && (
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${new Date(d.proxima) < new Date() ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
-                        {new Date(d.proxima) < new Date() ? t.mpdVacunaVencida : t.mpdVacunaVigente}
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${new Date(d.proxima + 'T00:00:00') < new Date() ? 'bg-bad/15 text-bad' : 'bg-good/15 text-good'}`}>
+                        {new Date(d.proxima + 'T00:00:00') < new Date() ? t.mpdVacunaVencida : t.mpdVacunaVigente}
                       </span>
                     )}
                   </div>
@@ -3903,7 +3914,7 @@ function DesparasitacionesSection({
                   <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {formatFecha(d.fecha)}</span>
                   {d.veterinario && <span>{d.veterinario}</span>}
                   {d.proxima && (
-                    <span className={new Date(d.proxima) < new Date() ? 'font-bold text-bad' : ''}>
+                    <span className={new Date(d.proxima + 'T00:00:00') < new Date() ? 'font-bold text-bad' : ''}>
                       {t.mpdDesparasProxima}: {formatFecha(d.proxima)}
                     </span>
                   )}
@@ -4727,7 +4738,7 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
 
 function calcularEdad(fechaNac: string, t: { mpdCachorro: string; mpdMes: string; mpdMeses: string; mpdAnio: string; mpdAnios: string }): string {
   const hoy   = new Date();
-  const nac   = new Date(fechaNac);
+  const nac   = new Date(fechaNac + 'T00:00:00');
   const meses = (hoy.getFullYear() - nac.getFullYear()) * 12 + (hoy.getMonth() - nac.getMonth());
   if (meses < 1)  return t.mpdCachorro;
   if (meses < 12) return `${meses} ${meses === 1 ? t.mpdMes : t.mpdMeses}`;

@@ -65,6 +65,15 @@ export async function calificarTransportador(input: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Tenés que iniciar sesión para calificar.');
 
+  const { data: post } = await supabase
+    .from('posts')
+    .select('user_id')
+    .eq('id', input.transportadorPostId)
+    .single();
+  if (post?.user_id === user.id) {
+    throw new Error('No podés calificar tu propia publicación.');
+  }
+
   const { error } = await supabase.from('transportador_ratings').upsert(
     {
       transportador_post_id: input.transportadorPostId,

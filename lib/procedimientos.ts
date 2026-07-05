@@ -53,6 +53,14 @@ export async function agregarProcedimiento(
 export async function eliminarProcedimiento(id: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');
+  const { data: procedimiento } = await supabase
+    .from('procedimientos')
+    .select('id, perros!inner(user_id)')
+    .eq('id', id)
+    .single();
+  const perrosData = procedimiento?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('procedimientos').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

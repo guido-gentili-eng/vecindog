@@ -42,6 +42,14 @@ export async function agregarContacto(
 export async function eliminarContacto(id: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');
+  const { data: contacto } = await supabase
+    .from('contactos_emergencia')
+    .select('id, perros!inner(user_id)')
+    .eq('id', id)
+    .single();
+  const perrosData = contacto?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('contactos_emergencia').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }

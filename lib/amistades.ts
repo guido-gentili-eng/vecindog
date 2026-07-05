@@ -176,13 +176,17 @@ export async function enviarSolicitud(
   });
 }
 
-/** Acepta una solicitud de amistad */
+/** Acepta una solicitud de amistad — solo el receptor puede aceptarla. */
 export async function aceptarSolicitud(amistadId: string): Promise<void> {
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { error, count } = await supabase
     .from('amistades')
-    .update({ estado: 'aceptada' })
-    .eq('id', amistadId);
+    .update({ estado: 'aceptada' }, { count: 'exact' })
+    .eq('id', amistadId)
+    .eq('receptor_id', user.id);
   if (error) throw error;
+  if (count === 0) throw new Error('Solicitud no encontrada');
 }
 
 /**

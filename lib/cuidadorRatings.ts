@@ -67,6 +67,15 @@ export async function calificarCuidador(input: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Tenés que iniciar sesión para calificar.');
 
+  const { data: post } = await supabase
+    .from('posts')
+    .select('user_id')
+    .eq('id', input.cuidadorPostId)
+    .single();
+  if (post?.user_id === user.id) {
+    throw new Error('No podés calificar tu propia publicación.');
+  }
+
   const { error } = await supabase.from('cuidador_ratings').upsert(
     {
       cuidador_post_id:   input.cuidadorPostId,

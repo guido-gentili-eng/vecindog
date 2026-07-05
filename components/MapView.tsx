@@ -148,10 +148,13 @@ async function geocodificarZona(
     : '';
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1${viewboxParam}`,
-      { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' } }
+      { headers: { 'Accept-Language': 'es', 'User-Agent': 'Vecindog/1.0' }, signal: controller.signal }
     );
+    clearTimeout(timeoutId);
     const data = await res.json();
     if (data?.[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };

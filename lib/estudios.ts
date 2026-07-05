@@ -48,9 +48,12 @@ export async function eliminarEstudio(id: string): Promise<void> {
   if (!user) throw new Error('No autorizado');
   const { data: estudio } = await supabase
     .from('estudios')
-    .select('archivo_url')
+    .select('archivo_url, perros!inner(user_id)')
     .eq('id', id)
     .single();
+  const perrosData = estudio?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
   const { error } = await supabase.from('estudios').delete().eq('id', id);
   if (error) throw error;
   // Borrar también el archivo del bucket para no acumular huérfanos en Storage.

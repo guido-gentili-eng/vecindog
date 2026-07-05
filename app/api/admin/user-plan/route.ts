@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+import { getAdminUser } from '@/lib/adminAuth';
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get('Authorization')?.slice(7);
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { data: { user: adminUser } } = await anon.auth.getUser(token);
-  if (adminUser?.email !== ADMIN_EMAIL) {
+  const adminUser = await getAdminUser(token);
+  if (!adminUser) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

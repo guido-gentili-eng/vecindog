@@ -64,6 +64,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Ya usaste los 3 meses gratis con este email.' }, { status: 409 });
     }
 
+    // CRÍTICO: Reclamo atómico — cierra la carrera entre el SELECT de arriba y el
+    // INSERT de más abajo (doble click / doble tab no pueden otorgar dos trials).
+    const emailNormalizado = email.trim().toLowerCase();
+    const { error: claimErr } = await admin
+      .from('trial_ads_usado_por_email')
+      .insert({ email: emailNormalizado, tipo: 'publicidad', user_id: user.id });
+    if (claimErr) {
+      if (claimErr.code === '23505') {
+        return NextResponse.json({ error: 'Ya usaste los 3 meses gratis.' }, { status: 409 });
+      }
+      return NextResponse.json({ error: claimErr.message }, { status: 500 });
+    }
+
     const hoy = new Date();
     const fin = new Date(hoy);
     fin.setDate(fin.getDate() + 90);

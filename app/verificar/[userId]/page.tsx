@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 interface Props {
   params:      { userId: string };
@@ -13,7 +13,10 @@ function verificarHmac(userId: string, window30: number, token: string): boolean
     .update(`${userId}:${window30}`)
     .digest('hex')
     .slice(0, 16);
-  return expected === token;
+  const expectedBuf = Buffer.from(expected);
+  const tokenBuf     = Buffer.from(token);
+  if (expectedBuf.length !== tokenBuf.length) return false;
+  return timingSafeEqual(expectedBuf, tokenBuf);
 }
 
 export default async function VerificarPage({ params, searchParams }: Props) {

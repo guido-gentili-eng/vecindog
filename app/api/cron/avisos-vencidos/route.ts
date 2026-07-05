@@ -193,6 +193,7 @@ export async function GET(req: NextRequest) {
     .in('categoria', ['perdido', 'encontrado'])
     .eq('estado', 'activo')
     .eq('notified_expiration', true)
+    .eq('notified_final_warning', false)
     .lte('created_at', dia6.toISOString())
     .gte('created_at', dia7.toISOString()); // solo exactamente día 6, no los de día 7+
 
@@ -228,41 +229,52 @@ export async function GET(req: NextRequest) {
 
   // Procesar día 5 (primer aviso)
   for (const post of postsDia5 ?? []) {
-    if (!post.user_id) continue;
-    const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
-    const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
+    try {
+      if (!post.user_id) continue;
+      const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
+      const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
 
-    // Notificación in-app
-    await admin.from('notifications').insert({
-      user_id: post.user_id, post_id: post.id,
-      tipo: 'expiracion',
-      mensaje: `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} venció. ¿Lo encontraste o seguís buscando?`,
-      leida: false,
-    });
+      // Notificación in-app
+      await admin.from('notifications').insert({
+        user_id: post.user_id, post_id: post.id,
+        tipo: 'expiracion',
+        mensaje: `⏰ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} venció. ¿Lo encontraste o seguís buscando?`,
+        leida: false,
+      });
 
-    // Marcar como notificado
-    await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
+      // Marcar como notificado
+      await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
 
-    const email  = emailsMap[post.user_id];
-    if (!email) continue;
-    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+      const email  = emailsMap[post.user_id];
+      if (!email) continue;
+      const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
 
-    const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, false);
-    if (ok) notif1++;
+      const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, false);
+      if (ok) notif1++;
+    } catch (err) {
+      console.error('[cron/avisos-vencidos] error día5 post', post.id, err);
+    }
   }
 
   // Procesar día 6 (segundo aviso)
   for (const post of postsDia6 ?? []) {
-    if (!post.user_id) continue;
-    const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
-    const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
+    try {
+      if (!post.user_id) continue;
+      const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
+      const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
 
-    const email  = emailsMap[post.user_id];
-    if (!email) continue;
-    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+      // Marcar antes de enviar para que un reintento del cron no duplique el email
+      await admin.from('posts').update({ notified_final_warning: true }).eq('id', post.id);
 
-    const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, true);
-    if (ok) notif2++;
+      const email  = emailsMap[post.user_id];
+      if (!email) continue;
+      const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+
+      const ok = await enviarEmailExpiracion(email, saludo, categoriaLabel, nombrePerro, post.zona, post.id, true);
+      if (ok) notif2++;
+    } catch (err) {
+      console.error('[cron/avisos-vencidos] error día6 post', post.id, err);
+    }
   }
 
   // ── ETAPA 3: Borrado automático (día 7+) ─────────────────────────
@@ -281,15 +293,19 @@ export async function GET(req: NextRequest) {
 
     // Notificación in-app de cierre automático
     for (const post of postsBorrar) {
-      if (!post.user_id) continue;
-      const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
-      const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
-      await admin.from('notifications').insert({
-        user_id: post.user_id, post_id: post.id,
-        tipo: 'expiracion',
-        mensaje: `🗑️ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} fue cerrado automáticamente por inactividad.`,
-        leida: false,
-      });
+      try {
+        if (!post.user_id) continue;
+        const categoriaLabel = post.categoria === 'perdido' ? 'perro perdido' : 'perro visto';
+        const nombrePerro    = post.nombre ? ` (${post.nombre})` : '';
+        await admin.from('notifications').insert({
+          user_id: post.user_id, post_id: post.id,
+          tipo: 'expiracion',
+          mensaje: `🗑️ Tu aviso de ${categoriaLabel}${nombrePerro} en ${post.zona} fue cerrado automáticamente por inactividad.`,
+          leida: false,
+        });
+      } catch (err) {
+        console.error('[cron/avisos-vencidos] error notificando borrado', post.id, err);
+      }
     }
 
     borrados = postsBorrar.length;
@@ -315,6 +331,7 @@ export async function GET(req: NextRequest) {
     .in('categoria', CATEGORIAS_LARGO)
     .eq('estado', 'activo')
     .eq('notified_expiration', true)
+    .eq('notified_final_warning', false)
     .lte('created_at', dia29.toISOString())
     .gte('created_at', dia30.toISOString());
 
@@ -357,38 +374,49 @@ export async function GET(req: NextRequest) {
 
   // Procesar día 27 (primer aviso largo)
   for (const post of largosDia27 ?? []) {
-    if (!post.user_id) continue;
-    const labels = LABELS_LARGO[post.categoria];
-    if (!labels) continue;
-    const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
+    try {
+      if (!post.user_id) continue;
+      const labels = LABELS_LARGO[post.categoria];
+      if (!labels) continue;
+      const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
 
-    await admin.from('notifications').insert({
-      user_id: post.user_id, post_id: post.id,
-      tipo: 'expiracion',
-      mensaje: `⏰ ${labels.notif}${nombrePerro} en ${post.zona} está por vencer. ¿Sigue vigente?`,
-      leida: false,
-    });
-    await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
+      await admin.from('notifications').insert({
+        user_id: post.user_id, post_id: post.id,
+        tipo: 'expiracion',
+        mensaje: `⏰ ${labels.notif}${nombrePerro} en ${post.zona} está por vencer. ¿Sigue vigente?`,
+        leida: false,
+      });
+      await admin.from('posts').update({ notified_expiration: true }).eq('id', post.id);
 
-    const email = emailsMap[post.user_id];
-    if (!email) continue;
-    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
-    const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, false, labels);
-    if (ok) notifLargo1++;
+      const email = emailsMap[post.user_id];
+      if (!email) continue;
+      const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+      const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, false, labels);
+      if (ok) notifLargo1++;
+    } catch (err) {
+      console.error('[cron/avisos-vencidos] error día27 post', post.id, err);
+    }
   }
 
   // Procesar día 29 (segundo aviso largo)
   for (const post of largosDia29 ?? []) {
-    if (!post.user_id) continue;
-    const labels = LABELS_LARGO[post.categoria];
-    if (!labels) continue;
-    const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
+    try {
+      if (!post.user_id) continue;
+      const labels = LABELS_LARGO[post.categoria];
+      if (!labels) continue;
+      const nombrePerro = post.nombre ? ` (${post.nombre})` : '';
 
-    const email = emailsMap[post.user_id];
-    if (!email) continue;
-    const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
-    const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, true, labels);
-    if (ok) notifLargo2++;
+      // Marcar antes de enviar para que un reintento del cron no duplique el email
+      await admin.from('posts').update({ notified_final_warning: true }).eq('id', post.id);
+
+      const email = emailsMap[post.user_id];
+      if (!email) continue;
+      const saludo = profilesMap[post.user_id] ? `Hola ${profilesMap[post.user_id]},` : 'Hola,';
+      const ok = await enviarEmailExpiracionLargo(email, saludo, post.categoria, nombrePerro, post.zona, post.id, true, labels);
+      if (ok) notifLargo2++;
+    } catch (err) {
+      console.error('[cron/avisos-vencidos] error día29 post', post.id, err);
+    }
   }
 
   // Auto-cerrar día 30+
@@ -397,15 +425,19 @@ export async function GET(req: NextRequest) {
     await admin.from('posts').update({ estado: 'resuelto' }).in('id', ids);
 
     for (const post of largosBorrar) {
-      if (!post.user_id) continue;
-      const labels = LABELS_LARGO[post.categoria];
-      const nombrePerro = post.nombre ? ` para ${post.nombre}` : '';
-      await admin.from('notifications').insert({
-        user_id: post.user_id, post_id: post.id,
-        tipo: 'expiracion',
-        mensaje: `🗑️ Tu aviso de ${labels?.categoria ?? post.categoria}${nombrePerro} fue cerrado automáticamente por inactividad.`,
-        leida: false,
-      });
+      try {
+        if (!post.user_id) continue;
+        const labels = LABELS_LARGO[post.categoria];
+        const nombrePerro = post.nombre ? ` para ${post.nombre}` : '';
+        await admin.from('notifications').insert({
+          user_id: post.user_id, post_id: post.id,
+          tipo: 'expiracion',
+          mensaje: `🗑️ Tu aviso de ${labels?.categoria ?? post.categoria}${nombrePerro} fue cerrado automáticamente por inactividad.`,
+          leida: false,
+        });
+      } catch (err) {
+        console.error('[cron/avisos-vencidos] error notificando borrado largo', post.id, err);
+      }
     }
     borradosLargo = largosBorrar.length;
   }
@@ -424,14 +456,18 @@ export async function GET(req: NextRequest) {
     await admin.from('posts').update({ estado: 'resuelto' }).in('id', ids);
 
     for (const post of cuidadoresVencidos) {
-      if (!post.user_id) continue;
-      await admin.from('notifications').insert({
-        user_id: post.user_id,
-        post_id: post.id,
-        tipo: 'expiracion',
-        mensaje: `✅ Tu aviso de busco cuidador${post.nombre ? ` para ${post.nombre}` : ''} venció y fue cerrado automáticamente.`,
-        leida: false,
-      });
+      try {
+        if (!post.user_id) continue;
+        await admin.from('notifications').insert({
+          user_id: post.user_id,
+          post_id: post.id,
+          tipo: 'expiracion',
+          mensaje: `✅ Tu aviso de busco cuidador${post.nombre ? ` para ${post.nombre}` : ''} venció y fue cerrado automáticamente.`,
+          leida: false,
+        });
+      } catch (err) {
+        console.error('[cron/avisos-vencidos] error notificando cuidador vencido', post.id, err);
+      }
     }
   }
 

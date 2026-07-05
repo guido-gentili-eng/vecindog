@@ -14,7 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CartelPage() {
   const { id }      = useParams<{ id: string }>();
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const { t } = useLanguage();
 
   const [perro,    setPerro]    = useState<Perro | null>(null);
@@ -23,21 +23,22 @@ export default function CartelPage() {
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
+    // Esperar a que resuelva el estado de auth: si no, un invitado (profile
+    // null mientras carga) vería el cartel antes de poder verificar dueño.
+    if (authLoading) return;
     obtenerPerro(id)
       .then(async (p) => {
         // Solo mostrar el cartel si el perro pertenece al usuario autenticado
-        if (p && profile && p.user_id !== profile.id) {
+        if (!p || !profile || p.user_id !== profile.id) {
           setPerro(null);
           return;
         }
         setPerro(p);
-        if (p) {
-          const post = await buscarPostActivoDePerro(p.id);
-          setPerdido(!!post);
-        }
+        const post = await buscarPostActivoDePerro(p.id);
+        setPerdido(!!post);
       })
       .finally(() => setLoading(false));
-  }, [id, profile]);
+  }, [id, profile, authLoading]);
 
   useEffect(() => {
     if (!profile?.telefono) return;

@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminUser, getAdminClient } from '@/lib/adminAuth';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 export const dynamic = 'force-dynamic';
 
 async function checkAdmin(req: NextRequest) {
   const token = req.headers.get('authorization')?.slice(7);
-  if (!token) return null;
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { data: { user } } = await anon.auth.getUser(token);
-  return (ADMIN_EMAIL && user?.email === ADMIN_EMAIL) ? user : null;
+  return getAdminUser(token);
 }
 
 function getAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  return getAdminClient();
 }
 
 /* GET — lista de reportes pendientes */
@@ -58,16 +48,21 @@ export async function POST(req: NextRequest) {
   const admin = getAdmin();
 
   if (accion === 'desestimar') {
-    await admin.from('reportes').update({ revisado: true }).eq('id', reporte_id);
+    const { error } = await admin.from('reportes').update({ revisado: true }).eq('id', reporte_id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   } else if (accion === 'eliminar_aviso') {
     const { data: rep, error: repErr } = await admin.from('reportes').select('post_id').eq('id', reporte_id).single();
     if (repErr) return NextResponse.json({ error: 'Reporte no encontrado' }, { status: 404 });
     if (rep?.post_id) {
-      // Marcar todos los reportes de ese aviso como revisados
-      await admin.from('reportes').update({ revisado: true }).eq('post_id', rep.post_id);
-      // Eliminar el aviso
-      await admin.from('posts').delete().eq('id', rep.post_id);
+      // Eliminar el aviso primero: si falla, no marcamos los reportes como revisados
+      const { error: delErr } = await admin.from('posts').delete().eq('id', rep.post_id);
+      if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
+
+      const { error: revErr } = await admin.from('reportes').update({ revisado: true }).eq('post_id', rep.post_id);
+      if (revErr) return NextResponse.json({ error: revErr.message }, { status: 500 });
     }
+  } else {
+    return NextResponse.json({ error: 'Acción desconocida' }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

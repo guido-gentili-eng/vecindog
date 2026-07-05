@@ -24,6 +24,11 @@ export async function obtenerGrooming(perroId: string): Promise<Grooming | null>
 }
 
 export async function eliminarGrooming(perroId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data: perro } = await supabase
+    .from('perros').select('id').eq('id', perroId).eq('user_id', user.id).single();
+  if (!perro) throw new Error('No autorizado');
   const { error } = await supabase
     .from('grooming')
     .delete()
@@ -35,6 +40,12 @@ export async function guardarGrooming(
   perroId: string,
   grooming: Omit<Grooming, 'id' | 'created_at'>
 ): Promise<Grooming> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data: perro } = await supabase
+    .from('perros').select('id').eq('id', perroId).eq('user_id', user.id).single();
+  if (!perro) throw new Error('No autorizado');
+
   // Buscar registro existente para hacer update seguro (sin delete previo que pueda borrar datos)
   const { data: existing } = await supabase
     .from('grooming')

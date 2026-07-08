@@ -56,7 +56,7 @@ export default function AmigosPanel({ onClose }: { onClose: () => void }) {
       );
       if (!ids.length) return;
       const { data } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('id, nombre, apellido, foto_url, ciudad')
         .in('id', ids);
       const map: typeof perfilesMap = {};

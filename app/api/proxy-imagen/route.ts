@@ -28,7 +28,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse('dominio no permitido', { status: 403 });
   }
 
-  const res = await fetch(url);
+  // redirect: 'manual' evita que un host confiable pueda redirigir el proxy
+  // hacia una URL arbitraria (SSRF) sin volver a validar el destino.
+  const res = await fetch(url, { redirect: 'manual' });
+  if (res.status >= 300 && res.status < 400) {
+    return new NextResponse('redirect no permitido', { status: 403 });
+  }
   if (!res.ok) return new NextResponse('error al obtener imagen', { status: 502 });
 
   const blob = await res.arrayBuffer();

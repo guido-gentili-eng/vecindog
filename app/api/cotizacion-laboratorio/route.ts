@@ -1,17 +1,5 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-
-const ipRateLimit = new Map<string, { count: number; resetAt: number }>();
-function checkIpLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipRateLimit.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipRateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
-    return true;
-  }
-  if (entry.count >= 5) return false;
-  entry.count++;
-  return true;
-}
+import { checkRateLimit } from '@/lib/rateLimit';
 
 function esc(s: string): string {
   return s
@@ -25,7 +13,7 @@ function esc(s: string): string {
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-    if (!checkIpLimit(ip)) {
+    if (!(await checkRateLimit(`cotizacion-laboratorio:${ip}`, 5, 3600))) {
       return NextResponse.json({ ok: false, error: 'Demasiadas solicitudes. Esperá un momento.' }, { status: 429 });
     }
 

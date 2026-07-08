@@ -90,7 +90,7 @@ export default function PublicitatePage() {
     (async () => {
       try {
         const { count } = await supabase
-          .from('profiles')
+          .from('profiles_public')
           .select('*', { count: 'exact', head: true });
         if (count !== null) setTotalUsuarios(count);
       } catch { /* silencioso */ }

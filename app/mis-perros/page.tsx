@@ -44,7 +44,7 @@ export default function MisPerrosPage() {
       const aceptadas = amistades.filter(a => a.estado === 'aceptada');
       const ids = aceptadas.map(a => a.solicitante_id === user.id ? a.receptor_id : a.solicitante_id);
       if (!ids.length) return;
-      const { data } = await supabase.from('profiles').select('id, nombre, foto_url').in('id', ids);
+      const { data } = await supabase.from('profiles_public').select('id, nombre, foto_url').in('id', ids);
       setAmigos((data ?? []) as AmigoInfo[]);
     });
   }, [user]);

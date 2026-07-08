@@ -41,7 +41,7 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
 
   // 1. Buscar owners cuyo nombre/apellido coincida
   const { data: profilesMatch } = await supabase
-    .from('profiles')
+    .from('profiles_public')
     .select('id, nombre, apellido, ciudad')
     .or(`nombre.ilike.%${nombre}%,apellido.ilike.%${nombre}%`)
     .limit(20);
@@ -73,7 +73,7 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
   let profilesMap: Record<string, Record<string, unknown>> = {};
   if (allOwnerIds.length > 0) {
     const { data: profiles } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('id, nombre, apellido, ciudad')
       .in('id', allOwnerIds);
     for (const p of (profiles ?? []) as Record<string, unknown>[]) {

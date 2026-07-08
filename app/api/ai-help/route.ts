@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-// Rate limit: máximo 20 requests por usuario por hora
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(userId);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + 60 * 60 * 1000 });
-    return true;
-  }
-  if (entry.count >= 20) return false;
-  entry.count++;
-  return true;
-}
 
 const SYSTEM_PROMPT = `Sos el asistente virtual de Vecindog, una app argentina para dueños de perros. Ayudás a los usuarios a navegar y usar la aplicación. Respondés siempre en español rioplatense, de manera amigable, concisa y clara.
 
@@ -84,7 +71,7 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-    if (!checkRateLimit(user.id)) {
+    if (!(await checkRateLimit(`ai-help:${user.id}`, 20, 3600))) {
       return NextResponse.json({ error: 'Demasiadas consultas. Esperá un momento.' }, { status: 429 });
     }
 

@@ -133,7 +133,7 @@ export default function PagoExitosoPage() {
           <p className="mt-1">
             {t.pubpxActualizar}{' '}
             <strong>hola@mivecindog.com.ar</strong> o por WhatsApp al{' '}
-            <strong>+54 9 291 405-0210</strong>
+            <strong>+54 9 291 578-2910</strong>
           </p>
         </div>
 

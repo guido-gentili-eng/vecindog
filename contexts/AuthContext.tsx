@@ -247,13 +247,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsGuest(true);
   };
 
-  // MEDIO: Memoizar para evitar crear new Date() en cada render de cada componente consumidor
+  // MEDIO: Memoizar para evitar crear new Date() en cada render de cada componente consumidor.
+  // plan_vencimiento es una fecha sin hora (YYYY-MM-DD), válida hasta el FIN de ese día — igual
+  // que el cron de downgrade (app/api/cron/plan-vencido/route.ts), comparamos como strings de
+  // fecha en UTC en vez de instanciar un Date a medianoche UTC y compararlo con "ahora" en hora
+  // local, que le cortaba el Pro a usuarios de Argentina (UTC-3) hasta ~21hs antes de tiempo.
   const isPro = useMemo(() => {
     if (profile?.is_admin === true) return true;
     if (profile?.plan !== 'pro') return false;
     if (!profile.plan_vencimiento) return true;
-    const exp = new Date(profile.plan_vencimiento);
-    return !isNaN(exp.getTime()) && exp > new Date();
+    const hoyStr = new Date().toISOString().slice(0, 10);
+    return profile.plan_vencimiento >= hoyStr;
   }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
   const isSuspendido = useMemo(
     () => profile?.suspendido === true && profile?.is_admin !== true,

@@ -97,7 +97,7 @@ export default function TopEscapistas() {
         let perroFotos: Record<string, string> = {};
         if (perroIds.length) {
           const { data: perros } = await supabase
-            .from('perros')
+            .from('perros_public')
             .select('id, foto_url')
             .in('id', perroIds);
           perroFotos = Object.fromEntries(

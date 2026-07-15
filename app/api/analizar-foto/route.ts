@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -29,6 +30,12 @@ export async function POST(req: NextRequest) {
 
     if (!isPro && !profile?.is_admin) {
       return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
+    }
+
+    // Sin esto, cualquier cuenta Pro/admin podía martillar la API de Anthropic
+    // sin límite (mismo problema que ai-help ya tenía resuelto).
+    if (!(await checkRateLimit(`analizar-foto:${user.id}`, 20, 3600))) {
+      return NextResponse.json({ error: 'Demasiadas consultas. Esperá un momento.' }, { status: 429 });
     }
 
     const formData = await req.formData();

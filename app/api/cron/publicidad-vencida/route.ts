@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
             <p style="color:#aaa;font-size:12px;margin-top:32px;text-align:center">
               ¿Tenés alguna duda? Escribinos a
               <a href="mailto:hola@mivecindog.com.ar" style="color:#B85C4A">hola@mivecindog.com.ar</a>
-              o al WhatsApp <a href="https://wa.me/5492914050210" style="color:#B85C4A">+54 9 291 405-0210</a>
+              o al WhatsApp <a href="https://wa.me/5492915782910" style="color:#B85C4A">+54 9 291 578-2910</a>
             </p>
           </div>
         `,

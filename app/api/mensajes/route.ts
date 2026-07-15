@@ -93,9 +93,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Aviso no encontrado' }, { status: 404 });
   }
 
-  // Prevenir que el dueño del post se envíe mensajes a sí mismo
+  // Prevenir que el dueño del post inicie un hilo enviándose un mensaje a sí
+  // mismo — pero permitirle responder una vez que alguien más ya escribió
+  // (si no, el dueño nunca podría contestar los mensajes de su propio aviso).
   if (post.user_id === user.id) {
-    return NextResponse.json({ error: 'No podés enviarte mensajes a vos mismo' }, { status: 400 });
+    const { count } = await admin
+      .from('mensajes')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', post_id);
+    if (!count) {
+      return NextResponse.json({ error: 'No podés enviarte mensajes a vos mismo' }, { status: 400 });
+    }
   }
 
   // Insertar mensaje

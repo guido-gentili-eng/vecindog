@@ -50,7 +50,7 @@ Ir a /planes y hacer el pago con MercadoPago. El plan se activa automáticamente
 Para registrar un comercio en la red hay que contactar a hola@mivecindog.com.ar o ir a /publicitate.
 
 ## Contacto
-hola@mivecindog.com.ar — WhatsApp: +54 9 291 405-0210
+hola@mivecindog.com.ar — WhatsApp: +54 9 291 578-2910
 
 ## Reglas
 - Solo respondés preguntas sobre cómo usar Vecindog

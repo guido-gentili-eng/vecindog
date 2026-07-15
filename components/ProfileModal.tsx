@@ -35,7 +35,7 @@ export default function ProfileModal() {
     setError('');
     const digitos = telefono.replace(/\D/g, '');
     if (digitos.length < 10) {
-      setError('El teléfono debe tener al menos 10 dígitos con código de área. Ej: +54 9 291 4050210');
+      setError('El teléfono debe tener al menos 10 dígitos con código de área. Ej: +54 9 291 5782910');
       return;
     }
     setSubmitting(true);

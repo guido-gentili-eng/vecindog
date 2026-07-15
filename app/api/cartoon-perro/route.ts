@@ -32,6 +32,12 @@ export async function POST(req: NextRequest) {
     if (!foto_url || typeof foto_url !== 'string') {
       return NextResponse.json({ error: 'foto_url requerida' }, { status: 400 });
     }
+    // perro_id es obligatorio (salvo admin): es la única forma de aplicar la
+    // cuota de una generación por mes. Sin esto, un usuario podía omitirlo y
+    // saltarse el límite indefinidamente.
+    if (!perro_id && !profile?.is_admin) {
+      return NextResponse.json({ error: 'perro_id requerido' }, { status: 400 });
+    }
     // Validar que la URL pertenece a dominios confiables para evitar SSRF y abuso de cuota.
     // Se compara el hostname exacto (no startsWith) para que dominios como
     // "mivecindog.com.ar.evil.com" no pasen el filtro.
@@ -152,6 +158,15 @@ export async function GET(req: NextRequest) {
   );
   const { data: { user } } = await admin.auth.getUser(token);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+  // Bajo defensa en profundidad: si mandan perro_id, tiene que ser del usuario
+  // autenticado — evita que alguien con un prediction_id ajeno (aunque sea
+  // poco adivinable) reciba una imagen que no le corresponde.
+  if (perroId) {
+    const { data: perro } = await admin
+      .from('perros').select('id').eq('id', perroId).eq('user_id', user.id).maybeSingle();
+    if (!perro) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  }
 
   const apiToken = process.env.REPLICATE_API_TOKEN;
   if (!apiToken) return NextResponse.json({ error: 'Sin API token' }, { status: 500 });

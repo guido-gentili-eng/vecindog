@@ -501,7 +501,7 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">Teléfono <span className="text-bad">*</span></label>
-                <input type="tel" className="field w-full" placeholder="+54 9 291 405-0210" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
+                <input type="tel" className="field w-full" placeholder="+54 9 291 578-2910" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">Link del negocio</label>
@@ -798,7 +798,7 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
                 {t.rvnFormPhoneLabel} <span className="text-bad">*</span>
               </label>
-              <input type="tel" className="field w-full" placeholder="+54 9 291 405-0210" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
+              <input type="tel" className="field w-full" placeholder="+54 9 291 578-2910" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
             </div>
             <div>
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">

@@ -81,7 +81,7 @@ const POR_QUE_ITEMS = [
 export default function PublicitatePage() {
   const router   = useRouter();
   const { t } = useLanguage();
-  const waLink   = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quiero publicitar mi negocio en Vecindog')}`;
+  const waLink   = WHATSAPP;
   const mailLink = `mailto:${EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`;
   const [planSeleccionado, setPlanSeleccionado] = useState<string | null>(null);
   const [totalUsuarios,   setTotalUsuarios]   = useState<number | null>(null);
@@ -522,6 +522,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
     if (!negocio.trim()) { setError(t.publModalErrNegocio); return; }
     if (!email.trim())   { setError(t.publModalErrEmail); return; }
     if (!link.trim())    { setError(t.publModalErrLink); return; }
+    if (necesitaLogo && !logoFile) { setError(t.publModalErrLogoReq); return; }
     try {
       const urlCheck = link.includes('://') ? link : `https://${link}`;
       const parsed = new URL(urlCheck);
@@ -718,7 +719,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
             </div>
             <div>
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">{t.publModalTelLabel}</label>
-              <input type="tel" className="field w-full" placeholder="+54 9 291 405-0210"
+              <input type="tel" className="field w-full" placeholder="+54 9 291 578-2910"
                 value={telefono} onChange={(e) => setTelefono(e.target.value)} />
             </div>
           </div>

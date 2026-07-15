@@ -96,7 +96,7 @@ export default function PagoExitosoPro() {
               </a>
               {' '}o por{' '}
               <a
-                href="https://wa.me/5492914050210?text=Hola%2C%20hice%20un%20pago%20de%20VecindogPro%20y%20qued%C3%B3%20pendiente"
+                href="https://wa.me/5492915782910?text=Hola%2C%20hice%20un%20pago%20de%20VecindogPro%20y%20qued%C3%B3%20pendiente"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-bold text-brand-primary underline"

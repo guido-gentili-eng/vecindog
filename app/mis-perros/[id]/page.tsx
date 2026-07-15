@@ -1795,7 +1795,7 @@ function VacunaItem({ vacuna, onEdit, onDelete }: {
   onDelete: () => void;
 }) {
   const { t } = useLanguage();
-  const proxima = vacuna.proxima ? new Date(vacuna.proxima) : null;
+  const proxima = vacuna.proxima ? new Date(vacuna.proxima + 'T00:00:00') : null;
   const vencida  = proxima && proxima < new Date();
   return (
     <div className="rounded-2xl bg-brand-cream p-3.5">
@@ -4514,9 +4514,11 @@ function GroomingSection({ perroId, grooming, onGuardar, onEliminar, locked }: {
   const [form, setForm] = useState({ ultima_fecha: new Date().toISOString().slice(0,10), frecuencia_dias: 30, tipo: 'ambos' as TipoGrooming, notas:'' });
 
   useEffect(() => {
-    // Solo sincronizar si el usuario NO está editando (evita sobreescribir cambios en progreso)
+    // Solo sincronizar si el usuario NO está editando (evita sobreescribir cambios en progreso).
+    // "editando" está en las dependencias a propósito: al cancelar (editando pasa a false) esto
+    // vuelve a correr y descarta los cambios sin guardar, resincronizando desde los datos reales.
     if (grooming && !editando) setForm({ ultima_fecha: grooming.ultima_fecha, frecuencia_dias: grooming.frecuencia_dias, tipo: grooming.tipo, notas: grooming.notas??'' });
-  }, [grooming]);
+  }, [grooming, editando]);
 
   const proximaFecha = grooming ? (() => {
     const d = new Date(grooming.ultima_fecha);
@@ -4739,7 +4741,8 @@ function ContactosSection({ contactos, onAgregar, onEliminar }: {
 function calcularEdad(fechaNac: string, t: { mpdCachorro: string; mpdMes: string; mpdMeses: string; mpdAnio: string; mpdAnios: string }): string {
   const hoy   = new Date();
   const nac   = new Date(fechaNac + 'T00:00:00');
-  const meses = (hoy.getFullYear() - nac.getFullYear()) * 12 + (hoy.getMonth() - nac.getMonth());
+  let meses = (hoy.getFullYear() - nac.getFullYear()) * 12 + (hoy.getMonth() - nac.getMonth());
+  if (hoy.getDate() < nac.getDate()) meses -= 1; // el "cumplemes" de este mes todavía no llegó
   if (meses < 1)  return t.mpdCachorro;
   if (meses < 12) return `${meses} ${meses === 1 ? t.mpdMes : t.mpdMeses}`;
   const a = Math.floor(meses / 12);

@@ -49,10 +49,10 @@ export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBu
 
   // 2. Buscar perros y posts por nombre (sin join — profiles se resuelve aparte)
   const [r0, r1, r2, r3] = await Promise.all([
-    supabase.from('perros').select('id, nombre, raza, foto_url, user_id').ilike('nombre', `%${nombre}%`).limit(15),
+    supabase.from('perros_public').select('id, nombre, raza, foto_url, user_id').ilike('nombre', `%${nombre}%`).limit(15),
     supabase.from('posts').select('id, nombre, raza, images, user_id').ilike('nombre', `%${nombre}%`).not('user_id', 'is', null).neq('estado', 'resuelto').limit(15),
     ownerIds.length > 0
-      ? supabase.from('perros').select('id, nombre, raza, foto_url, user_id').in('user_id', ownerIds).limit(15)
+      ? supabase.from('perros_public').select('id, nombre, raza, foto_url, user_id').in('user_id', ownerIds).limit(15)
       : Promise.resolve({ data: [] }),
     ownerIds.length > 0
       ? supabase.from('posts').select('id, nombre, raza, images, user_id').in('user_id', ownerIds).not('user_id', 'is', null).neq('estado', 'resuelto').limit(15)

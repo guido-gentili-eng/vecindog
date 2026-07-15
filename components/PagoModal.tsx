@@ -327,6 +327,8 @@ export default function PagoModal({
       const msg = err instanceof Error ? err.message : 'No se pudo conectar con Mercado Pago. Intentá con tarjeta.';
       setErrorMsg(msg);
       setStep('error');
+    } finally {
+      setMpLoading(false);
     }
   }
 

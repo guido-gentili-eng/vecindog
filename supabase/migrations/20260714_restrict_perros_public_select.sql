@@ -18,6 +18,18 @@
 
 DROP POLICY IF EXISTS "ver perros publicamente" ON public.perros;
 
+-- Encontrada recién al verificar en producción (2026-07-14): existía una SEGUNDA
+-- policy pública duplicada, "busqueda publica perros" (public, SELECT, qual=true),
+-- creada a mano en algún momento directo desde el dashboard de Supabase y nunca
+-- versionada en ningún migration — invisible para cualquier auditoría basada solo
+-- en el repo. Con múltiples policies permisivas para el mismo comando, Postgres
+-- las combina con OR, así que alcanzaba con esta sola para seguir filtrando todo
+-- aunque la de arriba ya estuviera borrada. Antes de confiar en que un
+-- `DROP POLICY` cerró un agujero, verificar contra la base real con
+-- `select policyname, roles, cmd, qual from pg_policies where tablename = 'x'`
+-- en vez de asumir que el repo refleja el estado completo de las policies.
+DROP POLICY IF EXISTS "busqueda publica perros" ON public.perros;
+
 CREATE OR REPLACE VIEW public.perros_public AS
 SELECT id, nombre, raza, color, tamano, foto_url, user_id
 FROM public.perros;

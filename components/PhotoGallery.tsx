@@ -43,12 +43,12 @@ export default function PhotoGallery({
   return (
     <div>
       {/* Imagen principal */}
-      <div className="group relative aspect-[16/10] w-full overflow-hidden rounded-3xl bg-brand-cream">
+      <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-brand-cream sm:aspect-[16/10]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imagenes[safeIdx]}
           alt={`${alt} — foto ${safeIdx + 1} de ${total}`}
-          className="h-full w-full object-cover transition-opacity duration-200"
+          className="h-full w-full object-contain transition-opacity duration-200"
         />
 
         {hayVarias && (

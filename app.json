@@ -1,17 +1,12 @@
 {
   "expo": {
     "name": "Vecindog",
-    "slug": "vecindog",
+    "slug": "guido",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "vecindog",
-    "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#EE5A3B"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.vecindog.app"
@@ -20,8 +15,19 @@
       "package": "com.vecindog.app",
       "adaptiveIcon": {
         "backgroundColor": "#EE5A3B",
-        "foregroundImage": "./assets/adaptive-icon.png"
-      }
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBvKllkkzGBFqDIoTTk4vfWxjHNBxE_RUI"
+        }
+      },
+      "versionCode": 13
     },
     "plugins": [
       "expo-router",
@@ -50,8 +56,10 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "vecindog"
-      }
-    }
+        "projectId": "7fd6c08e-33d1-423d-bedc-78f8ebed1e16"
+      },
+      "router": {}
+    },
+    "owner": "guidistos-team"
   }
 }

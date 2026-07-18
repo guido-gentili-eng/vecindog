@@ -128,7 +128,7 @@ export default function PostDetailScreen() {
   const waLink   = `https://wa.me/${waNumero}?text=${encodeURIComponent('Hola, te escribo por el aviso de Vecindog.')}`;
 
   const CAT_COLOR: Record<string, string> = {
-    perdido: '#fef2f2', encontrado: '#f0fdf4', adopcion: '#fef3c7',
+    perdido: '#fef2f2', encontrado: '#f0fdf4', adopcion: '#fef3c7', transito: '#f5f3ff',
   };
 
   return (

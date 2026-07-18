@@ -73,7 +73,7 @@ export default function LoginScreen() {
 
   if (pendingEmail) {
     return (
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.pendingWrap}>
           <Text style={styles.pendingIcon}>📬</Text>
           <Text style={styles.pendingTitle}>Confirmá tu cuenta</Text>
@@ -108,7 +108,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
 

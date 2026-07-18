@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
@@ -11,6 +11,9 @@ export interface Profile {
   provincia: string;
   pais:      string;
   direccion: string;
+  plan?:             string | null;
+  plan_vencimiento?: string | null;
+  is_admin?:         boolean | null;
 }
 
 interface AuthCtx {
@@ -19,6 +22,7 @@ interface AuthCtx {
   profile:         Profile | null;
   loading:         boolean;
   isAuthenticated: boolean;
+  isPro:           boolean;
   signIn:          (email: string, pw: string) => Promise<string | null>;
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signOut:         () => Promise<void>;
@@ -86,10 +90,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  const isPro = useMemo(() => {
+    if (profile?.is_admin === true) return true;
+    if (profile?.plan !== 'pro') return false;
+    if (!profile.plan_vencimiento) return true;
+    const exp = new Date(profile.plan_vencimiento);
+    return !isNaN(exp.getTime()) && exp > new Date();
+  }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
+
   return (
     <AuthContext.Provider value={{
       user, session, profile, loading,
       isAuthenticated: !!user,
+      isPro,
       signIn, signUp, signOut, saveProfile,
     }}>
       {children}

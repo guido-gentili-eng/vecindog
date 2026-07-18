@@ -10,23 +10,18 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import CategoriaDot from '@/components/CategoriaDot';
 
 const CATEGORIAS = [
-  { key: 'perdido',    label: '🔴 Perdido' },
-  { key: 'encontrado', label: '🟢 Encontrado' },
-  { key: 'adopcion',   label: '🟤 En adopción' },
-];
-
-const ESPECIES = [
-  { key: 'perro', label: '🐕 Perro' },
-  { key: 'gato',  label: '🐈 Gato' },
-  { key: 'otro',  label: '🐾 Otro' },
+  { key: 'perdido',    label: 'Perdido' },
+  { key: 'encontrado', label: 'Encontrado' },
+  { key: 'adopcion',   label: 'En adopción' },
+  { key: 'transito',   label: 'En tránsito' },
 ];
 
 export default function PublicarScreen() {
   const { user, profile } = useAuth();
   const [categoria, setCategoria] = useState('perdido');
-  const [especie,   setEspecie]   = useState('perro');
   const [nombre,    setNombre]    = useState('');
   const [raza,      setRaza]      = useState('');
   const [color,     setColor]     = useState('');
@@ -61,7 +56,6 @@ export default function PublicarScreen() {
     setNombre(perro.nombre);
     setRaza(perro.raza ?? '');
     setColor(perro.color ?? '');
-    setEspecie('perro');
     setMostrarPerros(false);
   }
 
@@ -142,7 +136,7 @@ export default function PublicarScreen() {
 
       const { error } = await supabase.from('posts').insert({
         categoria,
-        especie,
+        especie:     'perro',
         nombre:      nombre.trim()   || null,
         raza:        raza.trim()     || null,
         color:       color.trim()    || null,
@@ -198,24 +192,22 @@ export default function PublicarScreen() {
             style={[styles.optBtn, categoria === c.key && styles.optBtnActive]}
             onPress={() => setCategoria(c.key)}
           >
-            <Text style={[styles.optText, categoria === c.key && styles.optTextActive]}>{c.label}</Text>
+            <CategoriaDot categoria={c.key} size={8} />
+            <Text style={[styles.optText, styles.optTextWithDot, categoria === c.key && styles.optTextActive]} numberOfLines={1}>{c.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Especie */}
-      <Text style={styles.label}>Animal</Text>
-      <View style={styles.row}>
-        {ESPECIES.map((e) => (
-          <TouchableOpacity
-            key={e.key}
-            style={[styles.optBtn, especie === e.key && styles.optBtnActive]}
-            onPress={() => setEspecie(e.key)}
-          >
-            <Text style={[styles.optText, especie === e.key && styles.optTextActive]}>{e.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Buscar por foto — solo tiene sentido para perdido/encontrado */}
+      {(categoria === 'perdido' || categoria === 'encontrado') && (
+        <TouchableOpacity style={styles.buscarFotoBtn} onPress={() => router.push('/buscar-por-foto')}>
+          <Text style={styles.buscarFotoIcon}>🔍</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.buscarFotoTitulo}>¿Ya subiste una foto a otro lado?</Text>
+            <Text style={styles.buscarFotoSub}>Buscá con IA entre los avisos activos antes de publicar uno nuevo</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* Selector "mis perros" — solo visible en categoría perdido */}
       {categoria === 'perdido' && misPerros.length > 0 && (
@@ -397,9 +389,14 @@ const styles = StyleSheet.create({
   title:     { fontSize: 24, fontWeight: '900', color: Colors.ink, marginBottom: 20 },
   label:     { fontSize: 13, fontWeight: '700', color: Colors.inkMuted, marginBottom: 6, marginTop: 12 },
   row:       { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  optBtn:    { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  buscarFotoBtn:    { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: Colors.cream, borderRadius: 16, borderWidth: 1, borderColor: Colors.border, padding: 14, marginTop: 14 },
+  buscarFotoIcon:   { fontSize: 22 },
+  buscarFotoTitulo: { fontSize: 13, fontWeight: '800', color: Colors.ink },
+  buscarFotoSub:    { fontSize: 11, color: Colors.inkMuted, marginTop: 2 },
+  optBtn:    { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
   optBtnActive: { borderColor: Colors.primary, backgroundColor: '#fef0ec' },
   optText:      { fontSize: 13, fontWeight: '600', color: Colors.inkMuted },
+  optTextWithDot: { marginLeft: 6 },
   optTextActive: { color: Colors.primary, fontWeight: '700' },
   fotoBtn:   { borderWidth: 1.5, borderStyle: 'dashed', borderColor: Colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 12 },
   fotoBtnText: { color: Colors.primary, fontWeight: '700', fontSize: 14 },

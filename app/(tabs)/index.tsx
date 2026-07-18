@@ -9,13 +9,15 @@ import { thumbUrl } from '@/lib/imageUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import CategoriaDot from '@/components/CategoriaDot';
 
 const PAGE_SIZE = 30;
 
 const CATEGORIAS = [
-  { key: 'perdido',    label: '🔴 Perdidos',    color: '#fef2f2', border: '#fca5a5' },
-  { key: 'encontrado', label: '🟢 Encontrados', color: '#f0fdf4', border: '#86efac' },
-  { key: 'adopcion',   label: '🟤 Adopción',    color: '#fef3c7', border: '#fcd34d' },
+  { key: 'perdido',    label: 'Perdidos',    color: '#fef2f2', border: '#fca5a5' },
+  { key: 'encontrado', label: 'Vistos',      color: '#f0fdf4', border: '#86efac' },
+  { key: 'adopcion',   label: 'Adopción',    color: '#fef3c7', border: '#fcd34d' },
+  { key: 'transito',   label: 'Tránsito',    color: '#f5f3ff', border: '#c4b5fd' },
 ];
 
 type PostSummary = {
@@ -112,12 +114,17 @@ export default function HomeScreen() {
       </View>
 
       {/* Filtros */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filters}
+        contentContainerStyle={styles.filtersContent}
+      >
         <TouchableOpacity
           style={[styles.chip, !catFilter && styles.chipActive]}
           onPress={() => cambiarFiltro(null)}
         >
-          <Text style={[styles.chipText, !catFilter && styles.chipTextActive]}>Todos</Text>
+          <Text style={[styles.chipText, !catFilter && styles.chipTextActive]} numberOfLines={1}>Todos</Text>
         </TouchableOpacity>
         {CATEGORIAS.map((c) => (
           <TouchableOpacity
@@ -125,7 +132,8 @@ export default function HomeScreen() {
             style={[styles.chip, catFilter === c.key && styles.chipActive]}
             onPress={() => cambiarFiltro(c.key)}
           >
-            <Text style={[styles.chipText, catFilter === c.key && styles.chipTextActive]}>
+            <CategoriaDot categoria={c.key} size={8} />
+            <Text style={[styles.chipText, styles.chipTextWithDot, catFilter === c.key && styles.chipTextActive]} numberOfLines={1}>
               {c.label}
             </Text>
           </TouchableOpacity>
@@ -201,10 +209,12 @@ const styles = StyleSheet.create({
   bellBtn:        { position: 'relative', padding: 4 },
   bellBadge:      { position: 'absolute', top: 0, right: 0, backgroundColor: Colors.bad, borderRadius: 8, minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   bellBadgeText:  { color: Colors.white, fontSize: 9, fontWeight: '900' },
-  filters:        { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.white, maxHeight: 56 },
-  chip:           { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: Colors.cream, marginRight: 8, borderWidth: 1, borderColor: Colors.border },
+  filters:        { height: 56, backgroundColor: Colors.white },
+  filtersContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 8 },
+  chip:           { height: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, borderRadius: 16, backgroundColor: Colors.cream, borderWidth: 1, borderColor: Colors.border },
   chipActive:     { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  chipText:       { fontSize: 13, fontWeight: '600', color: Colors.inkMuted },
+  chipText:       { fontSize: 13, fontWeight: '600', color: Colors.inkMuted, lineHeight: 16 },
+  chipTextWithDot: { marginLeft: 6 },
   chipTextActive: { color: Colors.white },
   list:           { padding: 16, gap: 12 },
   empty:          { textAlign: 'center', color: Colors.inkMuted, marginTop: 32 },

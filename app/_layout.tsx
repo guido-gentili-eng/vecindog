@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -7,6 +8,7 @@ import { useRouter, useSegments } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { registrarPushToken } from '@/lib/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AiHelpButton from '@/components/AiHelpButton';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,6 +95,7 @@ function RootLayoutNav() {
   }, [user]);
 
   return (
+    <View style={{ flex: 1 }}>
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)"            options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)"            options={{ headerShown: false }} />
@@ -106,7 +109,12 @@ function RootLayoutNav() {
       <Stack.Screen name="admin/reportes"
         options={{ headerShown: true, title: 'Reportes', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
+      <Stack.Screen name="buscar-por-foto"
+        options={{ headerShown: true, title: 'Buscar por foto', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+      />
     </Stack>
+    <AiHelpButton />
+    </View>
   );
 }
 

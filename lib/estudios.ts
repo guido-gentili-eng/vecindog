@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 
 export type TipoEstudio =
   | 'laboratorio'
@@ -35,11 +35,6 @@ export async function subirArchivoEstudio(uri: string, nombre: string): Promise<
   const ext  = nombre.split('.').pop() ?? 'bin';
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  // Leer el archivo como base64
-  const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-
   // Determinar mime type
   const mimeTypes: Record<string, string> = {
     pdf: 'application/pdf',
@@ -49,10 +44,9 @@ export async function subirArchivoEstudio(uri: string, nombre: string): Promise<
   };
   const mime = mimeTypes[ext.toLowerCase()] ?? 'application/octet-stream';
 
-  // Convertir base64 a Uint8Array
-  const binary = atob(base64);
-  const bytes  = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  // API nueva de expo-file-system (SDK 56): leer el archivo directo a ArrayBuffer,
+  // sin pasar por base64 como antes.
+  const bytes = new Uint8Array(await new File(uri).arrayBuffer());
 
   const { error } = await supabase.storage
     .from('estudios')
@@ -76,5 +70,19 @@ export async function agregarEstudio(
 }
 
 export async function eliminarEstudio(id: string): Promise<void> {
-  await supabase.from('estudios').delete().eq('id', id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data: estudio } = await supabase
+    .from('estudios')
+    .select('archivo_url, perros!inner(user_id)')
+    .eq('id', id)
+    .single();
+  const perrosData = estudio?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
+  const { error } = await supabase.from('estudios').delete().eq('id', id);
+  if (error) throw error;
+  // Borrar también el archivo del bucket para no acumular huérfanos en Storage.
+  const path = estudio?.archivo_url?.match(/\/storage\/v1\/object\/public\/estudios\/(.+)$/)?.[1];
+  if (path) await supabase.storage.from('estudios').remove([path]);
 }

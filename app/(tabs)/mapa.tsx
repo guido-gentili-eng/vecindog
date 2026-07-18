@@ -5,15 +5,13 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import CategoriaDot from '@/components/CategoriaDot';
 
 const CAT_COLOR: Record<string, string> = {
   perdido:    '#ef4444',
   encontrado: '#22c55e',
   adopcion:   '#f59e0b',
-};
-
-const CAT_EMOJI: Record<string, string> = {
-  perdido: '🔴', encontrado: '🟢', adopcion: '🟤',
+  transito:   '#8b5cf6',
 };
 
 export default function MapaScreen() {
@@ -101,7 +99,10 @@ export default function MapaScreen() {
           >
             <Callout onPress={() => router.push(`/publicaciones/${p.id}`)}>
               <View style={styles.callout}>
-                <Text style={styles.calloutEmoji}>{CAT_EMOJI[p.categoria]} {p.categoria}</Text>
+                <View style={styles.calloutCatRow}>
+                  <CategoriaDot categoria={p.categoria} size={8} />
+                  <Text style={styles.calloutEmoji}>{p.categoria}</Text>
+                </View>
                 <Text style={styles.calloutNombre}>{p.nombre || 'Sin nombre'}</Text>
                 <Text style={styles.calloutZona}>📍 {p.zona || '—'}</Text>
                 <Text style={styles.calloutLink}>Ver aviso →</Text>
@@ -113,9 +114,9 @@ export default function MapaScreen() {
 
       {/* Leyenda */}
       <View style={styles.leyenda}>
-        {Object.entries(CAT_EMOJI).map(([cat, emoji]) => (
+        {Object.keys(CAT_COLOR).map((cat) => (
           <View key={cat} style={styles.leyendaItem}>
-            <Text style={styles.leyendaEmoji}>{emoji}</Text>
+            <CategoriaDot categoria={cat} size={10} />
             <Text style={styles.leyendaText}>{cat}</Text>
           </View>
         ))}
@@ -130,13 +131,13 @@ const styles = StyleSheet.create({
   map:            { flex: 1 },
   loadingOverlay: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.bg + 'aa', zIndex: 10 },
   callout:        { minWidth: 160, padding: 10 },
-  calloutEmoji:   { fontSize: 11, fontWeight: '700', color: Colors.inkMuted, textTransform: 'capitalize', marginBottom: 4 },
+  calloutCatRow:  { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  calloutEmoji:   { fontSize: 11, fontWeight: '700', color: Colors.inkMuted, textTransform: 'capitalize' },
   calloutNombre:  { fontSize: 15, fontWeight: '800', color: Colors.ink },
   calloutZona:    { fontSize: 12, color: Colors.inkMuted, marginTop: 2 },
   calloutLink:    { fontSize: 12, fontWeight: '700', color: Colors.primary, marginTop: 6 },
   leyenda:        { position: 'absolute', bottom: 24, left: 16, right: 16, backgroundColor: Colors.white, borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 },
   leyendaItem:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  leyendaEmoji:   { fontSize: 14 },
   leyendaText:    { fontSize: 12, fontWeight: '600', color: Colors.ink, textTransform: 'capitalize' },
   leyendaCount:   { fontSize: 12, fontWeight: '800', color: Colors.primary },
   webFallback:    { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: Colors.bg, padding: 32 },

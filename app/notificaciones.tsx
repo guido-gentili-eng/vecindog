@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import CategoriaDot, { CATEGORIA_COLOR } from '@/components/CategoriaDot';
 
 interface Notif {
   id: string; tipo: string; mensaje: string;
@@ -46,10 +47,6 @@ export default function NotificacionesScreen() {
   useEffect(() => { cargar(); }, [user]);
 
   const noLeidas = notifs.filter((n) => !n.leida).length;
-
-  const TIPO_EMOJI: Record<string, string> = {
-    perdido: '🔴', encontrado: '🟢', adopcion: '🟤',
-  };
 
   function formatTiempo(iso: string) {
     const diff = Date.now() - new Date(iso).getTime();
@@ -101,7 +98,10 @@ export default function NotificacionesScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.cardLeft}>
-                <Text style={styles.emoji}>{TIPO_EMOJI[n.tipo] ?? '🐾'}</Text>
+                {CATEGORIA_COLOR[n.tipo]
+                  ? <CategoriaDot categoria={n.tipo} size={16} />
+                  : <Text style={styles.emoji}>🐾</Text>
+                }
               </View>
               <View style={styles.cardBody}>
                 <Text style={[styles.mensaje, !n.leida && { fontWeight: '700', color: Colors.ink }]}>

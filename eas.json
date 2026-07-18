@@ -25,19 +25,18 @@
         "resourceClass": "m-medium"
       },
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "guido-gentili@live.com.ar",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "appleId": "guido-gentili@live.com.ar"
       },
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json"
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
       }
     }
   }

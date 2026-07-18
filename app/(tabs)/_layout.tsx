@@ -37,7 +37,7 @@ export default function TabsLayout() {
           paddingTop:        6,
           height:            Platform.OS === 'ios' ? 80 : 64,
         },
-        tabBarLabelStyle:    { fontSize: 10, fontWeight: '600', marginTop: 2 },
+        tabBarLabelStyle:    { fontSize: 11, fontWeight: '700', marginTop: 3 },
         headerShown:         false,
       }}
     >

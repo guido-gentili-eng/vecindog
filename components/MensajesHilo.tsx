@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircle, Send, Loader2, Lock } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Lock, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
@@ -11,6 +11,13 @@ interface Mensaje {
   created_at: string;
   sender_id: string;
   profiles: { nombre: string | null; apellido: string | null; foto_url: string | null } | null;
+}
+
+interface Conversacion {
+  user_id: string;
+  nombre: { nombre: string | null; apellido: string | null; foto_url: string | null } | null;
+  ultimo_texto: string;
+  ultimo_at: string;
 }
 
 interface Props {
@@ -27,48 +34,67 @@ function fmtFecha(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
+function nombreDe(p: { nombre: string | null; apellido: string | null } | null) {
+  return [p?.nombre, p?.apellido].filter(Boolean).join(' ') || 'Usuario';
+}
 
 export default function MensajesHilo({ postId, isAuthenticated, userId }: Props) {
-  const [abierto,    setAbierto]    = useState(false);
-  const [mensajes,   setMensajes]   = useState<Mensaje[]>([]);
-  const [texto,      setTexto]      = useState('');
-  const [cargando,   setCargando]   = useState(false);
-  const [enviando,   setEnviando]   = useState(false);
-  const [error,      setError]      = useState('');
+  const [abierto,        setAbierto]        = useState(false);
+  const [mensajes,       setMensajes]       = useState<Mensaje[]>([]);
+  const [conversaciones, setConversaciones] = useState<Conversacion[] | null>(null);
+  const [selectedWith,   setSelectedWith]   = useState<string | null>(null);
+  const [texto,          setTexto]          = useState('');
+  const [cargando,       setCargando]       = useState(false);
+  const [enviando,       setEnviando]       = useState(false);
+  const [error,          setError]          = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!abierto || !isAuthenticated) return;
-    cargarMensajes();
+    cargar();
 
     const channel = supabase
       .channel(`mensajes-${postId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `post_id=eq.${postId}` },
-        () => { cargarMensajes(); }
+        () => { cargar(); }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abierto, isAuthenticated]);
+  }, [abierto, isAuthenticated, selectedWith]);
 
   useEffect(() => {
-    if (abierto) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (abierto && mensajes.length) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes, abierto]);
 
-  async function cargarMensajes() {
+  async function cargar() {
     setCargando(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const res = await fetch(`/api/mensajes?post_id=${postId}`, {
+      const params = new URLSearchParams({ post_id: postId });
+      if (selectedWith) params.set('with', selectedWith);
+
+      const res = await fetch(`/api/mensajes?${params.toString()}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const json = await res.json();
-      setMensajes(json.mensajes ?? []);
+
+      if (json.conversaciones) {
+        setConversaciones(json.conversaciones);
+        setMensajes([]);
+        // Si hay una sola conversación, la abrimos directo sin mostrar el selector.
+        if (json.conversaciones.length === 1) {
+          setSelectedWith(json.conversaciones[0].user_id);
+        }
+      } else {
+        setConversaciones(null);
+        setMensajes(json.mensajes ?? []);
+      }
     } finally {
       setCargando(false);
     }
@@ -88,18 +114,21 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ post_id: postId, texto }),
+        body: JSON.stringify({ post_id: postId, texto, recipient_id: selectedWith ?? undefined }),
       });
       if (!res.ok) throw new Error('Error al enviar');
 
       setTexto('');
-      await cargarMensajes();
+      await cargar();
     } catch {
       setError('No se pudo enviar el mensaje. Intentá de nuevo.');
     } finally {
       setEnviando(false);
     }
   }
+
+  const totalBadge = conversaciones ? conversaciones.length : mensajes.length;
+  const mostrandoSelector = conversaciones !== null && conversaciones.length > 1 && !selectedWith;
 
   return (
     <div className="card overflow-hidden border border-black/8">
@@ -114,9 +143,9 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
           <p className="font-display text-sm font-extrabold text-ink">Mensajes privados</p>
           <p className="text-xs text-ink-muted">Contacto directo con el dueño del aviso</p>
         </div>
-        {mensajes.length > 0 && (
+        {totalBadge > 0 && (
           <span className="rounded-full bg-brand-primary/15 px-2 py-0.5 text-xs font-bold text-brand-primary">
-            {mensajes.length}
+            {totalBadge}
           </span>
         )}
         <span className="text-xs font-bold text-ink-muted">{abierto ? '▲' : '▼'}</span>
@@ -132,22 +161,57 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
                 Iniciar sesión
               </Link>
             </div>
+          ) : cargando && !mensajes.length && !conversaciones ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
+            </div>
+          ) : mostrandoSelector ? (
+            /* Selector de conversaciones — el dueño tiene más de un visitante escribiéndole */
+            <div className="divide-y divide-black/8">
+              {conversaciones!.map((c) => (
+                <button
+                  key={c.user_id}
+                  type="button"
+                  onClick={() => setSelectedWith(c.user_id)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-black/2"
+                >
+                  {c.nombre?.foto_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.nombre.foto_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-primary/15 text-sm font-bold text-brand-primary">
+                      {nombreDe(c.nombre).charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-ink">{nombreDe(c.nombre)}</p>
+                    <p className="truncate text-xs text-ink-muted">{c.ultimo_texto}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           ) : (
             <>
+              {conversaciones && conversaciones.length > 1 && selectedWith && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedWith(null)}
+                  className="flex items-center gap-1.5 px-4 pt-3 text-xs font-bold text-brand-primary"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Ver todas las conversaciones
+                </button>
+              )}
+
               {/* Lista de mensajes */}
               <div className="max-h-72 overflow-y-auto px-4 py-3 space-y-3">
-                {cargando ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
-                  </div>
-                ) : mensajes.length === 0 ? (
+                {mensajes.length === 0 ? (
                   <p className="py-4 text-center text-sm text-ink-muted">
                     Todavía no hay mensajes. Sé el primero en escribir.
                   </p>
                 ) : (
                   mensajes.map((m) => {
                     const esPropio = m.sender_id === userId;
-                    const nombre = [m.profiles?.nombre, m.profiles?.apellido].filter(Boolean).join(' ') || 'Usuario';
+                    const nombre = nombreDe(m.profiles);
                     return (
                       <div
                         key={m.id}

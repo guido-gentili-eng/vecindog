@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
@@ -10,8 +10,8 @@ import CategoriaDot from '@/components/CategoriaDot';
 const CAT_COLOR: Record<string, string> = {
   perdido:    '#ef4444',
   encontrado: '#22c55e',
-  adopcion:   '#f59e0b',
-  transito:   '#8b5cf6',
+  adopcion:   '#f97316',
+  transito:   '#7c3aed',
 };
 
 export default function MapaScreen() {
@@ -62,17 +62,6 @@ export default function MapaScreen() {
         longitudeDelta: 0.1,
       });
     } catch { /* sin GPS, usa región default */ }
-  }
-
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.webFallback}>
-        <Text style={{ fontSize: 48 }}>🗺️</Text>
-        <Text style={styles.webTitle}>Mapa disponible en la app</Text>
-        <Text style={styles.webSub}>El mapa interactivo funciona en iOS y Android.</Text>
-        <Text style={styles.webSub}>{posts.length} avisos con ubicación cargados.</Text>
-      </View>
-    );
   }
 
   return (

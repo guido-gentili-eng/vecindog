@@ -8,8 +8,8 @@ import { View, StyleSheet } from 'react-native';
 export const CATEGORIA_COLOR: Record<string, string> = {
   perdido:    '#ef4444',
   encontrado: '#22c55e',
-  adopcion:   '#f59e0b',
-  transito:   '#8b5cf6',
+  adopcion:   '#f97316',
+  transito:   '#7c3aed',
 };
 
 export default function CategoriaDot({ categoria, size = 10 }: { categoria: string; size?: number }) {

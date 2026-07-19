@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -53,6 +53,7 @@ function RootLayoutNav() {
 
   // ── 2. Cold start: notificación que abrió la app desde cerrada ─────────────
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (!response) return;
       const postId = response.notification.request.content.data?.post_id as string | undefined;
@@ -69,6 +70,7 @@ function RootLayoutNav() {
 
   // ── 3. Live listener: notificaciones mientras la app está abierta ──────────
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const receivedSub = Notifications.addNotificationReceivedListener(() => {});
 
     const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -90,6 +92,7 @@ function RootLayoutNav() {
 
   // ── 4. Registro de push token ──────────────────────────────────────────────
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     if (!user) return;
     registrarPushToken(user.id).catch(() => {});
   }, [user]);

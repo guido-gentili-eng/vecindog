@@ -35,7 +35,7 @@ export async function registrarPushToken(userId: string): Promise<string | null>
       name:       'Vecindog',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#EE5A3B',
+      lightColor: '#B85C4A',
     });
   }
 

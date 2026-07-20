@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert, Image, Switch,
+  TouchableOpacity, ActivityIndicator, Alert, Image, Switch, Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -28,6 +28,11 @@ export default function PublicarScreen() {
   const [nombre,    setNombre]    = useState('');
   const [raza,      setRaza]      = useState('');
   const [color,     setColor]     = useState('');
+  const [tamano,    setTamano]    = useState<'pequeño' | 'mediano' | 'grande' | ''>('');
+  const [sexo,      setSexo]      = useState<'macho' | 'hembra' | ''>('');
+  const [collar,    setCollar]    = useState<boolean | null>(null);
+  const [chapita,   setChapita]   = useState<boolean | null>(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [zona,      setZona]      = useState('');
   const [descripcion, setDesc]    = useState('');
   const [contacto,  setContacto]  = useState(profile?.telefono ?? '');
@@ -167,8 +172,9 @@ export default function PublicarScreen() {
   }
 
   async function publicar() {
-    if (!contacto.trim()) { Alert.alert('Falta el contacto', 'Ingresá tu número de WhatsApp'); return; }
-    if (!zona.trim())     { Alert.alert('Falta la zona', 'Ingresá el barrio o zona'); return; }
+    if (!contacto.trim())     { Alert.alert('Falta el contacto', 'Ingresá tu número de WhatsApp'); return; }
+    if (!zona.trim())         { Alert.alert('Falta la zona', 'Ingresá el barrio o zona'); return; }
+    if (!descripcion.trim()) { Alert.alert('Falta la descripción', 'Contanos marcas especiales, comportamiento u otro dato que ayude a identificarlo.'); return; }
 
     setLoading(true);
     setUploadedCount(0);
@@ -210,11 +216,15 @@ export default function PublicarScreen() {
         nombre:      nombre.trim()   || null,
         raza:        raza.trim()     || null,
         color:       color.trim()    || null,
+        tamano:      tamano || null,
+        sexo:        sexo   || null,
+        collar,
+        chapita,
         zona:        zona.trim(),
         ciudad:      profile?.ciudad ?? null,
         lat:         coords?.lat ?? null,
         lng:         coords?.lng ?? null,
-        descripcion: descripcion.trim() || null,
+        descripcion: descripcion.trim(),
         contacto:         contacto.trim(),
         contacto_publico: contactoPublico,
         images:      uploadedUrls,
@@ -381,20 +391,75 @@ export default function PublicarScreen() {
       )}
 
       <Text style={styles.label}>Color principal</Text>
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.optBtn, color === '' && styles.optBtnActive]}
-          onPress={() => setColor('')}
-        >
-          <Text style={[styles.optText, color === '' && styles.optTextActive]}>No sé / no recuerdo</Text>
+      <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
+        <Text style={styles.pickerBtnText}>{color || 'No sé / no recuerdo'}</Text>
+        <Text style={styles.pickerBtnChevron}>⌄</Text>
+      </TouchableOpacity>
+
+      <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
+          <View style={styles.modalSheet}>
+            <Text style={styles.modalTitulo}>Color principal</Text>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { setColor(''); setShowColorPicker(false); }}>
+              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+            </TouchableOpacity>
+            {COLORES_PERRO.map((c) => (
+              <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setColor(c); setShowColorPicker(false); }}>
+                <Text style={[styles.modalOptionText, color === c && styles.modalOptionTextActive]}>{c}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </TouchableOpacity>
-        {COLORES_PERRO.map((c) => (
+      </Modal>
+
+      <Text style={styles.label}>Tamaño</Text>
+      <View style={styles.ternarioRow}>
+        {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
           <TouchableOpacity
-            key={c}
-            style={[styles.optBtn, color === c && styles.optBtnActive]}
-            onPress={() => setColor(c)}
+            key={v}
+            style={[styles.ternarioBtn, tamano === v && styles.ternarioBtnActive]}
+            onPress={() => setTamano(tamano === v ? '' : v)}
           >
-            <Text style={[styles.optText, color === c && styles.optTextActive]}>{c}</Text>
+            <Text style={[styles.ternarioText, tamano === v && styles.ternarioTextActive]}>{l}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.label}>Sexo <Text style={styles.labelOptional}>(Opcional)</Text></Text>
+      <View style={styles.ternarioRow}>
+        {([['macho', '♂ Macho'], ['hembra', '♀ Hembra'], ['', 'No sé']] as const).map(([v, l]) => (
+          <TouchableOpacity
+            key={v || 'no-se'}
+            style={[styles.ternarioBtn, sexo === v && styles.ternarioBtnActive]}
+            onPress={() => setSexo(v)}
+          >
+            <Text style={[styles.ternarioText, sexo === v && styles.ternarioTextActive]}>{l}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.label}>¿Tenía collar?</Text>
+      <View style={styles.ternarioRow}>
+        {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+          <TouchableOpacity
+            key={String(v)}
+            style={[styles.ternarioBtn, collar === v && styles.ternarioBtnActive]}
+            onPress={() => setCollar(v)}
+          >
+            <Text style={[styles.ternarioText, collar === v && styles.ternarioTextActive]}>{l}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.label}>¿Tenía chapita / plaquita identificadora?</Text>
+      <View style={styles.ternarioRow}>
+        {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+          <TouchableOpacity
+            key={String(v)}
+            style={[styles.ternarioBtn, chapita === v && styles.ternarioBtnActive]}
+            onPress={() => setChapita(v)}
+          >
+            <Text style={[styles.ternarioText, chapita === v && styles.ternarioTextActive]}>{l}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -443,10 +508,10 @@ export default function PublicarScreen() {
         </View>
       )}
 
-      <Text style={styles.label}>Descripción</Text>
+      <Text style={styles.label}>Descripción adicional *</Text>
       <TextInput
         style={[styles.input, { height: 90, textAlignVertical: 'top' }]}
-        placeholder="Marcas especiales, collar, comportamiento…"
+        placeholder="Marcas especiales, manchas, comportamiento, collar rojo con chapita azul…"
         placeholderTextColor={Colors.inkMuted}
         value={descripcion}
         onChangeText={setDesc}
@@ -555,4 +620,19 @@ const styles = StyleSheet.create({
   sugerenciaText:      { fontSize: 14, color: Colors.ink, fontWeight: '600' },
   sugerenciaSub:       { fontSize: 11, color: Colors.inkMuted, marginTop: 2, marginLeft: 20 },
   zonaLoadingIcon:     { position: 'absolute', right: 14, top: 15 },
+  labelOptional:       { fontWeight: '400', color: Colors.inkMuted, textTransform: 'none' },
+  pickerBtn:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 13, borderWidth: 1, borderColor: Colors.border },
+  pickerBtnText:       { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  pickerBtnChevron:    { fontSize: 16, color: Colors.inkMuted },
+  modalOverlay:        { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet:          { backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 8, paddingBottom: 24, maxHeight: '70%' },
+  modalTitulo:         { fontSize: 13, fontWeight: '800', color: Colors.inkMuted, paddingHorizontal: 18, paddingVertical: 10 },
+  modalOption:         { paddingHorizontal: 18, paddingVertical: 14, borderTopWidth: 1, borderTopColor: Colors.border },
+  modalOptionText:     { fontSize: 15, color: Colors.ink },
+  modalOptionTextActive: { color: Colors.primary, fontWeight: '700' },
+  ternarioRow:         { flexDirection: 'row', gap: 8 },
+  ternarioBtn:         { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  ternarioBtnActive:   { borderColor: Colors.primary, backgroundColor: '#fef0ec' },
+  ternarioText:        { fontSize: 13, fontWeight: '700', color: Colors.inkMuted },
+  ternarioTextActive:  { color: Colors.primary },
 });

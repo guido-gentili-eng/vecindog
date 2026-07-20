@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, Share } from 'react-native';
 import { Colors } from '@/constants/colors';
 
 export type Campo = {
@@ -92,19 +92,39 @@ export default function SeccionHistorial({
     }
   }
 
+  async function compartir() {
+    const bloques = items.map((item) => {
+      const lineas = campos
+        .map((c) => (item[c.key] ? `${c.label}: ${item[c.key]}` : null))
+        .filter(Boolean);
+      return lineas.join('\n');
+    });
+    const texto = `${emoji} ${titulo}\n\n${bloques.join('\n\n')}`;
+    try {
+      await Share.share({ message: texto, title: titulo });
+    } catch { /* usuario cancelo o no se pudo compartir */ }
+  }
+
   return (
     <View style={styles.seccion}>
       <View style={styles.header}>
         <Text style={styles.titulo}>{emoji}  {titulo}</Text>
-        {locked ? (
-          <TouchableOpacity style={styles.proBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.proBtnText}>✨ VecindogPro</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.addBtn} onPress={() => (agregando ? (setAgregando(false), setEditingId(null)) : abrirForm())}>
-            <Text style={styles.addBtnText}>{agregando ? '✕' : '+ Agregar'}</Text>
-          </TouchableOpacity>
-        )}
+        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+          {!locked && items.length > 0 && (
+            <TouchableOpacity style={styles.enviarBtn} onPress={compartir}>
+              <Text style={styles.enviarBtnText}>📤</Text>
+            </TouchableOpacity>
+          )}
+          {locked ? (
+            <TouchableOpacity style={styles.proBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
+              <Text style={styles.proBtnText}>✨ VecindogPro</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.addBtn} onPress={() => (agregando ? (setAgregando(false), setEditingId(null)) : abrirForm())}>
+              <Text style={styles.addBtnText}>{agregando ? '✕' : '+ Agregar'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {!locked && agregando && (
@@ -168,6 +188,8 @@ const styles = StyleSheet.create({
   proBtnText:     { fontSize: 12, fontWeight: '800', color: Colors.primary },
   addBtn:         { backgroundColor: Colors.primary + '20', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, minWidth: 32, alignItems: 'center' },
   addBtnText:     { fontSize: 12, fontWeight: '800', color: Colors.primary },
+  enviarBtn:      { backgroundColor: Colors.cream, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10 },
+  enviarBtnText:  { fontSize: 13 },
   form:           { backgroundColor: Colors.cream, borderRadius: 14, padding: 12, marginBottom: 10, gap: 10 },
   campo:          { gap: 4 },
   campoLabel:     { fontSize: 11, fontWeight: '700', color: Colors.inkMuted },

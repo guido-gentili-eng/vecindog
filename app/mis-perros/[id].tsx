@@ -33,7 +33,8 @@ import * as Sharing from 'expo-sharing';
 import { actualizarPerro, type EstadoSalud } from '@/lib/perros';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
 import { agregarVacuna, actualizarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
-import { obtenerGrooming, guardarGrooming, type Grooming, type TipoGrooming } from '@/lib/grooming';
+import { obtenerGrooming, guardarGrooming, eliminarGrooming, type Grooming, type TipoGrooming } from '@/lib/grooming';
+import { listarTurnos, agregarTurno, eliminarTurno, type Turno, type TipoTurno } from '@/lib/turnos';
 import {
   listarContactos, agregarContacto, eliminarContacto, type ContactoEmergencia,
 } from '@/lib/contactosEmergencia';
@@ -90,6 +91,7 @@ export default function PerroDetalleScreen() {
   const [visitasVet,        setVisitasVet]        = useState<VisitaVet[]>([]);
   const [procedimientos,    setProcedimientos]    = useState<Procedimiento[]>([]);
   const [grooming,          setGrooming]          = useState<Grooming | null>(null);
+  const [turnos,            setTurnos]            = useState<Turno[]>([]);
   const [contactos,         setContactos]         = useState<ContactoEmergencia[]>([]);
   const [fotos,             setFotos]             = useState<FotoPerro[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -127,7 +129,7 @@ export default function PerroDetalleScreen() {
     setLoading(true);
     setErrorCarga(false);
     try {
-      const [{ data: p }, { data: v }, e, d, m, pe, vv, pr, g, c, f] = await Promise.all([
+      const [{ data: p }, { data: v }, e, d, m, pe, vv, pr, g, c, f, tu] = await Promise.all([
         supabase.from('perros').select('*').eq('id', id).single(),
         supabase.from('vacunas').select('*').eq('perro_id', id).order('fecha', { ascending: false }),
         listarEstudios(id),
@@ -139,6 +141,7 @@ export default function PerroDetalleScreen() {
         obtenerGrooming(id),
         listarContactos(id),
         listarFotos(id),
+        listarTurnos(id),
       ]);
       setPerro(p);
       setVacunas(v ?? []);
@@ -148,6 +151,7 @@ export default function PerroDetalleScreen() {
       setPesos(pe);
       setVisitasVet(vv);
       setProcedimientos(pr);
+      setTurnos(tu);
       setGrooming(g);
       setContactos(c);
       setFotos(f);
@@ -245,6 +249,18 @@ export default function PerroDetalleScreen() {
         },
       },
     ]);
+  }
+
+  async function registrarTurno(tipo: TipoTurno, fecha: string, nota: string) {
+    const existente = turnos.find((t) => t.tipo === tipo);
+    const nuevo = await agregarTurno({ perro_id: id, tipo, fecha, nota: nota || null });
+    if (existente) await eliminarTurno(existente.id);
+    setTurnos((prev) => [...prev.filter((t) => t.tipo !== tipo), nuevo]);
+  }
+
+  async function borrarTurno(turnoId: string) {
+    await eliminarTurno(turnoId);
+    setTurnos((prev) => prev.filter((t) => t.id !== turnoId));
   }
 
   function confirmarBorrar(titulo: string, onConfirm: () => Promise<void>) {
@@ -705,6 +721,7 @@ export default function PerroDetalleScreen() {
       />
 
       {/* Pesos */}
+      {isPro && <PesoChart pesos={pesos} />}
       <SeccionHistorial
         titulo="Peso"
         emoji="⚖️"
@@ -724,24 +741,34 @@ export default function PerroDetalleScreen() {
           const nuevo = await agregarPeso(id, { fecha: v.fecha, valor_kg: kg, notas: v.notas });
           setPesos((prev) => [nuevo, ...prev]);
         }}
-        renderItem={(p: Peso) => (
-          <View key={p.id} style={styles.item}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.itemNombre}>{p.valor_kg} kg</Text>
-              {p.notas && <Text style={styles.itemSub}>{p.notas}</Text>}
+        renderItem={(p: Peso) => {
+          const idx = pesos.findIndex((x) => x.id === p.id);
+          const anterior = pesos[idx + 1];
+          const delta = anterior ? +(p.valor_kg - anterior.valor_kg).toFixed(1) : null;
+          return (
+            <View key={p.id} style={styles.item}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.itemNombre}>{p.valor_kg} kg</Text>
+                {p.notas && <Text style={styles.itemSub}>{p.notas}</Text>}
+              </View>
+              {delta != null && delta !== 0 && (
+                <Text style={{ fontSize: 11, fontWeight: '700', color: delta > 0 ? Colors.bad : Colors.good, marginRight: 8 }}>
+                  {delta > 0 ? '▲' : '▼'} {Math.abs(delta)}
+                </Text>
+              )}
+              <Text style={styles.itemFecha}>{fmt(p.fecha)}</Text>
+              <TouchableOpacity
+                style={{ marginLeft: 10 }}
+                onPress={() => confirmarBorrar('Eliminar registro de peso', async () => {
+                  await eliminarPeso(p.id);
+                  setPesos((prev) => prev.filter((x) => x.id !== p.id));
+                })}
+              >
+                <Text style={styles.borrarBtn}>🗑</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.itemFecha}>{fmt(p.fecha)}</Text>
-            <TouchableOpacity
-              style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar registro de peso', async () => {
-                await eliminarPeso(p.id);
-                setPesos((prev) => prev.filter((x) => x.id !== p.id));
-              })}
-            >
-              <Text style={styles.borrarBtn}>🗑</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          );
+        }}
       />
 
       {/* Visitas al veterinario */}
@@ -828,7 +855,7 @@ export default function PerroDetalleScreen() {
       />
 
       {/* Grooming */}
-      <GroomingSection perroId={id} grooming={grooming} locked={!isPro} onGuardado={setGrooming} />
+      <GroomingSection perroId={id} grooming={grooming} locked={!isPro} onGuardado={setGrooming} onEliminado={() => setGrooming(null)} />
 
       {/* Contactos de emergencia — gratis para todos, igual que en la web */}
       <SeccionHistorial
@@ -936,6 +963,13 @@ export default function PerroDetalleScreen() {
                   </View>
                 ))
             }
+            {(tipo === 'radiografia' || tipo === 'ecografia') && (
+              <TurnoWidget
+                turno={turnos.find((t) => t.tipo === tipo) ?? null}
+                onRegistrar={(fecha, nota) => registrarTurno(tipo as TipoTurno, fecha, nota)}
+                onEliminar={borrarTurno}
+              />
+            )}
           </View>
         );
       })}
@@ -987,13 +1021,35 @@ function InfoLinea({ label, valor }: { label: string; valor: string }) {
 const TIPOS_GROOMING: TipoGrooming[] = ['baño', 'peluquería', 'ambos'];
 
 function GroomingSection({
-  perroId, grooming, locked, onGuardado,
+  perroId, grooming, locked, onGuardado, onEliminado,
 }: {
   perroId: string; grooming: Grooming | null; locked: boolean;
-  onGuardado: (g: Grooming) => void;
+  onGuardado: (g: Grooming) => void; onEliminado: () => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+
+  function borrar() {
+    if (!grooming) return;
+    Alert.alert('Eliminar registro', '¿Seguro que querés borrar el registro de grooming?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar', style: 'destructive',
+        onPress: async () => {
+          setBorrando(true);
+          try {
+            await eliminarGrooming(grooming.id);
+            onEliminado();
+          } catch {
+            Alert.alert('Error', 'No se pudo borrar. Verificá tu conexión.');
+          } finally {
+            setBorrando(false);
+          }
+        },
+      },
+    ]);
+  }
   const [tipo, setTipo] = useState<TipoGrooming>(grooming?.tipo ?? 'baño');
   const [ultimaFecha, setUltimaFecha] = useState(grooming?.ultima_fecha ?? new Date().toISOString().slice(0, 10));
   const [frecuencia, setFrecuencia] = useState(String(grooming?.frecuencia_dias ?? '30'));
@@ -1064,9 +1120,120 @@ function GroomingSection({
           <InfoLinea label="Última vez" valor={fmt(grooming.ultima_fecha)} />
           <InfoLinea label="Frecuencia" valor={`cada ${grooming.frecuencia_dias} días`} />
           {grooming.notas && <InfoLinea label="Notas" valor={grooming.notas} />}
+          <TouchableOpacity onPress={borrar} disabled={borrando} style={{ marginTop: 4 }}>
+            <Text style={{ color: Colors.bad, fontSize: 12, fontWeight: '700' }}>
+              {borrando ? 'Borrando…' : '🗑 Borrar registro'}
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <EmptyRow />
+      )}
+    </View>
+  );
+}
+
+function PesoChart({ pesos }: { pesos: Peso[] }) {
+  if (pesos.length < 2) return null;
+  const asc = [...pesos].reverse(); // mas viejo -> mas nuevo
+  const valores = asc.map((p) => p.valor_kg);
+  const min = Math.min(...valores);
+  const max = Math.max(...valores);
+  const rango = max - min || 1;
+  const ultimo = asc[asc.length - 1].valor_kg;
+  const anterior = asc[asc.length - 2].valor_kg;
+  const delta = +(ultimo - anterior).toFixed(1);
+  const colorDelta = delta > 0 ? Colors.bad : delta < 0 ? Colors.good : Colors.inkMuted;
+
+  return (
+    <View style={styles.seccion}>
+      <Text style={styles.seccionTitulo}>📈  Evolución de peso</Text>
+      <View style={styles.pesoChartRow}>
+        {asc.map((p) => {
+          const alto = 24 + ((p.valor_kg - min) / rango) * 56;
+          return (
+            <View key={p.id} style={styles.pesoBarCol}>
+              <Text style={styles.pesoBarValor}>{p.valor_kg}</Text>
+              <View style={[styles.pesoBar, { height: alto }]} />
+              <Text style={styles.pesoBarFecha}>{fmt(p.fecha).slice(0, 5)}</Text>
+            </View>
+          );
+        })}
+      </View>
+      <Text style={[styles.pesoDelta, { color: colorDelta }]}>
+        {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta)} kg vs. registro anterior
+      </Text>
+    </View>
+  );
+}
+
+function TurnoWidget({
+  turno, onRegistrar, onEliminar,
+}: {
+  turno: Turno | null;
+  onRegistrar: (fecha: string, nota: string) => Promise<void>;
+  onEliminar: (id: string) => void;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [fecha, setFecha] = useState(turno?.fecha ?? '');
+  const [nota,  setNota]  = useState(turno?.nota ?? '');
+
+  const vencido = !!turno && new Date(`${turno.fecha}T00:00:00`) < new Date(new Date().toDateString());
+
+  async function guardar() {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha.trim())) {
+      Alert.alert('Fecha inválida', 'El turno tiene que tener el formato AAAA-MM-DD.');
+      return;
+    }
+    setGuardando(true);
+    try {
+      await onRegistrar(fecha.trim(), nota.trim());
+      setEditando(false);
+    } catch {
+      Alert.alert('Error', 'No se pudo guardar el turno. Verificá tu conexión.');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <View style={styles.turnoWrap}>
+      {editando ? (
+        <View style={{ gap: 8 }}>
+          <CampoTexto label="Fecha del turno" value={fecha} onChange={setFecha} placeholder="AAAA-MM-DD" />
+          <CampoTexto label="Notas" value={nota} onChange={setNota} placeholder="Opcional" />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[styles.guardarPerfilBtn, { flex: 1 }]} onPress={guardar} disabled={guardando}>
+              {guardando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Guardar turno</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelarTurnoBtn} onPress={() => setEditando(false)}>
+              <Text style={{ color: Colors.inkMuted, fontWeight: '700', fontSize: 13 }}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : turno ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.ink }}>
+              📅 Próximo turno: {fmt(turno.fecha)}
+            </Text>
+            {turno.nota && <Text style={styles.itemSub}>{turno.nota}</Text>}
+            <Text style={[styles.turnoBadge, { color: vencido ? Colors.bad : Colors.good }]}>
+              {vencido ? '⚠️ Vencido' : '✓ Vigente'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => { setFecha(turno.fecha); setNota(turno.nota ?? ''); setEditando(true); }}>
+            <Text style={styles.borrarBtn}>✏️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ marginLeft: 8 }} onPress={() => onEliminar(turno.id)}>
+            <Text style={styles.borrarBtn}>🗑</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity onPress={() => { setFecha(''); setNota(''); setEditando(true); }}>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.primary }}>📅 + Registrar turno</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -1205,4 +1372,13 @@ const styles = StyleSheet.create({
   modalOption:        { paddingHorizontal: 18, paddingVertical: 14, borderTopWidth: 1, borderTopColor: Colors.border },
   modalOptionText:    { fontSize: 15, color: Colors.ink },
   modalOptionTextActive: { color: Colors.primary, fontWeight: '700' },
+  pesoChartRow:       { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginTop: 10, paddingHorizontal: 4, minHeight: 100 },
+  pesoBarCol:         { alignItems: 'center', gap: 4 },
+  pesoBar:            { width: 20, borderRadius: 6, backgroundColor: Colors.primary },
+  pesoBarValor:       { fontSize: 10, fontWeight: '700', color: Colors.ink },
+  pesoBarFecha:       { fontSize: 9, color: Colors.inkMuted },
+  pesoDelta:          { fontSize: 12, fontWeight: '700', marginTop: 10, textAlign: 'center' },
+  turnoWrap:          { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: Colors.border },
+  turnoBadge:         { fontSize: 10, fontWeight: '800', marginTop: 2 },
+  cancelarTurnoBtn:   { paddingHorizontal: 14, paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
 });

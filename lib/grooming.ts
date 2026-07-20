@@ -23,6 +23,21 @@ export async function obtenerGrooming(perroId: string): Promise<Grooming | null>
   return (data ?? null) as Grooming | null;
 }
 
+export async function eliminarGrooming(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data: grooming } = await supabase
+    .from('grooming')
+    .select('perro_id, perros!inner(user_id)')
+    .eq('id', id)
+    .single();
+  const perrosData = grooming?.perros as { user_id: string } | { user_id: string }[] | null | undefined;
+  const ownerId = Array.isArray(perrosData) ? perrosData[0]?.user_id : perrosData?.user_id;
+  if (!ownerId || ownerId !== user.id) throw new Error('No autorizado');
+  const { error } = await supabase.from('grooming').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 export async function guardarGrooming(
   perroId: string,
   grooming: Omit<Grooming, 'id' | 'created_at' | 'perro_id'>

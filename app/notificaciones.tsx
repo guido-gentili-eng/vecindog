@@ -14,6 +14,18 @@ interface Notif {
   leida: boolean; post_id: string | null; created_at: string;
 }
 
+const TIPO_EMOJI: Record<string, string> = {
+  expiracion:       '⏰',
+  visita:           '👁️',
+  solicitud_amistad: '🤝',
+  amistad_aceptada:  '👥',
+  vacuna:           '💉',
+  desparasitacion:  '🐛',
+  medicamento:      '💊',
+  turno:            '📅',
+  peso:             '⚖️',
+};
+
 export default function NotificacionesScreen() {
   const { user } = useAuth();
   const [notifs,     setNotifs]     = useState<Notif[]>([]);
@@ -45,6 +57,23 @@ export default function NotificacionesScreen() {
   }
 
   useEffect(() => { cargar(); }, [user]);
+
+  // Realtime: antes había que refrescar a mano para ver notificaciones nuevas.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const nueva = payload.new as Notif;
+          setNotifs((prev) => (prev.some((n) => n.id === nueva.id) ? prev : [nueva, ...prev]));
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const noLeidas = notifs.filter((n) => !n.leida).length;
 
@@ -100,7 +129,7 @@ export default function NotificacionesScreen() {
               <View style={styles.cardLeft}>
                 {CATEGORIA_COLOR[n.tipo]
                   ? <CategoriaDot categoria={n.tipo} size={16} />
-                  : <Text style={styles.emoji}>🐾</Text>
+                  : <Text style={styles.emoji}>{TIPO_EMOJI[n.tipo] ?? '🐾'}</Text>
                 }
               </View>
               <View style={styles.cardBody}>

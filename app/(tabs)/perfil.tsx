@@ -1,23 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Alert, Linking, TextInput,
-  ActivityIndicator, Switch, Image,
+  ActivityIndicator, Switch, Image, Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { subirArchivoEstudio } from '@/lib/estudios';
 import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
 
+type PerroSOS = { id: string; nombre: string; raza: string | null; color: string | null; foto_url: string | null };
+
 export default function PerfilScreen() {
-  const { user, profile, signOut, saveProfile } = useAuth();
+  const { user, profile, isPro, signOut, saveProfile } = useAuth();
   const [editando,   setEditando]   = useState(false);
   const [saving,     setSaving]     = useState(false);
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [ciudadSugerencias, setCiudadSugerencias] = useState<Ciudad[]>([]);
   const [mostrarCiudadSug,  setMostrarCiudadSug]  = useState(false);
+  const [sosOpen, setSosOpen] = useState(false);
+  const [perrosSOS, setPerrosSOS] = useState<PerroSOS[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('perros').select('id, nombre, raza, color, foto_url').eq('user_id', user.id).order('nombre')
+      .then(({ data }) => setPerrosSOS(data ?? []));
+  }, [user]);
 
   // Form state
   const [nombre,    setNombre]    = useState(profile?.nombre    ?? '');
@@ -214,6 +225,33 @@ export default function PerfilScreen() {
         )}
       </View>
 
+      {/* SOS perro perdido */}
+      {isPro ? (
+        <TouchableOpacity style={styles.sosBtn} onPress={() => setSosOpen(true)}>
+          <View style={styles.sosIcon}><Text style={{ fontSize: 22 }}>🚨</Text></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sosTitle}>SOS: se me perdió mi perro</Text>
+            <Text style={styles.sosSub}>Avisá a todos tus amigos de una sola vez</Text>
+          </View>
+          <Text style={{ fontSize: 18, color: Colors.white, opacity: 0.7 }}>›</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.sosBtnLocked} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
+          <Text style={{ fontSize: 22 }}>🔒</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sosTitleLocked}>SOS: se me perdió mi perro</Text>
+            <Text style={styles.sosSubLocked}>Función de VecindogPro</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {sosOpen && (
+        <SOSModal
+          perros={perrosSOS}
+          onClose={() => setSosOpen(false)}
+        />
+      )}
+
       {/* Links */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Vecindog</Text>
@@ -273,6 +311,121 @@ function Field({ label, value, onChange, placeholder, keyboardType }: {
   );
 }
 
+function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void }) {
+  const [perroSel, setPerroSel] = useState<string>(perros[0]?.id ?? '');
+  const [enviando, setEnviando] = useState(false);
+  const [enviado,  setEnviado]  = useState(false);
+  const [amigosCount, setAmigosCount] = useState<number | null>(null);
+  const [errorSos, setErrorSos] = useState('');
+
+  const perroActual = perros.find((p) => p.id === perroSel) ?? perros[0] ?? null;
+
+  async function handleSOS() {
+    setEnviando(true);
+    setErrorSos('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('https://www.mivecindog.com.ar/api/sos-perro-perdido', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ nombre_perro: perroActual?.nombre ?? '' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Error');
+      setAmigosCount(json.amigos ?? 0);
+      setEnviado(true);
+    } catch {
+      setErrorSos('No se pudo enviar la alerta. Intentá de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalSheet}>
+          <View style={styles.modalHeader}>
+            <View>
+              <Text style={styles.modalTitle}>🚨 Alerta SOS</Text>
+              <Text style={styles.modalSub}>Se notifica a todos tus amigos con un mensaje y un email</Text>
+            </View>
+            <TouchableOpacity onPress={onClose}><Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text></TouchableOpacity>
+          </View>
+
+          {!enviado ? (
+            <>
+              {perros.length === 0 ? (
+                <Text style={styles.modalEmpty}>
+                  Todavía no tenés perros registrados. Registrá uno para poder usar el SOS.
+                </Text>
+              ) : (
+                <View style={{ gap: 8, marginBottom: 16 }}>
+                  <Text style={styles.modalLabel}>¿Cuál se perdió?</Text>
+                  {perros.map((p) => (
+                    <TouchableOpacity
+                      key={p.id}
+                      style={[styles.perroOpt, perroSel === p.id && styles.perroOptActive]}
+                      onPress={() => setPerroSel(p.id)}
+                    >
+                      {p.foto_url
+                        ? <Image source={{ uri: p.foto_url }} style={styles.perroOptImg} />
+                        : <View style={[styles.perroOptImg, { alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.cream }]}><Text>🐶</Text></View>
+                      }
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.perroOptNombre}>{p.nombre}</Text>
+                        <Text style={styles.perroOptSub}>{[p.raza, p.color].filter(Boolean).join(' · ') || 'Sin descripción'}</Text>
+                      </View>
+                      {perroSel === p.id && <Text style={{ color: Colors.bad, fontSize: 16 }}>✓</Text>}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+              {!!errorSos && <Text style={styles.modalError}>{errorSos}</Text>}
+
+              {perros.length > 0 && (
+                <TouchableOpacity
+                  style={[styles.sosSendBtn, (enviando || !perroSel) && { opacity: 0.6 }]}
+                  onPress={handleSOS}
+                  disabled={enviando || !perroSel}
+                >
+                  {enviando
+                    ? <ActivityIndicator color={Colors.white} />
+                    : <Text style={styles.sosSendBtnText}>🚨 Alertar a mis amigos</Text>}
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
+                <Text style={styles.modalCancelBtnText}>Cerrar</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={{ alignItems: 'center', gap: 8, paddingVertical: 12 }}>
+              <Text style={{ fontSize: 40 }}>✅</Text>
+              <Text style={styles.modalTitle}>¡Alerta enviada!</Text>
+              {amigosCount !== null && amigosCount > 0 ? (
+                <Text style={styles.modalSub}>
+                  Avisamos a {amigosCount} amigo{amigosCount !== 1 ? 's' : ''} tuyo{amigosCount !== 1 ? 's' : ''} por notificación y email.
+                </Text>
+              ) : (
+                <Text style={styles.modalSub}>
+                  Todavía no tenés amigos agregados en Vecindog — sumá vecinos desde "Mis perros" &gt; Amigos para que el SOS les llegue.
+                </Text>
+              )}
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
+                <Text style={styles.modalCancelBtnText}>Listo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function MenuItem({ label, onPress, last = false }: { label: string; onPress: () => void; last?: boolean }) {
   return (
     <TouchableOpacity
@@ -321,4 +474,28 @@ const styles = StyleSheet.create({
   emptyPromptSub:   { fontSize: 13, color: Colors.inkMuted, textAlign: 'center', lineHeight: 19 },
   emptyPromptBtn:   { marginTop: 8, backgroundColor: Colors.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 },
   emptyPromptBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
+  sosBtn:        { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: Colors.bad, borderRadius: 18, padding: 16, marginBottom: 16 },
+  sosIcon:       { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  sosTitle:      { fontSize: 15, fontWeight: '900', color: Colors.white },
+  sosSub:        { fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
+  sosBtnLocked:  { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: Colors.white, borderRadius: 18, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: Colors.border },
+  sosTitleLocked: { fontSize: 14, fontWeight: '700', color: Colors.inkMuted },
+  sosSubLocked:   { fontSize: 11, color: Colors.inkMuted, marginTop: 2 },
+  modalOverlay:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
+  modalSheet:    { backgroundColor: Colors.white, borderRadius: 24, padding: 20 },
+  modalHeader:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, gap: 10 },
+  modalTitle:    { fontSize: 17, fontWeight: '900', color: Colors.ink },
+  modalSub:      { fontSize: 12, color: Colors.inkMuted, marginTop: 3, textAlign: 'center' },
+  modalLabel:    { fontSize: 12, fontWeight: '700', color: Colors.inkMuted },
+  modalEmpty:    { fontSize: 13, color: Colors.inkMuted, textAlign: 'center', backgroundColor: Colors.cream, borderRadius: 14, padding: 14, marginBottom: 16 },
+  modalError:    { fontSize: 12, fontWeight: '700', color: Colors.bad, marginBottom: 8, textAlign: 'center' },
+  perroOpt:      { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 2, borderColor: Colors.border, borderRadius: 16, padding: 10 },
+  perroOptActive: { borderColor: Colors.bad, backgroundColor: Colors.bad + '0d' },
+  perroOptImg:   { width: 40, height: 40, borderRadius: 10 },
+  perroOptNombre: { fontSize: 13, fontWeight: '700', color: Colors.ink },
+  perroOptSub:   { fontSize: 11, color: Colors.inkMuted },
+  sosSendBtn:    { backgroundColor: Colors.bad, borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  sosSendBtnText: { color: Colors.white, fontWeight: '800', fontSize: 14 },
+  modalCancelBtn: { paddingVertical: 12, alignItems: 'center', marginTop: 8 },
+  modalCancelBtnText: { color: Colors.inkMuted, fontWeight: '700', fontSize: 13 },
 });

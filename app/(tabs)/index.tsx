@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
+import VolvieronACasa from '@/components/VolvieronACasa';
+import TopEscapistas from '@/components/TopEscapistas';
 
 const PAGE_SIZE = 30;
 
@@ -166,6 +168,15 @@ export default function HomeScreen() {
           }
           onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
           onEndReachedThreshold={0.4}
+          ListHeaderComponent={
+            !catFilter ? (
+              <View style={{ paddingHorizontal: 4, paddingTop: 4 }}>
+                <VolvieronACasa />
+                <TopEscapistas />
+                <Text style={styles.feedTitle}>Avisos recientes</Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={<Text style={styles.empty}>No hay avisos en esta categoría.</Text>}
           ListFooterComponent={
             isFetchingNextPage
@@ -217,6 +228,7 @@ const styles = StyleSheet.create({
   chipTextWithDot: { marginLeft: 6 },
   chipTextActive: { color: Colors.white },
   list:           { padding: 16, gap: 12 },
+  feedTitle:      { fontSize: 16, fontWeight: '900', color: Colors.ink, marginBottom: 4 },
   empty:          { textAlign: 'center', color: Colors.inkMuted, marginTop: 32 },
   errorBox:       { alignItems: 'center', marginTop: 48, paddingHorizontal: 32, gap: 8 },
   errorEmoji:     { fontSize: 40 },

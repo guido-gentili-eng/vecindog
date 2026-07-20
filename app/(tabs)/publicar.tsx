@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
+import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 
 type ZonaSugerencia = { label: string; sub: string; lat: number; lng: number };
 
@@ -210,7 +211,7 @@ export default function PublicarScreen() {
         }
       }
 
-      const { error } = await supabase.from('posts').insert({
+      const { data: nuevoPost, error } = await supabase.from('posts').insert({
         categoria,
         especie:     'perro',
         nombre:      nombre.trim()   || null,
@@ -231,7 +232,7 @@ export default function PublicarScreen() {
         user_id:     user?.id,
         estado:      'activo',
         fecha:       new Date().toISOString().slice(0, 10),
-      });
+      }).select('id').single();
 
       if (error) {
         await limpiarSubidos();
@@ -246,6 +247,13 @@ export default function PublicarScreen() {
             : 'Las fotos fueron eliminadas. Intentá publicar de nuevo.',
         );
         return;
+      }
+
+      if (categoria === 'perdido' && user?.id && nuevoPost?.id) {
+        notificarAmigosPerroPerdido({
+          ownerId: user.id, postId: nuevoPost.id,
+          nombrePerro: nombre.trim() || null, zona: zona.trim(),
+        }).catch(() => {});
       }
 
       Alert.alert('¡Aviso publicado!', 'Tu aviso ya es visible para los vecinos.', [

@@ -8,10 +8,12 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot, { CATEGORIA_COLOR } from '@/components/CategoriaDot';
+import { aceptarSolicitud, rechazarEliminarAmistad } from '@/lib/amistades';
 
 interface Notif {
   id: string; tipo: string; mensaje: string;
   leida: boolean; post_id: string | null; created_at: string;
+  meta: string | null;
 }
 
 const TIPO_EMOJI: Record<string, string> = {
@@ -27,10 +29,12 @@ const TIPO_EMOJI: Record<string, string> = {
 };
 
 export default function NotificacionesScreen() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [notifs,     setNotifs]     = useState<Notif[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [procesando, setProcesando] = useState<string | null>(null);
+  const [procesadas, setProcesadas] = useState<Set<string>>(new Set());
 
   async function cargar() {
     if (!user) return;
@@ -75,6 +79,42 @@ export default function NotificacionesScreen() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  function metaAmistad(n: Notif): { amistad_id: string; solicitante_id: string } | null {
+    if (n.tipo !== 'solicitud_amistad' || !n.meta) return null;
+    try { return JSON.parse(n.meta); } catch { return null; }
+  }
+
+  async function handleAceptarAmistad(n: Notif) {
+    const meta = metaAmistad(n);
+    if (!meta) return;
+    setProcesando(n.id);
+    try {
+      await aceptarSolicitud(meta.amistad_id);
+      await supabase.from('notifications').insert({
+        user_id: meta.solicitante_id, post_id: null, tipo: 'amistad_aceptada',
+        mensaje: `${profile?.nombre ?? 'Tu vecino'} aceptó tu solicitud de amistad 🐾`,
+        leida: false,
+      });
+      marcarLeida(n.id);
+      setProcesadas((prev) => new Set(prev).add(n.id));
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  async function handleRechazarAmistad(n: Notif) {
+    const meta = metaAmistad(n);
+    if (!meta) return;
+    setProcesando(n.id);
+    try {
+      await rechazarEliminarAmistad(meta.amistad_id);
+      marcarLeida(n.id);
+      setProcesadas((prev) => new Set(prev).add(n.id));
+    } finally {
+      setProcesando(null);
+    }
+  }
+
   const noLeidas = notifs.filter((n) => !n.leida).length;
 
   function formatTiempo(iso: string) {
@@ -117,7 +157,10 @@ export default function NotificacionesScreen() {
               <Text style={styles.emptySub}>Te avisaremos cuando haya avisos cerca de tu casa.</Text>
             </View>
           }
-          renderItem={({ item: n }) => (
+          renderItem={({ item: n }) => {
+            const meta = metaAmistad(n);
+            const mostrarAcciones = !!meta && !procesadas.has(n.id);
+            return (
             <TouchableOpacity
               style={[styles.card, !n.leida && styles.cardUnread]}
               onPress={() => {
@@ -125,6 +168,7 @@ export default function NotificacionesScreen() {
                 if (n.post_id) router.push(`/publicaciones/${n.post_id}`);
               }}
               activeOpacity={0.8}
+              disabled={mostrarAcciones}
             >
               <View style={styles.cardLeft}>
                 {CATEGORIA_COLOR[n.tipo]
@@ -136,11 +180,32 @@ export default function NotificacionesScreen() {
                 <Text style={[styles.mensaje, !n.leida && { fontWeight: '700', color: Colors.ink }]}>
                   {n.mensaje}
                 </Text>
+                {mostrarAcciones && (
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    <TouchableOpacity
+                      style={styles.aceptarBtn}
+                      disabled={procesando === n.id}
+                      onPress={() => handleAceptarAmistad(n)}
+                    >
+                      {procesando === n.id
+                        ? <ActivityIndicator size="small" color={Colors.good} />
+                        : <Text style={styles.aceptarBtnText}>✓ Aceptar</Text>}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.rechazarBtn}
+                      disabled={procesando === n.id}
+                      onPress={() => handleRechazarAmistad(n)}
+                    >
+                      <Text style={styles.rechazarBtnText}>✕ Rechazar</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <Text style={styles.tiempo}>{formatTiempo(n.created_at)}</Text>
               </View>
               {!n.leida && <View style={styles.dot} />}
             </TouchableOpacity>
-          )}
+            );
+          }}
         />
       )}
     </View>
@@ -160,6 +225,10 @@ const styles = StyleSheet.create({
   card:        { backgroundColor: Colors.white, borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   cardUnread:  { backgroundColor: '#fff8f5', borderLeftWidth: 3, borderLeftColor: Colors.primary },
   cardLeft:    { width: 36, alignItems: 'center' },
+  aceptarBtn:  { backgroundColor: Colors.good + '1a', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7 },
+  aceptarBtnText: { fontSize: 12, fontWeight: '800', color: Colors.good },
+  rechazarBtn: { backgroundColor: Colors.cream, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7 },
+  rechazarBtnText: { fontSize: 12, fontWeight: '800', color: Colors.inkMuted },
   emoji:       { fontSize: 22 },
   cardBody:    { flex: 1 },
   mensaje:     { fontSize: 13, color: Colors.inkMuted, lineHeight: 18 },

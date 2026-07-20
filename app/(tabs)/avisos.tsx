@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, ActivityIndicator, TextInput, Image, RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { thumbUrl } from '@/lib/imageUtils';
 import { supabase } from '@/lib/supabase';
@@ -74,10 +74,11 @@ const CAT_LABEL: Record<string, string> = {
 };
 
 export default function AvisosScreen() {
+  const { resueltos } = useLocalSearchParams<{ resueltos?: string }>();
   const [search,         setSearch]         = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoria,      setCategoria]      = useState('');
-  const [verResueltos,   setVerResueltos]   = useState(false);
+  const [verResueltos,   setVerResueltos]   = useState(resueltos === '1');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce: actualiza debouncedSearch 400ms después del último keystroke

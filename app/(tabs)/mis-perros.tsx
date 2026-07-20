@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, Image, RefreshControl,
+  ActivityIndicator, Image, RefreshControl, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 
 export default function MisPerrosScreen() {
-  const { user } = useAuth();
+  const { user, isPro } = useAuth();
   const [perros,     setPerros]     = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,12 +38,23 @@ export default function MisPerrosScreen() {
           <Text style={styles.title}>Mis perros 🐶</Text>
           <Text style={styles.sub}>{perros.length} registrado{perros.length !== 1 ? 's' : ''}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => router.push('/mis-perros/nuevo')}
-        >
-          <Text style={styles.addBtnText}>+ Agregar</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {isPro ? (
+            <TouchableOpacity style={styles.amigosBtn} onPress={() => router.push('/amigos')}>
+              <Text style={styles.amigosBtnText}>👥 Amigos</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.amigosBtnLocked} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
+              <Text style={styles.amigosBtnLockedText}>🔒 Amigos</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => router.push('/mis-perros/nuevo')}
+          >
+            <Text style={styles.addBtnText}>+ Agregar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -98,6 +109,10 @@ const styles = StyleSheet.create({
   sub:          { fontSize: 12, color: Colors.inkMuted, marginTop: 2 },
   addBtn:       { backgroundColor: Colors.primary, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 14 },
   addBtnText:   { color: Colors.white, fontWeight: '800', fontSize: 13 },
+  amigosBtn:       { borderWidth: 2, borderColor: Colors.primary + '4d', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, justifyContent: 'center' },
+  amigosBtnText:   { color: Colors.primary, fontWeight: '800', fontSize: 13 },
+  amigosBtnLocked: { borderWidth: 2, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, justifyContent: 'center' },
+  amigosBtnLockedText: { color: Colors.inkMuted, fontWeight: '800', fontSize: 13 },
   list:         { padding: 16, gap: 10 },
   empty:        { alignItems: 'center', marginTop: 48, paddingHorizontal: 32, gap: 10 },
   emptyTitle:   { fontSize: 17, fontWeight: '800', color: Colors.ink, textAlign: 'center' },

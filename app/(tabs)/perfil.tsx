@@ -2,16 +2,22 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Alert, Linking, TextInput,
-  ActivityIndicator, Switch,
+  ActivityIndicator, Switch, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { subirArchivoEstudio } from '@/lib/estudios';
+import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
 
 export default function PerfilScreen() {
   const { user, profile, signOut, saveProfile } = useAuth();
   const [editando,   setEditando]   = useState(false);
   const [saving,     setSaving]     = useState(false);
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
+  const [ciudadSugerencias, setCiudadSugerencias] = useState<Ciudad[]>([]);
+  const [mostrarCiudadSug,  setMostrarCiudadSug]  = useState(false);
 
   // Form state
   const [nombre,    setNombre]    = useState(profile?.nombre    ?? '');
@@ -36,13 +42,54 @@ export default function PerfilScreen() {
     setEditando(true);
   }
 
+  function handleCiudadChange(v: string) {
+    setCiudad(v);
+    const found = buscarCiudades(v);
+    setCiudadSugerencias(found);
+    setMostrarCiudadSug(found.length > 0 && v.trim().length > 0);
+  }
+
+  function seleccionarCiudad(c: Ciudad) {
+    setCiudad(c.nombre);
+    setProvincia(c.provincia);
+    setCiudadSugerencias([]);
+    setMostrarCiudadSug(false);
+  }
+
+  async function cambiarAvatar() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
+    if (result.canceled) return;
+    setSubiendoAvatar(true);
+    try {
+      const nombreArchivo = result.assets[0].fileName ?? `avatar-${Date.now()}.jpg`;
+      const url = await subirArchivoEstudio(result.assets[0].uri, nombreArchivo);
+      const err = await saveProfile({
+        nombre:    profile?.nombre    ?? '',
+        apellido:  profile?.apellido  ?? '',
+        telefono:  profile?.telefono  ?? '',
+        ciudad:    profile?.ciudad    ?? '',
+        provincia: profile?.provincia ?? '',
+        pais:      profile?.pais      ?? 'Argentina',
+        direccion: profile?.direccion ?? '',
+        foto_url:  url,
+      });
+      if (err) Alert.alert('Error', err);
+    } catch {
+      Alert.alert('Error', 'No se pudo actualizar la foto. Verificá tu conexión.');
+    } finally {
+      setSubiendoAvatar(false);
+    }
+  }
+
   async function guardar() {
     if (!nombre.trim() || !apellido.trim()) {
       Alert.alert('Campos requeridos', 'Ingresá nombre y apellido');
       return;
     }
     setSaving(true);
-    const err = await saveProfile({ nombre, apellido, telefono, ciudad, provincia, pais, direccion });
+    const err = await saveProfile({ nombre, apellido, telefono, ciudad, provincia, pais, direccion, foto_url: profile?.foto_url ?? null });
     setSaving(false);
     if (err) { Alert.alert('Error', err); return; }
     setEditando(false);
@@ -61,9 +108,17 @@ export default function PerfilScreen() {
 
       {/* Avatar */}
       <View style={styles.avatarArea}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{inicial}</Text>
-        </View>
+        <TouchableOpacity onPress={cambiarAvatar} disabled={subiendoAvatar} style={{ position: 'relative' }}>
+          {profile?.foto_url
+            ? <Image source={{ uri: profile.foto_url }} style={styles.avatarImg} />
+            : <View style={styles.avatar}><Text style={styles.avatarText}>{inicial}</Text></View>
+          }
+          <View style={styles.avatarEditBadge}>
+            {subiendoAvatar
+              ? <ActivityIndicator color={Colors.white} size="small" />
+              : <Text style={{ fontSize: 13 }}>📷</Text>}
+          </View>
+        </TouchableOpacity>
         <Text style={styles.nombre}>
           {profile ? `${profile.nombre} ${profile.apellido}` : user?.email}
         </Text>
@@ -90,7 +145,29 @@ export default function PerfilScreen() {
             <Field label="Nombre *"    value={nombre}    onChange={setNombre}    placeholder="Nombre" />
             <Field label="Apellido *"  value={apellido}  onChange={setApellido}  placeholder="Apellido" />
             <Field label="Teléfono"    value={telefono}  onChange={setTelefono}  placeholder="+54 9 291..." keyboardType="phone-pad" />
-            <Field label="Ciudad"      value={ciudad}    onChange={setCiudad}    placeholder="Bahía Blanca" />
+
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: Colors.inkMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ciudad</Text>
+              <TextInput
+                style={{ backgroundColor: Colors.bg, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.ink, borderWidth: 1, borderColor: Colors.border }}
+                value={ciudad}
+                onChangeText={handleCiudadChange}
+                onFocus={() => handleCiudadChange(ciudad)}
+                placeholder="Bahía Blanca"
+                placeholderTextColor={Colors.inkMuted}
+              />
+              {mostrarCiudadSug && ciudadSugerencias.length > 0 && (
+                <View style={styles.sugerenciaList}>
+                  {ciudadSugerencias.slice(0, 6).map((c) => (
+                    <TouchableOpacity key={c.nombre} style={styles.sugerenciaItem} onPress={() => seleccionarCiudad(c)}>
+                      <Text style={styles.sugerenciaText}>📍  {c.nombre}</Text>
+                      <Text style={styles.sugerenciaSub}>{c.provincia}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
             <Field label="Provincia"   value={provincia} onChange={setProvincia} placeholder="Buenos Aires" />
             <Field label="País"        value={pais}      onChange={setPais}      placeholder="Argentina" />
             <Field label="Dirección"   value={direccion} onChange={setDireccion} placeholder="Calle 123" />
@@ -213,7 +290,13 @@ const styles = StyleSheet.create({
   inner:         { padding: 20, paddingTop: 56, paddingBottom: 40 },
   avatarArea:    { alignItems: 'center', marginBottom: 24 },
   avatar:        { width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 12, shadowColor: Colors.primary, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  avatarImg:     { width: 80, height: 80, borderRadius: 40, marginBottom: 12 },
+  avatarEditBadge: { position: 'absolute', bottom: 8, right: -4, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: Colors.white },
   avatarText:    { fontSize: 32, fontWeight: '900', color: Colors.white },
+  sugerenciaList: { borderWidth: 1, borderColor: Colors.border, borderRadius: 12, overflow: 'hidden', marginTop: 4, backgroundColor: Colors.white },
+  sugerenciaItem: { paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  sugerenciaText: { fontSize: 13, color: Colors.ink, fontWeight: '600' },
+  sugerenciaSub:  { fontSize: 11, color: Colors.inkMuted, marginTop: 1 },
   nombre:        { fontSize: 20, fontWeight: '800', color: Colors.ink },
   email:         { fontSize: 13, color: Colors.inkMuted, marginTop: 4 },
   card:          { backgroundColor: Colors.white, borderRadius: 20, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },

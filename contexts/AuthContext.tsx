@@ -11,6 +11,7 @@ export interface Profile {
   provincia: string;
   pais:      string;
   direccion: string;
+  foto_url?:         string | null;
   plan?:             string | null;
   plan_vencimiento?: string | null;
   is_admin?:         boolean | null;

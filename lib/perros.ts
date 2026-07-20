@@ -63,9 +63,7 @@ export interface Perro extends Omit<PerroInput, 'tamano' | 'sexo' | 'alergias' |
   dieta_cantidad:   string | null;
   dieta_frecuencia: string | null;
   dieta_notas:      string | null;
-  cartoon_url:       string | null;
   foto_carnet_url:   string | null;
-  cartoon_generado_at?: string | null;
   numero_registro:   number | null;
   created_at:        string;
   vacunas?:          Vacuna[];
@@ -179,14 +177,6 @@ export async function actualizarPerro(
   if (input.dieta_notas      !== undefined) patch.dieta_notas      = input.dieta_notas      || null;
 
   const { error } = await supabase.from('perros').update(patch).eq('id', id).eq('user_id', user.id);
-  if (error) throw error;
-}
-
-export async function guardarCartoonUrl(id: string, cartoon_url: string): Promise<void> {
-  const { data: authData, error: authErr } = await supabase.auth.getUser();
-  const user = authData?.user;
-  if (authErr || !user) throw new Error('No autorizado');
-  const { error } = await supabase.from('perros').update({ cartoon_url }).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
 

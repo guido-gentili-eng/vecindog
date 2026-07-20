@@ -171,6 +171,24 @@ export default function HomeScreen() {
           ListHeaderComponent={
             !catFilter ? (
               <View style={{ paddingHorizontal: 4, paddingTop: 4 }}>
+                <View style={{ gap: 10, marginBottom: 20 }}>
+                  <TouchableOpacity style={[styles.serviceBanner, { backgroundColor: '#0d9488' }]} onPress={() => router.push('/cuidado' as any)}>
+                    <Text style={{ fontSize: 22 }}>🤲</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.serviceBannerTitle}>Cuidado de perros</Text>
+                      <Text style={styles.serviceBannerSub}>Pedí o dá una mano cuidando mascotas</Text>
+                    </View>
+                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>NUEVO</Text></View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.serviceBanner, { backgroundColor: '#1d4ed8' }]} onPress={() => router.push('/transporte' as any)}>
+                    <Text style={{ fontSize: 22 }}>🚗</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.serviceBannerTitle}>Transporte de perros</Text>
+                      <Text style={styles.serviceBannerSub}>Encontrá quién ayude a trasladar tu mascota</Text>
+                    </View>
+                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>NUEVO</Text></View>
+                  </TouchableOpacity>
+                </View>
                 <VolvieronACasa />
                 <TopEscapistas />
                 <Text style={styles.feedTitle}>Avisos recientes</Text>
@@ -229,6 +247,11 @@ const styles = StyleSheet.create({
   chipTextActive: { color: Colors.white },
   list:           { padding: 16, gap: 12 },
   feedTitle:      { fontSize: 16, fontWeight: '900', color: Colors.ink, marginBottom: 4 },
+  serviceBanner:  { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, padding: 14 },
+  serviceBannerTitle: { fontSize: 14, fontWeight: '900', color: Colors.white },
+  serviceBannerSub:   { fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
+  newBadge:       { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  newBadgeText:   { fontSize: 9, fontWeight: '900', color: Colors.white },
   empty:          { textAlign: 'center', color: Colors.inkMuted, marginTop: 32 },
   errorBox:       { alignItems: 'center', marginTop: 48, paddingHorizontal: 32, gap: 8 },
   errorEmoji:     { fontSize: 40 },

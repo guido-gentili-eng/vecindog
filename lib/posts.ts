@@ -3,6 +3,49 @@
  */
 import { supabase } from './supabase';
 
+export interface Post {
+  id: string;
+  created_at: string;
+  user_id: string | null;
+  perro_id: string | null;
+  categoria: string;
+  especie: string;
+  nombre: string | null;
+  raza: string | null;
+  color: string | null;
+  tamano: string | null;
+  descripcion: string | null;
+  zona: string;
+  fecha: string;
+  horario: string | null;
+  contacto: string | null;
+  images: string[] | null;
+  estado: 'activo' | 'resuelto';
+  lat: number | null;
+  lng: number | null;
+}
+
+const POSTS_FIELDS = 'id,created_at,user_id,perro_id,categoria,especie,nombre,raza,color,tamano,descripcion,zona,fecha,horario,contacto,images,estado,lat,lng';
+
+export async function obtenerPost(id: string): Promise<Post | null> {
+  const { data, error } = await supabase.from('posts').select(POSTS_FIELDS).eq('id', id).single();
+  if (error) return null;
+  return data as Post;
+}
+
+/** Lista los posts de una categoría de cuidado/transporte específica. */
+export async function listarPostsCuidado(categoria: 'busco_cuidador' | 'cuidador_disponible' | 'transportador_disponible'): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(POSTS_FIELDS)
+    .eq('categoria', categoria)
+    .neq('estado', 'resuelto')
+    .order('created_at', { ascending: false })
+    .limit(300);
+  if (error) throw error;
+  return (data ?? []) as Post[];
+}
+
 /** Marca el aviso como resuelto (dueño reclamó / adoptado / volvió a casa). */
 export async function resolverPost(id: string): Promise<void> {
   const { error } = await supabase.from('posts').update({ estado: 'resuelto' }).eq('id', id);

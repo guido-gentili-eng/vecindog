@@ -51,6 +51,26 @@ export async function agregarDesparasitacion(
   return data as Desparasitacion;
 }
 
+export async function actualizarDesparasitacion(id: string, input: DesparasitacionInput): Promise<Desparasitacion> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autorizado');
+  const { data, error } = await supabase
+    .from('desparasitaciones')
+    .update({
+      producto:    input.producto,
+      tipo:        input.tipo,
+      fecha:       input.fecha,
+      proxima:     input.proxima     || null,
+      veterinario: input.veterinario || null,
+      notas:       input.notas       || null,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Desparasitacion;
+}
+
 export async function eliminarDesparasitacion(id: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autorizado');

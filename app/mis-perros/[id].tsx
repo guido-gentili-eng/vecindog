@@ -12,7 +12,7 @@ import {
   type Estudio, type TipoEstudio,
 } from '@/lib/estudios';
 import {
-  listarDesparasitaciones, agregarDesparasitacion, eliminarDesparasitacion,
+  listarDesparasitaciones, agregarDesparasitacion, actualizarDesparasitacion, eliminarDesparasitacion,
   type Desparasitacion,
 } from '@/lib/desparasitaciones';
 import {
@@ -32,7 +32,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { actualizarPerro, type EstadoSalud } from '@/lib/perros';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
-import { agregarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
+import { agregarVacuna, actualizarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
 import { obtenerGrooming, guardarGrooming, type Grooming, type TipoGrooming } from '@/lib/grooming';
 import {
   listarContactos, agregarContacto, eliminarContacto, type ContactoEmergencia,
@@ -562,7 +562,14 @@ export default function PerroDetalleScreen() {
           });
           setVacunas((prev) => [nueva, ...prev]);
         }}
-        renderItem={(v: Vacuna) => (
+        onEditar={async (vacunaId, v) => {
+          const actualizada = await actualizarVacuna(vacunaId, {
+            nombre: v.nombre, fecha: v.fecha, proxima: v.proxima,
+            veterinario: v.veterinario, notas: v.notas,
+          });
+          setVacunas((prev) => prev.map((x) => x.id === vacunaId ? actualizada : x));
+        }}
+        renderItem={(v: Vacuna, { editar }) => (
           <View key={v.id} style={styles.item}>
             <View style={{ flex: 1 }}>
               <Text style={styles.itemNombre}>{v.nombre}</Text>
@@ -576,6 +583,9 @@ export default function PerroDetalleScreen() {
                 </Text>
               )}
             </View>
+            <TouchableOpacity style={{ marginLeft: 10 }} onPress={editar}>
+              <Text style={styles.borrarBtn}>✏️</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
               onPress={() => confirmarBorrar('Eliminar vacuna', async () => {
@@ -611,7 +621,14 @@ export default function PerroDetalleScreen() {
           });
           setDesparasitaciones((prev) => [nuevo, ...prev]);
         }}
-        renderItem={(d: Desparasitacion) => (
+        onEditar={async (despId, v) => {
+          const actualizado = await actualizarDesparasitacion(despId, {
+            producto: v.producto, tipo: (v.tipo || 'ambas') as any, fecha: v.fecha,
+            proxima: v.proxima, veterinario: v.veterinario, notas: v.notas,
+          });
+          setDesparasitaciones((prev) => prev.map((x) => x.id === despId ? actualizado : x));
+        }}
+        renderItem={(d: Desparasitacion, { editar }) => (
           <View key={d.id} style={styles.item}>
             <View style={{ flex: 1 }}>
               <Text style={styles.itemNombre}>{d.producto}</Text>
@@ -625,6 +642,9 @@ export default function PerroDetalleScreen() {
                 </Text>
               )}
             </View>
+            <TouchableOpacity style={{ marginLeft: 10 }} onPress={editar}>
+              <Text style={styles.borrarBtn}>✏️</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
               onPress={() => confirmarBorrar('Eliminar desparasitación', async () => {

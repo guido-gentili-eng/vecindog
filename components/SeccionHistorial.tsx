@@ -17,8 +17,9 @@ interface Props {
   locked?:       boolean;
   campos:        Campo[];
   items:         any[];
-  renderItem:    (item: any) => React.ReactNode;
+  renderItem:    (item: any, helpers: { editar: () => void }) => React.ReactNode;
   onGuardar:     (valores: Record<string, string>) => Promise<void>;
+  onEditar?:     (id: string, valores: Record<string, string>) => Promise<void>;
   vacio?:        string;
 }
 
@@ -35,20 +36,30 @@ function fechaValida(s: string): boolean {
 }
 
 export default function SeccionHistorial({
-  titulo, emoji, locked, campos, items, renderItem, onGuardar, vacio,
+  titulo, emoji, locked, campos, items, renderItem, onGuardar, onEditar, vacio,
 }: Props) {
   const [agregando, setAgregando] = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [valores,   setValores]   = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function valorInicial(): Record<string, string> {
     const v: Record<string, string> = {};
-    for (const c of campos) v[c.key] = c.tipo === 'date' ? hoy() : (c.opciones?.[0] ?? '');
+    for (const c of campos) v[c.key] = c.tipo === 'date' && c.requerido ? hoy() : (c.opciones?.[0] ?? '');
     return v;
   }
 
   function abrirForm() {
+    setEditingId(null);
     setValores(valorInicial());
+    setAgregando(true);
+  }
+
+  function abrirEditar(item: any) {
+    const v: Record<string, string> = {};
+    for (const c of campos) v[c.key] = item[c.key] != null ? String(item[c.key]) : (c.opciones?.[0] ?? '');
+    setValores(v);
+    setEditingId(item.id);
     setAgregando(true);
   }
 
@@ -65,9 +76,14 @@ export default function SeccionHistorial({
     }
     setSaving(true);
     try {
-      await onGuardar(valores);
+      if (editingId && onEditar) {
+        await onEditar(editingId, valores);
+      } else {
+        await onGuardar(valores);
+      }
       setAgregando(false);
       setValores({});
+      setEditingId(null);
     } catch (e) {
       const msg = e instanceof Error && e.message ? e.message : 'No se pudo guardar. Verificá tu conexión.';
       Alert.alert('Error', msg);
@@ -85,7 +101,7 @@ export default function SeccionHistorial({
             <Text style={styles.proBtnText}>✨ VecindogPro</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.addBtn} onPress={() => (agregando ? setAgregando(false) : abrirForm())}>
+          <TouchableOpacity style={styles.addBtn} onPress={() => (agregando ? (setAgregando(false), setEditingId(null)) : abrirForm())}>
             <Text style={styles.addBtnText}>{agregando ? '✕' : '+ Agregar'}</Text>
           </TouchableOpacity>
         )}
@@ -93,6 +109,7 @@ export default function SeccionHistorial({
 
       {!locked && agregando && (
         <View style={styles.form}>
+          {editingId && <Text style={styles.editandoLabel}>Editando registro</Text>}
           {campos.map((c) => (
             <View key={c.key} style={styles.campo}>
               <Text style={styles.campoLabel}>{c.label}{c.requerido ? ' *' : ''}</Text>
@@ -125,9 +142,9 @@ export default function SeccionHistorial({
           ))}
           <View style={styles.formBtns}>
             <TouchableOpacity style={styles.guardarBtn} onPress={handleGuardar} disabled={saving}>
-              {saving ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarBtnText}>Guardar</Text>}
+              {saving ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarBtnText}>{editingId ? 'Guardar cambios' : 'Guardar'}</Text>}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelarBtn} onPress={() => setAgregando(false)}>
+            <TouchableOpacity style={styles.cancelarBtn} onPress={() => { setAgregando(false); setEditingId(null); }}>
               <Text style={styles.cancelarBtnText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
@@ -137,7 +154,7 @@ export default function SeccionHistorial({
       {items.length === 0 && !agregando ? (
         <Text style={styles.vacio}>{vacio ?? 'Sin datos todavía.'}</Text>
       ) : (
-        items.map((item) => <View key={item.id}>{renderItem(item)}</View>)
+        items.map((item) => <View key={item.id}>{renderItem(item, { editar: () => abrirEditar(item) })}</View>)
       )}
     </View>
   );
@@ -167,4 +184,5 @@ const styles = StyleSheet.create({
   cancelarBtn:    { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: Colors.border },
   cancelarBtnText: { color: Colors.inkMuted, fontWeight: '700', fontSize: 13 },
   vacio:          { fontSize: 13, color: Colors.inkMuted + '80', fontWeight: '600', paddingVertical: 6 },
+  editandoLabel:  { fontSize: 11, fontWeight: '800', color: Colors.primary, textTransform: 'uppercase' },
 });

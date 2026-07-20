@@ -47,7 +47,11 @@ async function fetchAvisosPage({
 }
 
 const CAT_COLOR: Record<string, string> = {
-  perdido: '#fca5a5', encontrado: '#86efac', adopcion: '#fcd34d',
+  perdido: '#fca5a5', encontrado: '#86efac', adopcion: '#fcd34d', transito: '#ddd6fe',
+};
+
+const CAT_LABEL: Record<string, string> = {
+  perdido: 'Perdido', encontrado: 'Encontrado', adopcion: 'En adopción', transito: 'En tránsito',
 };
 
 export default function AvisosScreen() {
@@ -144,7 +148,7 @@ export default function AvisosScreen() {
               <View style={styles.body}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <View style={[styles.badge, { backgroundColor: CAT_COLOR[p.categoria] ?? '#e5e7eb' }]}>
-                    <Text style={styles.badgeText}>{p.categoria}</Text>
+                    <Text style={styles.badgeText}>{CAT_LABEL[p.categoria] ?? p.categoria}</Text>
                   </View>
                   {p.estado === 'resuelto' && (
                     <View style={[styles.badge, { backgroundColor: '#d1fae5' }]}>

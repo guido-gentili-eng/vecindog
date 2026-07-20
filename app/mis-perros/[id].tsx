@@ -685,11 +685,11 @@ export default function PerroDetalleScreen() {
       {/* Grooming */}
       <GroomingSection perroId={id} grooming={grooming} locked={!isPro} onGuardado={setGrooming} />
 
-      {/* Contactos de emergencia */}
+      {/* Contactos de emergencia — gratis para todos, igual que en la web */}
       <SeccionHistorial
         titulo="Contactos de emergencia"
         emoji="🆘"
-        locked={!isPro}
+        locked={false}
         vacio="Sin contactos de emergencia."
         campos={[
           { key: 'nombre',   label: 'Nombre', requerido: true },
@@ -988,7 +988,7 @@ function ExtrasSection({
         <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/timeline`)}>
           <Text style={styles.extraRowText}>🗓️  Línea de tiempo</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}`)}>
+        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/cartel`)}>
           <Text style={styles.extraRowText}>🪪  Descargar carnet en PDF</Text>
         </TouchableOpacity>
       </View>

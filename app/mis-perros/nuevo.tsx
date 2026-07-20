@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert, Image,
+  TouchableOpacity, ActivityIndicator, Alert, Image, Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { resizeForUpload } from '@/lib/imageUtils';
@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
 
 const SEXOS   = ['macho', 'hembra'];
 const TAMANOS = [{ k: 'pequeño', l: 'S' }, { k: 'mediano', l: 'M' }, { k: 'grande', l: 'L' }];
@@ -26,6 +27,23 @@ export default function NuevoPerroScreen() {
   const [descripcion,  setDescripcion]  = useState('');
   const [fotoUri,      setFotoUri]      = useState('');
   const [loading,      setLoading]      = useState(false);
+
+  const [razaSugerencias, setRazaSugerencias] = useState<string[]>([]);
+  const [mostrarRazaSug,  setMostrarRazaSug]  = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  function handleRazaChange(v: string) {
+    setRaza(v);
+    const found = buscarRazas(v);
+    setRazaSugerencias(found);
+    setMostrarRazaSug(found.length > 0);
+  }
+
+  function seleccionarRaza(r: string) {
+    setRaza(r);
+    setRazaSugerencias([]);
+    setMostrarRazaSug(false);
+  }
 
   async function elegirFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -94,10 +112,45 @@ export default function NuevoPerroScreen() {
       <TextInput style={styles.input} placeholder="Ej: Bobby" placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
 
       <Text style={styles.label}>Raza</Text>
-      <TextInput style={styles.input} placeholder="Ej: Labrador" placeholderTextColor={Colors.inkMuted} value={raza} onChangeText={setRaza} />
+      <TextInput
+        style={styles.input}
+        placeholder="Ej: Labrador, Ovejero, Mestizo…"
+        placeholderTextColor={Colors.inkMuted}
+        value={raza}
+        onChangeText={handleRazaChange}
+        onFocus={() => handleRazaChange(raza)}
+      />
+      {mostrarRazaSug && razaSugerencias.length > 0 && (
+        <View style={styles.sugerenciaList}>
+          {razaSugerencias.slice(0, 8).map((r) => (
+            <TouchableOpacity key={r} style={styles.sugerenciaItem} onPress={() => seleccionarRaza(r)}>
+              <Text style={styles.sugerenciaText}>🐕  {r}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <Text style={styles.label}>Color</Text>
-      <TextInput style={styles.input} placeholder="Ej: Marrón" placeholderTextColor={Colors.inkMuted} value={color} onChangeText={setColor} />
+      <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
+        <Text style={styles.pickerBtnText}>{color || 'No sé / no recuerdo'}</Text>
+        <Text style={styles.pickerBtnChevron}>⌄</Text>
+      </TouchableOpacity>
+
+      <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
+          <View style={styles.modalSheet}>
+            <Text style={styles.modalTitulo}>Color principal</Text>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { setColor(''); setShowColorPicker(false); }}>
+              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+            </TouchableOpacity>
+            {COLORES_PERRO.map((c) => (
+              <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setColor(c); setShowColorPicker(false); }}>
+                <Text style={[styles.modalOptionText, color === c && styles.modalOptionTextActive]}>{c}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Sexo */}
       <Text style={styles.label}>Sexo</Text>
@@ -169,4 +222,16 @@ const styles = StyleSheet.create({
   checkLabel:       { fontSize: 14, fontWeight: '600', color: Colors.ink },
   btn:              { backgroundColor: Colors.primary, borderRadius: 18, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnText:          { color: Colors.white, fontWeight: '900', fontSize: 16 },
+  sugerenciaList:     { borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginTop: 4, backgroundColor: Colors.white },
+  sugerenciaItem:     { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  sugerenciaText:     { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  pickerBtn:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: Colors.border },
+  pickerBtnText:      { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  pickerBtnChevron:   { fontSize: 16, color: Colors.inkMuted },
+  modalOverlay:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet:         { backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 8, paddingBottom: 24, maxHeight: '70%' },
+  modalTitulo:        { fontSize: 13, fontWeight: '800', color: Colors.inkMuted, paddingHorizontal: 18, paddingVertical: 10 },
+  modalOption:        { paddingHorizontal: 18, paddingVertical: 14, borderTopWidth: 1, borderTopColor: Colors.border },
+  modalOptionText:    { fontSize: 15, color: Colors.ink },
+  modalOptionTextActive: { color: Colors.primary, fontWeight: '700' },
 });

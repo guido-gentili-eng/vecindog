@@ -14,6 +14,10 @@ const CAT_COLOR: Record<string, string> = {
   transito:   '#7c3aed',
 };
 
+const LEYENDA_LABEL: Record<string, string> = {
+  perdido: 'Perdido', encontrado: 'Visto', adopcion: 'En adopción', transito: 'En la calle',
+};
+
 export default function MapaScreen() {
   const [posts,    setPosts]    = useState<any[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -90,7 +94,7 @@ export default function MapaScreen() {
               <View style={styles.callout}>
                 <View style={styles.calloutCatRow}>
                   <CategoriaDot categoria={p.categoria} size={8} />
-                  <Text style={styles.calloutEmoji}>{p.categoria}</Text>
+                  <Text style={styles.calloutEmoji}>{LEYENDA_LABEL[p.categoria] ?? p.categoria}</Text>
                 </View>
                 <Text style={styles.calloutNombre}>{p.nombre || 'Sin nombre'}</Text>
                 <Text style={styles.calloutZona}>📍 {p.zona || '—'}</Text>
@@ -106,7 +110,7 @@ export default function MapaScreen() {
         {Object.keys(CAT_COLOR).map((cat) => (
           <View key={cat} style={styles.leyendaItem}>
             <CategoriaDot categoria={cat} size={10} />
-            <Text style={styles.leyendaText}>{cat}</Text>
+            <Text style={styles.leyendaText}>{LEYENDA_LABEL[cat] ?? cat}</Text>
           </View>
         ))}
         <Text style={styles.leyendaCount}>{posts.length} avisos</Text>

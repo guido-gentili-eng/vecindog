@@ -32,17 +32,3 @@ export async function actualizarPerro(id: string, input: PerroExtraInput): Promi
   const { error } = await supabase.from('perros').update(patch).eq('id', id).eq('user_id', user.id);
   if (error) throw error;
 }
-
-export async function guardarCartoonUrl(id: string, cartoon_url: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
-  const { error } = await supabase.from('perros').update({ cartoon_url }).eq('id', id).eq('user_id', user.id);
-  if (error) throw error;
-}
-
-export async function guardarFotoPerfil(id: string, foto_url: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No autorizado');
-  const { error } = await supabase.from('perros').update({ foto_url }).eq('id', id).eq('user_id', user.id);
-  if (error) throw error;
-}

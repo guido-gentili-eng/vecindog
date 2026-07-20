@@ -30,7 +30,7 @@ import {
 } from '@/lib/procedimientos';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { actualizarPerro, guardarFotoPerfil, type EstadoSalud } from '@/lib/perros';
+import { actualizarPerro, type EstadoSalud } from '@/lib/perros';
 import { agregarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
 import { obtenerGrooming, guardarGrooming, type Grooming, type TipoGrooming } from '@/lib/grooming';
 import {
@@ -353,8 +353,8 @@ export default function PerroDetalleScreen() {
         <Text style={styles.historiaBtnText}>📤  Compartir Historia Clínica</Text>
       </TouchableOpacity>
 
-      {/* QR de collar + Caricatura IA + accesos a herramientas web */}
-      <ExtrasSection perro={perro} perroId={id} isPro={isPro} onFotoActualizada={(url) => setPerro((prev) => prev ? { ...prev, foto_url: url } : prev)} />
+      {/* QR de collar + accesos a herramientas web */}
+      <ExtrasSection perro={perro} perroId={id} />
 
       {/* Perfil extendido: alergias, veterinario, dirección, dieta, estado de salud */}
       <View style={styles.seccion}>
@@ -927,23 +927,13 @@ function GroomingSection({
   );
 }
 
-const ESTILOS_CARICATURA = ['3D', 'Clay', 'Toy', 'Pixels', 'Video game', 'Emoji'];
-
 function ExtrasSection({
-  perro, perroId, isPro, onFotoActualizada,
+  perro, perroId,
 }: {
-  perro: Perro; perroId: string; isPro: boolean;
-  onFotoActualizada: (url: string) => void;
+  perro: Perro; perroId: string;
 }) {
-  const { session } = useAuth();
   const [mostrarQR, setMostrarQR] = useState(false);
   const [compartiendoQR, setCompartiendoQR] = useState(false);
-  const [estilo, setEstilo] = useState('3D');
-  const [generando, setGenerando] = useState(false);
-  const [caricaturaUrl, setCaricaturaUrl] = useState<string | null>(null);
-  const generandoRef = useRef(false);
-  const montadoRef = useRef(true);
-  useEffect(() => () => { montadoRef.current = false; }, []);
 
   const urlHistoria = `https://www.mivecindog.com.ar/historia/${perroId}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlHistoria)}`;
@@ -965,63 +955,6 @@ function ExtrasSection({
     }
   }
 
-  async function generarCaricatura() {
-    if (generandoRef.current) return; // guarda sincrónica contra doble-tap, el state solo se refleja recién en el próximo render
-    if (!perro.foto_url) { Alert.alert('Falta foto', 'Este perro no tiene foto todavía.'); return; }
-    if (!session?.access_token) { Alert.alert('Iniciá sesión', 'Necesitás estar logueado.'); return; }
-    generandoRef.current = true;
-    setGenerando(true);
-    setCaricaturaUrl(null);
-    try {
-      const res = await fetch('https://www.mivecindog.com.ar/api/cartoon-perro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({ foto_url: perro.foto_url, style: estilo, perro_id: perroId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? 'Error al generar la caricatura');
-
-      if (data.ok && data.url) {
-        setCaricaturaUrl(data.url);
-      } else if (data.pending && data.prediction_id) {
-        await pollCaricatura(data.prediction_id);
-      } else {
-        throw new Error('Respuesta inesperada');
-      }
-    } catch (e: any) {
-      if (montadoRef.current) Alert.alert('Error', e.message ?? 'No se pudo generar la caricatura.');
-    } finally {
-      generandoRef.current = false;
-      if (montadoRef.current) setGenerando(false);
-    }
-  }
-
-  async function pollCaricatura(predictionId: string, intentos = 0) {
-    if (!montadoRef.current) return; // el usuario navegó a otra pantalla, no seguir sondeando
-    if (intentos > 20) { Alert.alert('Tiempo agotado', 'La generación tardó demasiado, intentá de nuevo.'); return; }
-    await new Promise((r) => setTimeout(r, 3000));
-    if (!montadoRef.current) return;
-    const res = await fetch(`https://www.mivecindog.com.ar/api/cartoon-perro?id=${predictionId}&perro_id=${perroId}`, {
-      headers: { 'Authorization': `Bearer ${session?.access_token}` },
-    });
-    if (!montadoRef.current) return;
-    const data = await res.json();
-    if (data.ok && data.url) { setCaricaturaUrl(data.url); return; }
-    if (data.error) { Alert.alert('Error', data.error); return; }
-    await pollCaricatura(predictionId, intentos + 1);
-  }
-
-  async function usarComoFotoPerfil() {
-    if (!caricaturaUrl) return;
-    try {
-      await guardarFotoPerfil(perroId, caricaturaUrl);
-      onFotoActualizada(caricaturaUrl);
-      Alert.alert('✅ Listo', 'Se actualizó la foto de perfil.');
-    } catch {
-      Alert.alert('Error', 'No se pudo guardar la foto.');
-    }
-  }
-
   return (
     <View style={styles.seccion}>
       <Text style={styles.seccionTitulo}>✨  Extras</Text>
@@ -1040,37 +973,6 @@ function ExtrasSection({
               {compartiendoQR ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Compartir QR</Text>}
             </TouchableOpacity>
           </View>
-        )}
-      </View>
-
-      {/* Caricatura IA */}
-      <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 14 }}>
-        <Text style={styles.extraRowText}>🎨  Caricatura con IA</Text>
-        {isPro ? (
-          <>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-              {ESTILOS_CARICATURA.map((e) => (
-                <TouchableOpacity key={e} style={[styles.estadoChip, estilo === e && styles.estadoChipActive]} onPress={() => setEstilo(e)}>
-                  <Text style={[styles.estadoChipText, estilo === e && styles.estadoChipTextActive]}>{e}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TouchableOpacity style={[styles.guardarPerfilBtn, { marginTop: 10 }]} onPress={generarCaricatura} disabled={generando}>
-              {generando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Generar caricatura</Text>}
-            </TouchableOpacity>
-            {caricaturaUrl && (
-              <View style={{ alignItems: 'center', marginTop: 12 }}>
-                <Image source={{ uri: caricaturaUrl }} style={styles.caricaturaImg} />
-                <TouchableOpacity style={[styles.guardarPerfilBtn, { marginTop: 8 }]} onPress={usarComoFotoPerfil}>
-                  <Text style={styles.guardarPerfilBtnText}>Usar como foto de perfil</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </>
-        ) : (
-          <TouchableOpacity style={[styles.subirBtn, { alignSelf: 'flex-start', marginTop: 8 }]} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.subirBtnText}>✨ Función Pro</Text>
-          </TouchableOpacity>
         )}
       </View>
 
@@ -1144,6 +1046,5 @@ const styles = StyleSheet.create({
   extraRowChevron:   { fontSize: 11, color: Colors.inkMuted },
   qrImg:             { width: 180, height: 180, borderRadius: 16, backgroundColor: Colors.cream },
   qrUrlText:         { fontSize: 10, color: Colors.inkMuted, marginTop: 8, marginBottom: 4, textAlign: 'center' },
-  caricaturaImg:      { width: 180, height: 180, borderRadius: 16, backgroundColor: Colors.cream },
   extraWebHint:      { fontSize: 11, color: Colors.inkMuted, fontStyle: 'italic', marginBottom: 4 },
 });

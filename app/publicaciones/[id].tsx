@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import { renovarPost, resolverPost, eliminarPost } from '@/lib/posts';
 import MensajesHilo from '@/components/MensajesHilo';
+import LoViPanel from '@/components/LoViPanel';
 
 const MOTIVOS = [
   'Información falsa o engañosa',
@@ -278,6 +279,19 @@ export default function PostDetailScreen() {
             <Text style={styles.descTitle}>Descripción</Text>
             <Text style={styles.descText}>{post.descripcion}</Text>
           </View>
+        )}
+
+        {/* Lo vi */}
+        {(post.categoria === 'perdido' || post.categoria === 'encontrado') && !resuelto && user && !isOwner && (
+          <LoViPanel
+            postId={post.id}
+            ownerId={post.user_id}
+            categoria={post.categoria}
+            nombre={post.nombre}
+            zonaActual={post.zona}
+            ciudad={post.ciudad}
+            onUpdated={(patch) => setPost((p: any) => p ? { ...p, ...patch } : p)}
+          />
         )}
 
         {/* CTA Contacto */}

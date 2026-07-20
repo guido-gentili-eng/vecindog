@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, ActivityIndicator, Alert, Image, Switch,
@@ -11,6 +11,9 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
+import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
+
+type ZonaSugerencia = { label: string; sub: string; lat: number; lng: number };
 
 const CATEGORIAS = [
   { key: 'perdido',    label: 'Perdido' },
@@ -34,6 +37,14 @@ export default function PublicarScreen() {
   const [coords,    setCoords]    = useState<{ lat: number; lng: number } | null>(null);
   const [locStatus, setLocStatus] = useState<'idle' | 'loading' | 'ok' | 'denied'>('idle');
   const [contactoPublico, setContactoPublico] = useState(true);
+
+  const [razaSugerencias, setRazaSugerencias] = useState<string[]>([]);
+  const [mostrarRazaSug,  setMostrarRazaSug]  = useState(false);
+
+  const [zonaSugerencias, setZonaSugerencias] = useState<ZonaSugerencia[]>([]);
+  const [zonaLoading,     setZonaLoading]     = useState(false);
+  const [mostrarZonaSug,  setMostrarZonaSug]  = useState(false);
+  const zonaDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mis perros
   type Perro = { id: string; nombre: string; raza: string | null; color: string | null; foto_url: string | null };
@@ -80,6 +91,65 @@ export default function PublicarScreen() {
     } catch {
       setLocStatus('denied');
     }
+  }
+
+  function handleRazaChange(v: string) {
+    setRaza(v);
+    const found = buscarRazas(v);
+    setRazaSugerencias(found);
+    setMostrarRazaSug(found.length > 0);
+  }
+
+  function seleccionarRaza(r: string) {
+    setRaza(r);
+    setRazaSugerencias([]);
+    setMostrarRazaSug(false);
+  }
+
+  function handleZonaChange(v: string) {
+    setZona(v);
+    setMostrarZonaSug(true);
+    if (zonaDebounceRef.current) clearTimeout(zonaDebounceRef.current);
+
+    if (v.trim().length < 3) {
+      setZonaSugerencias([]);
+      return;
+    }
+
+    zonaDebounceRef.current = setTimeout(async () => {
+      setZonaLoading(true);
+      try {
+        const query = profile?.ciudad ? `${v}, ${profile.ciudad}, Argentina` : `${v}, Argentina`;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&addressdetails=1&countrycodes=ar`,
+          { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+        );
+        const data = await res.json();
+        const parsed: ZonaSugerencia[] = (Array.isArray(data) ? data : []).map((s: any) => {
+          const a = s.address ?? {};
+          const road = a.road ?? a.pedestrian ?? a.footway ?? a.residential ?? '';
+          const num  = a.house_number ?? '';
+          const calle = [road, num].filter(Boolean).join(' ') || String(s.display_name ?? '').split(',')[0].trim();
+          const ciudadSug = a.city ?? a.town ?? a.village ?? a.suburb ?? '';
+          return { label: calle, sub: ciudadSug, lat: parseFloat(s.lat), lng: parseFloat(s.lon) };
+        }).filter((s: ZonaSugerencia) => s.label);
+        setZonaSugerencias(parsed);
+      } catch {
+        setZonaSugerencias([]);
+      } finally {
+        setZonaLoading(false);
+      }
+    }, 400);
+  }
+
+  function seleccionarZona(s: ZonaSugerencia) {
+    setZona(s.label);
+    if (!isNaN(s.lat) && !isNaN(s.lng)) {
+      setCoords({ lat: s.lat, lng: s.lng });
+      setLocStatus('ok');
+    }
+    setZonaSugerencias([]);
+    setMostrarZonaSug(false);
   }
 
   async function elegirFoto() {
@@ -292,10 +362,42 @@ export default function PublicarScreen() {
       <TextInput style={styles.input} placeholder="Ej: Bobby" placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
 
       <Text style={styles.label}>Raza</Text>
-      <TextInput style={styles.input} placeholder="Ej: Labrador, criollo…" placeholderTextColor={Colors.inkMuted} value={raza} onChangeText={setRaza} />
+      <TextInput
+        style={styles.input}
+        placeholder="Ej: Labrador, Ovejero, Mestizo…"
+        placeholderTextColor={Colors.inkMuted}
+        value={raza}
+        onChangeText={handleRazaChange}
+        onFocus={() => handleRazaChange(raza)}
+      />
+      {mostrarRazaSug && razaSugerencias.length > 0 && (
+        <View style={styles.sugerenciaList}>
+          {razaSugerencias.slice(0, 8).map((r) => (
+            <TouchableOpacity key={r} style={styles.sugerenciaItem} onPress={() => seleccionarRaza(r)}>
+              <Text style={styles.sugerenciaText}>🐕  {r}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-      <Text style={styles.label}>Color</Text>
-      <TextInput style={styles.input} placeholder="Ej: marrón y blanco" placeholderTextColor={Colors.inkMuted} value={color} onChangeText={setColor} />
+      <Text style={styles.label}>Color principal</Text>
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={[styles.optBtn, color === '' && styles.optBtnActive]}
+          onPress={() => setColor('')}
+        >
+          <Text style={[styles.optText, color === '' && styles.optTextActive]}>No sé / no recuerdo</Text>
+        </TouchableOpacity>
+        {COLORES_PERRO.map((c) => (
+          <TouchableOpacity
+            key={c}
+            style={[styles.optBtn, color === c && styles.optBtnActive]}
+            onPress={() => setColor(c)}
+          >
+            <Text style={[styles.optText, color === c && styles.optTextActive]}>{c}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Ubicación GPS */}
       <Text style={styles.label}>Ubicación en el mapa</Text>
@@ -316,8 +418,30 @@ export default function PublicarScreen() {
         }
       </TouchableOpacity>
 
-      <Text style={styles.label}>Zona / Barrio *</Text>
-      <TextInput style={styles.input} placeholder="Ej: Barrio Palihue, calle Sarmiento" placeholderTextColor={Colors.inkMuted} value={zona} onChangeText={setZona} />
+      <Text style={styles.label}>Dirección o zona *</Text>
+      <View>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: Barrio Palihue, calle Sarmiento"
+          placeholderTextColor={Colors.inkMuted}
+          value={zona}
+          onChangeText={handleZonaChange}
+          onFocus={() => zonaSugerencias.length > 0 && setMostrarZonaSug(true)}
+        />
+        {zonaLoading && (
+          <ActivityIndicator style={styles.zonaLoadingIcon} color={Colors.inkMuted} size="small" />
+        )}
+      </View>
+      {mostrarZonaSug && zonaSugerencias.length > 0 && (
+        <View style={styles.sugerenciaList}>
+          {zonaSugerencias.map((s, i) => (
+            <TouchableOpacity key={i} style={styles.sugerenciaItem} onPress={() => seleccionarZona(s)}>
+              <Text style={styles.sugerenciaText}>📍  {s.label}</Text>
+              {!!s.sub && <Text style={styles.sugerenciaSub}>{s.sub}</Text>}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <Text style={styles.label}>Descripción</Text>
       <TextInput
@@ -426,4 +550,9 @@ const styles = StyleSheet.create({
   perroSelecNombre:   { fontSize: 14, fontWeight: '700', color: Colors.ink },
   perroSelecSub:      { fontSize: 12, color: Colors.inkMuted },
   perroSelecCambiar:  { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  sugerenciaList:     { borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginTop: 4, backgroundColor: Colors.white },
+  sugerenciaItem:      { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  sugerenciaText:      { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  sugerenciaSub:       { fontSize: 11, color: Colors.inkMuted, marginTop: 2, marginLeft: 20 },
+  zonaLoadingIcon:     { position: 'absolute', right: 14, top: 15 },
 });

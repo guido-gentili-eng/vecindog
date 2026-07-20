@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
-  ActivityIndicator, Alert, Linking,
+  ActivityIndicator, Alert, Linking, TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
+import { buscarRazas } from '@/lib/razas';
 
 const COLORES = [
   'Negro', 'Blanco', 'Marrón', 'Caramelo', 'Dorado',
@@ -21,6 +22,7 @@ interface Post {
   id: string; nombre: string | null; raza: string | null; color: string | null;
   tamano: string | null; zona: string | null; ciudad: string | null;
   images: string[] | null; categoria: string; created_at: string;
+  collar: boolean | null; chapita: boolean | null;
 }
 interface PostConScore { post: Post; score: number; matches: string[] }
 
@@ -32,7 +34,10 @@ function textosCoinciden(a: string, b: string) {
   return !!na && !!nb && (na === nb || na.includes(nb) || nb.includes(na));
 }
 
-function calcularScore(post: Post, color: string, raza: string, tamano: Tamano): PostConScore {
+function calcularScore(
+  post: Post, color: string, raza: string, tamano: Tamano,
+  collar: boolean | null, chapita: boolean | null,
+): PostConScore {
   let score = 0, maxPosible = 0;
   const matches: string[] = [];
 
@@ -49,6 +54,14 @@ function calcularScore(post: Post, color: string, raza: string, tamano: Tamano):
     if (post.tamano === tamano) { score += 15; matches.push(`Tamaño: ${post.tamano}`); }
     else if (post.tamano) { score = Math.max(0, score - 8); }
   }
+  if (collar !== null) {
+    maxPosible += 5;
+    if (post.collar === collar) { score += 5; matches.push(collar ? 'Con collar' : 'Sin collar'); }
+  }
+  if (chapita !== null) {
+    maxPosible += 5;
+    if (post.chapita === chapita) { score += 5; matches.push(chapita ? 'Con chapita' : 'Sin chapita'); }
+  }
 
   const pct = maxPosible > 0 ? Math.round((score / maxPosible) * 100) : 0;
   return { post, score: pct, matches };
@@ -62,13 +75,41 @@ export default function BuscarPorFotoScreen() {
   const [raza,    setRaza]    = useState('');
   const [tamano,  setTamano]  = useState<Tamano>('');
   const [descripcionIA, setDescripcionIA] = useState('');
+  const [collar,  setCollar]  = useState<boolean | null>(null);
+  const [chapita, setChapita] = useState<boolean | null>(null);
+  const [razaSugerencias, setRazaSugerencias] = useState<string[]>([]);
+  const [mostrarRazaSug,  setMostrarRazaSug]  = useState(false);
   const [buscando, setBuscando] = useState(false);
   const [resultados, setResultados] = useState<PostConScore[] | null>(null);
+
+  function handleRazaChange(v: string) {
+    setRaza(v);
+    const found = buscarRazas(v);
+    setRazaSugerencias(found);
+    setMostrarRazaSug(found.length > 0);
+  }
+
+  function seleccionarRaza(r: string) {
+    setRaza(r);
+    setRazaSugerencias([]);
+    setMostrarRazaSug(false);
+  }
 
   async function elegirFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
+    if (result.canceled) return;
+    const uri = result.assets[0].uri;
+    setFoto(uri);
+    setResultados(null);
+    await analizarFoto(uri);
+  }
+
+  async function tomarFoto() {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu cámara'); return; }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
     setFoto(uri);
@@ -116,7 +157,7 @@ export default function BuscarPorFotoScreen() {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('id, nombre, raza, color, tamano, zona, ciudad, images, categoria, created_at')
+        .select('id, nombre, raza, color, tamano, zona, ciudad, images, categoria, created_at, collar, chapita')
         .in('categoria', ['perdido', 'encontrado'])
         .neq('estado', 'resuelto')
         .order('created_at', { ascending: false })
@@ -124,7 +165,7 @@ export default function BuscarPorFotoScreen() {
       if (error) throw error;
 
       const conScore = (data ?? [])
-        .map((p) => calcularScore(p as Post, color, raza, tamano))
+        .map((p) => calcularScore(p as Post, color, raza, tamano, collar, chapita))
         .filter((r) => r.score >= 30)
         .sort((a, b) => b.score - a.score);
 
@@ -164,7 +205,7 @@ export default function BuscarPorFotoScreen() {
         ) : (
           <>
             <Text style={{ fontSize: 32 }}>📷</Text>
-            <Text style={styles.fotoBoxText}>Elegir foto</Text>
+            <Text style={styles.fotoBoxText}>Elegir de la galería</Text>
           </>
         )}
         {analizando && (
@@ -174,6 +215,21 @@ export default function BuscarPorFotoScreen() {
           </View>
         )}
       </TouchableOpacity>
+
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+        <TouchableOpacity style={styles.camaraBtn} onPress={tomarFoto} disabled={analizando}>
+          <Text style={styles.camaraBtnText}>📸  Tomar foto</Text>
+        </TouchableOpacity>
+        {foto && (
+          <TouchableOpacity
+            style={styles.camaraBtn}
+            onPress={() => { setFoto(null); setResultados(null); setColor(''); setRaza(''); setTamano(''); setCollar(null); setChapita(null); setDescripcionIA(''); }}
+            disabled={analizando}
+          >
+            <Text style={styles.camaraBtnText}>↺  Empezar de nuevo</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {descripcionIA ? <Text style={styles.descripcionIA}>🐾 {descripcionIA}</Text> : null}
 
@@ -198,9 +254,41 @@ export default function BuscarPorFotoScreen() {
           </View>
 
           <Text style={styles.label}>Raza (opcional)</Text>
-          <TouchableOpacity style={styles.razaBox} onPress={() => Alert.prompt?.('Raza', 'Ingresá la raza', (t) => setRaza(t ?? ''), 'plain-text', raza)}>
-            <Text style={{ color: raza ? Colors.ink : Colors.inkMuted }}>{raza || 'Tocá para escribir la raza'}</Text>
-          </TouchableOpacity>
+          <TextInput
+            style={styles.razaBox}
+            placeholder="Ej: Labrador, Ovejero, Mestizo…"
+            placeholderTextColor={Colors.inkMuted}
+            value={raza}
+            onChangeText={handleRazaChange}
+            onFocus={() => handleRazaChange(raza)}
+          />
+          {mostrarRazaSug && razaSugerencias.length > 0 && (
+            <View style={styles.sugerenciaList}>
+              {razaSugerencias.slice(0, 6).map((r) => (
+                <TouchableOpacity key={r} style={styles.sugerenciaItem} onPress={() => seleccionarRaza(r)}>
+                  <Text style={styles.sugerenciaText}>🐕  {r}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <Text style={styles.label}>¿Tenía collar?</Text>
+          <View style={styles.chipsRow}>
+            {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+              <TouchableOpacity key={String(v)} style={[styles.chip, collar === v && styles.chipActive]} onPress={() => setCollar(v)}>
+                <Text style={[styles.chipText, collar === v && styles.chipTextActive]}>{l}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.label}>¿Tenía chapita?</Text>
+          <View style={styles.chipsRow}>
+            {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+              <TouchableOpacity key={String(v)} style={[styles.chip, chapita === v && styles.chipActive]} onPress={() => setChapita(v)}>
+                <Text style={[styles.chipText, chapita === v && styles.chipTextActive]}>{l}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <TouchableOpacity style={styles.buscarBtn} onPress={buscar} disabled={buscando}>
             {buscando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.buscarBtnText}>🔍  Buscar en avisos activos</Text>}
@@ -254,7 +342,12 @@ const styles = StyleSheet.create({
   chipActive:      { backgroundColor: Colors.primary, borderColor: Colors.primary },
   chipText:        { fontSize: 13, fontWeight: '600', color: Colors.inkMuted, textTransform: 'capitalize' },
   chipTextActive:  { color: Colors.white },
-  razaBox:         { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12 },
+  razaBox:         { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: Colors.ink },
+  camaraBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.white, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.primary, paddingVertical: 11 },
+  camaraBtnText:   { color: Colors.primary, fontWeight: '700', fontSize: 13 },
+  sugerenciaList:  { borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginTop: 4, backgroundColor: Colors.white },
+  sugerenciaItem:  { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  sugerenciaText:  { fontSize: 14, color: Colors.ink, fontWeight: '600' },
   buscarBtn:       { backgroundColor: Colors.primary, borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginTop: 22 },
   buscarBtnText:   { color: Colors.white, fontWeight: '800', fontSize: 14 },
   resultadosTitulo: { fontSize: 14, fontWeight: '800', color: Colors.ink, marginBottom: 10 },

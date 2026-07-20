@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Image, TouchableOpacity,
-  ActivityIndicator, Alert, Linking, Share, Platform, TextInput,
+  ActivityIndicator, Alert, Linking, Share, Platform, TextInput, Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
@@ -31,6 +31,7 @@ import {
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { actualizarPerro, type EstadoSalud } from '@/lib/perros';
+import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
 import { agregarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
 import { obtenerGrooming, guardarGrooming, type Grooming, type TipoGrooming } from '@/lib/grooming';
 import {
@@ -99,10 +100,28 @@ export default function PerroDetalleScreen() {
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [guardandoPerfil, setGuardandoPerfil] = useState(false);
   const [formPerfil, setFormPerfil] = useState({
+    nombre: '', raza: '', color: '', sexo: '', tamano: '', fecha_nac: '', chip: '', descripcion: '',
     alergias: '', vet_nombre: '', vet_telefono: '', direccion: '',
     estado_salud: '' as EstadoSalud | '', dieta_marca: '', dieta_cantidad: '',
     dieta_frecuencia: '', dieta_notas: '',
   });
+  const [razaSugerencias, setRazaSugerencias] = useState<string[]>([]);
+  const [mostrarRazaSug,  setMostrarRazaSug]  = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [subiendoFotoPerfil, setSubiendoFotoPerfil] = useState(false);
+
+  function handleRazaChange(v: string) {
+    setFormPerfil((f) => ({ ...f, raza: v }));
+    const found = buscarRazas(v);
+    setRazaSugerencias(found);
+    setMostrarRazaSug(found.length > 0);
+  }
+
+  function seleccionarRaza(r: string) {
+    setFormPerfil((f) => ({ ...f, raza: r }));
+    setRazaSugerencias([]);
+    setMostrarRazaSug(false);
+  }
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -134,6 +153,14 @@ export default function PerroDetalleScreen() {
       setFotos(f);
       if (p) {
         setFormPerfil({
+          nombre:           p.nombre ?? '',
+          raza:             p.raza ?? '',
+          color:            p.color ?? '',
+          sexo:             p.sexo ?? '',
+          tamano:           p.tamano ?? '',
+          fecha_nac:        p.fecha_nac ?? '',
+          chip:             p.chip ?? '',
+          descripcion:      p.descripcion ?? '',
           alergias:         p.alergias ?? '',
           vet_nombre:       p.vet_nombre ?? '',
           vet_telefono:     p.vet_telefono ?? '',
@@ -182,6 +209,24 @@ export default function PerroDetalleScreen() {
       Alert.alert('Error', 'No se pudo subir la foto.');
     } finally {
       setSubiendoFoto(false);
+    }
+  }
+
+  async function cambiarFotoPerfil() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
+    if (result.canceled) return;
+    setSubiendoFotoPerfil(true);
+    try {
+      const nombreArchivo = result.assets[0].fileName ?? `perfil-${Date.now()}.jpg`;
+      const url = await subirFotoGaleria(result.assets[0].uri, nombreArchivo);
+      await actualizarPerro(id, { foto_url: url });
+      setPerro((prev) => prev ? { ...prev, foto_url: url } : prev);
+    } catch {
+      Alert.alert('Error', 'No se pudo cambiar la foto. Verificá tu conexión.');
+    } finally {
+      setSubiendoFotoPerfil(false);
     }
   }
 
@@ -335,10 +380,17 @@ export default function PerroDetalleScreen() {
 
       {/* Header del perro */}
       <View style={styles.header}>
-        {perro.foto_url
-          ? <Image source={{ uri: perro.foto_url }} style={styles.foto} />
-          : <View style={[styles.foto, styles.fotoPlaceholder]}><Text style={{ fontSize: 48 }}>🐶</Text></View>
-        }
+        <TouchableOpacity onPress={cambiarFotoPerfil} disabled={subiendoFotoPerfil} style={{ position: 'relative' }}>
+          {perro.foto_url
+            ? <Image source={{ uri: perro.foto_url }} style={styles.foto} />
+            : <View style={[styles.foto, styles.fotoPlaceholder]}><Text style={{ fontSize: 48 }}>🐶</Text></View>
+          }
+          <View style={styles.fotoEditBadge}>
+            {subiendoFotoPerfil
+              ? <ActivityIndicator color={Colors.white} size="small" />
+              : <Text style={{ fontSize: 13 }}>📷</Text>}
+          </View>
+        </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.nombre}>{perro.nombre}</Text>
           <Text style={styles.sub}>
@@ -367,6 +419,79 @@ export default function PerroDetalleScreen() {
 
         {editandoPerfil ? (
           <View style={{ gap: 12 }}>
+            <CampoTexto label="Nombre" value={formPerfil.nombre} onChange={(t) => setFormPerfil((f) => ({ ...f, nombre: t }))} placeholder="Ej: Bobby" />
+
+            <View>
+              <Text style={styles.campoLabel}>Raza</Text>
+              <TextInput
+                style={styles.campoInput}
+                placeholder="Ej: Labrador, Ovejero, Mestizo…"
+                placeholderTextColor={Colors.inkMuted}
+                value={formPerfil.raza}
+                onChangeText={handleRazaChange}
+                onFocus={() => handleRazaChange(formPerfil.raza)}
+              />
+              {mostrarRazaSug && razaSugerencias.length > 0 && (
+                <View style={styles.sugerenciaList}>
+                  {razaSugerencias.slice(0, 8).map((r) => (
+                    <TouchableOpacity key={r} style={styles.sugerenciaItem} onPress={() => seleccionarRaza(r)}>
+                      <Text style={styles.sugerenciaText}>🐕  {r}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            <View>
+              <Text style={styles.campoLabel}>Color</Text>
+              <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
+                <Text style={styles.pickerBtnText}>{formPerfil.color || 'No sé / no recuerdo'}</Text>
+                <Text style={styles.pickerBtnChevron}>⌄</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
+              <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
+                <View style={styles.modalSheet}>
+                  <Text style={styles.modalTitulo}>Color principal</Text>
+                  <TouchableOpacity style={styles.modalOption} onPress={() => { setFormPerfil((f) => ({ ...f, color: '' })); setShowColorPicker(false); }}>
+                    <Text style={[styles.modalOptionText, formPerfil.color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+                  </TouchableOpacity>
+                  {COLORES_PERRO.map((c) => (
+                    <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setFormPerfil((f) => ({ ...f, color: c })); setShowColorPicker(false); }}>
+                      <Text style={[styles.modalOptionText, formPerfil.color === c && styles.modalOptionTextActive]}>{c}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </TouchableOpacity>
+            </Modal>
+
+            <View>
+              <Text style={styles.campoLabel}>Sexo</Text>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                {([['macho', 'Macho'], ['hembra', 'Hembra']] as const).map(([v, l]) => (
+                  <TouchableOpacity key={v} style={[styles.estadoChip, formPerfil.sexo === v && styles.estadoChipActive]} onPress={() => setFormPerfil((f) => ({ ...f, sexo: f.sexo === v ? '' : v }))}>
+                    <Text style={[styles.estadoChipText, formPerfil.sexo === v && styles.estadoChipTextActive]}>{l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View>
+              <Text style={styles.campoLabel}>Tamaño</Text>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+                  <TouchableOpacity key={v} style={[styles.estadoChip, formPerfil.tamano === v && styles.estadoChipActive]} onPress={() => setFormPerfil((f) => ({ ...f, tamano: f.tamano === v ? '' : v }))}>
+                    <Text style={[styles.estadoChipText, formPerfil.tamano === v && styles.estadoChipTextActive]}>{l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <CampoTexto label="Fecha de nacimiento (AAAA-MM-DD)" value={formPerfil.fecha_nac} onChange={(t) => setFormPerfil((f) => ({ ...f, fecha_nac: t }))} placeholder="Ej: 2022-05-14" />
+            <CampoTexto label="Nº de microchip" value={formPerfil.chip} onChange={(t) => setFormPerfil((f) => ({ ...f, chip: t }))} />
+            <CampoTexto label="Descripción" value={formPerfil.descripcion} onChange={(t) => setFormPerfil((f) => ({ ...f, descripcion: t }))} multiline />
+
             <CampoTexto label="Alergias" value={formPerfil.alergias} onChange={(t) => setFormPerfil((f) => ({ ...f, alergias: t }))} placeholder="Ej: pollo, polen" />
             <CampoTexto label="Veterinario habitual" value={formPerfil.vet_nombre} onChange={(t) => setFormPerfil((f) => ({ ...f, vet_nombre: t }))} />
             <CampoTexto label="Teléfono del veterinario" value={formPerfil.vet_telefono} onChange={(t) => setFormPerfil((f) => ({ ...f, vet_telefono: t }))} keyboardType="phone-pad" />
@@ -1002,6 +1127,7 @@ const styles = StyleSheet.create({
   header:            { flexDirection: 'row', gap: 14, alignItems: 'center', backgroundColor: Colors.white, borderRadius: 20, padding: 14, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   foto:              { width: 80, height: 80, borderRadius: 16 },
   fotoPlaceholder:   { backgroundColor: Colors.cream, alignItems: 'center', justifyContent: 'center' },
+  fotoEditBadge:     { position: 'absolute', bottom: -4, right: -4, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: Colors.white },
   headerInfo:        { flex: 1 },
   nombre:            { fontSize: 20, fontWeight: '900', color: Colors.ink },
   sub:               { fontSize: 13, color: Colors.inkMuted, marginTop: 2 },
@@ -1047,4 +1173,16 @@ const styles = StyleSheet.create({
   qrImg:             { width: 180, height: 180, borderRadius: 16, backgroundColor: Colors.cream },
   qrUrlText:         { fontSize: 10, color: Colors.inkMuted, marginTop: 8, marginBottom: 4, textAlign: 'center' },
   extraWebHint:      { fontSize: 11, color: Colors.inkMuted, fontStyle: 'italic', marginBottom: 4 },
+  sugerenciaList:     { borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginTop: 4, backgroundColor: Colors.white },
+  sugerenciaItem:     { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  sugerenciaText:     { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  pickerBtn:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: Colors.border, marginTop: 4 },
+  pickerBtnText:      { fontSize: 14, color: Colors.ink, fontWeight: '600' },
+  pickerBtnChevron:   { fontSize: 16, color: Colors.inkMuted },
+  modalOverlay:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet:         { backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 8, paddingBottom: 24, maxHeight: '70%' },
+  modalTitulo:        { fontSize: 13, fontWeight: '800', color: Colors.inkMuted, paddingHorizontal: 18, paddingVertical: 10 },
+  modalOption:        { paddingHorizontal: 18, paddingVertical: 14, borderTopWidth: 1, borderTopColor: Colors.border },
+  modalOptionText:    { fontSize: 15, color: Colors.ink },
+  modalOptionTextActive: { color: Colors.primary, fontWeight: '700' },
 });

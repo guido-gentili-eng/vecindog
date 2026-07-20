@@ -3,6 +3,15 @@ import { supabase } from './supabase';
 export type EstadoSalud = 'saludable' | 'en_tratamiento' | 'en_recuperacion';
 
 export interface PerroExtraInput {
+  nombre?:            string;
+  raza?:              string;
+  color?:              string;
+  sexo?:               string;
+  tamano?:             string;
+  fecha_nac?:          string;
+  chip?:               string;
+  descripcion?:        string;
+  foto_url?:           string;
   alergias?:         string;
   vet_nombre?:       string;
   vet_telefono?:     string;
@@ -19,6 +28,15 @@ export async function actualizarPerro(id: string, input: PerroExtraInput): Promi
   if (!user) throw new Error('No autorizado');
 
   const patch: Record<string, unknown> = {};
+  if (input.nombre           !== undefined) patch.nombre           = input.nombre           || null;
+  if (input.raza             !== undefined) patch.raza             = input.raza             || null;
+  if (input.color            !== undefined) patch.color            = input.color            || null;
+  if (input.sexo             !== undefined) patch.sexo             = input.sexo             || null;
+  if (input.tamano           !== undefined) patch.tamano           = input.tamano           || null;
+  if (input.fecha_nac        !== undefined) patch.fecha_nac        = input.fecha_nac        || null;
+  if (input.chip             !== undefined) patch.chip             = input.chip             || null;
+  if (input.descripcion      !== undefined) patch.descripcion      = input.descripcion      || null;
+  if (input.foto_url         !== undefined) patch.foto_url         = input.foto_url         || null;
   if (input.alergias         !== undefined) patch.alergias         = input.alergias         || null;
   if (input.vet_nombre       !== undefined) patch.vet_nombre       = input.vet_nombre       || null;
   if (input.vet_telefono     !== undefined) patch.vet_telefono     = input.vet_telefono     || null;

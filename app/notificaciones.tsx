@@ -37,7 +37,7 @@ export default function NotificacionesScreen() {
   const [procesadas, setProcesadas] = useState<Set<string>>(new Set());
 
   async function cargar() {
-    if (!user) return;
+    if (!user) { setLoading(false); setRefreshing(false); return; }
     const { data } = await supabase
       .from('notifications')
       .select('*')

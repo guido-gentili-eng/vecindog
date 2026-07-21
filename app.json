@@ -50,7 +50,8 @@
           "color": "#B85C4A"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

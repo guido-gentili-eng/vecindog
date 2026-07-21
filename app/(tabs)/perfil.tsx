@@ -15,7 +15,7 @@ import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
 type PerroSOS = { id: string; nombre: string; raza: string | null; color: string | null; foto_url: string | null };
 
 export default function PerfilScreen() {
-  const { user, profile, isPro, signOut, saveProfile } = useAuth();
+  const { user, profile, isPro, isGuest, exitGuest, signOut, saveProfile } = useAuth();
   const [editando,   setEditando]   = useState(false);
   const [saving,     setSaving]     = useState(false);
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
@@ -112,6 +112,26 @@ export default function PerfilScreen() {
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Salir', style: 'destructive', onPress: () => signOut() },
     ]);
+  }
+
+  function handleCrearCuenta() {
+    exitGuest();
+    router.replace('/(auth)/login');
+  }
+
+  if (isGuest) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', padding: 32 }]}>
+        <Text style={{ fontSize: 56, marginBottom: 12 }}>🐾</Text>
+        <Text style={styles.emptyPromptTitle}>Estás navegando como invitado</Text>
+        <Text style={[styles.emptyPromptSub, { marginTop: 8, marginBottom: 20 }]}>
+          Creá una cuenta gratis para publicar avisos, contactar vecinos y guardar tus perros.
+        </Text>
+        <TouchableOpacity style={styles.emptyPromptBtn} onPress={handleCrearCuenta}>
+          <Text style={styles.emptyPromptBtnText}>Crear cuenta gratis →</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (

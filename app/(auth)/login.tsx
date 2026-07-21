@@ -9,10 +9,11 @@ import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 
 export default function LoginScreen() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword, enterAsGuest } = useAuth();
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [loading,    setLoading]    = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [mode,          setMode]          = useState<'login' | 'register'>('login');
   const [recovering,    setRecovering]    = useState(false);
   const [confirm,       setConfirm]       = useState('');
@@ -27,13 +28,28 @@ export default function LoginScreen() {
       return;
     }
     setRecovering(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const err = await resetPassword(email.trim());
     setRecovering(false);
-    if (error) {
-      Alert.alert('Error', tradError(error.message));
+    if (err) {
+      Alert.alert('Error', tradError(err));
     } else {
       Alert.alert('¡Revisá tu email!', 'Te enviamos un link para restablecer tu contraseña.');
     }
+  }
+
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    try {
+      const err = await signInWithGoogle();
+      if (err) Alert.alert('Error', err);
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
+  function handleGuest() {
+    enterAsGuest();
+    router.replace('/(tabs)');
   }
 
   async function handleSubmit() {
@@ -192,6 +208,28 @@ export default function LoginScreen() {
           )}
         </View>
 
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.googleBtn, googleLoading && styles.btnDisabled]}
+          onPress={handleGoogle}
+          disabled={googleLoading}
+        >
+          {googleLoading
+            ? <ActivityIndicator color={Colors.ink} />
+            : <Text style={styles.googleBtnText}>🔵 Continuar con Google</Text>
+          }
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.guestBtn} onPress={handleGuest}>
+          <Text style={styles.guestBtnText}>Continuar sin cuenta</Text>
+        </TouchableOpacity>
+        <Text style={styles.guestNote}>Podés explorar la app, pero vas a necesitar una cuenta para publicar avisos o contactar vecinos.</Text>
+
         {mode === 'register' && (
           <>
           <TouchableOpacity
@@ -284,6 +322,14 @@ const styles = StyleSheet.create({
   btnText:      { color: Colors.white, fontWeight: '800', fontSize: 16 },
   forgotBtn:    { alignItems: 'center', paddingVertical: 10 },
   forgotText:   { fontSize: 13, fontWeight: '600', color: Colors.primary },
+  dividerRow:   { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20, marginBottom: 16 },
+  dividerLine:  { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText:  { fontSize: 12, color: Colors.inkMuted, fontWeight: '600' },
+  googleBtn:    { backgroundColor: Colors.white, borderRadius: 16, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
+  googleBtnText: { fontSize: 15, fontWeight: '700', color: Colors.ink },
+  guestBtn:     { alignItems: 'center', paddingVertical: 14, marginTop: 8 },
+  guestBtnText: { fontSize: 14, fontWeight: '700', color: Colors.inkMuted, textDecorationLine: 'underline' },
+  guestNote:    { fontSize: 11, color: Colors.inkMuted, textAlign: 'center', marginTop: -4, paddingHorizontal: 12, lineHeight: 16 },
   legal:           { marginTop: 20, textAlign: 'center', fontSize: 11, color: Colors.inkMuted, lineHeight: 16 },
   legalLink:       { color: Colors.primary, fontWeight: '700', textDecorationLine: 'underline' },
   consentRow:      { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 16 },

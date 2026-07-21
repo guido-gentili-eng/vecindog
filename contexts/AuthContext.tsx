@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { supabase } from '@/lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
+
+const GUEST_KEY = 'vecindog_guest';
 
 export interface Profile {
   id:        string;
@@ -23,11 +30,17 @@ interface AuthCtx {
   profile:         Profile | null;
   loading:         boolean;
   isAuthenticated: boolean;
+  isGuest:         boolean;
+  hasChosen:       boolean;
   isPro:           boolean;
   signIn:          (email: string, pw: string) => Promise<string | null>;
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  signInWithGoogle: () => Promise<string | null>;
+  resetPassword:   (email: string) => Promise<string | null>;
   signOut:         () => Promise<void>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
+  enterAsGuest:    () => void;
+  exitGuest:       () => void;
 }
 
 const AuthContext = createContext<AuthCtx | null>(null);
@@ -37,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   async function fetchProfile(userId: string) {
     const { data } = await supabase
@@ -52,19 +66,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const s = data.session;
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchProfile(s.user.id);
+      if (s?.user) {
+        fetchProfile(s.user.id);
+      } else {
+        AsyncStorage.getItem(GUEST_KEY).then((v) => setIsGuest(v === 'true'));
+      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchProfile(s.user.id);
-      else setProfile(null);
+      if (s?.user) {
+        setIsGuest(false);
+        AsyncStorage.removeItem(GUEST_KEY);
+        fetchProfile(s.user.id);
+      } else {
+        setProfile(null);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => { subscription.unsubscribe(); };
   }, []);
+
+  const enterAsGuest = () => {
+    AsyncStorage.setItem(GUEST_KEY, 'true');
+    setIsGuest(true);
+  };
+
+  const exitGuest = () => {
+    AsyncStorage.removeItem(GUEST_KEY);
+    setIsGuest(false);
+  };
 
   const signIn = async (email: string, pw: string): Promise<string | null> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
@@ -78,9 +111,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null, needsConfirm: true };
   };
 
+  const signInWithGoogle = async (): Promise<string | null> => {
+    const redirectTo = Linking.createURL('auth-callback');
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (error) return error.message;
+    if (!data?.url) return 'No se pudo iniciar el ingreso con Google.';
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    if (result.type !== 'success' || !('url' in result)) return null; // cancelado por el usuario
+
+    const fragment = result.url.split('#')[1] ?? result.url.split('?')[1] ?? '';
+    const params = new URLSearchParams(fragment);
+    const access_token  = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (!access_token || !refresh_token) return 'No se pudo completar el ingreso con Google.';
+
+    const { error: sessErr } = await supabase.auth.setSession({ access_token, refresh_token });
+    if (sessErr) return sessErr.message;
+    exitGuest();
+    return null;
+  };
+
+  const resetPassword = async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: Linking.createURL('reset-password'),
+    });
+    return error?.message ?? null;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    exitGuest();
   };
 
   const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
@@ -103,8 +168,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       user, session, profile, loading,
       isAuthenticated: !!user,
+      isGuest,
+      hasChosen: !!user || isGuest,
       isPro,
-      signIn, signUp, signOut, saveProfile,
+      signIn, signUp, signInWithGoogle, resetPassword, signOut, saveProfile,
+      enterAsGuest, exitGuest,
     }}>
       {children}
     </AuthContext.Provider>

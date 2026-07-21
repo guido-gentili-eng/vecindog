@@ -36,7 +36,7 @@ export default function AmigosScreen() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function cargarAmistades() {
-    if (!user) return;
+    if (!user) { setCargando(false); return; }
     const amis = await listarMisAmistades(user.id);
     setAmistades(amis);
     const ids = amis.map((a) => (a.solicitante_id === user.id ? a.receptor_id : a.solicitante_id));

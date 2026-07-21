@@ -6,7 +6,9 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import { useRouter, useSegments } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 import { registrarPushToken } from '@/lib/notifications';
+import { supabase } from '@/lib/supabase';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AiHelpButton from '@/components/AiHelpButton';
 
@@ -21,7 +23,7 @@ const queryClient = new QueryClient({
 });
 
 function RootLayoutNav() {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, hasChosen, loading, user } = useAuth();
   const segments = useSegments();
   const router   = useRouter();
 
@@ -37,9 +39,9 @@ function RootLayoutNav() {
   useEffect(() => {
     if (loading) return;
     const inAuth = segments[0] === '(auth)';
-    if (!isAuthenticated && !inAuth) {
+    if (!hasChosen && !inAuth) {
       router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuth) {
+    } else if (hasChosen && inAuth) {
       router.replace('/(tabs)');
     }
     // Consumir deep link pendiente una vez que auth resolvió y el stack está listo
@@ -49,7 +51,28 @@ function RootLayoutNav() {
       // setTimeout 0 garantiza que el router ya procesó el replace anterior
       setTimeout(() => router.push(`/publicaciones/${postId}`), 0);
     }
-  }, [isAuthenticated, loading]);
+  }, [isAuthenticated, hasChosen, loading]);
+
+  // ── 1b. Deep link de recuperación de contraseña (el de Google OAuth se
+  // resuelve directo en signInWithGoogle vía openAuthSessionAsync) ───────────
+  useEffect(() => {
+    function handleUrl(url: string) {
+      if (!url.includes('reset-password')) return;
+      const fragment = url.split('#')[1] ?? url.split('?')[1];
+      if (!fragment) return;
+      const params = new URLSearchParams(fragment);
+      const access_token  = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).then(() => {
+          router.push('/reset-password');
+        });
+      }
+    }
+    Linking.getInitialURL().then((url) => { if (url) handleUrl(url); });
+    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => sub.remove();
+  }, []);
 
   // ── 2. Cold start: notificación que abrió la app desde cerrada ─────────────
   useEffect(() => {
@@ -114,6 +137,9 @@ function RootLayoutNav() {
       />
       <Stack.Screen name="buscar-por-foto"
         options={{ headerShown: true, title: 'Buscar por foto', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+      />
+      <Stack.Screen name="reset-password"
+        options={{ headerShown: true, title: 'Nueva contraseña', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
     </Stack>
     <AiHelpButton />

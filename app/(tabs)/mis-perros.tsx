@@ -15,7 +15,7 @@ export default function MisPerrosScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   async function cargar() {
-    if (!user) return;
+    if (!user) { setLoading(false); setRefreshing(false); return; }
     const { data } = await supabase
       .from('perros')
       .select('id, nombre, raza, color, tamano, sexo, foto_url')

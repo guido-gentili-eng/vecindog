@@ -10,6 +10,7 @@ import { Colors } from '@/constants/colors';
 import { renovarPost, resolverPost, eliminarPost } from '@/lib/posts';
 import MensajesHilo from '@/components/MensajesHilo';
 import LoViPanel from '@/components/LoViPanel';
+import AdSlot from '@/components/AdSlot';
 
 const MOTIVOS = [
   'Información falsa o engañosa',
@@ -344,6 +345,8 @@ export default function PostDetailScreen() {
         <View style={{ marginTop: 16 }}>
           <MensajesHilo postId={post.id} isAuthenticated={!!user} userId={user?.id ?? null} />
         </View>
+
+        <AdSlot variant="sidebar" />
 
         {/* Panel de gestión — dueño o admin */}
         {canManage && (

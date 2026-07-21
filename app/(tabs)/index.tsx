@@ -12,6 +12,7 @@ import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import VolvieronACasa from '@/components/VolvieronACasa';
 import TopEscapistas from '@/components/TopEscapistas';
+import AdSlot from '@/components/AdSlot';
 
 const PAGE_SIZE = 30;
 
@@ -189,6 +190,7 @@ export default function HomeScreen() {
                     <View style={styles.newBadge}><Text style={styles.newBadgeText}>NUEVO</Text></View>
                   </TouchableOpacity>
                 </View>
+                <AdSlot variant="leaderboard" />
                 <VolvieronACasa />
                 <TopEscapistas />
                 <Text style={styles.feedTitle}>Avisos recientes</Text>

@@ -8,6 +8,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { thumbUrl } from '@/lib/imageUtils';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import AdSlot from '@/components/AdSlot';
 
 const PAGE_SIZE = 30;
 
@@ -184,11 +185,13 @@ export default function AvisosScreen() {
               ? <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} />
               : null
           }
-          renderItem={({ item: p }) => {
+          renderItem={({ item: p, index }) => {
             const dias = p.categoria === 'transito' && p.situacion_transito === 'tengo' && p.fecha_limite_transito
               ? diasRestantes(p.fecha_limite_transito)
               : null;
             return (
+              <View>
+              {index > 0 && (index + 1) % 4 === 0 && <AdSlot variant="card" />}
               <TouchableOpacity
                 style={styles.card}
                 onPress={() => router.push(`/publicaciones/${p.id}`)}
@@ -239,6 +242,7 @@ export default function AvisosScreen() {
                   </View>
                 </View>
               </TouchableOpacity>
+              </View>
             );
           }}
         />

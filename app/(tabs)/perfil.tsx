@@ -279,6 +279,14 @@ export default function PerfilScreen() {
           label="🗺️  Ver mis avisos publicados"
           onPress={() => router.push('/(tabs)/avisos')}
         />
+        <MenuItem
+          label="🏪  Mi red Vecindog"
+          onPress={() => router.push('/red-vecindog' as any)}
+        />
+        <MenuItem
+          label="📣  Publicitate"
+          onPress={() => router.push('/publicitate' as any)}
+        />
         {user?.email === process.env.EXPO_PUBLIC_ADMIN_EMAIL && (
           <MenuItem
             label="🛡️  Panel de reportes"

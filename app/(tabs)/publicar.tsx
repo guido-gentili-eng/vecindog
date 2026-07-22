@@ -13,17 +13,18 @@ import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
 import { notificarAmigosPerroPerdido } from '@/lib/amistades';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type ZonaSugerencia = { label: string; sub: string; lat: number; lng: number };
 
-const CATEGORIAS = [
-  { key: 'perdido',    label: 'Perdido' },
-  { key: 'encontrado', label: 'Encontrado' },
-  { key: 'adopcion',   label: 'En adopción' },
-  { key: 'transito',   label: 'En tránsito' },
-];
-
 export default function PublicarScreen() {
+  const { t } = useLanguage();
+  const CATEGORIAS = [
+    { key: 'perdido',    label: t.avisosCatPerdido },
+    { key: 'encontrado', label: t.avisosCatEncontrado },
+    { key: 'adopcion',   label: t.avisosCatAdopcion },
+    { key: 'transito',   label: t.avisosCatTransito },
+  ];
   const { user, profile } = useAuth();
   const [categoria, setCategoria] = useState('perdido');
   const [nombre,    setNombre]    = useState('');
@@ -160,7 +161,7 @@ export default function PublicarScreen() {
 
   async function elegirFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.bpfErrPermisoGaleria); return; }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'images',
       quality: 0.7,
@@ -173,9 +174,9 @@ export default function PublicarScreen() {
   }
 
   async function publicar() {
-    if (!contacto.trim())     { Alert.alert('Falta el contacto', 'Ingresá tu número de WhatsApp'); return; }
-    if (!zona.trim())         { Alert.alert('Falta la zona', 'Ingresá el barrio o zona'); return; }
-    if (!descripcion.trim()) { Alert.alert('Falta la descripción', 'Contanos marcas especiales, comportamiento u otro dato que ayude a identificarlo.'); return; }
+    if (!contacto.trim())     { Alert.alert(t.pbErrContactoTitle, t.pbErrContactoSub); return; }
+    if (!zona.trim())         { Alert.alert(t.pbErrZonaTitle, t.pbErrZonaSub); return; }
+    if (!descripcion.trim()) { Alert.alert(t.pbErrDescTitle, t.pbErrDescSub); return; }
 
     setLoading(true);
     setUploadedCount(0);
@@ -206,7 +207,7 @@ export default function PublicarScreen() {
           uploadedUrls = await Promise.all(fotos.map(subirFoto));
         } catch (uploadErr) {
           await limpiarSubidos();
-          Alert.alert('Error al subir fotos', 'No se pudieron subir todas las imágenes. Las parcialmente subidas fueron eliminadas. Intentá de nuevo.');
+          Alert.alert(t.pbErrFotosTitle, t.pbErrFotosSub);
           return;
         }
       }
@@ -241,10 +242,10 @@ export default function PublicarScreen() {
           error.code === '42501' ||
           error.message?.includes('row-level security');
         Alert.alert(
-          esRateLimit ? 'Límite alcanzado' : 'Error al guardar',
+          esRateLimit ? t.pbErrLimiteTitle : t.pbErrGuardarTitle,
           esRateLimit
-            ? 'Podés publicar hasta 5 avisos por hora. Esperá un momento e intentá de nuevo.'
-            : 'Las fotos fueron eliminadas. Intentá publicar de nuevo.',
+            ? t.pbErrLimiteSub
+            : t.pbErrGuardarSub,
         );
         return;
       }
@@ -256,12 +257,12 @@ export default function PublicarScreen() {
         }).catch(() => {});
       }
 
-      Alert.alert('¡Aviso publicado!', 'Tu aviso ya es visible para los vecinos.', [
-        { text: 'Ver avisos', onPress: () => router.replace('/(tabs)/avisos') },
+      Alert.alert(t.pbPublicadoTitle, t.pbPublicadoSub, [
+        { text: t.pbVerAvisos, onPress: () => router.replace('/(tabs)/avisos') },
       ]);
     } catch (e) {
       await limpiarSubidos();
-      Alert.alert('Error', 'No se pudo publicar. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.pbErrGenericoSub);
     } finally {
       setLoading(false);
     }
@@ -269,10 +270,10 @@ export default function PublicarScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>Nuevo aviso</Text>
+      <Text style={styles.title}>{t.pbTitle}</Text>
 
       {/* Categoría */}
-      <Text style={styles.label}>Tipo de aviso</Text>
+      <Text style={styles.label}>{t.pbTipoAviso}</Text>
       <View style={styles.row}>
         {CATEGORIAS.map((c) => (
           <TouchableOpacity
@@ -291,8 +292,8 @@ export default function PublicarScreen() {
         <TouchableOpacity style={styles.buscarFotoBtn} onPress={() => router.push('/buscar-por-foto')}>
           <Text style={styles.buscarFotoIcon}>🔍</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.buscarFotoTitulo}>¿Ya subiste una foto a otro lado?</Text>
-            <Text style={styles.buscarFotoSub}>Buscá con IA entre los avisos activos antes de publicar uno nuevo</Text>
+            <Text style={styles.buscarFotoTitulo}>{t.pbBuscarFotoTitulo}</Text>
+            <Text style={styles.buscarFotoSub}>{t.pbBuscarFotoSub}</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -300,7 +301,7 @@ export default function PublicarScreen() {
       {/* Selector "mis perros" — solo visible en categoría perdido */}
       {categoria === 'perdido' && misPerros.length > 0 && (
         <>
-          <Text style={styles.label}>¿Es uno de tus perros?</Text>
+          <Text style={styles.label}>{t.pbEsUnoDeTusPerros}</Text>
 
           {perroSelec ? (
             /* Perro ya seleccionado */
@@ -318,7 +319,7 @@ export default function PublicarScreen() {
                       {p.raza ? <Text style={styles.perroSelecSub}>{p.raza}</Text> : null}
                     </View>
                     <TouchableOpacity onPress={limpiarSeleccion}>
-                      <Text style={styles.perroSelecCambiar}>Cambiar</Text>
+                      <Text style={styles.perroSelecCambiar}>{t.rvCambiarBtn}</Text>
                     </TouchableOpacity>
                   </>
                 );
@@ -332,7 +333,7 @@ export default function PublicarScreen() {
                 onPress={() => setMostrarPerros((v) => !v)}
               >
                 <Text style={styles.perroDropBtnText}>
-                  {mostrarPerros ? '▲  Ocultar mis perros' : '🐕  Seleccionar de mis perros'}
+                  {mostrarPerros ? t.pbOcultarMisPerros : t.pbSeleccionarMisPerros}
                 </Text>
               </TouchableOpacity>
 
@@ -352,7 +353,7 @@ export default function PublicarScreen() {
                         <Text style={styles.perroItemNombre}>{p.nombre}</Text>
                         {p.raza ? <Text style={styles.perroItemSub}>{p.raza}</Text> : null}
                       </View>
-                      <Text style={{ color: Colors.primary, fontWeight: '700' }}>Usar →</Text>
+                      <Text style={{ color: Colors.primary, fontWeight: '700' }}>{t.pbUsarFlecha}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -363,9 +364,9 @@ export default function PublicarScreen() {
       )}
 
       {/* Fotos */}
-      <Text style={styles.label}>Fotos</Text>
+      <Text style={styles.label}>{t.pbFotosLabel}</Text>
       <TouchableOpacity style={styles.fotoBtn} onPress={elegirFoto}>
-        <Text style={styles.fotoBtnText}>📷  {fotos.length > 0 ? `${fotos.length} foto(s) elegida(s)` : 'Agregar fotos'}</Text>
+        <Text style={styles.fotoBtnText}>📷  {fotos.length > 0 ? `${fotos.length} ${t.pbFotosElegidasSuffix}` : t.pbFotoBtnAgregar}</Text>
       </TouchableOpacity>
       {fotos.length > 0 && (
         <ScrollView horizontal style={{ marginBottom: 12 }}>
@@ -376,13 +377,13 @@ export default function PublicarScreen() {
       )}
 
       {/* Campos */}
-      <Text style={styles.label}>Nombre del animal</Text>
-      <TextInput style={styles.input} placeholder="Ej: Bobby" placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
+      <Text style={styles.label}>{t.pbNombreAnimalLabel}</Text>
+      <TextInput style={styles.input} placeholder={t.nuevoPerroNombrePh} placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
 
-      <Text style={styles.label}>Raza</Text>
+      <Text style={styles.label}>{t.nuevoPerroRaza}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ej: Labrador, Ovejero, Mestizo…"
+        placeholder={t.nuevoPerroRazaPh}
         placeholderTextColor={Colors.inkMuted}
         value={raza}
         onChangeText={handleRazaChange}
@@ -398,18 +399,18 @@ export default function PublicarScreen() {
         </View>
       )}
 
-      <Text style={styles.label}>Color principal</Text>
+      <Text style={styles.label}>{t.pbColorLabel}</Text>
       <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
-        <Text style={styles.pickerBtnText}>{color || 'No sé / no recuerdo'}</Text>
+        <Text style={styles.pickerBtnText}>{color || t.nuevoPerroColorNoSe}</Text>
         <Text style={styles.pickerBtnChevron}>⌄</Text>
       </TouchableOpacity>
 
       <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitulo}>Color principal</Text>
+            <Text style={styles.modalTitulo}>{t.pbColorLabel}</Text>
             <TouchableOpacity style={styles.modalOption} onPress={() => { setColor(''); setShowColorPicker(false); }}>
-              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>{t.nuevoPerroColorNoSe}</Text>
             </TouchableOpacity>
             {COLORES_PERRO.map((c) => (
               <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setColor(c); setShowColorPicker(false); }}>
@@ -420,9 +421,9 @@ export default function PublicarScreen() {
         </TouchableOpacity>
       </Modal>
 
-      <Text style={styles.label}>Tamaño</Text>
+      <Text style={styles.label}>{t.nuevoPerroTamano}</Text>
       <View style={styles.ternarioRow}>
-        {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+        {([['pequeño', t.perroTamanoChico], ['mediano', t.perroTamanoMediano], ['grande', t.perroTamanoGrande]] as const).map(([v, l]) => (
           <TouchableOpacity
             key={v}
             style={[styles.ternarioBtn, tamano === v && styles.ternarioBtnActive]}
@@ -433,9 +434,9 @@ export default function PublicarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>Sexo <Text style={styles.labelOptional}>(Opcional)</Text></Text>
+      <Text style={styles.label}>{t.pbSexoLabel} <Text style={styles.labelOptional}>{t.pbOpcional}</Text></Text>
       <View style={styles.ternarioRow}>
-        {([['macho', '♂ Macho'], ['hembra', '♀ Hembra'], ['', 'No sé']] as const).map(([v, l]) => (
+        {([['macho', t.pbSexoMacho], ['hembra', t.pbSexoHembra], ['', t.pbNoSe]] as const).map(([v, l]) => (
           <TouchableOpacity
             key={v || 'no-se'}
             style={[styles.ternarioBtn, sexo === v && styles.ternarioBtnActive]}
@@ -446,9 +447,9 @@ export default function PublicarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>¿Tenía collar?</Text>
+      <Text style={styles.label}>{t.pbTeniaCollar}</Text>
       <View style={styles.ternarioRow}>
-        {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+        {([[true, t.bpfSi], [false, t.bpfNo], [null, t.pbNoSe]] as const).map(([v, l]) => (
           <TouchableOpacity
             key={String(v)}
             style={[styles.ternarioBtn, collar === v && styles.ternarioBtnActive]}
@@ -459,9 +460,9 @@ export default function PublicarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>¿Tenía chapita / plaquita identificadora?</Text>
+      <Text style={styles.label}>{t.pbTeniaChapitaPlaquita}</Text>
       <View style={styles.ternarioRow}>
-        {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+        {([[true, t.bpfSi], [false, t.bpfNo], [null, t.pbNoSe]] as const).map(([v, l]) => (
           <TouchableOpacity
             key={String(v)}
             style={[styles.ternarioBtn, chapita === v && styles.ternarioBtnActive]}
@@ -473,7 +474,7 @@ export default function PublicarScreen() {
       </View>
 
       {/* Ubicación GPS */}
-      <Text style={styles.label}>Ubicación en el mapa</Text>
+      <Text style={styles.label}>{t.pbUbicacionLabel}</Text>
       <TouchableOpacity
         style={[styles.locBtn, locStatus === 'ok' && styles.locBtnOk]}
         onPress={capturarUbicacion}
@@ -483,19 +484,19 @@ export default function PublicarScreen() {
           ? <ActivityIndicator color={Colors.primary} size="small" />
           : <Text style={[styles.locBtnText, locStatus === 'ok' && styles.locBtnTextOk]}>
               {locStatus === 'ok'
-                ? `📍 Ubicación capturada (${coords!.lat.toFixed(4)}, ${coords!.lng.toFixed(4)})`
+                ? `${t.pbUbicacionCapturadaPrefix}${coords!.lat.toFixed(4)}, ${coords!.lng.toFixed(4)})`
                 : locStatus === 'denied'
-                  ? '⚠️  Permiso denegado — el aviso no aparecerá en el mapa'
-                  : '📍  Usar mi ubicación actual'}
+                  ? t.pbPermisoDenegadoMapa
+                  : t.pbUsarUbicacionActual}
             </Text>
         }
       </TouchableOpacity>
 
-      <Text style={styles.label}>Dirección o zona *</Text>
+      <Text style={styles.label}>{t.pbDireccionZonaLabel}</Text>
       <View>
         <TextInput
           style={styles.input}
-          placeholder="Ej: Barrio Palihue, calle Sarmiento"
+          placeholder={t.pbDireccionZonaPh}
           placeholderTextColor={Colors.inkMuted}
           value={zona}
           onChangeText={handleZonaChange}
@@ -516,20 +517,20 @@ export default function PublicarScreen() {
         </View>
       )}
 
-      <Text style={styles.label}>Descripción adicional *</Text>
+      <Text style={styles.label}>{t.pbDescripcionLabel}</Text>
       <TextInput
         style={[styles.input, { height: 90, textAlignVertical: 'top' }]}
-        placeholder="Marcas especiales, manchas, comportamiento, collar rojo con chapita azul…"
+        placeholder={t.pbDescripcionPh}
         placeholderTextColor={Colors.inkMuted}
         value={descripcion}
         onChangeText={setDesc}
         multiline
       />
 
-      <Text style={styles.label}>WhatsApp de contacto *</Text>
+      <Text style={styles.label}>{t.qcContactoLabel}</Text>
       <TextInput
         style={styles.input}
-        placeholder="+54 9 291 123 4567"
+        placeholder={t.pbContactoPh}
         placeholderTextColor={Colors.inkMuted}
         value={contacto}
         onChangeText={setContacto}
@@ -539,11 +540,11 @@ export default function PublicarScreen() {
       {/* Privacidad del contacto */}
       <View style={styles.privacyRow}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.privacyLabel}>Mostrar número públicamente</Text>
+          <Text style={styles.privacyLabel}>{t.pbMostrarNumeroLabel}</Text>
           <Text style={styles.privacySub}>
             {contactoPublico
-              ? 'Cualquier usuario registrado verá tu número.'
-              : 'Los usuarios deberán solicitar el contacto.'}
+              ? t.pbNumeroPublicoSub
+              : t.pbNumeroPrivadoSub}
           </Text>
         </View>
         <Switch
@@ -559,8 +560,8 @@ export default function PublicarScreen() {
           <View style={[styles.progressBar, { width: `${(uploadedCount / fotos.length) * 100}%` as any }]} />
           <Text style={styles.progressText}>
             {uploadedCount < fotos.length
-              ? `Subiendo fotos ${uploadedCount}/${fotos.length}…`
-              : 'Guardando aviso…'}
+              ? `${t.pbSubiendoFotosPrefix} ${uploadedCount}/${fotos.length}…`
+              : t.pbGuardandoAviso}
           </Text>
         </View>
       )}
@@ -572,7 +573,7 @@ export default function PublicarScreen() {
       >
         {loading
           ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.btnText}>Publicar aviso</Text>
+          : <Text style={styles.btnText}>{t.pbPublicarBtn}</Text>
         }
       </TouchableOpacity>
 

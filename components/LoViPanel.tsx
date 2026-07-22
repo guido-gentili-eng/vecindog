@@ -7,6 +7,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '@/lib/supabase';
 import { actualizarZonaPost } from '@/lib/posts';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Props {
   postId: string;
@@ -25,6 +26,7 @@ function hoyISO() {
 }
 
 export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActual, ciudad, onUpdated }: Props) {
+  const { t } = useLanguage();
   const [open,       setOpen]       = useState(false);
   const [enviado,    setEnviado]    = useState(false);
   const [enviando,   setEnviando]   = useState(false);
@@ -119,13 +121,13 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
       const lngEfectivo = mismoLugar ? undefined : (lng ?? undefined);
 
       if (categoria === 'perdido') {
-        const lugarTexto = mismoLugar ? `en el mismo lugar (${calleEfectiva})` : `en ${calleEfectiva}`;
-        const fechaLabel = fechaModo === 'hoy' ? 'hoy' : new Date(fechaEfectiva + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+        const lugarTexto = mismoLugar ? `${t.loviEnElMismoLugarPrefix}${calleEfectiva}${t.loviEnElMismoLugarSuffix}` : `${t.loviEnPrefix} ${calleEfectiva}`;
+        const fechaLabel = fechaModo === 'hoy' ? t.loviFechaHoyLabel : new Date(fechaEfectiva + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
         const { error: notifErr } = await supabase.from('notifications').insert({
           user_id: ownerId,
           post_id: postId,
           tipo:    'avistamiento',
-          mensaje: `👀 Alguien vio a ${nombre ?? 'tu perro'} ${lugarTexto} a las ${hora} (${fechaLabel}).`,
+          mensaje: `${t.loviNotifAlguienVioPrefix} ${nombre ?? t.loviNotifTuPerroFallback} ${lugarTexto} ${t.loviALasPrefix} ${hora} (${fechaLabel}).`,
           leida:   false,
         });
         if (notifErr) throw notifErr;
@@ -135,7 +137,7 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
       onUpdated({ zona: calleEfectiva, horario: hora, fecha: fechaEfectiva, lat: latEfectivo, lng: lngEfectivo });
       setEnviado(true);
     } catch {
-      setError('No se pudo enviar. Intentá de nuevo.');
+      setError(t.loviErrEnviar);
     } finally {
       setEnviando(false);
     }
@@ -145,7 +147,7 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
     return (
       <TouchableOpacity style={styles.cta} onPress={() => setOpen(true)}>
         <Text style={styles.ctaText}>
-          👀 {categoria === 'encontrado' ? 'Yo también lo vi' : 'Lo vi'}
+          {categoria === 'encontrado' ? t.loviCtaYoTambien : t.loviCtaLoVi}
         </Text>
       </TouchableOpacity>
     );
@@ -155,36 +157,36 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
     return (
       <View style={styles.card}>
         <Text style={styles.successText}>
-          ✅ {categoria === 'encontrado' ? 'Gracias, actualizamos la ubicación en el mapa.' : 'Gracias, le avisamos al dueño.'}
+          {categoria === 'encontrado' ? t.loviGraciasEncontrado : t.loviGraciasPerdido}
         </Text>
-        <TouchableOpacity onPress={reset}><Text style={styles.reportOtro}>Reportar otro avistamiento</Text></TouchableOpacity>
+        <TouchableOpacity onPress={reset}><Text style={styles.reportOtro}>{t.loviReportarOtro}</Text></TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>¿Dónde lo viste?</Text>
+      <Text style={styles.title}>{t.loviDondeLoViste}</Text>
 
       {!mismoLugar && gps !== 'ok' && !manual && (
         <TouchableOpacity style={styles.optBtn} onPress={() => setMismoLugar(true)}>
-          <Text style={styles.optBtnText}>📍 Fue en el mismo lugar del aviso</Text>
+          <Text style={styles.optBtnText}>{t.loviMismoLugarBtn}</Text>
         </TouchableOpacity>
       )}
 
       {mismoLugar && (
         <View style={styles.selectedRow}>
-          <Text style={styles.selectedText}>📍 Mismo lugar: {zonaActual}</Text>
-          <TouchableOpacity onPress={() => setMismoLugar(false)}><Text style={styles.changeText}>Cambiar</Text></TouchableOpacity>
+          <Text style={styles.selectedText}>{t.loviMismoLugarPrefix} {zonaActual}</Text>
+          <TouchableOpacity onPress={() => setMismoLugar(false)}><Text style={styles.changeText}>{t.rvCambiarBtn}</Text></TouchableOpacity>
         </View>
       )}
 
       {!mismoLugar && (
         gps === 'ok' ? (
           <View style={styles.selectedRow}>
-            <Text style={styles.selectedText}>✅ Ubicación GPS capturada</Text>
+            <Text style={styles.selectedText}>{t.loviGpsCapturado}</Text>
             <TouchableOpacity onPress={() => { setGps('idle'); setManual(true); setLat(null); setLng(null); }}>
-              <Text style={styles.changeText}>Cambiar</Text>
+              <Text style={styles.changeText}>{t.rvCambiarBtn}</Text>
             </TouchableOpacity>
           </View>
         ) : gps === 'cargando' ? (
@@ -193,11 +195,11 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
           <>
             <TouchableOpacity style={[styles.optBtn, styles.optBtnPrimary]} onPress={capturarGps}>
               <Text style={[styles.optBtnText, { color: Colors.primary }]}>
-                {gps === 'error' ? '📡 Reintentar ubicación' : '📡 Usar mi ubicación actual'}
+                {gps === 'error' ? t.loviGpsReintentar : t.loviGpsUsar}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setManual(true)}>
-              <Text style={styles.manualLink}>Escribir la dirección a mano</Text>
+              <Text style={styles.manualLink}>{t.loviEscribirManual}</Text>
             </TouchableOpacity>
           </>
         ) : null
@@ -209,7 +211,7 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
             style={styles.input}
             value={calle}
             onChangeText={handleCalleChange}
-            placeholder="Ej: Av. Colón y Brandsen"
+            placeholder={t.loviCallePh}
             placeholderTextColor={Colors.inkMuted + '80'}
           />
           {sugerencias.length > 0 && (
@@ -241,13 +243,13 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
               style={[styles.dateBtn, fechaModo === 'hoy' && styles.dateBtnActive]}
               onPress={() => setFechaModo('hoy')}
             >
-              <Text style={[styles.dateBtnText, fechaModo === 'hoy' && styles.dateBtnTextActive]}>Hoy</Text>
+              <Text style={[styles.dateBtnText, fechaModo === 'hoy' && styles.dateBtnTextActive]}>{t.loviHoy}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.dateBtn, fechaModo === 'otro' && styles.dateBtnActive]}
               onPress={() => setFechaModo('otro')}
             >
-              <Text style={[styles.dateBtnText, fechaModo === 'otro' && styles.dateBtnTextActive]}>Otro día</Text>
+              <Text style={[styles.dateBtnText, fechaModo === 'otro' && styles.dateBtnTextActive]}>{t.loviOtroDia}</Text>
             </TouchableOpacity>
           </View>
           {fechaModo === 'otro' && (
@@ -255,7 +257,7 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
               style={styles.input}
               value={otroDia}
               onChangeText={setOtroDia}
-              placeholder="AAAA-MM-DD"
+              placeholder={t.dateFormatPh}
               placeholderTextColor={Colors.inkMuted + '80'}
             />
           )}
@@ -263,7 +265,7 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
             style={styles.input}
             value={hora}
             onChangeText={setHora}
-            placeholder="Hora aproximada (ej: 18:30)"
+            placeholder={t.loviHoraPh}
             placeholderTextColor={Colors.inkMuted + '80'}
           />
         </View>
@@ -278,10 +280,10 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
             onPress={enviar}
             disabled={!listo || enviando}
           >
-            {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.sendBtnText}>Enviar</Text>}
+            {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.sendBtnText}>{t.loviEnviarBtn}</Text>}
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelBtn} onPress={reset}>
-            <Text style={styles.cancelBtnText}>Cancelar</Text>
+            <Text style={styles.cancelBtnText}>{t.perfilCancelar}</Text>
           </TouchableOpacity>
         </View>
       )}

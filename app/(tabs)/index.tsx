@@ -8,6 +8,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { thumbUrl } from '@/lib/imageUtils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import VolvieronACasa from '@/components/VolvieronACasa';
@@ -16,11 +17,11 @@ import AdSlot from '@/components/AdSlot';
 
 const PAGE_SIZE = 30;
 
-const CATEGORIAS = [
-  { key: 'perdido',    label: 'Perdidos',    color: '#fef2f2', border: '#fca5a5' },
-  { key: 'encontrado', label: 'Vistos',      color: '#f0fdf4', border: '#86efac' },
-  { key: 'adopcion',   label: 'Adopción',    color: '#fef3c7', border: '#fcd34d' },
-  { key: 'transito',   label: 'Tránsito',    color: '#f5f3ff', border: '#c4b5fd' },
+const CATEGORIAS_KEYS = [
+  { key: 'perdido',    color: '#fef2f2', border: '#fca5a5' },
+  { key: 'encontrado', color: '#f0fdf4', border: '#86efac' },
+  { key: 'adopcion',   color: '#fef3c7', border: '#fcd34d' },
+  { key: 'transito',   color: '#f5f3ff', border: '#c4b5fd' },
 ];
 
 type PostSummary = {
@@ -54,8 +55,14 @@ async function fetchFeedPage({
 
 export default function HomeScreen() {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
   const [catFilter, setCatFilter] = React.useState<string | null>(null);
   const [noLeidas,  setNoLeidas]  = React.useState(0);
+
+  const CATEGORIA_LABEL: Record<string, string> = {
+    perdido: t.homeCatPerdidos, encontrado: t.homeCatVistos, adopcion: t.homeCatAdopcion, transito: t.homeCatTransito,
+  };
+  const CATEGORIAS = CATEGORIAS_KEYS.map((c) => ({ ...c, label: CATEGORIA_LABEL[c.key] }));
 
   // Notificaciones no leídas — sólo al ganar foco
   useFocusEffect(
@@ -104,7 +111,7 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>
             Hola{profile?.nombre ? `, ${profile.nombre}` : ''} 👋
           </Text>
-          <Text style={styles.subGreeting}>Red vecinal de mascotas</Text>
+          <Text style={styles.subGreeting}>{t.homeSubGreeting}</Text>
         </View>
         <TouchableOpacity style={styles.bellBtn} onPress={() => router.push('/notificaciones')}>
           <Text style={{ fontSize: 22 }}>🔔</Text>
@@ -127,7 +134,7 @@ export default function HomeScreen() {
           style={[styles.chip, !catFilter && styles.chipActive]}
           onPress={() => cambiarFiltro(null)}
         >
-          <Text style={[styles.chipText, !catFilter && styles.chipTextActive]} numberOfLines={1}>Todos</Text>
+          <Text style={[styles.chipText, !catFilter && styles.chipTextActive]} numberOfLines={1}>{t.homeCatTodos}</Text>
         </TouchableOpacity>
         {CATEGORIAS.map((c) => (
           <TouchableOpacity
@@ -149,10 +156,10 @@ export default function HomeScreen() {
       ) : error ? (
         <View style={styles.errorBox}>
           <Text style={styles.errorEmoji}>📡</Text>
-          <Text style={styles.errorTitle}>Sin conexión</Text>
-          <Text style={styles.errorSub}>No pudimos cargar los avisos. Verificá tu conexión.</Text>
+          <Text style={styles.errorTitle}>{t.homeErrorTitle}</Text>
+          <Text style={styles.errorSub}>{t.homeErrorSub}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryText}>Reintentar</Text>
+            <Text style={styles.retryText}>{t.homeRetry}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -176,28 +183,28 @@ export default function HomeScreen() {
                   <TouchableOpacity style={[styles.serviceBanner, { backgroundColor: '#0d9488' }]} onPress={() => router.push('/cuidado' as any)}>
                     <Text style={{ fontSize: 22 }}>🤲</Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.serviceBannerTitle}>Cuidado de perros</Text>
-                      <Text style={styles.serviceBannerSub}>Pedí o dá una mano cuidando mascotas</Text>
+                      <Text style={styles.serviceBannerTitle}>{t.homeCuidadoTitle}</Text>
+                      <Text style={styles.serviceBannerSub}>{t.homeCuidadoSub}</Text>
                     </View>
-                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>NUEVO</Text></View>
+                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>{t.homeNuevo}</Text></View>
                   </TouchableOpacity>
                   <TouchableOpacity style={[styles.serviceBanner, { backgroundColor: '#1d4ed8' }]} onPress={() => router.push('/transporte' as any)}>
                     <Text style={{ fontSize: 22 }}>🚗</Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.serviceBannerTitle}>Transporte de perros</Text>
-                      <Text style={styles.serviceBannerSub}>Encontrá quién ayude a trasladar tu mascota</Text>
+                      <Text style={styles.serviceBannerTitle}>{t.homeTransporteTitle}</Text>
+                      <Text style={styles.serviceBannerSub}>{t.homeTransporteSub}</Text>
                     </View>
-                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>NUEVO</Text></View>
+                    <View style={styles.newBadge}><Text style={styles.newBadgeText}>{t.homeNuevo}</Text></View>
                   </TouchableOpacity>
                 </View>
                 <AdSlot variant="leaderboard" />
                 <VolvieronACasa />
                 <TopEscapistas />
-                <Text style={styles.feedTitle}>Avisos recientes</Text>
+                <Text style={styles.feedTitle}>{t.homeAvisosRecientes}</Text>
               </View>
             ) : null
           }
-          ListEmptyComponent={<Text style={styles.empty}>No hay avisos en esta categoría.</Text>}
+          ListEmptyComponent={<Text style={styles.empty}>{t.homeEmpty}</Text>}
           ListFooterComponent={
             isFetchingNextPage
               ? <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} />
@@ -220,7 +227,7 @@ export default function HomeScreen() {
                 <View style={[styles.catBadge, { backgroundColor: CATEGORIAS.find(c => c.key === p.categoria)?.color }]}>
                   <Text style={styles.catBadgeText}>{p.categoria}</Text>
                 </View>
-                <Text style={styles.cardNombre}>{p.nombre || 'Sin nombre'}</Text>
+                <Text style={styles.cardNombre}>{p.nombre || t.homeSinNombre}</Text>
                 {p.raza && <Text style={styles.cardSub}>{p.raza}</Text>}
                 <Text style={styles.cardZona}>📍 {p.zona || p.ciudad || '—'}</Text>
               </View>

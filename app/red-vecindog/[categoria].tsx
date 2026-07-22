@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { categoriaPorUrl } from '@/lib/redVecindogCategorias';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Comercio = {
   id: string; titulo: string; subtitulo: string | null; imagen_url: string | null;
@@ -16,6 +17,7 @@ type Comercio = {
 };
 
 export default function CategoriaRedVecindogScreen() {
+  const { t } = useLanguage();
   const { categoria } = useLocalSearchParams<{ categoria: string }>();
   const { profile, isPro } = useAuth();
   const cat = categoriaPorUrl(categoria);
@@ -40,15 +42,15 @@ export default function CategoriaRedVecindogScreen() {
   if (!cat) {
     return (
       <View style={styles.centerScreen}>
-        <Text style={{ color: Colors.inkMuted }}>Categoría no encontrada.</Text>
-        <TouchableOpacity onPress={() => router.replace('/red-vecindog' as any)}><Text style={{ color: '#b45309', fontWeight: '700', marginTop: 8 }}>← Volver</Text></TouchableOpacity>
+        <Text style={{ color: Colors.inkMuted }}>{t.rvcNoEncontrada}</Text>
+        <TouchableOpacity onPress={() => router.replace('/red-vecindog' as any)}><Text style={{ color: '#b45309', fontWeight: '700', marginTop: 8 }}>{t.cuidadoVolver}</Text></TouchableOpacity>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 50 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 20 }}>
         <Text style={{ fontSize: 40 }}>{cat.emoji}</Text>
@@ -59,19 +61,19 @@ export default function CategoriaRedVecindogScreen() {
       {!profile?.ciudad ? (
         <View style={styles.emptyCard}>
           <Text style={{ fontSize: 32 }}>📍</Text>
-          <Text style={styles.emptyTitle}>Completá tu ciudad</Text>
-          <Text style={styles.emptySub}>Necesitamos saber tu ciudad para mostrarte los negocios cerca tuyo.</Text>
+          <Text style={styles.emptyTitle}>{t.rvcCompletaCiudad}</Text>
+          <Text style={styles.emptySub}>{t.rvcCompletaCiudadSub}</Text>
           <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/(tabs)/perfil')}>
-            <Text style={styles.emptyBtnText}>Ir a mi perfil</Text>
+            <Text style={styles.emptyBtnText}>{t.rvcIrPerfil}</Text>
           </TouchableOpacity>
         </View>
       ) : !isPro ? (
         <View style={styles.proCard}>
           <Text style={{ fontSize: 32 }}>🔒</Text>
-          <Text style={styles.emptyTitle}>Función exclusiva VecindogPro</Text>
-          <Text style={styles.emptySub}>Con Pro accedés al directorio completo de negocios de tu ciudad, con teléfono, dirección y horarios.</Text>
+          <Text style={styles.emptyTitle}>{t.qcProTitle}</Text>
+          <Text style={styles.emptySub}>{t.rvcProSub}</Text>
           <TouchableOpacity style={styles.emptyBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.emptyBtnText}>Ver planes</Text>
+            <Text style={styles.emptyBtnText}>{t.rvcVerPlanes}</Text>
           </TouchableOpacity>
         </View>
       ) : cargando ? (
@@ -79,10 +81,10 @@ export default function CategoriaRedVecindogScreen() {
       ) : comercios.length === 0 ? (
         <View style={styles.emptyCard}>
           <Text style={{ fontSize: 32 }}>{cat.emoji}</Text>
-          <Text style={styles.emptyTitle}>Todavía no hay negocios en {profile.ciudad}</Text>
-          <Text style={styles.emptySub}>¿Tenés un negocio de esta categoría? Sumate a la Red Vecindog.</Text>
+          <Text style={styles.emptyTitle}>{t.rvcSinNegociosPrefix} {profile.ciudad}</Text>
+          <Text style={styles.emptySub}>{t.rvcSumate}</Text>
           <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/red-vecindog' as any)}>
-            <Text style={styles.emptyBtnText}>Registrar mi negocio</Text>
+            <Text style={styles.emptyBtnText}>{t.rvcRegistrarNegocio}</Text>
           </TouchableOpacity>
         </View>
       ) : (

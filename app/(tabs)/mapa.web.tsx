@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function MapaScreenWeb() {
+  const { t } = useLanguage();
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -19,9 +21,9 @@ export default function MapaScreenWeb() {
   return (
     <View style={styles.webFallback}>
       <Text style={{ fontSize: 48 }}>🗺️</Text>
-      <Text style={styles.webTitle}>Mapa disponible en la app</Text>
-      <Text style={styles.webSub}>El mapa interactivo funciona en iOS y Android.</Text>
-      {count !== null && <Text style={styles.webSub}>{count} avisos con ubicación cargados.</Text>}
+      <Text style={styles.webTitle}>{t.mapaWebTitle}</Text>
+      <Text style={styles.webSub}>{t.mapaWebSub}</Text>
+      {count !== null && <Text style={styles.webSub}>{count} {t.mapaWebCargadosSuffix}</Text>}
     </View>
   );
 }

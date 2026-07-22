@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot, { CATEGORIA_COLOR } from '@/components/CategoriaDot';
 import { aceptarSolicitud, rechazarEliminarAmistad } from '@/lib/amistades';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Notif {
   id: string; tipo: string; mensaje: string;
@@ -29,6 +30,7 @@ const TIPO_EMOJI: Record<string, string> = {
 };
 
 export default function NotificacionesScreen() {
+  const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [notifs,     setNotifs]     = useState<Notif[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -92,7 +94,7 @@ export default function NotificacionesScreen() {
       await aceptarSolicitud(meta.amistad_id);
       await supabase.from('notifications').insert({
         user_id: meta.solicitante_id, post_id: null, tipo: 'amistad_aceptada',
-        mensaje: `${profile?.nombre ?? 'Tu vecino'} aceptó tu solicitud de amistad 🐾`,
+        mensaje: `${profile?.nombre ?? t.notifTuVecinoFallback} ${t.notifAceptoSolicitudSuffix}`,
         leida: false,
       });
       marcarLeida(n.id);
@@ -120,24 +122,24 @@ export default function NotificacionesScreen() {
   function formatTiempo(iso: string) {
     const diff = Date.now() - new Date(iso).getTime();
     const min  = Math.floor(diff / 60000);
-    if (min < 60)  return `Hace ${min} min`;
+    if (min < 60)  return [t.notifHacePrefix, min, t.notifMinSuffix].filter(Boolean).join(' ');
     const hs = Math.floor(min / 60);
-    if (hs < 24)   return `Hace ${hs} h`;
-    return `Hace ${Math.floor(hs / 24)} días`;
+    if (hs < 24)   return [t.notifHacePrefix, hs, t.notifHsSuffix].filter(Boolean).join(' ');
+    return [t.notifHacePrefix, Math.floor(hs / 24), t.notifDiasSuffix].filter(Boolean).join(' ');
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Notificaciones</Text>
+          <Text style={styles.title}>{t.notifTitle}</Text>
           {noLeidas > 0 && (
-            <Text style={styles.badge}>{noLeidas} nueva{noLeidas > 1 ? 's' : ''}</Text>
+            <Text style={styles.badge}>{noLeidas} {noLeidas > 1 ? t.notifNuevaPlural : t.notifNuevaSingular}</Text>
           )}
         </View>
         {noLeidas > 0 && (
           <TouchableOpacity onPress={marcarTodasLeidas}>
-            <Text style={styles.markAll}>Marcar todas leídas</Text>
+            <Text style={styles.markAll}>{t.notifMarcarTodas}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -153,8 +155,8 @@ export default function NotificacionesScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ fontSize: 48, textAlign: 'center' }}>🔔</Text>
-              <Text style={styles.emptyText}>No tenés notificaciones</Text>
-              <Text style={styles.emptySub}>Te avisaremos cuando haya avisos cerca de tu casa.</Text>
+              <Text style={styles.emptyText}>{t.notifEmptyTitle}</Text>
+              <Text style={styles.emptySub}>{t.notifEmptySub}</Text>
             </View>
           }
           renderItem={({ item: n }) => {
@@ -189,14 +191,14 @@ export default function NotificacionesScreen() {
                     >
                       {procesando === n.id
                         ? <ActivityIndicator size="small" color={Colors.good} />
-                        : <Text style={styles.aceptarBtnText}>✓ Aceptar</Text>}
+                        : <Text style={styles.aceptarBtnText}>{t.notifAceptar}</Text>}
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.rechazarBtn}
                       disabled={procesando === n.id}
                       onPress={() => handleRechazarAmistad(n)}
                     >
-                      <Text style={styles.rechazarBtnText}>✕ Rechazar</Text>
+                      <Text style={styles.rechazarBtnText}>{t.notifRechazar}</Text>
                     </TouchableOpacity>
                   </View>
                 )}

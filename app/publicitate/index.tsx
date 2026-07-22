@@ -9,28 +9,30 @@ import { supabase } from '@/lib/supabase';
 import { subirImagenAd, subirLogoAd } from '@/lib/ads';
 import { WHATSAPP_PUBLICIDAD, CONTACT_EMAIL } from '@/lib/contact';
 import { Colors } from '@/constants/colors';
-
-const PAQUETES = [
-  { nombre: 'Básico', precio: '$15.000', slots: ['Card en grilla de avisos'], destacado: false, slug: 'basico' },
-  { nombre: 'Estándar', precio: '$28.000', slots: ['Card en grilla de avisos', 'Panel lateral de contacto'], destacado: true, slug: 'estandar' },
-  { nombre: 'Premium', precio: '$45.000', slots: ['Banner entre secciones (home)', 'Card en grilla de avisos', 'Panel lateral de contacto'], destacado: false, slug: 'premium' },
-];
-
-const FAQ = [
-  ['¿Cómo aparece mi negocio?', 'Te pedimos logo, nombre, tagline y el link a tu web o Instagram. En 24 hs tu aviso ya está visible.'],
-  ['¿Puedo cambiar el anuncio durante el mes?', 'Sí. Podés actualizar el contenido una vez por mes sin costo adicional.'],
-  ['¿Qué negocios pueden publicitar?', 'Veterinarias, petshops, peluquerías caninas, adiestradores, refugios, tiendas de accesorios y cualquier servicio relacionado con mascotas.'],
-  ['¿Hay contratos o mínimos?', 'No. El pago es mes a mes. Podés discontinuar cuando quieras.'],
-];
-
-const POR_QUE = [
-  ['Audiencia calificada', 'Solo dueños de mascotas activos en tu ciudad.'],
-  ['Sin bots ni impresiones vacías', 'Usuarios reales buscando avisos activos.'],
-  ['Activación en 24 hs', 'Tu ad publicado al día siguiente de pagar.'],
-  ['Reporte mensual', 'Te informamos cuántas veces se vio tu anuncio.'],
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function PublicitateScreen() {
+  const { t } = useLanguage();
+  const PAQUETES = [
+    { nombre: t.pubPlanBasico, precio: '$15.000', slots: [t.pubSlotCard], destacado: false, slug: 'basico' },
+    { nombre: t.pubPlanEstandar, precio: '$28.000', slots: [t.pubSlotCard, t.pubSlotPanel], destacado: true, slug: 'estandar' },
+    { nombre: t.pubPlanPremium, precio: '$45.000', slots: [t.pubSlotBanner, t.pubSlotCard, t.pubSlotPanel], destacado: false, slug: 'premium' },
+  ];
+
+  const FAQ = [
+    [t.pubFaq1Q, t.pubFaq1A],
+    [t.pubFaq2Q, t.pubFaq2A],
+    [t.pubFaq3Q, t.pubFaq3A],
+    [t.pubFaq4Q, t.pubFaq4A],
+  ];
+
+  const POR_QUE = [
+    [t.pubPorQue1Titulo, t.pubPorQue1Desc],
+    [t.pubPorQue2Titulo, t.pubPorQue2Desc],
+    [t.pubPorQue3Titulo, t.pubPorQue3Desc],
+    [t.pubPorQue4Titulo, t.pubPorQue4Desc],
+  ];
+
   const [totalUsuarios, setTotalUsuarios] = useState<number | null>(null);
   const [planSel, setPlanSel] = useState<string | null>(null);
 
@@ -41,26 +43,26 @@ export default function PublicitateScreen() {
 
   const statUsuarios = totalUsuarios === null ? '…' : `${totalUsuarios.toLocaleString('es-AR')}+`;
   const STATS = [
-    [statUsuarios, 'Vecinos activos'],
-    ['Todo', 'Argentina'],
-    ['100%', 'Orgánico · sin bots'],
-    ['Directo', 'A dueños de mascotas'],
+    [statUsuarios, t.pubStatVecinosLabel],
+    [t.pubStatTodoValue, t.pubStatArgentinaLabel],
+    [t.pubStat100Value, t.pubStatOrganicoLabel],
+    [t.pubStatDirectoValue, t.pubStatDuenosLabel],
   ];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 50 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 20 }}>
-        <View style={styles.chip}><Text style={styles.chipText}>📣 Para negocios locales</Text></View>
-        <Text style={styles.title}>Llegá a quienes ya cuidan a sus mascotas</Text>
-        <Text style={styles.sub}>Vecindog conecta a dueños de perros de toda Argentina cuando más lo necesitan. Mostrá tu negocio en el momento exacto.</Text>
+        <View style={styles.chip}><Text style={styles.chipText}>{t.pubParaNegocios}</Text></View>
+        <Text style={styles.title}>{t.pubTitle}</Text>
+        <Text style={styles.sub}>{t.pubSub}</Text>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <TouchableOpacity style={styles.waBtn} onPress={() => Linking.openURL(WHATSAPP_PUBLICIDAD)}>
-            <Text style={styles.waBtnText}>💬 WhatsApp</Text>
+            <Text style={styles.waBtnText}>{t.pubWhatsapp}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mailBtn} onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=Quiero%20publicitar%20en%20Vecindog`)}>
-            <Text style={styles.mailBtnText}>✉️ Email</Text>
+            <Text style={styles.mailBtnText}>{t.pubEmail}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -74,43 +76,43 @@ export default function PublicitateScreen() {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Formatos disponibles</Text>
+      <Text style={styles.sectionTitle}>{t.pubFormatosTitle}</Text>
       <View style={{ gap: 10, marginBottom: 20 }}>
         <View style={styles.formatoCard}>
-          <Text style={styles.formatoLabel}>🖼️ Banner entre secciones <Text style={styles.formatoBadge}>Más visto</Text></Text>
-          <Text style={styles.formatoDesc}>Aparece en el inicio entre secciones. Full width, alta visibilidad.</Text>
+          <Text style={styles.formatoLabel}>{t.pubFormato1Label} <Text style={styles.formatoBadge}>{t.pubFormato1Badge}</Text></Text>
+          <Text style={styles.formatoDesc}>{t.pubFormato1Desc}</Text>
         </View>
         <View style={styles.formatoCard}>
-          <Text style={styles.formatoLabel}>🗂️ Card en grilla de avisos <Text style={[styles.formatoBadge, { backgroundColor: Colors.good }]}>Más clics</Text></Text>
-          <Text style={styles.formatoDesc}>Aparece integrada cada 4 avisos. El usuario la ve mientras busca su perro.</Text>
+          <Text style={styles.formatoLabel}>{t.pubFormato2Label} <Text style={[styles.formatoBadge, { backgroundColor: Colors.good }]}>{t.pubFormato2Badge}</Text></Text>
+          <Text style={styles.formatoDesc}>{t.pubFormato2Desc}</Text>
         </View>
         <View style={styles.formatoCard}>
-          <Text style={styles.formatoLabel}>📋 Panel lateral de contacto <Text style={[styles.formatoBadge, { backgroundColor: '#5b8e3a' }]}>Alta intención</Text></Text>
-          <Text style={styles.formatoDesc}>Aparece en el detalle de cada aviso, justo debajo del contacto.</Text>
+          <Text style={styles.formatoLabel}>{t.pubFormato3Label} <Text style={[styles.formatoBadge, { backgroundColor: '#5b8e3a' }]}>{t.pubFormato3Badge}</Text></Text>
+          <Text style={styles.formatoDesc}>{t.pubFormato3Desc}</Text>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>¿Cómo funciona?</Text>
+      <Text style={styles.sectionTitle}>{t.pubComoFuncionaTitle}</Text>
       <View style={{ gap: 10, marginBottom: 20 }}>
-        {[['1️⃣', 'Elegí tu plan', 'Seleccioná el paquete que mejor se adapte: Básico, Estándar o Premium.'],
-          ['2️⃣', 'Completá los datos', 'Nombre, logo, tagline y link a tu web o Instagram. Menos de 2 minutos.'],
-          ['3️⃣', 'Tu aviso en vivo', 'En 24 hs tu anuncio ya está visible para cientos de dueños de mascotas.']].map(([n, t, d]) => (
-          <View key={t} style={styles.pasoCard}>
+        {[['1️⃣', t.pubPaso1Titulo, t.pubPaso1Desc],
+          ['2️⃣', t.pubPaso2Titulo, t.pubPaso2Desc],
+          ['3️⃣', t.pubPaso3Titulo, t.pubPaso3Desc]].map(([n, titulo, d]) => (
+          <View key={titulo} style={styles.pasoCard}>
             <Text style={{ fontSize: 22 }}>{n}</Text>
-            <Text style={styles.pasoTitulo}>{t}</Text>
+            <Text style={styles.pasoTitulo}>{titulo}</Text>
             <Text style={styles.pasoDesc}>{d}</Text>
           </View>
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Planes simples, sin letra chica</Text>
-      <Text style={styles.sectionSub}>Mes a mes. Sin contrato. Cancelás cuando querés.</Text>
+      <Text style={styles.sectionTitle}>{t.pubPlanesTitle}</Text>
+      <Text style={styles.sectionSub}>{t.pubPlanesSub}</Text>
       <View style={{ gap: 12, marginTop: 12, marginBottom: 20 }}>
         {PAQUETES.map((p) => (
           <View key={p.nombre} style={[styles.planCard, p.destacado && styles.planCardDestacado]}>
-            {p.destacado && <View style={styles.planBadge}><Text style={styles.planBadgeText}>★ Más elegido</Text></View>}
+            {p.destacado && <View style={styles.planBadge}><Text style={styles.planBadgeText}>{t.pubMasElegido}</Text></View>}
             <Text style={styles.planNombre}>{p.nombre}</Text>
-            <Text style={styles.planPrecio}>{p.precio}<Text style={styles.planPrecioMoneda}> ARS/mes</Text></Text>
+            <Text style={styles.planPrecio}>{p.precio}<Text style={styles.planPrecioMoneda}> {t.pubArsMes}</Text></Text>
             <View style={{ gap: 5, marginTop: 10 }}>
               {p.slots.map((s) => (
                 <View key={s} style={{ flexDirection: 'row', gap: 6 }}>
@@ -123,22 +125,22 @@ export default function PublicitateScreen() {
               style={[styles.planBtn, p.destacado ? styles.planBtnDestacado : styles.planBtnOutline]}
               onPress={() => setPlanSel(p.slug)}
             >
-              <Text style={p.destacado ? styles.planBtnDestacadoText : styles.planBtnOutlineText}>Elegir {p.nombre} →</Text>
+              <Text style={p.destacado ? styles.planBtnDestacadoText : styles.planBtnOutlineText}>{t.pubElegirPrefix} {p.nombre} →</Text>
             </TouchableOpacity>
           </View>
         ))}
       </View>
-      <Text style={styles.precioEspecial}>¿Necesitás algo especial? Escribinos y armamos un plan a medida.</Text>
+      <Text style={styles.precioEspecial}>{t.pubNecesitasAlgo}</Text>
 
       <View style={styles.porQueCard}>
-        <Text style={{ fontSize: 20, color: Colors.white, fontWeight: '900' }}>Publicidad con contexto, no con algoritmos</Text>
-        <Text style={styles.porQueSub}>Los usuarios de Vecindog ya están pensando en sus mascotas cuando ven tu anuncio.</Text>
+        <Text style={{ fontSize: 20, color: Colors.white, fontWeight: '900' }}>{t.pubPorQueTitle}</Text>
+        <Text style={styles.porQueSub}>{t.pubPorQueSub}</Text>
         <View style={{ gap: 10, marginTop: 14 }}>
-          {POR_QUE.map(([t, d]) => (
-            <View key={t} style={{ flexDirection: 'row', gap: 8 }}>
+          {POR_QUE.map(([titulo, d]) => (
+            <View key={titulo} style={{ flexDirection: 'row', gap: 8 }}>
               <Text style={{ color: '#fca5a5' }}>✓</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.porQueItemTitulo}>{t}</Text>
+                <Text style={styles.porQueItemTitulo}>{titulo}</Text>
                 <Text style={styles.porQueItemDesc}>{d}</Text>
               </View>
             </View>
@@ -146,7 +148,7 @@ export default function PublicitateScreen() {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Preguntas frecuentes</Text>
+      <Text style={styles.sectionTitle}>{t.pubFaqTitle}</Text>
       <View style={{ gap: 10, marginTop: 10, marginBottom: 20 }}>
         {FAQ.map(([q, a]) => (
           <View key={q} style={styles.faqCard}>
@@ -158,11 +160,11 @@ export default function PublicitateScreen() {
 
       <View style={styles.finalCta}>
         <Text style={{ fontSize: 32 }}>📣</Text>
-        <Text style={styles.finalCtaTitle}>¿Listo para llegar a más clientes?</Text>
-        <Text style={styles.finalCtaSub}>Escribinos y activamos tu campaña en menos de 24 horas.</Text>
+        <Text style={styles.finalCtaTitle}>{t.pubFinalTitle}</Text>
+        <Text style={styles.finalCtaSub}>{t.pubFinalSub}</Text>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <TouchableOpacity style={styles.waBtn} onPress={() => Linking.openURL(WHATSAPP_PUBLICIDAD)}>
-            <Text style={styles.waBtnText}>💬 WhatsApp</Text>
+            <Text style={styles.waBtnText}>{t.pubWhatsapp}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mailBtn} onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}`)}>
             <Text style={styles.mailBtnText}>✉️ {CONTACT_EMAIL}</Text>
@@ -175,13 +177,13 @@ export default function PublicitateScreen() {
   );
 }
 
-const PLAN_INFO: Record<string, { label: string; precio: string; necesitaLogo: boolean }> = {
-  basico: { label: 'Plan Básico', precio: '$15.000/mes', necesitaLogo: false },
-  estandar: { label: 'Plan Estándar', precio: '$28.000/mes', necesitaLogo: true },
-  premium: { label: 'Plan Premium', precio: '$45.000/mes', necesitaLogo: true },
-};
-
 function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
+  const { t } = useLanguage();
+  const PLAN_INFO: Record<string, { label: string; precio: string; necesitaLogo: boolean }> = {
+    basico: { label: t.pubPlanBasicoLabel, precio: '$15.000/mes', necesitaLogo: false },
+    estandar: { label: t.pubPlanEstandarLabel, precio: '$28.000/mes', necesitaLogo: true },
+    premium: { label: t.pubPlanPremiumLabel, precio: '$45.000/mes', necesitaLogo: true },
+  };
   const info = PLAN_INFO[plan] ?? PLAN_INFO.basico;
   const [negocio, setNegocio] = useState('');
   const [tagline, setTagline] = useState('');
@@ -203,16 +205,16 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
   }
 
   async function handleSubmit() {
-    if (!negocio.trim()) { setError('Ingresá el nombre de tu negocio.'); return; }
-    if (!email.trim()) { setError('Ingresá tu email.'); return; }
-    if (!link.trim()) { setError('Ingresá el link de tu negocio.'); return; }
-    if (info.necesitaLogo && !logoUri) { setError('Subí el logo de tu negocio para este plan.'); return; }
+    if (!negocio.trim()) { setError(t.pubErrNombreNegocio); return; }
+    if (!email.trim()) { setError(t.rvErrEmail); return; }
+    if (!link.trim()) { setError(t.pubErrLink); return; }
+    if (info.necesitaLogo && !logoUri) { setError(t.pubErrLogo); return; }
     try {
       const urlCheck = link.includes('://') ? link : `https://${link}`;
       const parsed = new URL(urlCheck);
       if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error();
     } catch {
-      setError('El link debe ser una URL válida. Ejemplo: https://instagram.com/tunegocio');
+      setError(t.pubErrLinkInvalido);
       return;
     }
     setLoading(true); setError('');
@@ -231,10 +233,10 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
       if (res.ok && data.ok) {
         setEnviado(true);
       } else {
-        setError(data.error ?? 'Error al procesar.');
+        setError(data.error ?? t.pubErrProcesar);
       }
     } catch {
-      setError('Error de conexión. Intentá de nuevo.');
+      setError(t.rvErrConexion);
     } finally {
       setLoading(false);
     }
@@ -247,7 +249,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
             <View style={{ flex: 1 }}>
               <Text style={styles.modalTitle}>{info.label}</Text>
-              <Text style={styles.modalSub}>🎁 Primer mes gratis · después {info.precio}</Text>
+              <Text style={styles.modalSub}>{t.pubPrimerMesGratisPrefix} {info.precio}</Text>
             </View>
             <TouchableOpacity onPress={onClose}><Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text></TouchableOpacity>
           </View>
@@ -255,9 +257,9 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
           {enviado ? (
             <View style={{ alignItems: 'center', gap: 8, paddingVertical: 20 }}>
               <Text style={{ fontSize: 48 }}>✅</Text>
-              <Text style={styles.modalTitle}>¡Campaña activada!</Text>
-              <Text style={styles.modalSub}>Tu anuncio ya está en proceso de activación. Te enviamos un mail con los detalles.</Text>
-              <TouchableOpacity style={styles.submitBtn} onPress={onClose}><Text style={styles.submitBtnText}>Cerrar</Text></TouchableOpacity>
+              <Text style={styles.modalTitle}>{t.pubCampanaActivadaTitle}</Text>
+              <Text style={styles.modalSub}>{t.pubCampanaActivadaSub}</Text>
+              <TouchableOpacity style={styles.submitBtn} onPress={onClose}><Text style={styles.submitBtnText}>{t.rvCerrarBtn}</Text></TouchableOpacity>
             </View>
           ) : (
             <>
@@ -265,7 +267,7 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
                 {fotoUri ? <Image source={{ uri: fotoUri }} style={styles.fotoPreview} /> : (
                   <View style={[styles.fotoPreview, { alignItems: 'center', justifyContent: 'center' }]}><Text style={{ fontSize: 22 }}>🖼️</Text></View>
                 )}
-                <Text style={styles.fotoBtnText}>{fotoUri ? 'Cambiar imagen' : 'Subir logo o foto'}</Text>
+                <Text style={styles.fotoBtnText}>{fotoUri ? t.pubCambiarImagen : t.pubSubirLogoFoto}</Text>
               </TouchableOpacity>
 
               {info.necesitaLogo && (
@@ -273,33 +275,33 @@ function PagoModal({ plan, onClose }: { plan: string; onClose: () => void }) {
                   {logoUri ? <Image source={{ uri: logoUri }} style={styles.fotoPreview} /> : (
                     <View style={[styles.fotoPreview, { alignItems: 'center', justifyContent: 'center' }]}><Text style={{ fontSize: 22 }}>🔷</Text></View>
                   )}
-                  <Text style={styles.fotoBtnText}>{logoUri ? 'Cambiar logo' : 'Subir logo cuadrado *'}</Text>
+                  <Text style={styles.fotoBtnText}>{logoUri ? t.pubCambiarLogo : t.pubSubirLogoCuadrado}</Text>
                 </TouchableOpacity>
               )}
 
-              <Text style={styles.label}>Nombre del negocio *</Text>
-              <TextInput style={styles.input} value={negocio} onChangeText={setNegocio} placeholder="Veterinaria Central" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.rvNombreNegocioLabel}</Text>
+              <TextInput style={styles.input} value={negocio} onChangeText={setNegocio} placeholder={t.rvNombreNegocioPh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Descripción corta (tagline)</Text>
-              <TextInput style={styles.input} value={tagline} onChangeText={setTagline} placeholder="Vacunas · Bahía Blanca" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.pubTaglineLabel}</Text>
+              <TextInput style={styles.input} value={tagline} onChangeText={setTagline} placeholder={t.pubTaglinePh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Link del negocio *</Text>
+              <Text style={styles.label}>{t.pubLinkLabel}</Text>
               <TextInput style={styles.input} value={link} onChangeText={setLink} placeholder="https://instagram.com/tunegocio" placeholderTextColor={Colors.inkMuted} autoCapitalize="none" />
 
-              <Text style={styles.label}>Texto del botón</Text>
-              <TextInput style={styles.input} value={cta} onChangeText={setCta} placeholder="Ver local · Pedir turno" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.pubCtaLabel}</Text>
+              <TextInput style={styles.input} value={cta} onChangeText={setCta} placeholder={t.pubCtaPh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Email *</Text>
+              <Text style={styles.label}>{t.rvEmailLabel}</Text>
               <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="info@tunegocio.com" placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Teléfono / WhatsApp</Text>
+              <Text style={styles.label}>{t.pubTelefonoLabel}</Text>
               <TextInput style={styles.input} value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" placeholder="+54 9 291 578-2910" placeholderTextColor={Colors.inkMuted} />
 
               {!!error && <Text style={styles.error}>{error}</Text>}
-              <Text style={styles.trialNote}>Sin costo el primer mes · después se renueva</Text>
+              <Text style={styles.trialNote}>{t.pubTrialNote}</Text>
 
               <TouchableOpacity style={[styles.submitBtn, loading && { opacity: 0.6 }]} onPress={handleSubmit} disabled={loading}>
-                {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>Activar gratis — primer mes sin costo</Text>}
+                {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t.pubActivarBtn}</Text>}
               </TouchableOpacity>
             </>
           )}

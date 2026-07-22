@@ -7,8 +7,10 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function MisPerrosScreen() {
+  const { t } = useLanguage();
   const { user, isPro } = useAuth();
   const [perros,     setPerros]     = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -35,24 +37,24 @@ export default function MisPerrosScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Mis perros 🐶</Text>
-          <Text style={styles.sub}>{perros.length} registrado{perros.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.title}>{t.misPerrosTitle}</Text>
+          <Text style={styles.sub}>{perros.length} {perros.length !== 1 ? t.misPerrosCountPlural : t.misPerrosCountSingular}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {isPro ? (
             <TouchableOpacity style={styles.amigosBtn} onPress={() => router.push('/amigos')}>
-              <Text style={styles.amigosBtnText}>👥 Amigos</Text>
+              <Text style={styles.amigosBtnText}>{t.misPerrosAmigos}</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.amigosBtnLocked} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-              <Text style={styles.amigosBtnLockedText}>🔒 Amigos</Text>
+              <Text style={styles.amigosBtnLockedText}>{t.misPerrosAmigosLocked}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => router.push('/mis-perros/nuevo')}
           >
-            <Text style={styles.addBtnText}>+ Agregar</Text>
+            <Text style={styles.addBtnText}>{t.misPerrosAgregar}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -68,10 +70,10 @@ export default function MisPerrosScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ fontSize: 64, textAlign: 'center' }}>🐕</Text>
-              <Text style={styles.emptyTitle}>Sin perros registrados</Text>
-              <Text style={styles.emptySub}>Registrá a tu perro para tener toda su información lista.</Text>
+              <Text style={styles.emptyTitle}>{t.misPerrosEmptyTitle}</Text>
+              <Text style={styles.emptySub}>{t.misPerrosEmptySub}</Text>
               <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/mis-perros/nuevo')}>
-                <Text style={styles.emptyBtnText}>+ Registrar perro</Text>
+                <Text style={styles.emptyBtnText}>{t.misPerrosEmptyBtn}</Text>
               </TouchableOpacity>
             </View>
           }

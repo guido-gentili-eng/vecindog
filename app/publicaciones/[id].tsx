@@ -11,16 +11,11 @@ import { renovarPost, resolverPost, eliminarPost } from '@/lib/posts';
 import MensajesHilo from '@/components/MensajesHilo';
 import LoViPanel from '@/components/LoViPanel';
 import AdSlot from '@/components/AdSlot';
-
-const MOTIVOS = [
-  'Información falsa o engañosa',
-  'Contenido inapropiado u ofensivo',
-  'Spam o publicidad',
-  'Sospecha de maltrato animal',
-  'Otro',
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function PostDetailScreen() {
+  const { t } = useLanguage();
+  const MOTIVOS = [t.postMotivoFalsa, t.postMotivoInapropiado, t.postMotivoSpam, t.postMotivoMaltrato, t.postMotivoOtro];
   const { id }    = useLocalSearchParams<{ id: string }>();
   const { user, profile } = useAuth();
   const [post,          setPost]          = useState<any | null>(null);
@@ -32,18 +27,18 @@ export default function PostDetailScreen() {
 
   function confirmarReporte() {
     if (!user) {
-      Alert.alert('Iniciá sesión', 'Necesitás una cuenta para reportar un aviso.');
+      Alert.alert(t.bpfErrIniciarSesionTitle, t.postErrIniciarSesionReporte);
       return;
     }
     Alert.alert(
-      '¿Por qué querés reportar este aviso?',
+      t.postReportarPregunta,
       undefined,
       [
         ...MOTIVOS.map((motivo) => ({
           text: motivo,
           onPress: () => enviarReporte(motivo),
         })),
-        { text: 'Cancelar', style: 'cancel' as const },
+        { text: t.perfilCancelar, style: 'cancel' as const },
       ],
     );
   }
@@ -56,16 +51,16 @@ export default function PostDetailScreen() {
       created_at: new Date().toISOString(),
     });
     if (error) {
-      Alert.alert('Error', 'No se pudo enviar el reporte. Intentá de nuevo.');
+      Alert.alert(t.perfilErrorGeneric, t.postErrReporte);
     } else {
       setReportado(true);
-      Alert.alert('Reporte enviado', 'Gracias. Nuestro equipo revisará este aviso.');
+      Alert.alert(t.postReporteEnviadoTitle, t.postReporteEnviadoSub);
     }
   }
 
   async function solicitarContacto() {
     if (!user) {
-      Alert.alert('Iniciá sesión', 'Necesitás una cuenta para solicitar el contacto.');
+      Alert.alert(t.bpfErrIniciarSesionTitle, t.postErrIniciarSesionContacto);
       return;
     }
     setSolicitando(true);
@@ -89,8 +84,8 @@ export default function PostDetailScreen() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             to:    pushToken,
-            title: `📩 Solicitud de contacto — ${post.nombre || 'tu aviso'}`,
-            body:  `${miNombre} quiere contactarte. Sus datos: ${miContacto}`,
+            title: `${t.postPushTitlePrefix} ${post.nombre || t.postPushTuAviso}`,
+            body:  `${miNombre} ${t.postPushQuiereContactarte} ${miContacto}`,
             data:  { post_id: id },
           }),
         });
@@ -99,11 +94,11 @@ export default function PostDetailScreen() {
 
       setSolicitado(true);
       Alert.alert(
-        '✅ Solicitud enviada',
-        'El publicador recibirá una notificación con tus datos de contacto.',
+        t.postSolicitudEnviadaTitle,
+        t.postSolicitudEnviadaSub,
       );
     } catch {
-      Alert.alert('Error', 'No se pudo enviar la solicitud. Intentá de nuevo.');
+      Alert.alert(t.perfilErrorGeneric, t.postErrSolicitud);
     } finally {
       setSolicitando(false);
     }
@@ -121,16 +116,16 @@ export default function PostDetailScreen() {
   function handleShare() {
     if (!post) return;
     const url = `https://www.mivecindog.com.ar/publicaciones/${post.id}`;
-    Share.share({ message: `${post.nombre ?? 'Perro'} — ${post.zona}\n${url}`, url }).catch(() => {});
+    Share.share({ message: `${post.nombre ?? t.postSharePerroFallback} — ${post.zona}\n${url}`, url }).catch(() => {});
   }
 
   function confirmarRenovar() {
     Alert.alert(
-      '¿Subir este aviso al tope de la lista?',
-      'El aviso va a aparecer primero para más personas.',
+      t.postConfirmRenovarTitle,
+      t.postConfirmRenovarSub,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Sí, renovar', onPress: handleRenovar },
+        { text: t.perfilCancelar, style: 'cancel' },
+        { text: t.postSiRenovar, onPress: handleRenovar },
       ],
     );
   }
@@ -139,9 +134,9 @@ export default function PostDetailScreen() {
     setAccionando(true);
     try {
       await renovarPost(post.id);
-      Alert.alert('Listo', 'Tu aviso volvió al tope de la lista.');
+      Alert.alert(t.postRenovarListoTitle, t.postRenovarListoSub);
     } catch {
-      Alert.alert('Error', 'No se pudo renovar el aviso. Intentá de nuevo.');
+      Alert.alert(t.perfilErrorGeneric, t.postErrRenovar);
     } finally {
       setAccionando(false);
     }
@@ -150,13 +145,13 @@ export default function PostDetailScreen() {
   function confirmarResuelto() {
     const esPerdido = post.categoria === 'perdido';
     Alert.alert(
-      esPerdido ? '¿Ya encontraste a tu perro?' : '¿Marcar este aviso como resuelto?',
+      esPerdido ? t.postConfirmResueltoPerdidoTitle : t.postConfirmResueltoOtroTitle,
       esPerdido
-        ? 'El aviso va a dejar de mostrarse como activo.'
-        : 'Esta acción no se puede deshacer.',
+        ? t.postConfirmResueltoPerdidoSub
+        : t.postConfirmResueltoOtroSub,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Sí, marcar resuelto', onPress: handleResuelto },
+        { text: t.perfilCancelar, style: 'cancel' },
+        { text: t.postSiMarcarResuelto, onPress: handleResuelto },
       ],
     );
   }
@@ -166,9 +161,9 @@ export default function PostDetailScreen() {
     try {
       await resolverPost(post.id);
       setPost((p: any) => p ? { ...p, estado: 'resuelto' } : p);
-      Alert.alert('¡Listo! 🎉', 'Nos alegra que se haya resuelto.');
+      Alert.alert(t.postResueltoListoTitle, t.postResueltoListoSub);
     } catch {
-      Alert.alert('Error', 'No se pudo actualizar el aviso. Intentá de nuevo.');
+      Alert.alert(t.perfilErrorGeneric, t.postErrResuelto);
     } finally {
       setAccionando(false);
     }
@@ -176,11 +171,11 @@ export default function PostDetailScreen() {
 
   function confirmarBorrar() {
     Alert.alert(
-      '¿Borrar este aviso?',
-      'Esta acción no se puede deshacer.',
+      t.postConfirmBorrarTitle,
+      t.postConfirmResueltoOtroSub,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Borrar', style: 'destructive', onPress: handleBorrar },
+        { text: t.perfilCancelar, style: 'cancel' },
+        { text: t.postBorrarBtnConfirm, style: 'destructive', onPress: handleBorrar },
       ],
     );
   }
@@ -191,7 +186,7 @@ export default function PostDetailScreen() {
       await eliminarPost(post.id, post.images ?? []);
       router.back();
     } catch {
-      Alert.alert('Error', 'No se pudo borrar el aviso. Intentá de nuevo.');
+      Alert.alert(t.perfilErrorGeneric, t.postErrBorrar);
       setAccionando(false);
     }
   }
@@ -202,13 +197,13 @@ export default function PostDetailScreen() {
   if (!post) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Aviso no encontrado</Text>
+        <Text>{t.postNoEncontrado}</Text>
       </View>
     );
   }
 
   const waNumero = post.contacto?.replace(/[^0-9]/g, '') ?? '';
-  const waLink   = `https://wa.me/${waNumero}?text=${encodeURIComponent('Hola, te escribo por el aviso de Vecindog.')}`;
+  const waLink   = `https://wa.me/${waNumero}?text=${encodeURIComponent(t.postWaMensajeDefault)}`;
 
   const CAT_COLOR: Record<string, string> = {
     perdido: '#fef2f2', encontrado: '#f0fdf4', adopcion: '#fef3c7', transito: '#f5f3ff',
@@ -245,12 +240,12 @@ export default function PostDetailScreen() {
           </View>
           <View style={[styles.catBadge, { backgroundColor: resuelto ? '#f3f4f6' : '#f0fdf4' }]}>
             <Text style={[styles.catText, { color: resuelto ? Colors.inkMuted : Colors.good }]}>
-              {resuelto ? 'RESUELTO' : 'ACTIVO'}
+              {resuelto ? t.postResuelto : t.postActivo}
             </Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-          <Text style={[styles.nombre, { flex: 1 }]}>{post.nombre || 'Sin nombre'}</Text>
+          <Text style={[styles.nombre, { flex: 1 }]}>{post.nombre || t.homeSinNombre}</Text>
           <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
             <Text style={{ fontSize: 16 }}>📤</Text>
           </TouchableOpacity>
@@ -259,13 +254,13 @@ export default function PostDetailScreen() {
         {/* Datos */}
         <View style={styles.datos}>
           {[
-            ['Especie',  post.especie],
-            ['Raza',     post.raza],
-            ['Color',    post.color],
-            ['Tamaño',   post.tamano],
-            ['Zona',     post.zona],
-            ['Ciudad',   post.ciudad],
-            ['Fecha',    post.fecha],
+            [t.postDatoEspecie,  post.especie],
+            [t.postDatoRaza,     post.raza],
+            [t.postDatoColor,    post.color],
+            [t.postDatoTamano,   post.tamano],
+            [t.postDatoZona,     post.zona],
+            [t.postDatoCiudad,   post.ciudad],
+            [t.postDatoFecha,    post.fecha],
           ].filter(([, v]) => v).map(([label, value]) => (
             <View key={label as string} style={styles.dato}>
               <Text style={styles.datoLabel}>{label}</Text>
@@ -277,7 +272,7 @@ export default function PostDetailScreen() {
         {/* Descripción */}
         {post.descripcion && (
           <View style={styles.descBox}>
-            <Text style={styles.descTitle}>Descripción</Text>
+            <Text style={styles.descTitle}>{t.postDescripcionTitle}</Text>
             <Text style={styles.descText}>{post.descripcion}</Text>
           </View>
         )}
@@ -299,16 +294,16 @@ export default function PostDetailScreen() {
         {!user ? (
           <View style={styles.loginPrompt}>
             <Text style={styles.loginText}>
-              Iniciá sesión para ver el contacto de este aviso.
+              {t.postLoginPromptText}
             </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-              <Text style={styles.loginLink}>Iniciar sesión →</Text>
+              <Text style={styles.loginLink}>{t.postLoginLink}</Text>
             </TouchableOpacity>
           </View>
         ) : sinContacto ? (
           <View style={styles.solicitadoBox}>
             <Text style={[styles.solicitadoText, { color: Colors.inkMuted }]}>
-              🙈  Quien publicó este aviso prefirió no dejar contacto. Podés compartirlo para que llegue a más personas.
+              {t.postSinContactoText}
             </Text>
           </View>
         ) : post.contacto_publico === false && post.user_id !== user?.id ? (
@@ -316,7 +311,7 @@ export default function PostDetailScreen() {
           solicitado ? (
             <View style={styles.solicitadoBox}>
               <Text style={styles.solicitadoText}>
-                ✅  Solicitud enviada. El publicador te contactará.
+                {t.postSolicitudEnviadaTexto}
               </Text>
             </View>
           ) : (
@@ -327,7 +322,7 @@ export default function PostDetailScreen() {
             >
               {solicitando
                 ? <ActivityIndicator color={Colors.primary} />
-                : <Text style={styles.waBtnPrivadoText}>📩  Solicitar contacto</Text>
+                : <Text style={styles.waBtnPrivadoText}>{t.postSolicitarContactoBtn}</Text>
               }
             </TouchableOpacity>
           )
@@ -337,7 +332,7 @@ export default function PostDetailScreen() {
             style={styles.waBtn}
             onPress={() => Linking.openURL(waLink)}
           >
-            <Text style={styles.waBtnText}>💬  Escribir por WhatsApp</Text>
+            <Text style={styles.waBtnText}>{t.postWhatsappBtn}</Text>
           </TouchableOpacity>
         )}
 
@@ -352,7 +347,7 @@ export default function PostDetailScreen() {
         {canManage && (
           <View style={styles.managePanel}>
             <Text style={styles.managePanelTitle}>
-              {isAdmin && !isOwner ? '🛡️ Panel de administración' : '🐶 Gestionar mi aviso'}
+              {isAdmin && !isOwner ? t.postManagePanelAdmin : t.postManagePanelDueno}
             </Text>
 
             {!resuelto && (
@@ -361,7 +356,7 @@ export default function PostDetailScreen() {
                 onPress={confirmarRenovar}
                 disabled={accionando}
               >
-                <Text style={[styles.manageBtnText, { color: Colors.primary }]}>🔄  Lo sigo buscando (subir al tope)</Text>
+                <Text style={[styles.manageBtnText, { color: Colors.primary }]}>{t.postRenovarBtn}</Text>
               </TouchableOpacity>
             )}
 
@@ -372,7 +367,7 @@ export default function PostDetailScreen() {
                 disabled={accionando}
               >
                 <Text style={[styles.manageBtnText, { color: Colors.good }]}>
-                  ✅  {isAdmin && !isOwner ? 'Marcar resuelto' : post.categoria === 'perdido' ? 'Ya lo encontré' : 'Marcar resuelto'}
+                  ✅  {isAdmin && !isOwner ? t.postMarcarResueltoAdmin : post.categoria === 'perdido' ? t.postYaLoEncontre : t.postMarcarResuelto}
                 </Text>
               </TouchableOpacity>
             )}
@@ -382,7 +377,7 @@ export default function PostDetailScreen() {
               onPress={confirmarBorrar}
               disabled={accionando}
             >
-              <Text style={[styles.manageBtnText, { color: Colors.bad }]}>🗑️  Borrar aviso</Text>
+              <Text style={[styles.manageBtnText, { color: Colors.bad }]}>{t.postBorrarAvisoBtn}</Text>
             </TouchableOpacity>
 
             {accionando && <ActivityIndicator color={Colors.primary} style={{ marginTop: 8 }} />}
@@ -397,7 +392,7 @@ export default function PostDetailScreen() {
             disabled={reportado}
           >
             <Text style={[styles.reportText, reportado && styles.reportTextDone]}>
-              {reportado ? '⚑  Aviso reportado' : '⚑  Reportar este aviso'}
+              {reportado ? t.postReportado : t.postReportarBtn}
             </Text>
           </TouchableOpacity>
         )}

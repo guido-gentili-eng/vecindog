@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-
 import { router } from 'expo-router';
 import { getAdForSlot, type Ad, type AdVariant } from '@/lib/ads';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function track(adId: string, event_type: string) {
   fetch('https://www.mivecindog.com.ar/api/comercio-stats', {
@@ -19,6 +20,7 @@ function openAd(ad: Ad) {
 }
 
 export default function AdSlot({ variant }: { variant: AdVariant }) {
+  const { t } = useLanguage();
   const [ad, setAd] = useState<Ad | null | undefined>(undefined);
   const tracked = useRef(false);
 
@@ -36,9 +38,9 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
     // House ad — auto-promo de Vecindog hacia /publicitate
     return (
       <TouchableOpacity style={styles.houseAd} onPress={() => router.push('/publicitate' as any)}>
-        <Text style={styles.adBadge}>Publicidad</Text>
-        <Text style={styles.houseAdTitle}>📣 ¿Tenés un negocio de mascotas?</Text>
-        <Text style={styles.houseAdSub}>Publicitate en Vecindog y llegá a miles de dueños de mascotas.</Text>
+        <Text style={styles.adBadge}>{t.adPublicidad}</Text>
+        <Text style={styles.houseAdTitle}>{t.adHouseTitle}</Text>
+        <Text style={styles.houseAdSub}>{t.adHouseSub}</Text>
       </TouchableOpacity>
     );
   }
@@ -46,7 +48,7 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
   if (variant === 'leaderboard') {
     return (
       <TouchableOpacity style={styles.leaderboard} onPress={() => openAd(ad)}>
-        <Text style={styles.adBadgeLight}>Publicidad</Text>
+        <Text style={styles.adBadgeLight}>{t.adPublicidad}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {ad.imagen_logo_url || ad.imagen_url ? (
             <Image source={{ uri: ad.imagen_logo_url ?? ad.imagen_url ?? '' }} style={styles.leaderboardImg} />
@@ -57,7 +59,7 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
             <Text style={styles.leaderboardTitulo}>{ad.titulo}</Text>
             {!!ad.subtitulo && <Text style={styles.leaderboardSub}>{ad.subtitulo}</Text>}
           </View>
-          <Text style={styles.leaderboardCta}>{ad.cta || 'Ver más'} →</Text>
+          <Text style={styles.leaderboardCta}>{ad.cta || t.adVerMas} →</Text>
         </View>
       </TouchableOpacity>
     );
@@ -66,7 +68,7 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
   if (variant === 'sidebar') {
     return (
       <TouchableOpacity style={styles.sidebar} onPress={() => openAd(ad)}>
-        <Text style={styles.adBadge}>Publicidad</Text>
+        <Text style={styles.adBadge}>{t.adPublicidad}</Text>
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 6 }}>
           {ad.imagen_logo_url || ad.imagen_url ? (
             <Image source={{ uri: ad.imagen_logo_url ?? ad.imagen_url ?? '' }} style={styles.sidebarImg} />
@@ -78,7 +80,7 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
             {!!ad.subtitulo && <Text style={styles.sidebarSub} numberOfLines={1}>{ad.subtitulo}</Text>}
           </View>
         </View>
-        <Text style={styles.sidebarCta}>{ad.cta || 'Ver más'} →</Text>
+        <Text style={styles.sidebarCta}>{ad.cta || t.adVerMas} →</Text>
       </TouchableOpacity>
     );
   }
@@ -87,7 +89,7 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
   return (
     <TouchableOpacity style={styles.card} onPress={() => openAd(ad)}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={styles.adBadge}>Publicidad</Text>
+        <Text style={styles.adBadge}>{t.adPublicidad}</Text>
       </View>
       {ad.imagen_url ? <Image source={{ uri: ad.imagen_url }} style={styles.cardImg} /> : (
         <View style={[styles.cardImg, { alignItems: 'center', justifyContent: 'center' }]}><Text style={{ fontSize: 24 }}>🐾</Text></View>

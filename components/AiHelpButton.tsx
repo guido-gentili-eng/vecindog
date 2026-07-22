@@ -5,15 +5,13 @@ import {
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
-const SALUDO: Msg = {
-  role: 'assistant',
-  content: '¡Hola! Soy el asistente de Vecindog 🐾 ¿En qué te puedo ayudar? Puedo explicarte cómo publicar un aviso, usar VecindogPro, o cualquier otra duda sobre la app.',
-};
-
 export default function AiHelpButton() {
+  const { t } = useLanguage();
+  const SALUDO: Msg = { role: 'assistant', content: t.aiHelpSaludo };
   const { session, isAuthenticated } = useAuth();
   const [abierto,  setAbierto]  = useState(false);
   const [msgs,     setMsgs]     = useState<Msg[]>([]);
@@ -32,7 +30,7 @@ export default function AiHelpButton() {
 
     if (!isAuthenticated || !session?.access_token) {
       setMsgs((m) => [...m, { role: 'user', content: contenido }, {
-        role: 'assistant', content: 'Necesitás iniciar sesión para usar el asistente. Cerrá este chat, iniciá sesión y volvé a intentarlo.',
+        role: 'assistant', content: t.aiHelpNecesitasLogin,
       }]);
       setTexto('');
       return;
@@ -53,9 +51,9 @@ export default function AiHelpButton() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? 'Error');
-      setMsgs((m) => [...m, { role: 'assistant', content: data.reply || 'No pude generar una respuesta, probá de nuevo.' }]);
+      setMsgs((m) => [...m, { role: 'assistant', content: data.reply || t.aiHelpNoPudeGenerar }]);
     } catch {
-      setMsgs((m) => [...m, { role: 'assistant', content: 'Hubo un problema para conectar con el asistente. Probá de nuevo en un momento.' }]);
+      setMsgs((m) => [...m, { role: 'assistant', content: t.aiHelpErrConexion }]);
     } finally {
       setLoading(false);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -78,8 +76,8 @@ export default function AiHelpButton() {
           <View style={styles.panel}>
             <View style={styles.header}>
               <View>
-                <Text style={styles.headerTitle}>Asistente Vecindog</Text>
-                <Text style={styles.headerSub}>Impulsado por IA</Text>
+                <Text style={styles.headerTitle}>{t.aiHelpTitle}</Text>
+                <Text style={styles.headerSub}>{t.aiHelpSub}</Text>
               </View>
               <TouchableOpacity onPress={() => setAbierto(false)}>
                 <Text style={styles.cerrar}>✕</Text>
@@ -107,7 +105,7 @@ export default function AiHelpButton() {
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}
-                placeholder="Escribí tu pregunta…"
+                placeholder={t.aiHelpInputPh}
                 placeholderTextColor={Colors.inkMuted}
                 value={texto}
                 onChangeText={setTexto}

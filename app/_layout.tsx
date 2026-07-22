@@ -3,11 +3,13 @@ import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import { useRouter, useSegments } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { registrarPushToken } from '@/lib/notifications';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AiHelpButton from '@/components/AiHelpButton';
@@ -23,6 +25,7 @@ const queryClient = new QueryClient({
 });
 
 function RootLayoutNav() {
+  const { t } = useLanguage();
   const { isAuthenticated, hasChosen, loading, user } = useAuth();
   const segments = useSegments();
   const router   = useRouter();
@@ -127,19 +130,19 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)"            options={{ headerShown: false }} />
       <Stack.Screen name="mis-perros"        options={{ headerShown: false }} />
       <Stack.Screen name="notificaciones"
-        options={{ headerShown: true, title: 'Notificaciones', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+        options={{ headerShown: true, title: t.notifTitle, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
       <Stack.Screen name="publicaciones/[id]"
-        options={{ headerShown: true, title: 'Aviso', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+        options={{ headerShown: true, title: t.headerAviso, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
       <Stack.Screen name="admin/reportes"
-        options={{ headerShown: true, title: 'Reportes', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+        options={{ headerShown: true, title: t.headerReportes, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
       <Stack.Screen name="buscar-por-foto"
-        options={{ headerShown: true, title: 'Buscar por foto', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+        options={{ headerShown: true, title: t.headerBuscarPorFoto, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
       <Stack.Screen name="reset-password"
-        options={{ headerShown: true, title: 'Nueva contraseña', headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
+        options={{ headerShown: true, title: t.headerNuevaContrasena, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
     </Stack>
     <AiHelpButton />
@@ -150,10 +153,12 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <StatusBar style="dark" />
-        <RootLayoutNav />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <RootLayoutNav />
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

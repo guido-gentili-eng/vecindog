@@ -1,6 +1,7 @@
 import { Stack, router } from 'expo-router';
 import { TouchableOpacity, Text } from 'react-native';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Esta pantalla vive en un Stack anidado propio, separado del Stack de las
 // tabs. Cuando se entra acá con router.push() desde la lista de "Mis perros"
@@ -9,18 +10,20 @@ import { Colors } from '@/constants/colors';
 // aunque router.back() sí sabe volver bien (delega al Stack padre). Por eso
 // se fuerza un botón de volver explícito en vez de confiar en el header nativo.
 function BackButton() {
+  const { t } = useLanguage();
   return (
     <TouchableOpacity
       onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/mis-perros'))}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       style={{ paddingRight: 12 }}
     >
-      <Text style={{ color: Colors.primary, fontSize: 16, fontWeight: '600' }}>‹ Volver</Text>
+      <Text style={{ color: Colors.primary, fontSize: 16, fontWeight: '600' }}>{t.layoutVolver}</Text>
     </TouchableOpacity>
   );
 }
 
 export default function MisPerrosLayout() {
+  const { t } = useLanguage();
   return (
     <Stack
       screenOptions={{
@@ -30,8 +33,8 @@ export default function MisPerrosLayout() {
         headerLeft:        () => <BackButton />,
       }}
     >
-      <Stack.Screen name="[id]"  options={{ title: 'Perfil del perro' }} />
-      <Stack.Screen name="nuevo" options={{ title: 'Nuevo perro' }} />
+      <Stack.Screen name="[id]"  options={{ title: t.headerPerfilPerro }} />
+      <Stack.Screen name="nuevo" options={{ title: t.headerNuevoPerro }} />
     </Stack>
   );
 }

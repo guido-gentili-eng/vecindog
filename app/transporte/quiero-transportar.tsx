@@ -7,13 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
-
-const EXPERIENCIA_OPTS = [
-  'Soy dueño/a de perros', 'Tuve perros de niño/a', 'Cuidé perros de amigos/familia',
-  'Trabajé con animales', 'Sin experiencia previa',
-];
-const DISPONIBILIDAD_OPTS = ['De lunes a viernes', 'Fines de semana', 'Cualquier día', 'Solo de día', 'Con horario flexible'];
-const VEHICULO_OPTS = [['auto', '🚗 Auto'], ['camioneta', '🚐 Camioneta'], ['camion', '🚛 Camión']] as const;
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
@@ -24,6 +18,10 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 }
 
 export default function QuieroTransportarScreen() {
+  const { t } = useLanguage();
+  const EXPERIENCIA_OPTS = [t.qcExp1, t.qcExp2, t.qcExp3, t.qcExp4, t.qcExp5];
+  const DISPONIBILIDAD_OPTS = [t.qcDisp1, t.qcDisp2, t.qcDisp3, t.qcDisp4, t.qtDisp5];
+  const VEHICULO_OPTS = [['auto', t.qtVehiculoAuto], ['camioneta', t.qtVehiculoCamioneta], ['camion', t.qtVehiculoCamion]] as const;
   const { user, isPro } = useAuth();
   const [nombre, setNombre] = useState('');
   const [experiencias, setExperiencias] = useState<string[]>([]);
@@ -41,19 +39,19 @@ export default function QuieroTransportarScreen() {
   }
 
   async function handleSubmit() {
-    if (!user) { setError('Tenés que iniciar sesión para registrarte.'); return; }
-    if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
-    if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
-    if (contacto.replace(/\D/g, '').length < 10) { setError('El WhatsApp debe tener al menos 10 dígitos.'); return; }
+    if (!user) { setError(t.qcErrLogin); return; }
+    if (!nombre.trim()) { setError(t.qcErrNombre); return; }
+    if (!contacto.trim()) { setError(t.qcErrContacto); return; }
+    if (contacto.replace(/\D/g, '').length < 10) { setError(t.qcErrContactoDigits); return; }
 
     setEnviando(true);
     setError('');
 
     const partes: string[] = [];
-    if (vehiculo) partes.push(`Vehículo: ${vehiculo === 'camion' ? 'Camión' : vehiculo.charAt(0).toUpperCase() + vehiculo.slice(1)}.`);
-    if (experiencias.length) partes.push(`Experiencia: ${experiencias.join(', ')}.`);
-    if (disponibilidad.length) partes.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
-    partes.push(`Puede transportar hasta ${maxPerros} perro${maxPerros !== '1' ? 's' : ''} a la vez.`);
+    if (vehiculo) partes.push(`${t.qtVehiculoPrefix} ${vehiculo === 'camion' ? t.qtVehiculoCamionLabel : vehiculo.charAt(0).toUpperCase() + vehiculo.slice(1)}.`);
+    if (experiencias.length) partes.push(`${t.qcExperienciaPrefix} ${experiencias.join(', ')}.`);
+    if (disponibilidad.length) partes.push(`${t.qcDisponibilidadPrefix} ${disponibilidad.join(', ')}.`);
+    partes.push(`${t.qtPuedeTransportarPrefix} ${maxPerros} ${maxPerros !== '1' ? t.qcPerroPlural : t.qcPerroSingular} ${t.qcALaVezSuffix}`);
     if (detalles.trim()) partes.push(detalles.trim());
     const descripcion = partes.join(' ');
 
@@ -65,7 +63,7 @@ export default function QuieroTransportarScreen() {
     });
 
     setEnviando(false);
-    if (dbErr) { setError('No se pudo registrar. Intentá de nuevo.'); return; }
+    if (dbErr) { setError(t.qcErrRegistrar); return; }
     setPublicado(true);
     setTimeout(() => router.replace('/transporte' as any), 1800);
   }
@@ -73,7 +71,7 @@ export default function QuieroTransportarScreen() {
   if (!user) {
     return (
       <View style={styles.centerScreen}>
-        <Text style={styles.centerText}>Iniciá sesión para registrarte como transportador.</Text>
+        <Text style={styles.centerText}>{t.qtLoginRequired}</Text>
       </View>
     );
   }
@@ -83,12 +81,12 @@ export default function QuieroTransportarScreen() {
       <View style={styles.centerScreen}>
         <View style={styles.proCard}>
           <Text style={{ fontSize: 32 }}>🚗</Text>
-          <Text style={styles.proTitle}>Función exclusiva VecindogPro</Text>
+          <Text style={styles.proTitle}>{t.qcProTitle}</Text>
           <Text style={styles.proSub}>
-            Para registrarte como transportador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.
+            {t.qtProSub}
           </Text>
           <TouchableOpacity style={styles.proBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.proBtnText}>Ver planes</Text>
+            <Text style={styles.proBtnText}>{t.bpfVerPlanes}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -99,32 +97,32 @@ export default function QuieroTransportarScreen() {
     return (
       <View style={styles.centerScreen}>
         <Text style={{ fontSize: 48 }}>✅</Text>
-        <Text style={styles.proTitle}>¡Te registraste como transportador!</Text>
-        <Text style={styles.proSub}>Tu perfil ya aparece en el listado de transportadores disponibles.</Text>
+        <Text style={styles.proTitle}>{t.qtPublicadoTitle}</Text>
+        <Text style={styles.proSub}>{t.qtPublicadoSub}</Text>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
-      <Text style={styles.title}>Quiero transportar perros</Text>
-      <Text style={styles.sub}>Completá tu perfil de transportador para que los dueños puedan encontrarte.</Text>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
+      <Text style={styles.title}>{t.qtTitle}</Text>
+      <Text style={styles.sub}>{t.qtSub}</Text>
 
-      <Text style={styles.label}>Tu nombre o apodo *</Text>
-      <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ej: Martina G." placeholderTextColor={Colors.inkMuted} />
+      <Text style={styles.label}>{t.qcNombreLabel}</Text>
+      <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder={t.qcNombrePh} placeholderTextColor={Colors.inkMuted} />
 
-      <Text style={styles.label}>Experiencia con perros</Text>
+      <Text style={styles.label}>{t.qcExperienciaLabel}</Text>
       <View style={styles.chipsRow}>
         {EXPERIENCIA_OPTS.map((o) => <Chip key={o} label={o} active={experiencias.includes(o)} onPress={() => toggle(experiencias, setExperiencias, o)} />)}
       </View>
 
-      <Text style={styles.label}>Disponibilidad</Text>
+      <Text style={styles.label}>{t.qcDisponibilidadLabel}</Text>
       <View style={styles.chipsRow}>
         {DISPONIBILIDAD_OPTS.map((o) => <Chip key={o} label={o} active={disponibilidad.includes(o)} onPress={() => toggle(disponibilidad, setDisponibilidad, o)} />)}
       </View>
 
-      <Text style={styles.label}>¿Cuántos perros podés transportar a la vez?</Text>
+      <Text style={styles.label}>{t.qtCuantosPerrosLabel}</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {['1', '2', '3', '4+'].map((n) => (
           <TouchableOpacity key={n} style={[styles.optBtn, maxPerros === n && styles.optBtnActive]} onPress={() => setMaxPerros(n)}>
@@ -133,7 +131,7 @@ export default function QuieroTransportarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>¿Qué vehículo tenés?</Text>
+      <Text style={styles.label}>{t.qtVehiculoLabel}</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {VEHICULO_OPTS.map(([val, lbl]) => (
           <TouchableOpacity
@@ -146,21 +144,21 @@ export default function QuieroTransportarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>Información adicional (opcional)</Text>
+      <Text style={styles.label}>{t.qcInfoAdicionalLabel}</Text>
       <TextInput
         style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
         value={detalles} onChangeText={setDetalles} multiline
-        placeholder="Contá algo más: si tenés auto propio, qué zonas cubrís, si hacés traslados al veterinario…"
+        placeholder={t.qtInfoAdicionalPh}
         placeholderTextColor={Colors.inkMuted}
       />
 
-      <Text style={styles.label}>WhatsApp de contacto *</Text>
-      <TextInput style={styles.input} value={contacto} onChangeText={setContacto} keyboardType="phone-pad" placeholder="Ej: 1122334455" placeholderTextColor={Colors.inkMuted} />
+      <Text style={styles.label}>{t.qcContactoLabel}</Text>
+      <TextInput style={styles.input} value={contacto} onChangeText={setContacto} keyboardType="phone-pad" placeholder={t.qcContactoPh} placeholderTextColor={Colors.inkMuted} />
 
       {!!error && <Text style={styles.error}>{error}</Text>}
 
       <TouchableOpacity style={[styles.submitBtn, enviando && { opacity: 0.6 }]} onPress={handleSubmit} disabled={enviando}>
-        {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>🚗 Registrarme como transportador</Text>}
+        {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t.qtSubmitBtn}</Text>}
       </TouchableOpacity>
     </ScrollView>
   );

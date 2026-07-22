@@ -9,6 +9,8 @@ import { thumbUrl } from '@/lib/imageUtils';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import AdSlot from '@/components/AdSlot';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/lib/translations';
 
 const PAGE_SIZE = 30;
 
@@ -20,13 +22,7 @@ type PostSummary = {
   situacion_transito: string | null; fecha_limite_transito: string | null;
 };
 
-const CATEGORIAS_FILTRO = [
-  { key: '',           label: 'Todos' },
-  { key: 'perdido',    label: 'Perdido' },
-  { key: 'encontrado', label: 'Encontrado' },
-  { key: 'adopcion',   label: 'En adopción' },
-  { key: 'transito',   label: 'En tránsito' },
-];
+const CATEGORIAS_FILTRO_KEYS = ['', 'perdido', 'encontrado', 'adopcion', 'transito'] as const;
 
 function diasRestantes(fechaLimite: string): number {
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -70,11 +66,17 @@ const CAT_COLOR: Record<string, string> = {
   perdido: '#fca5a5', encontrado: '#86efac', adopcion: '#fcd34d', transito: '#ddd6fe',
 };
 
-const CAT_LABEL: Record<string, string> = {
-  perdido: 'Perdido', encontrado: 'Encontrado', adopcion: 'En adopción', transito: 'En tránsito',
-};
+function catLabel(t: Translations): Record<string, string> {
+  return { perdido: t.avisosCatPerdido, encontrado: t.avisosCatEncontrado, adopcion: t.avisosCatAdopcion, transito: t.avisosCatTransito };
+}
 
 export default function AvisosScreen() {
+  const { t } = useLanguage();
+  const CAT_LABEL = catLabel(t);
+  const CATEGORIAS_FILTRO = CATEGORIAS_FILTRO_KEYS.map((key) => ({
+    key,
+    label: key === '' ? t.avisosCatTodos : CAT_LABEL[key],
+  }));
   const { resueltos } = useLocalSearchParams<{ resueltos?: string }>();
   const [search,         setSearch]         = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -115,19 +117,19 @@ export default function AvisosScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Avisos</Text>
+          <Text style={styles.title}>{t.avisosTitle}</Text>
           <TouchableOpacity
             style={[styles.toggleBtn, verResueltos && styles.toggleBtnActive]}
             onPress={() => setVerResueltos((v) => !v)}
           >
             <Text style={[styles.toggleText, verResueltos && styles.toggleTextActive]}>
-              {verResueltos ? '✅ Incluye resueltos' : 'Ver resueltos'}
+              {verResueltos ? t.avisosIncluyeResueltos : t.avisosVerResueltos}
             </Text>
           </TouchableOpacity>
         </View>
         <TextInput
           style={styles.search}
-          placeholder="🔍  Buscar por nombre, raza, zona…"
+          placeholder={t.avisosSearchPh}
           placeholderTextColor={Colors.inkMuted}
           value={search}
           onChangeText={setSearch}
@@ -144,7 +146,7 @@ export default function AvisosScreen() {
           ))}
         </View>
         {!isLoading && (
-          <Text style={styles.resultCount}>{posts.length} aviso{posts.length === 1 ? '' : 's'}</Text>
+          <Text style={styles.resultCount}>{posts.length} {posts.length === 1 ? t.avisosCountSingular : t.avisosCountPlural}</Text>
         )}
       </View>
 
@@ -152,9 +154,9 @@ export default function AvisosScreen() {
         <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} size="large" />
       ) : isError ? (
         <View style={styles.errorWrap}>
-          <Text style={styles.errorText}>No se pudieron cargar los avisos.</Text>
+          <Text style={styles.errorText}>{t.avisosErrorText}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryBtnText}>Reintentar</Text>
+            <Text style={styles.retryBtnText}>{t.homeRetry}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -172,9 +174,9 @@ export default function AvisosScreen() {
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <Text style={{ fontSize: 40 }}>🐾</Text>
-              <Text style={styles.empty}>No se encontraron avisos.</Text>
+              <Text style={styles.empty}>{t.avisosEmpty}</Text>
               <TouchableOpacity style={styles.retryBtn} onPress={() => router.push('/publicar')}>
-                <Text style={styles.retryBtnText}>Publicar un aviso</Text>
+                <Text style={styles.retryBtnText}>{t.avisosPublicar}</Text>
               </TouchableOpacity>
             </View>
           }
@@ -217,23 +219,23 @@ export default function AvisosScreen() {
                     </View>
                     {p.estado === 'resuelto' && (
                       <View style={[styles.badge, { backgroundColor: '#d1fae5' }]}>
-                        <Text style={[styles.badgeText, { color: Colors.good }]}>Resuelto</Text>
+                        <Text style={[styles.badgeText, { color: Colors.good }]}>{t.avisosBadgeResuelto}</Text>
                       </View>
                     )}
                     {p.categoria === 'transito' && p.situacion_transito === 'calle' && (
                       <View style={[styles.badge, { backgroundColor: '#ede9fe' }]}>
-                        <Text style={[styles.badgeText, { color: '#7c3aed' }]}>En la calle</Text>
+                        <Text style={[styles.badgeText, { color: '#7c3aed' }]}>{t.avisosBadgeEnLaCalle}</Text>
                       </View>
                     )}
                     {dias != null && (
                       <View style={[styles.badge, { backgroundColor: dias <= 3 ? '#fee2e2' : '#ede9fe' }]}>
                         <Text style={[styles.badgeText, { color: dias <= 3 ? Colors.bad : '#7c3aed' }]}>
-                          {dias > 0 ? `${dias}d restantes` : 'Vence hoy'}
+                          {dias > 0 ? `${dias}${t.avisosDiasRestantesSuffix}` : t.avisosVenceHoy}
                         </Text>
                       </View>
                     )}
                   </View>
-                  <Text style={styles.nombre}>{p.nombre || 'Sin nombre'}</Text>
+                  <Text style={styles.nombre}>{p.nombre || t.homeSinNombre}</Text>
                   {p.raza ? <Text style={styles.sub}>{p.raza}</Text> : null}
                   {p.descripcion ? <Text style={styles.descripcion} numberOfLines={2}>{p.descripcion}</Text> : null}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 3 }}>

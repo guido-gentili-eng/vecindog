@@ -5,11 +5,14 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginScreen() {
   const { signIn, signUp, signInWithGoogle, resetPassword, enterAsGuest } = useAuth();
+  const { t } = useLanguage();
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [loading,    setLoading]    = useState(false);
@@ -24,16 +27,16 @@ export default function LoginScreen() {
 
   async function handleRecovery() {
     if (!email.trim()) {
-      Alert.alert('Ingresá tu email', 'Escribí tu email arriba y luego tocá "Olvidé mi contraseña".');
+      Alert.alert(t.loginErrEnterEmail, t.loginErrEnterEmailSub);
       return;
     }
     setRecovering(true);
     const err = await resetPassword(email.trim());
     setRecovering(false);
     if (err) {
-      Alert.alert('Error', tradError(err));
+      Alert.alert('Error', tradError(err, t));
     } else {
-      Alert.alert('¡Revisá tu email!', 'Te enviamos un link para restablecer tu contraseña.');
+      Alert.alert(t.loginRecoverySuccessTitle, t.loginRecoverySuccessSub);
     }
   }
 
@@ -53,19 +56,19 @@ export default function LoginScreen() {
   }
 
   async function handleSubmit() {
-    if (!email || !password) { Alert.alert('Completá todos los campos'); return; }
+    if (!email || !password) { Alert.alert(t.loginErrFields); return; }
     if (mode === 'register' && password !== confirm) {
-      Alert.alert('Las contraseñas no coinciden', 'Verificá que ambas contraseñas sean iguales.');
+      Alert.alert(t.loginErrPasswordMismatch, t.loginErrPasswordMismatchSub);
       return;
     }
     setLoading(true);
     try {
       if (mode === 'login') {
         const err = await signIn(email.trim(), password);
-        if (err) Alert.alert('Error', tradError(err));
+        if (err) Alert.alert('Error', tradError(err, t));
       } else {
         const { error, needsConfirm } = await signUp(email.trim(), password);
-        if (error) Alert.alert('Error', tradError(error));
+        if (error) Alert.alert('Error', tradError(error, t));
         else if (needsConfirm) {
           setPendingEmail(email.trim());
         }
@@ -81,9 +84,9 @@ export default function LoginScreen() {
     const { error } = await supabase.auth.resend({ type: 'signup', email: pendingEmail });
     setResending(false);
     if (error) {
-      Alert.alert('Error', tradError(error.message));
+      Alert.alert('Error', tradError(error.message, t));
     } else {
-      Alert.alert('Email reenviado', `Revisá ${pendingEmail} (incluso la carpeta de spam).`);
+      Alert.alert(t.loginResendSuccessTitle, `${pendingEmail}`);
     }
   }
 
@@ -92,11 +95,11 @@ export default function LoginScreen() {
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.pendingWrap}>
           <Text style={styles.pendingIcon}>📬</Text>
-          <Text style={styles.pendingTitle}>Confirmá tu cuenta</Text>
+          <Text style={styles.pendingTitle}>{t.loginPendingTitle}</Text>
           <Text style={styles.pendingBody}>
-            Te enviamos un link a{'\n'}
+            {t.loginPendingBodyPrefix}{'\n'}
             <Text style={styles.pendingEmail}>{pendingEmail}</Text>
-            {'\n\n'}Tocá el link del email para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.
+            {'\n\n'}{t.loginPendingBodySuffix}
           </Text>
 
           <TouchableOpacity
@@ -106,7 +109,7 @@ export default function LoginScreen() {
           >
             {resending
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.btnText}>Reenviar email de confirmación</Text>
+              : <Text style={styles.btnText}>{t.loginResend}</Text>
             }
           </TouchableOpacity>
 
@@ -114,7 +117,7 @@ export default function LoginScreen() {
             style={styles.forgotBtn}
             onPress={() => { setPendingEmail(null); setMode('login'); setPassword(''); setConfirm(''); }}
           >
-            <Text style={styles.forgotText}>Ya confirmé → Iniciar sesión</Text>
+            <Text style={styles.forgotText}>{t.loginAlreadyConfirmed}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -128,11 +131,15 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
 
+        <View style={styles.langSwitcherWrap}>
+          <LanguageSwitcher />
+        </View>
+
         {/* Logo */}
         <View style={styles.logoArea}>
           <Text style={styles.paw}>🐾</Text>
           <Text style={styles.brand}>Vecindog</Text>
-          <Text style={styles.tagline}>La red vecinal para encontrar y adoptar perros</Text>
+          <Text style={styles.tagline}>{t.loginTagline}</Text>
         </View>
 
         {/* Tabs */}
@@ -144,7 +151,7 @@ export default function LoginScreen() {
               onPress={() => { setMode(m); setConfirm(''); setAceptoTerminos(false); setEsMayorEdad(false); }}
             >
               <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
-                {m === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+                {m === 'login' ? t.loginTabLogin : t.loginTabRegister}
               </Text>
             </TouchableOpacity>
           ))}
@@ -154,7 +161,7 @@ export default function LoginScreen() {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="tu@email.com"
+            placeholder={t.loginEmailPh}
             placeholderTextColor={Colors.inkMuted}
             value={email}
             onChangeText={setEmail}
@@ -164,7 +171,7 @@ export default function LoginScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Contraseña (mín. 6 caracteres)"
+            placeholder={t.loginPasswordPh}
             placeholderTextColor={Colors.inkMuted}
             value={password}
             onChangeText={setPassword}
@@ -173,7 +180,7 @@ export default function LoginScreen() {
           {mode === 'register' && (
             <TextInput
               style={styles.input}
-              placeholder="Repetir contraseña"
+              placeholder={t.loginConfirmPasswordPh}
               placeholderTextColor={Colors.inkMuted}
               value={confirm}
               onChangeText={setConfirm}
@@ -189,7 +196,7 @@ export default function LoginScreen() {
             {loading
               ? <ActivityIndicator color="#fff" />
               : <Text style={styles.btnText}>
-                  {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta gratis'}
+                  {mode === 'login' ? t.loginBtnLogin : t.loginBtnRegister}
                 </Text>
             }
           </TouchableOpacity>
@@ -202,7 +209,7 @@ export default function LoginScreen() {
             >
               {recovering
                 ? <ActivityIndicator color={Colors.primary} size="small" />
-                : <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+                : <Text style={styles.forgotText}>{t.loginForgot}</Text>
               }
             </TouchableOpacity>
           )}
@@ -210,7 +217,7 @@ export default function LoginScreen() {
 
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>o</Text>
+          <Text style={styles.dividerText}>{t.loginOr}</Text>
           <View style={styles.dividerLine} />
         </View>
 
@@ -221,14 +228,14 @@ export default function LoginScreen() {
         >
           {googleLoading
             ? <ActivityIndicator color={Colors.ink} />
-            : <Text style={styles.googleBtnText}>🔵 Continuar con Google</Text>
+            : <Text style={styles.googleBtnText}>{t.loginGoogle}</Text>
           }
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.guestBtn} onPress={handleGuest}>
-          <Text style={styles.guestBtnText}>Continuar sin cuenta</Text>
+          <Text style={styles.guestBtnText}>{t.loginGuest}</Text>
         </TouchableOpacity>
-        <Text style={styles.guestNote}>Podés explorar la app, pero vas a necesitar una cuenta para publicar avisos o contactar vecinos.</Text>
+        <Text style={styles.guestNote}>{t.loginGuestNote}</Text>
 
         {mode === 'register' && (
           <>
@@ -241,21 +248,21 @@ export default function LoginScreen() {
               {aceptoTerminos && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.consentText}>
-              Leí y acepto los{' '}
+              {t.loginTermsPrefix}
               <Text
                 style={styles.legalLink}
                 onPress={() => Linking.openURL('https://www.mivecindog.com.ar/terminos')}
               >
-                Términos y Condiciones
+                {t.loginTermsLink}
               </Text>
-              {' '}y la{' '}
+              {t.loginTermsMiddle}
               <Text
                 style={styles.legalLink}
                 onPress={() => Linking.openURL('https://www.mivecindog.com.ar/privacidad')}
               >
-                Política de Privacidad
+                {t.loginPrivacyLink}
               </Text>
-              {', '}incluyendo el tratamiento de mis datos personales conforme a la Ley 25.326.
+              {t.loginTermsSuffix}
             </Text>
           </TouchableOpacity>
 
@@ -268,7 +275,7 @@ export default function LoginScreen() {
               {esMayorEdad && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.consentText}>
-              Confirmo que tengo 13 años o más. Las personas menores de 13 años no pueden registrarse en Vecindog.
+              {t.loginAgeConsent}
             </Text>
           </TouchableOpacity>
           </>
@@ -279,18 +286,19 @@ export default function LoginScreen() {
   );
 }
 
-function tradError(msg: string): string {
-  if (msg.includes('Invalid login credentials')) return 'Email o contraseña incorrectos.';
-  if (msg.includes('Email not confirmed'))        return 'Confirmá tu email antes de iniciar sesión.';
-  if (msg.includes('User already registered'))    return 'Ya existe una cuenta con ese email.';
-  if (msg.includes('Password should be'))         return 'La contraseña debe tener al menos 6 caracteres.';
-  if (msg.includes('rate limit'))                 return 'Demasiados intentos. Esperá unos minutos.';
+function tradError(msg: string, t: import('@/lib/translations').Translations): string {
+  if (msg.includes('Invalid login credentials')) return t.loginErrInvalidCredentials;
+  if (msg.includes('Email not confirmed'))        return t.loginErrEmailNotConfirmed;
+  if (msg.includes('User already registered'))    return t.loginErrAlreadyRegistered;
+  if (msg.includes('Password should be'))         return t.loginErrWeakPassword;
+  if (msg.includes('rate limit'))                 return t.loginErrRateLimit;
   return msg;
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   inner: { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  langSwitcherWrap: { alignItems: 'flex-end', marginBottom: 4 },
   logoArea: { alignItems: 'center', marginBottom: 36 },
   paw:  { fontSize: 56, marginBottom: 8 },
   brand: { fontSize: 32, fontWeight: '900', color: Colors.primary, letterSpacing: -1 },

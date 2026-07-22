@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Lin
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Escapista {
   clave: string; perro_id: string | null; nombre: string;
@@ -24,6 +25,7 @@ const MEDAL_BG: Record<number, string> = { 0: '#FFD700', 1: '#C0C0C0', 2: '#CD7F
 const MEDAL_TXT: Record<number, string> = { 0: '#5a4200', 1: '#3a3a3a', 2: '#ffffff' };
 
 export default function TopEscapistas() {
+  const { t } = useLanguage();
   const { profile, isPro } = useAuth();
   const ciudad = profile?.ciudad ?? null;
   const [lista, setLista] = useState<Escapista[]>([]);
@@ -87,17 +89,17 @@ export default function TopEscapistas() {
 
   if (!cargando && lista.length === 0 && isPro) return null;
 
-  const tituloLugar = ciudad ?? 'la comunidad';
+  const tituloLugar = ciudad ?? t.topEscComunidadFallback;
 
   if (!isPro) {
     return (
       <View style={styles.section}>
-        <View style={styles.pill}><Text style={styles.pillText}>⚠️ Ranking</Text></View>
-        <Text style={styles.title}>Los más escapistas 🏃</Text>
+        <View style={styles.pill}><Text style={styles.pillText}>{t.topEscRanking}</Text></View>
+        <Text style={styles.title}>{t.topEscTitle}</Text>
         <TouchableOpacity style={styles.lockedBox} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
           <Text style={{ fontSize: 24 }}>🔒</Text>
-          <Text style={styles.lockedText}>Función exclusiva de VecindogPro</Text>
-          <View style={styles.lockedBtn}><Text style={styles.lockedBtnText}>✨ Ver planes</Text></View>
+          <Text style={styles.lockedText}>{t.topEscLockedText}</Text>
+          <View style={styles.lockedBtn}><Text style={styles.lockedBtnText}>{t.topEscVerPlanes}</Text></View>
         </TouchableOpacity>
       </View>
     );
@@ -105,9 +107,9 @@ export default function TopEscapistas() {
 
   return (
     <View style={styles.section}>
-      <View style={styles.pill}><Text style={styles.pillText}>⚠️ Ranking</Text></View>
-      <Text style={styles.title}>Los más escapistas 🏃</Text>
-      <Text style={styles.sub}>Los perros con más avisos de pérdida en {tituloLugar}.</Text>
+      <View style={styles.pill}><Text style={styles.pillText}>{t.topEscRanking}</Text></View>
+      <Text style={styles.title}>{t.topEscTitle}</Text>
+      <Text style={styles.sub}>{t.topEscSubPrefix} {tituloLugar}.</Text>
 
       {cargando ? (
         <ActivityIndicator color={Colors.primary} style={{ marginVertical: 12 }} />
@@ -128,7 +130,7 @@ export default function TopEscapistas() {
                 </Text>
               </View>
               <View style={styles.fugasBadge}>
-                <Text style={styles.fugasText}>{p.fugas} {p.fugas === 1 ? 'fuga' : 'fugas'}</Text>
+                <Text style={styles.fugasText}>{p.fugas} {p.fugas === 1 ? t.topEscFugaSingular : t.topEscFugaPlural}</Text>
               </View>
             </View>
           ))}

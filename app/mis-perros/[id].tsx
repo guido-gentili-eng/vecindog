@@ -44,6 +44,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import SeccionHistorial from '@/components/SeccionHistorial';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/lib/translations';
 
 interface Perro {
   id: string; nombre: string; raza?: string; color?: string;
@@ -56,22 +58,26 @@ interface Perro {
   numero_registro?: number | null;
 }
 
-const ESTADOS_SALUD: { key: EstadoSalud; label: string }[] = [
-  { key: 'saludable',       label: '✅ Saludable' },
-  { key: 'en_tratamiento',  label: '💊 En tratamiento' },
-  { key: 'en_recuperacion', label: '🩹 En recuperación' },
-];
+function estadosSalud(t: Translations): { key: EstadoSalud; label: string }[] {
+  return [
+    { key: 'saludable',       label: t.estadoSaludSaludable },
+    { key: 'en_tratamiento',  label: t.estadoSaludEnTratamiento },
+    { key: 'en_recuperacion', label: t.estadoSaludEnRecuperacion },
+  ];
+}
 
-const SECCIONES: { tipo: TipoEstudio; titulo: string; emoji: string; aceptaArchivos: boolean }[] = [
-  { tipo: 'laboratorio',              titulo: 'Análisis de Laboratorio',    emoji: '🧪', aceptaArchivos: true },
-  { tipo: 'radiografia',              titulo: 'Radiografías',               emoji: '📡', aceptaArchivos: true },
-  { tipo: 'ecografia',                titulo: 'Ecografías',                 emoji: '📈', aceptaArchivos: true },
-  { tipo: 'certificado_chip',         titulo: 'Certificado de Chip',        emoji: '💾', aceptaArchivos: true },
-  { tipo: 'certificado_cvi',          titulo: 'Certificado CVI',            emoji: '📋', aceptaArchivos: true },
-  { tipo: 'certificado_antiparasitario', titulo: 'Certificado Antiparasitario', emoji: '💊', aceptaArchivos: true },
-  { tipo: 'vacuna_antirrabica',       titulo: 'Vacuna Antirrábica',         emoji: '💉', aceptaArchivos: true },
-  { tipo: 'airtag',                   titulo: 'AirTag / Rastreador',        emoji: '📍', aceptaArchivos: false },
-];
+function secciones(t: Translations): { tipo: TipoEstudio; titulo: string; emoji: string; aceptaArchivos: boolean }[] {
+  return [
+    { tipo: 'laboratorio',              titulo: t.perroEstudioLaboratorio,    emoji: '🧪', aceptaArchivos: true },
+    { tipo: 'radiografia',              titulo: t.perroEstudioRadiografia,               emoji: '📡', aceptaArchivos: true },
+    { tipo: 'ecografia',                titulo: t.perroEstudioEcografia,                 emoji: '📈', aceptaArchivos: true },
+    { tipo: 'certificado_chip',         titulo: t.perroEstudioCertChip,        emoji: '💾', aceptaArchivos: true },
+    { tipo: 'certificado_cvi',          titulo: t.perroEstudioCertCvi,            emoji: '📋', aceptaArchivos: true },
+    { tipo: 'certificado_antiparasitario', titulo: t.perroEstudioCertAntiparasitario, emoji: '💊', aceptaArchivos: true },
+    { tipo: 'vacuna_antirrabica',       titulo: t.perroEstudioVacunaAntirrabica,         emoji: '💉', aceptaArchivos: true },
+    { tipo: 'airtag',                   titulo: t.perroEstudioAirtag,        emoji: '📍', aceptaArchivos: false },
+  ];
+}
 
 function fmt(iso: string) {
   if (!iso) return '—';
@@ -80,6 +86,9 @@ function fmt(iso: string) {
 }
 
 export default function PerroDetalleScreen() {
+  const { t } = useLanguage();
+  const ESTADOS_SALUD = estadosSalud(t);
+  const SECCIONES = secciones(t);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { isPro } = useAuth();
   const [perro,    setPerro]    = useState<Perro | null>(null);
@@ -192,7 +201,7 @@ export default function PerroDetalleScreen() {
       setPerro((prev) => prev ? { ...prev, ...formPerfil, estado_salud: formPerfil.estado_salud || null } : prev);
       setEditandoPerfil(false);
     } catch {
-      Alert.alert('Error', 'No se pudo guardar. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.genericErrGuardarConexion);
     } finally {
       setGuardandoPerfil(false);
     }
@@ -200,7 +209,7 @@ export default function PerroDetalleScreen() {
 
   async function elegirFotoGaleria() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.perfilPermisoDenegadoSub); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
     if (result.canceled) return;
     setSubiendoFoto(true);
@@ -210,7 +219,7 @@ export default function PerroDetalleScreen() {
       const nueva = await agregarFoto(id, url);
       setFotos((prev) => [nueva, ...prev]);
     } catch {
-      Alert.alert('Error', 'No se pudo subir la foto.');
+      Alert.alert(t.perfilErrorGeneric, t.perroErrSubirFoto);
     } finally {
       setSubiendoFoto(false);
     }
@@ -218,7 +227,7 @@ export default function PerroDetalleScreen() {
 
   async function cambiarFotoPerfil() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.perfilPermisoDenegadoSub); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
     if (result.canceled) return;
     setSubiendoFotoPerfil(true);
@@ -228,23 +237,23 @@ export default function PerroDetalleScreen() {
       await actualizarPerro(id, { foto_url: url });
       setPerro((prev) => prev ? { ...prev, foto_url: url } : prev);
     } catch {
-      Alert.alert('Error', 'No se pudo cambiar la foto. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.perroErrCambiarFoto);
     } finally {
       setSubiendoFotoPerfil(false);
     }
   }
 
   function borrarFotoGaleria(foto: FotoPerro) {
-    Alert.alert('Eliminar foto', '¿Borrar esta foto de la galería?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t.perroConfirmBorrarFotoTitle, t.perroConfirmBorrarFotoSub, [
+      { text: t.perfilCancelar, style: 'cancel' },
       {
-        text: 'Eliminar', style: 'destructive',
+        text: t.genericEliminar, style: 'destructive',
         onPress: async () => {
           try {
             await eliminarFoto(foto.id);
             setFotos((prev) => prev.filter((f) => f.id !== foto.id));
           } catch {
-            Alert.alert('Error', 'No se pudo borrar la foto. Verificá tu conexión.');
+            Alert.alert(t.perfilErrorGeneric, t.perroErrBorrarFoto);
           }
         },
       },
@@ -264,16 +273,16 @@ export default function PerroDetalleScreen() {
   }
 
   function confirmarBorrar(titulo: string, onConfirm: () => Promise<void>) {
-    Alert.alert(titulo, '¿Seguro que querés borrar este registro?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(titulo, t.perroConfirmBorrarSub, [
+      { text: t.perfilCancelar, style: 'cancel' },
       {
-        text: 'Eliminar', style: 'destructive',
+        text: t.genericEliminar, style: 'destructive',
         onPress: async () => {
           try {
             await onConfirm();
           } catch (e) {
-            const msg = e instanceof Error && e.message ? e.message : 'No se pudo borrar. Verificá tu conexión.';
-            Alert.alert('Error', msg);
+            const msg = e instanceof Error && e.message ? e.message : t.genericErrGuardarConexion;
+            Alert.alert(t.perfilErrorGeneric, msg);
           }
         },
       },
@@ -316,9 +325,9 @@ export default function PerroDetalleScreen() {
         notas:       null,
       });
       setEstudios((prev) => [nuevo, ...prev]);
-      Alert.alert('✅ Archivo subido', `${nombre} agregado correctamente.`);
+      Alert.alert(t.perroArchivoSubidoTitle, `${nombre} ${t.perroArchivoSubidoSuffix}`);
     } catch (e) {
-      Alert.alert('Error', 'No se pudo subir el archivo. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.perroErrSubirArchivo);
     } finally {
       setSubiendo(null);
     }
@@ -326,8 +335,8 @@ export default function PerroDetalleScreen() {
 
   async function agregarAirtag() {
     Alert.prompt?.(
-      'AirTag / Rastreador',
-      'Ingresá el número de serie o código del rastreador',
+      t.perroEstudioAirtag,
+      t.perroAirtagPrompt,
       async (texto) => {
         if (!texto?.trim()) return;
         try {
@@ -341,35 +350,35 @@ export default function PerroDetalleScreen() {
           });
           setEstudios((prev) => [nuevo, ...prev]);
         } catch {
-          Alert.alert('Error', 'No se pudo guardar el AirTag. Verificá tu conexión.');
+          Alert.alert(t.perfilErrorGeneric, t.perroErrGuardarAirtag);
         }
       }
-    ) ?? Alert.alert('AirTag', 'Función disponible en iPhone');
+    ) ?? Alert.alert(t.perroAirtagOnlyIphoneTitle, t.perroAirtagOnlyIphoneSub);
   }
 
   async function compartirHistoria() {
     const url = `https://www.mivecindog.com.ar/historia/${id}`;
     await Share.share({
-      message: `Historia Clínica de ${perro?.nombre ?? 'mi perro'} 🐾\n${url}`,
+      message: `${t.perroHistoriaClinicaDePrefix} ${perro?.nombre ?? t.perroMiPerroFallback} 🐾\n${url}`,
       url,
-      title:   `Historia Clínica de ${perro?.nombre}`,
+      title:   `${t.perroHistoriaClinicaDePrefix} ${perro?.nombre}`,
     });
   }
 
   async function borrarEstudio(estudio: Estudio) {
     Alert.alert(
-      'Eliminar archivo',
-      `¿Borrar "${estudio.nombre}"?`,
+      t.perroEliminarArchivoTitle,
+      `${t.perroBorrarArchivoPrefix} "${estudio.nombre}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t.perfilCancelar, style: 'cancel' },
         {
-          text: 'Eliminar', style: 'destructive',
+          text: t.genericEliminar, style: 'destructive',
           onPress: async () => {
             try {
               await eliminarEstudio(estudio.id);
               setEstudios((prev) => prev.filter((e) => e.id !== estudio.id));
             } catch {
-              Alert.alert('Error', 'No se pudo borrar el archivo. Verificá tu conexión.');
+              Alert.alert(t.perfilErrorGeneric, t.perroErrSubirArchivo);
             }
           },
         },
@@ -381,15 +390,15 @@ export default function PerroDetalleScreen() {
   if (errorCarga) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 }}>
-        <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.ink, textAlign: 'center' }}>No se pudo cargar</Text>
-        <Text style={{ fontSize: 13, color: Colors.inkMuted, textAlign: 'center' }}>Verificá tu conexión e intentá de nuevo.</Text>
+        <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.ink, textAlign: 'center' }}>{t.perroErrCargarTitle}</Text>
+        <Text style={{ fontSize: 13, color: Colors.inkMuted, textAlign: 'center' }}>{t.perroErrCargarSub}</Text>
         <TouchableOpacity style={styles.guardarPerfilBtn} onPress={cargar}>
-          <Text style={styles.guardarPerfilBtnText}>Reintentar</Text>
+          <Text style={styles.guardarPerfilBtnText}>{t.homeRetry}</Text>
         </TouchableOpacity>
       </View>
     );
   }
-  if (!perro)  return <Text style={{ textAlign: 'center', marginTop: 80 }}>Perro no encontrado</Text>;
+  if (!perro)  return <Text style={{ textAlign: 'center', marginTop: 80 }}>{t.perroNoEncontrado}</Text>;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.inner}>
@@ -418,7 +427,7 @@ export default function PerroDetalleScreen() {
 
       {/* Botón Historia Clínica */}
       <TouchableOpacity style={styles.historiaBtn} onPress={compartirHistoria}>
-        <Text style={styles.historiaBtnText}>📤  Compartir Historia Clínica</Text>
+        <Text style={styles.historiaBtnText}>{t.perroHistoriaBtn}</Text>
       </TouchableOpacity>
 
       {/* QR de collar + accesos a herramientas web */}
@@ -427,21 +436,21 @@ export default function PerroDetalleScreen() {
       {/* Perfil extendido: alergias, veterinario, dirección, dieta, estado de salud */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
-          <Text style={styles.seccionTitulo}>📋  Perfil</Text>
+          <Text style={styles.seccionTitulo}>{t.perroSeccionPerfil}</Text>
           <TouchableOpacity style={styles.subirBtn} onPress={() => setEditandoPerfil((v) => !v)}>
-            <Text style={styles.subirBtnText}>{editandoPerfil ? '✕' : 'Editar'}</Text>
+            <Text style={styles.subirBtnText}>{editandoPerfil ? '✕' : t.genericEditar}</Text>
           </TouchableOpacity>
         </View>
 
         {editandoPerfil ? (
           <View style={{ gap: 12 }}>
-            <CampoTexto label="Nombre" value={formPerfil.nombre} onChange={(t) => setFormPerfil((f) => ({ ...f, nombre: t }))} placeholder="Ej: Bobby" />
+            <CampoTexto label={t.campoNombre} value={formPerfil.nombre} onChange={(v) => setFormPerfil((f) => ({ ...f, nombre: v }))} placeholder={t.nuevoPerroNombrePh} />
 
             <View>
-              <Text style={styles.campoLabel}>Raza</Text>
+              <Text style={styles.campoLabel}>{t.nuevoPerroRaza}</Text>
               <TextInput
                 style={styles.campoInput}
-                placeholder="Ej: Labrador, Ovejero, Mestizo…"
+                placeholder={t.nuevoPerroRazaPh}
                 placeholderTextColor={Colors.inkMuted}
                 value={formPerfil.raza}
                 onChangeText={handleRazaChange}
@@ -459,9 +468,9 @@ export default function PerroDetalleScreen() {
             </View>
 
             <View>
-              <Text style={styles.campoLabel}>Color</Text>
+              <Text style={styles.campoLabel}>{t.nuevoPerroColor}</Text>
               <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
-                <Text style={styles.pickerBtnText}>{formPerfil.color || 'No sé / no recuerdo'}</Text>
+                <Text style={styles.pickerBtnText}>{formPerfil.color || t.nuevoPerroColorNoSe}</Text>
                 <Text style={styles.pickerBtnChevron}>⌄</Text>
               </TouchableOpacity>
             </View>
@@ -469,9 +478,9 @@ export default function PerroDetalleScreen() {
             <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
               <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
                 <View style={styles.modalSheet}>
-                  <Text style={styles.modalTitulo}>Color principal</Text>
+                  <Text style={styles.modalTitulo}>{t.nuevoPerroColorModalTitulo}</Text>
                   <TouchableOpacity style={styles.modalOption} onPress={() => { setFormPerfil((f) => ({ ...f, color: '' })); setShowColorPicker(false); }}>
-                    <Text style={[styles.modalOptionText, formPerfil.color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+                    <Text style={[styles.modalOptionText, formPerfil.color === '' && styles.modalOptionTextActive]}>{t.nuevoPerroColorNoSe}</Text>
                   </TouchableOpacity>
                   {COLORES_PERRO.map((c) => (
                     <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setFormPerfil((f) => ({ ...f, color: c })); setShowColorPicker(false); }}>
@@ -483,9 +492,9 @@ export default function PerroDetalleScreen() {
             </Modal>
 
             <View>
-              <Text style={styles.campoLabel}>Sexo</Text>
+              <Text style={styles.campoLabel}>{t.nuevoPerroSexo}</Text>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                {([['macho', 'Macho'], ['hembra', 'Hembra']] as const).map(([v, l]) => (
+                {([['macho', t.perroSexoMachoLabel], ['hembra', t.perroSexoHembraLabel]] as const).map(([v, l]) => (
                   <TouchableOpacity key={v} style={[styles.estadoChip, formPerfil.sexo === v && styles.estadoChipActive]} onPress={() => setFormPerfil((f) => ({ ...f, sexo: f.sexo === v ? '' : v }))}>
                     <Text style={[styles.estadoChipText, formPerfil.sexo === v && styles.estadoChipTextActive]}>{l}</Text>
                   </TouchableOpacity>
@@ -494,9 +503,9 @@ export default function PerroDetalleScreen() {
             </View>
 
             <View>
-              <Text style={styles.campoLabel}>Tamaño</Text>
+              <Text style={styles.campoLabel}>{t.nuevoPerroTamano}</Text>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                {([['pequeño', 'Chico'], ['mediano', 'Mediano'], ['grande', 'Grande']] as const).map(([v, l]) => (
+                {([['pequeño', t.perroTamanoChico], ['mediano', t.perroTamanoMediano], ['grande', t.perroTamanoGrande]] as const).map(([v, l]) => (
                   <TouchableOpacity key={v} style={[styles.estadoChip, formPerfil.tamano === v && styles.estadoChipActive]} onPress={() => setFormPerfil((f) => ({ ...f, tamano: f.tamano === v ? '' : v }))}>
                     <Text style={[styles.estadoChipText, formPerfil.tamano === v && styles.estadoChipTextActive]}>{l}</Text>
                   </TouchableOpacity>
@@ -504,17 +513,17 @@ export default function PerroDetalleScreen() {
               </View>
             </View>
 
-            <CampoTexto label="Fecha de nacimiento (AAAA-MM-DD)" value={formPerfil.fecha_nac} onChange={(t) => setFormPerfil((f) => ({ ...f, fecha_nac: t }))} placeholder="Ej: 2022-05-14" />
-            <CampoTexto label="Nº de microchip" value={formPerfil.chip} onChange={(t) => setFormPerfil((f) => ({ ...f, chip: t }))} />
-            <CampoTexto label="Descripción" value={formPerfil.descripcion} onChange={(t) => setFormPerfil((f) => ({ ...f, descripcion: t }))} multiline />
+            <CampoTexto label={t.perroCampoFechaNacLabel} value={formPerfil.fecha_nac} onChange={(v) => setFormPerfil((f) => ({ ...f, fecha_nac: v }))} placeholder={t.perroCampoFechaNacPh} />
+            <CampoTexto label={t.perroCampoChipLabel} value={formPerfil.chip} onChange={(v) => setFormPerfil((f) => ({ ...f, chip: v }))} />
+            <CampoTexto label={t.campoDescripcion} value={formPerfil.descripcion} onChange={(v) => setFormPerfil((f) => ({ ...f, descripcion: v }))} multiline />
 
-            <CampoTexto label="Alergias" value={formPerfil.alergias} onChange={(t) => setFormPerfil((f) => ({ ...f, alergias: t }))} placeholder="Ej: pollo, polen" />
-            <CampoTexto label="Veterinario habitual" value={formPerfil.vet_nombre} onChange={(t) => setFormPerfil((f) => ({ ...f, vet_nombre: t }))} />
-            <CampoTexto label="Teléfono del veterinario" value={formPerfil.vet_telefono} onChange={(t) => setFormPerfil((f) => ({ ...f, vet_telefono: t }))} keyboardType="phone-pad" />
-            <CampoTexto label="Dirección" value={formPerfil.direccion} onChange={(t) => setFormPerfil((f) => ({ ...f, direccion: t }))} />
+            <CampoTexto label={t.perroCampoAlergiasLabel} value={formPerfil.alergias} onChange={(v) => setFormPerfil((f) => ({ ...f, alergias: v }))} placeholder={t.perroCampoAlergiasPh} />
+            <CampoTexto label={t.perroCampoVetNombreLabel} value={formPerfil.vet_nombre} onChange={(v) => setFormPerfil((f) => ({ ...f, vet_nombre: v }))} />
+            <CampoTexto label={t.perroCampoVetTelefonoLabel} value={formPerfil.vet_telefono} onChange={(v) => setFormPerfil((f) => ({ ...f, vet_telefono: v }))} keyboardType="phone-pad" />
+            <CampoTexto label={t.perroCampoDireccionLabel} value={formPerfil.direccion} onChange={(v) => setFormPerfil((f) => ({ ...f, direccion: v }))} />
 
             <View>
-              <Text style={styles.campoLabel}>Estado de salud</Text>
+              <Text style={styles.campoLabel}>{t.perroCampoEstadoSalud}</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                 {ESTADOS_SALUD.map((e) => (
                   <TouchableOpacity
@@ -528,28 +537,28 @@ export default function PerroDetalleScreen() {
               </View>
             </View>
 
-            <Text style={styles.subseccionTitulo}>Dieta</Text>
-            <CampoTexto label="Marca" value={formPerfil.dieta_marca} onChange={(t) => setFormPerfil((f) => ({ ...f, dieta_marca: t }))} />
-            <CampoTexto label="Cantidad" value={formPerfil.dieta_cantidad} onChange={(t) => setFormPerfil((f) => ({ ...f, dieta_cantidad: t }))} placeholder="Ej: 200g" />
-            <CampoTexto label="Frecuencia" value={formPerfil.dieta_frecuencia} onChange={(t) => setFormPerfil((f) => ({ ...f, dieta_frecuencia: t }))} placeholder="Ej: 2 veces al día" />
-            <CampoTexto label="Notas de dieta" value={formPerfil.dieta_notas} onChange={(t) => setFormPerfil((f) => ({ ...f, dieta_notas: t }))} multiline />
+            <Text style={styles.subseccionTitulo}>{t.perroDietaTitulo}</Text>
+            <CampoTexto label={t.perroDietaMarca} value={formPerfil.dieta_marca} onChange={(v) => setFormPerfil((f) => ({ ...f, dieta_marca: v }))} />
+            <CampoTexto label={t.perroDietaCantidad} value={formPerfil.dieta_cantidad} onChange={(v) => setFormPerfil((f) => ({ ...f, dieta_cantidad: v }))} placeholder={t.perroDietaCantidadPh} />
+            <CampoTexto label={t.campoFrecuencia} value={formPerfil.dieta_frecuencia} onChange={(v) => setFormPerfil((f) => ({ ...f, dieta_frecuencia: v }))} placeholder={t.perroDietaFrecuenciaPh} />
+            <CampoTexto label={t.perroDietaNotas} value={formPerfil.dieta_notas} onChange={(v) => setFormPerfil((f) => ({ ...f, dieta_notas: v }))} multiline />
 
             <TouchableOpacity style={styles.guardarPerfilBtn} onPress={guardarPerfil} disabled={guardandoPerfil}>
-              {guardandoPerfil ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Guardar</Text>}
+              {guardandoPerfil ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>{t.genericGuardar}</Text>}
             </TouchableOpacity>
           </View>
         ) : (
           <View style={{ gap: 6 }}>
-            {perro.alergias && <InfoLinea label="Alergias" valor={perro.alergias} />}
+            {perro.alergias && <InfoLinea label={t.perroCampoAlergiasLabel} valor={perro.alergias} />}
             {(perro.vet_nombre || perro.vet_telefono) && (
-              <InfoLinea label="Veterinario" valor={[perro.vet_nombre, perro.vet_telefono].filter(Boolean).join(' · ')} />
+              <InfoLinea label={t.campoVeterinario} valor={[perro.vet_nombre, perro.vet_telefono].filter(Boolean).join(' · ')} />
             )}
-            {perro.direccion && <InfoLinea label="Dirección" valor={perro.direccion} />}
+            {perro.direccion && <InfoLinea label={t.perroCampoDireccionLabel} valor={perro.direccion} />}
             {perro.estado_salud && (
-              <InfoLinea label="Estado de salud" valor={ESTADOS_SALUD.find((e) => e.key === perro.estado_salud)?.label ?? perro.estado_salud} />
+              <InfoLinea label={t.perroCampoEstadoSalud} valor={ESTADOS_SALUD.find((e) => e.key === perro.estado_salud)?.label ?? perro.estado_salud} />
             )}
             {(perro.dieta_marca || perro.dieta_cantidad || perro.dieta_frecuencia) && (
-              <InfoLinea label="Dieta" valor={[perro.dieta_marca, perro.dieta_cantidad, perro.dieta_frecuencia].filter(Boolean).join(' · ')} />
+              <InfoLinea label={t.perroDietaTitulo} valor={[perro.dieta_marca, perro.dieta_cantidad, perro.dieta_frecuencia].filter(Boolean).join(' · ')} />
             )}
             {!perro.alergias && !perro.vet_nombre && !perro.direccion && !perro.estado_salud && !perro.dieta_marca && (
               <EmptyRow />
@@ -560,15 +569,15 @@ export default function PerroDetalleScreen() {
 
       {/* Vacunas */}
       <SeccionHistorial
-        titulo="Carnet de Vacunas"
+        titulo={t.perroSeccionVacunas}
         emoji="💉"
-        vacio="Sin vacunas registradas."
+        vacio={t.perroVacioVacunas}
         campos={[
-          { key: 'nombre',      label: 'Vacuna', requerido: true, placeholder: 'Ej: Antirrábica' },
-          { key: 'fecha',       label: 'Fecha', tipo: 'date', requerido: true },
-          { key: 'proxima',     label: 'Próxima dosis', tipo: 'date' },
-          { key: 'veterinario', label: 'Veterinario' },
-          { key: 'notas',       label: 'Notas', tipo: 'textarea' },
+          { key: 'nombre',      label: t.campoVacunaLabel, requerido: true, placeholder: t.campoVacunaPh },
+          { key: 'fecha',       label: t.campoFecha, tipo: 'date', requerido: true },
+          { key: 'proxima',     label: t.campoProximaDosis, tipo: 'date' },
+          { key: 'veterinario', label: t.campoVeterinario },
+          { key: 'notas',       label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={vacunas}
         onGuardar={async (v) => {
@@ -595,7 +604,7 @@ export default function PerroDetalleScreen() {
               <Text style={styles.itemFecha}>{fmt(v.fecha)}</Text>
               {v.proxima && (
                 <Text style={[styles.itemFecha, { color: new Date(v.proxima) < new Date() ? Colors.bad : Colors.good }]}>
-                  Próx: {fmt(v.proxima)}
+                  {t.perroProximaDosisPrefix} {fmt(v.proxima)}
                 </Text>
               )}
             </View>
@@ -604,7 +613,7 @@ export default function PerroDetalleScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar vacuna', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarVacuna, async () => {
                 await eliminarVacuna(v.id);
                 setVacunas((prev) => prev.filter((x) => x.id !== v.id));
               })}
@@ -617,17 +626,17 @@ export default function PerroDetalleScreen() {
 
       {/* Desparasitaciones */}
       <SeccionHistorial
-        titulo="Desparasitaciones"
+        titulo={t.perroSeccionDesparasitaciones}
         emoji="🐛"
         locked={!isPro}
-        vacio="Sin desparasitaciones registradas."
+        vacio={t.perroVacioDesparasitaciones}
         campos={[
-          { key: 'producto',    label: 'Producto', requerido: true, placeholder: 'Ej: NexGard' },
-          { key: 'tipo',        label: 'Tipo', tipo: 'select', opciones: ['interna', 'externa', 'ambas'], requerido: true },
-          { key: 'fecha',       label: 'Fecha', tipo: 'date', requerido: true },
-          { key: 'proxima',     label: 'Próxima dosis', tipo: 'date' },
-          { key: 'veterinario', label: 'Veterinario', placeholder: 'Opcional' },
-          { key: 'notas',       label: 'Notas', tipo: 'textarea' },
+          { key: 'producto',    label: t.campoProducto, requerido: true, placeholder: t.perroCampoProductoPh },
+          { key: 'tipo',        label: t.campoTipo, tipo: 'select', opciones: ['interna', 'externa', 'ambas'], requerido: true },
+          { key: 'fecha',       label: t.campoFecha, tipo: 'date', requerido: true },
+          { key: 'proxima',     label: t.campoProximaDosis, tipo: 'date' },
+          { key: 'veterinario', label: t.campoVeterinario, placeholder: t.campoOpcionalPh },
+          { key: 'notas',       label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={desparasitaciones}
         onGuardar={async (v) => {
@@ -654,7 +663,7 @@ export default function PerroDetalleScreen() {
               <Text style={styles.itemFecha}>{fmt(d.fecha)}</Text>
               {d.proxima && (
                 <Text style={[styles.itemFecha, { color: new Date(d.proxima) < new Date() ? Colors.bad : Colors.good }]}>
-                  Próx: {fmt(d.proxima)}
+                  {t.perroProximaDosisPrefix} {fmt(d.proxima)}
                 </Text>
               )}
             </View>
@@ -663,7 +672,7 @@ export default function PerroDetalleScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar desparasitación', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarDesparasitacion, async () => {
                 await eliminarDesparasitacion(d.id);
                 setDesparasitaciones((prev) => prev.filter((x) => x.id !== d.id));
               })}
@@ -676,17 +685,17 @@ export default function PerroDetalleScreen() {
 
       {/* Medicamentos */}
       <SeccionHistorial
-        titulo="Medicamentos"
+        titulo={t.perroSeccionMedicamentos}
         emoji="💊"
         locked={!isPro}
-        vacio="Sin medicamentos registrados."
+        vacio={t.perroVacioMedicamentos}
         campos={[
-          { key: 'nombre',       label: 'Medicamento', requerido: true },
-          { key: 'dosis',        label: 'Dosis' },
-          { key: 'frecuencia',   label: 'Frecuencia' },
-          { key: 'fecha_inicio', label: 'Fecha inicio', tipo: 'date', requerido: true },
-          { key: 'fecha_fin',    label: 'Fecha fin' },
-          { key: 'notas',        label: 'Notas', tipo: 'textarea' },
+          { key: 'nombre',       label: t.campoMedicamento, requerido: true },
+          { key: 'dosis',        label: t.campoDosis },
+          { key: 'frecuencia',   label: t.campoFrecuencia },
+          { key: 'fecha_inicio', label: t.campoFechaInicio, tipo: 'date', requerido: true },
+          { key: 'fecha_fin',    label: t.campoFechaFin },
+          { key: 'notas',        label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={medicamentos}
         onGuardar={async (v) => {
@@ -709,7 +718,7 @@ export default function PerroDetalleScreen() {
             </View>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar medicamento', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarMedicamento, async () => {
                 await eliminarMedicamento(m.id);
                 setMedicamentos((prev) => prev.filter((x) => x.id !== m.id));
               })}
@@ -723,20 +732,20 @@ export default function PerroDetalleScreen() {
       {/* Pesos */}
       {isPro && <PesoChart pesos={pesos} />}
       <SeccionHistorial
-        titulo="Peso"
+        titulo={t.perroSeccionPeso}
         emoji="⚖️"
         locked={!isPro}
-        vacio="Sin registros de peso."
+        vacio={t.perroVacioPeso}
         campos={[
-          { key: 'fecha',    label: 'Fecha', tipo: 'date', requerido: true },
-          { key: 'valor_kg', label: 'Peso (kg)', tipo: 'numero', requerido: true },
-          { key: 'notas',    label: 'Notas', tipo: 'textarea' },
+          { key: 'fecha',    label: t.campoFecha, tipo: 'date', requerido: true },
+          { key: 'valor_kg', label: t.campoPesoKg, tipo: 'numero', requerido: true },
+          { key: 'notas',    label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={pesos}
         onGuardar={async (v) => {
           const kg = Number(v.valor_kg.replace(',', '.'));
           if (!Number.isFinite(kg) || kg <= 0) {
-            throw new Error('Ingresá un peso válido en kg (ej: 12.5).');
+            throw new Error(t.perroPesoInvalido);
           }
           const nuevo = await agregarPeso(id, { fecha: v.fecha, valor_kg: kg, notas: v.notas });
           setPesos((prev) => [nuevo, ...prev]);
@@ -759,7 +768,7 @@ export default function PerroDetalleScreen() {
               <Text style={styles.itemFecha}>{fmt(p.fecha)}</Text>
               <TouchableOpacity
                 style={{ marginLeft: 10 }}
-                onPress={() => confirmarBorrar('Eliminar registro de peso', async () => {
+                onPress={() => confirmarBorrar(t.perroEliminarPeso, async () => {
                   await eliminarPeso(p.id);
                   setPesos((prev) => prev.filter((x) => x.id !== p.id));
                 })}
@@ -773,17 +782,17 @@ export default function PerroDetalleScreen() {
 
       {/* Visitas al veterinario */}
       <SeccionHistorial
-        titulo="Visitas al veterinario"
+        titulo={t.perroSeccionVisitas}
         emoji="🩺"
         locked={!isPro}
-        vacio="Sin visitas registradas."
+        vacio={t.perroVacioVisitas}
         campos={[
-          { key: 'fecha',       label: 'Fecha', tipo: 'date', requerido: true },
-          { key: 'motivo',      label: 'Motivo', requerido: true },
-          { key: 'diagnostico', label: 'Diagnóstico', tipo: 'textarea' },
-          { key: 'tratamiento', label: 'Tratamiento', tipo: 'textarea' },
-          { key: 'vet_nombre',  label: 'Veterinario' },
-          { key: 'notas',       label: 'Notas', tipo: 'textarea' },
+          { key: 'fecha',       label: t.campoFecha, tipo: 'date', requerido: true },
+          { key: 'motivo',      label: t.campoMotivo, requerido: true },
+          { key: 'diagnostico', label: t.campoDiagnostico, tipo: 'textarea' },
+          { key: 'tratamiento', label: t.campoTratamiento, tipo: 'textarea' },
+          { key: 'vet_nombre',  label: t.campoVeterinario },
+          { key: 'notas',       label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={visitasVet}
         onGuardar={async (v) => {
@@ -802,7 +811,7 @@ export default function PerroDetalleScreen() {
             <Text style={styles.itemFecha}>{fmt(vv.fecha)}</Text>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar visita', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarVisita, async () => {
                 await eliminarVisitaVet(vv.id);
                 setVisitasVet((prev) => prev.filter((x) => x.id !== vv.id));
               })}
@@ -815,16 +824,16 @@ export default function PerroDetalleScreen() {
 
       {/* Procedimientos / cirugías */}
       <SeccionHistorial
-        titulo="Procedimientos y cirugías"
+        titulo={t.perroSeccionProcedimientos}
         emoji="🏥"
         locked={!isPro}
-        vacio="Sin procedimientos registrados."
+        vacio={t.perroVacioProcedimientos}
         campos={[
-          { key: 'fecha',       label: 'Fecha', tipo: 'date', requerido: true },
-          { key: 'tipo',        label: 'Tipo', tipo: 'select', opciones: TIPOS_PROCEDIMIENTO, requerido: true },
-          { key: 'descripcion', label: 'Descripción', tipo: 'textarea', requerido: true },
-          { key: 'vet_nombre',  label: 'Veterinario' },
-          { key: 'notas',       label: 'Notas', tipo: 'textarea' },
+          { key: 'fecha',       label: t.campoFecha, tipo: 'date', requerido: true },
+          { key: 'tipo',        label: t.campoTipo, tipo: 'select', opciones: TIPOS_PROCEDIMIENTO, requerido: true },
+          { key: 'descripcion', label: t.campoDescripcion, tipo: 'textarea', requerido: true },
+          { key: 'vet_nombre',  label: t.campoVeterinario },
+          { key: 'notas',       label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={procedimientos}
         onGuardar={async (v) => {
@@ -843,7 +852,7 @@ export default function PerroDetalleScreen() {
             <Text style={styles.itemFecha}>{fmt(p.fecha)}</Text>
             <TouchableOpacity
               style={{ marginLeft: 10 }}
-              onPress={() => confirmarBorrar('Eliminar procedimiento', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarProcedimiento, async () => {
                 await eliminarProcedimiento(p.id);
                 setProcedimientos((prev) => prev.filter((x) => x.id !== p.id));
               })}
@@ -859,15 +868,15 @@ export default function PerroDetalleScreen() {
 
       {/* Contactos de emergencia — gratis para todos, igual que en la web */}
       <SeccionHistorial
-        titulo="Contactos de emergencia"
+        titulo={t.perroSeccionContactos}
         emoji="🆘"
         locked={false}
-        vacio="Sin contactos de emergencia."
+        vacio={t.perroVacioContactos}
         campos={[
-          { key: 'nombre',   label: 'Nombre', requerido: true },
-          { key: 'relacion', label: 'Relación', placeholder: 'Ej: Familiar, paseador' },
-          { key: 'telefono', label: 'Teléfono', requerido: true, placeholder: '+54 9 ...' },
-          { key: 'notas',    label: 'Notas', tipo: 'textarea' },
+          { key: 'nombre',   label: t.campoNombre, requerido: true },
+          { key: 'relacion', label: t.campoRelacion, placeholder: t.perroCampoRelacionPh },
+          { key: 'telefono', label: t.campoTelefono, requerido: true, placeholder: t.perroCampoTelefonoPh },
+          { key: 'notas',    label: t.campoNotas, tipo: 'textarea' },
         ]}
         items={contactos}
         onGuardar={async (v) => {
@@ -883,7 +892,7 @@ export default function PerroDetalleScreen() {
               <Text style={styles.itemSub}>{[c.relacion, c.telefono].filter(Boolean).join(' · ')}</Text>
             </View>
             <TouchableOpacity
-              onPress={() => confirmarBorrar('Eliminar contacto', async () => {
+              onPress={() => confirmarBorrar(t.perroEliminarContacto, async () => {
                 await eliminarContacto(c.id);
                 setContactos((prev) => prev.filter((x) => x.id !== c.id));
               })}
@@ -897,14 +906,14 @@ export default function PerroDetalleScreen() {
       {/* Galería de fotos */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
-          <Text style={styles.seccionTitulo}>🖼️  Galería de fotos</Text>
+          <Text style={styles.seccionTitulo}>{t.perroSeccionGaleria}</Text>
           {isPro ? (
             <TouchableOpacity style={styles.subirBtn} onPress={elegirFotoGaleria} disabled={subiendoFoto}>
-              {subiendoFoto ? <ActivityIndicator color={Colors.primary} size="small" /> : <Text style={styles.subirBtnText}>+ Agregar</Text>}
+              {subiendoFoto ? <ActivityIndicator color={Colors.primary} size="small" /> : <Text style={styles.subirBtnText}>{t.perroGaleriaAgregar}</Text>}
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.subirBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-              <Text style={styles.subirBtnText}>✨ Pro</Text>
+              <Text style={styles.subirBtnText}>{t.perroGaleriaPro}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -917,7 +926,7 @@ export default function PerroDetalleScreen() {
             ))}
           </View>
         )}
-        {fotos.length > 0 && <Text style={styles.galeriaHint}>Mantené presionada una foto para borrarla</Text>}
+        {fotos.length > 0 && <Text style={styles.galeriaHint}>{t.perroGaleriaHint}</Text>}
       </View>
 
       {/* Secciones de estudios */}
@@ -934,7 +943,7 @@ export default function PerroDetalleScreen() {
               >
                 {subiendo === tipo
                   ? <ActivityIndicator color={Colors.primary} size="small" />
-                  : <Text style={styles.subirBtnText}>{aceptaArchivos ? '+ Subir' : '+ Agregar'}</Text>
+                  : <Text style={styles.subirBtnText}>{aceptaArchivos ? t.perroSubirBtn : t.genericAgregarBtn}</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -953,7 +962,7 @@ export default function PerroDetalleScreen() {
                           style={styles.verBtn}
                           onPress={() => Linking.openURL(e.archivo_url!)}
                         >
-                          <Text style={styles.verBtnText}>Ver</Text>
+                          <Text style={styles.verBtnText}>{t.genericVer}</Text>
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity onPress={() => borrarEstudio(e)}>
@@ -980,9 +989,10 @@ export default function PerroDetalleScreen() {
 }
 
 function EmptyRow() {
+  const { t } = useLanguage();
   return (
     <View style={styles.emptyRow}>
-      <Text style={styles.emptyRowText}>✗  Sin datos</Text>
+      <Text style={styles.emptyRowText}>✗  {t.historialVacioDefault}</Text>
     </View>
   );
 }
@@ -1026,23 +1036,25 @@ function GroomingSection({
   perroId: string; grooming: Grooming | null; locked: boolean;
   onGuardado: (g: Grooming) => void; onEliminado: () => void;
 }) {
+  const { t } = useLanguage();
+  const GROOMING_LABEL: Record<TipoGrooming, string> = { 'baño': t.groomingTipoBano, 'peluquería': t.groomingTipoPeluqueria, 'ambos': t.groomingTipoAmbos };
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [borrando, setBorrando] = useState(false);
 
   function borrar() {
     if (!grooming) return;
-    Alert.alert('Eliminar registro', '¿Seguro que querés borrar el registro de grooming?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t.groomingConfirmBorrarTitle, t.groomingConfirmBorrarSub, [
+      { text: t.perfilCancelar, style: 'cancel' },
       {
-        text: 'Eliminar', style: 'destructive',
+        text: t.genericEliminar, style: 'destructive',
         onPress: async () => {
           setBorrando(true);
           try {
             await eliminarGrooming(grooming.id);
             onEliminado();
           } catch {
-            Alert.alert('Error', 'No se pudo borrar. Verificá tu conexión.');
+            Alert.alert(t.perfilErrorGeneric, t.genericErrGuardarConexion);
           } finally {
             setBorrando(false);
           }
@@ -1057,12 +1069,12 @@ function GroomingSection({
 
   async function guardar() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ultimaFecha.trim())) {
-      Alert.alert('Fecha inválida', 'La última fecha tiene que tener el formato AAAA-MM-DD.');
+      Alert.alert(t.errFechaInvalidaTitle, t.groomingFechaInvalidaSub);
       return;
     }
     const dias = parseInt(frecuencia, 10);
     if (!Number.isFinite(dias) || dias <= 0) {
-      Alert.alert('Frecuencia inválida', 'Ingresá una cantidad de días válida (ej: 30).');
+      Alert.alert(t.groomingFrecuenciaInvalidaTitle, t.groomingFrecuenciaInvalidaSub);
       return;
     }
     setGuardando(true);
@@ -1076,8 +1088,8 @@ function GroomingSection({
       onGuardado(nuevo);
       setEditando(false);
     } catch (e) {
-      const msg = e instanceof Error && e.message ? e.message : 'No se pudo guardar. Verificá tu conexión.';
-      Alert.alert('Error', msg);
+      const msg = e instanceof Error && e.message ? e.message : t.genericErrGuardarConexion;
+      Alert.alert(t.perfilErrorGeneric, msg);
     } finally {
       setGuardando(false);
     }
@@ -1086,14 +1098,14 @@ function GroomingSection({
   return (
     <View style={styles.seccion}>
       <View style={styles.seccionHeader}>
-        <Text style={styles.seccionTitulo}>🛁  Grooming</Text>
+        <Text style={styles.seccionTitulo}>🛁  {t.perroSeccionGrooming}</Text>
         {locked ? (
           <TouchableOpacity style={styles.subirBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.subirBtnText}>✨ Pro</Text>
+            <Text style={styles.subirBtnText}>{t.perroGaleriaPro}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.subirBtn} onPress={() => setEditando((v) => !v)}>
-            <Text style={styles.subirBtnText}>{editando ? '✕' : grooming ? 'Editar' : '+ Agregar'}</Text>
+            <Text style={styles.subirBtnText}>{editando ? '✕' : grooming ? t.genericEditar : t.genericAgregarBtn}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -1101,28 +1113,28 @@ function GroomingSection({
       {!locked && editando ? (
         <View style={{ gap: 10 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-            {TIPOS_GROOMING.map((t) => (
-              <TouchableOpacity key={t} style={[styles.estadoChip, tipo === t && styles.estadoChipActive]} onPress={() => setTipo(t)}>
-                <Text style={[styles.estadoChipText, tipo === t && styles.estadoChipTextActive]}>{t}</Text>
+            {TIPOS_GROOMING.map((g) => (
+              <TouchableOpacity key={g} style={[styles.estadoChip, tipo === g && styles.estadoChipActive]} onPress={() => setTipo(g)}>
+                <Text style={[styles.estadoChipText, tipo === g && styles.estadoChipTextActive]}>{GROOMING_LABEL[g]}</Text>
               </TouchableOpacity>
             ))}
           </View>
-          <CampoTexto label="Última fecha" value={ultimaFecha} onChange={setUltimaFecha} placeholder="AAAA-MM-DD" />
-          <CampoTexto label="Frecuencia (días)" value={frecuencia} onChange={setFrecuencia} keyboardType="phone-pad" />
-          <CampoTexto label="Notas" value={notas} onChange={setNotas} multiline />
+          <CampoTexto label={t.groomingUltimaFecha} value={ultimaFecha} onChange={setUltimaFecha} placeholder={t.dateFormatPh} />
+          <CampoTexto label={t.groomingFrecuenciaDias} value={frecuencia} onChange={setFrecuencia} keyboardType="phone-pad" />
+          <CampoTexto label={t.campoNotas} value={notas} onChange={setNotas} multiline />
           <TouchableOpacity style={styles.guardarPerfilBtn} onPress={guardar} disabled={guardando}>
-            {guardando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Guardar</Text>}
+            {guardando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>{t.genericGuardar}</Text>}
           </TouchableOpacity>
         </View>
       ) : grooming ? (
         <View style={{ gap: 6 }}>
-          <InfoLinea label="Tipo" valor={grooming.tipo} />
-          <InfoLinea label="Última vez" valor={fmt(grooming.ultima_fecha)} />
-          <InfoLinea label="Frecuencia" valor={`cada ${grooming.frecuencia_dias} días`} />
-          {grooming.notas && <InfoLinea label="Notas" valor={grooming.notas} />}
+          <InfoLinea label={t.campoTipo} valor={GROOMING_LABEL[grooming.tipo]} />
+          <InfoLinea label={t.groomingUltimaVez} valor={fmt(grooming.ultima_fecha)} />
+          <InfoLinea label={t.campoFrecuencia} valor={`${t.groomingCadaPrefix} ${grooming.frecuencia_dias} ${t.groomingDiasSuffix}`} />
+          {grooming.notas && <InfoLinea label={t.campoNotas} valor={grooming.notas} />}
           <TouchableOpacity onPress={borrar} disabled={borrando} style={{ marginTop: 4 }}>
             <Text style={{ color: Colors.bad, fontSize: 12, fontWeight: '700' }}>
-              {borrando ? 'Borrando…' : '🗑 Borrar registro'}
+              {borrando ? t.groomingBorrando : t.groomingBorrarRegistro}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1134,6 +1146,7 @@ function GroomingSection({
 }
 
 function PesoChart({ pesos }: { pesos: Peso[] }) {
+  const { t } = useLanguage();
   if (pesos.length < 2) return null;
   const asc = [...pesos].reverse(); // mas viejo -> mas nuevo
   const valores = asc.map((p) => p.valor_kg);
@@ -1147,7 +1160,7 @@ function PesoChart({ pesos }: { pesos: Peso[] }) {
 
   return (
     <View style={styles.seccion}>
-      <Text style={styles.seccionTitulo}>📈  Evolución de peso</Text>
+      <Text style={styles.seccionTitulo}>{t.perroPesoEvolucion}</Text>
       <View style={styles.pesoChartRow}>
         {asc.map((p) => {
           const alto = 24 + ((p.valor_kg - min) / rango) * 56;
@@ -1161,7 +1174,7 @@ function PesoChart({ pesos }: { pesos: Peso[] }) {
         })}
       </View>
       <Text style={[styles.pesoDelta, { color: colorDelta }]}>
-        {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta)} kg vs. registro anterior
+        {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta)} {t.perroPesoVsAnterior}
       </Text>
     </View>
   );
@@ -1174,6 +1187,7 @@ function TurnoWidget({
   onRegistrar: (fecha: string, nota: string) => Promise<void>;
   onEliminar: (id: string) => void;
 }) {
+  const { t } = useLanguage();
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [fecha, setFecha] = useState(turno?.fecha ?? '');
@@ -1183,7 +1197,7 @@ function TurnoWidget({
 
   async function guardar() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha.trim())) {
-      Alert.alert('Fecha inválida', 'El turno tiene que tener el formato AAAA-MM-DD.');
+      Alert.alert(t.errFechaInvalidaTitle, t.turnoFechaInvalida);
       return;
     }
     setGuardando(true);
@@ -1191,7 +1205,7 @@ function TurnoWidget({
       await onRegistrar(fecha.trim(), nota.trim());
       setEditando(false);
     } catch {
-      Alert.alert('Error', 'No se pudo guardar el turno. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.turnoErrGuardar);
     } finally {
       setGuardando(false);
     }
@@ -1201,14 +1215,14 @@ function TurnoWidget({
     <View style={styles.turnoWrap}>
       {editando ? (
         <View style={{ gap: 8 }}>
-          <CampoTexto label="Fecha del turno" value={fecha} onChange={setFecha} placeholder="AAAA-MM-DD" />
-          <CampoTexto label="Notas" value={nota} onChange={setNota} placeholder="Opcional" />
+          <CampoTexto label={t.turnoFechaLabel} value={fecha} onChange={setFecha} placeholder={t.dateFormatPh} />
+          <CampoTexto label={t.campoNotas} value={nota} onChange={setNota} placeholder={t.campoOpcionalPh} />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity style={[styles.guardarPerfilBtn, { flex: 1 }]} onPress={guardar} disabled={guardando}>
-              {guardando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Guardar turno</Text>}
+              {guardando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>{t.turnoGuardarBtn}</Text>}
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelarTurnoBtn} onPress={() => setEditando(false)}>
-              <Text style={{ color: Colors.inkMuted, fontWeight: '700', fontSize: 13 }}>Cancelar</Text>
+              <Text style={{ color: Colors.inkMuted, fontWeight: '700', fontSize: 13 }}>{t.perfilCancelar}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1216,11 +1230,11 @@ function TurnoWidget({
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.ink }}>
-              📅 Próximo turno: {fmt(turno.fecha)}
+              {t.turnoProximoPrefix} {fmt(turno.fecha)}
             </Text>
             {turno.nota && <Text style={styles.itemSub}>{turno.nota}</Text>}
             <Text style={[styles.turnoBadge, { color: vencido ? Colors.bad : Colors.good }]}>
-              {vencido ? '⚠️ Vencido' : '✓ Vigente'}
+              {vencido ? t.turnoVencido : t.turnoVigente}
             </Text>
           </View>
           <TouchableOpacity onPress={() => { setFecha(turno.fecha); setNota(turno.nota ?? ''); setEditando(true); }}>
@@ -1232,7 +1246,7 @@ function TurnoWidget({
         </View>
       ) : (
         <TouchableOpacity onPress={() => { setFecha(''); setNota(''); setEditando(true); }}>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.primary }}>📅 + Registrar turno</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.primary }}>{t.turnoRegistrarBtn}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -1244,6 +1258,7 @@ function ExtrasSection({
 }: {
   perro: Perro; perroId: string;
 }) {
+  const { t } = useLanguage();
   const [mostrarQR, setMostrarQR] = useState(false);
   const [compartiendoQR, setCompartiendoQR] = useState(false);
 
@@ -1261,7 +1276,7 @@ function ExtrasSection({
         Alert.alert('QR', urlHistoria);
       }
     } catch {
-      Alert.alert('Error', 'No se pudo compartir el QR.');
+      Alert.alert(t.perfilErrorGeneric, t.perroErrCompartirQr);
     } finally {
       setCompartiendoQR(false);
     }
@@ -1269,12 +1284,12 @@ function ExtrasSection({
 
   return (
     <View style={styles.seccion}>
-      <Text style={styles.seccionTitulo}>✨  Extras</Text>
+      <Text style={styles.seccionTitulo}>{t.perroSeccionExtras}</Text>
 
       {/* QR de collar */}
       <View style={{ marginTop: 10 }}>
         <TouchableOpacity style={styles.extraRow} onPress={() => setMostrarQR((v) => !v)}>
-          <Text style={styles.extraRowText}>📱  QR para el collar</Text>
+          <Text style={styles.extraRowText}>{t.perroQrCollar}</Text>
           <Text style={styles.extraRowChevron}>{mostrarQR ? '▲' : '▼'}</Text>
         </TouchableOpacity>
         {mostrarQR && (
@@ -1282,7 +1297,7 @@ function ExtrasSection({
             <Image source={{ uri: qrUrl }} style={styles.qrImg} />
             <Text style={styles.qrUrlText}>{urlHistoria}</Text>
             <TouchableOpacity style={styles.guardarPerfilBtn} onPress={compartirQR} disabled={compartiendoQR}>
-              {compartiendoQR ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>Compartir QR</Text>}
+              {compartiendoQR ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarPerfilBtnText}>{t.perroCompartirQr}</Text>}
             </TouchableOpacity>
           </View>
         )}
@@ -1290,18 +1305,18 @@ function ExtrasSection({
 
       {/* Herramientas que solo están en la web por ahora */}
       <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 14, gap: 8 }}>
-        <Text style={styles.extraWebHint}>Estas herramientas por ahora solo están disponibles en la web (te va a pedir iniciar sesión la primera vez):</Text>
+        <Text style={styles.extraWebHint}>{t.perroExtraHint}</Text>
         <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/cartel`)}>
-          <Text style={styles.extraRowText}>🚨  Cartel de perdido</Text>
+          <Text style={styles.extraRowText}>{t.perroExtraCartel}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/historia`)}>
-          <Text style={styles.extraRowText}>📸  Historia para Instagram/Facebook</Text>
+          <Text style={styles.extraRowText}>{t.perroExtraHistoria}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/timeline`)}>
-          <Text style={styles.extraRowText}>🗓️  Línea de tiempo</Text>
+          <Text style={styles.extraRowText}>{t.perroExtraTimeline}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/cartel`)}>
-          <Text style={styles.extraRowText}>🪪  Descargar carnet en PDF</Text>
+          <Text style={styles.extraRowText}>{t.perroExtraCarnetPdf}</Text>
         </TouchableOpacity>
       </View>
     </View>

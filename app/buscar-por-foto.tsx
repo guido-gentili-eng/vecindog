@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import { buscarRazas } from '@/lib/razas';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/lib/translations';
 
 const COLORES = [
   'Negro', 'Blanco', 'Marrón', 'Caramelo', 'Dorado',
@@ -36,31 +38,31 @@ function textosCoinciden(a: string, b: string) {
 
 function calcularScore(
   post: Post, color: string, raza: string, tamano: Tamano,
-  collar: boolean | null, chapita: boolean | null,
+  collar: boolean | null, chapita: boolean | null, t: Translations,
 ): PostConScore {
   let score = 0, maxPosible = 0;
   const matches: string[] = [];
 
   if (color) {
     maxPosible += 30;
-    if (post.color && textosCoinciden(color, post.color)) { score += 30; matches.push(`Color: ${post.color}`); }
+    if (post.color && textosCoinciden(color, post.color)) { score += 30; matches.push(`${t.bpfColorMatch} ${post.color}`); }
   }
   if (raza) {
     maxPosible += 30;
-    if (post.raza && textosCoinciden(raza, post.raza)) { score += 30; matches.push(`Raza: ${post.raza}`); }
+    if (post.raza && textosCoinciden(raza, post.raza)) { score += 30; matches.push(`${t.bpfRazaMatch} ${post.raza}`); }
   }
   if (tamano) {
     maxPosible += 15;
-    if (post.tamano === tamano) { score += 15; matches.push(`Tamaño: ${post.tamano}`); }
+    if (post.tamano === tamano) { score += 15; matches.push(`${t.bpfTamanoMatch} ${post.tamano}`); }
     else if (post.tamano) { score = Math.max(0, score - 8); }
   }
   if (collar !== null) {
     maxPosible += 5;
-    if (post.collar === collar) { score += 5; matches.push(collar ? 'Con collar' : 'Sin collar'); }
+    if (post.collar === collar) { score += 5; matches.push(collar ? t.bpfConCollar : t.bpfSinCollar); }
   }
   if (chapita !== null) {
     maxPosible += 5;
-    if (post.chapita === chapita) { score += 5; matches.push(chapita ? 'Con chapita' : 'Sin chapita'); }
+    if (post.chapita === chapita) { score += 5; matches.push(chapita ? t.bpfConChapita : t.bpfSinChapita); }
   }
 
   const pct = maxPosible > 0 ? Math.round((score / maxPosible) * 100) : 0;
@@ -68,6 +70,7 @@ function calcularScore(
 }
 
 export default function BuscarPorFotoScreen() {
+  const { t } = useLanguage();
   const { session, isPro } = useAuth();
   const [foto,       setFoto]       = useState<string | null>(null);
   const [analizando, setAnalizando] = useState(false);
@@ -97,7 +100,7 @@ export default function BuscarPorFotoScreen() {
 
   async function elegirFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.bpfErrPermisoGaleria); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
@@ -108,7 +111,7 @@ export default function BuscarPorFotoScreen() {
 
   async function tomarFoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu cámara'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.bpfErrPermisoCamara); return; }
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
@@ -119,7 +122,7 @@ export default function BuscarPorFotoScreen() {
 
   async function analizarFoto(uri: string) {
     if (!session?.access_token) {
-      Alert.alert('Iniciá sesión', 'Necesitás estar logueado para usar esta función.');
+      Alert.alert(t.bpfErrIniciarSesionTitle, t.bpfErrIniciarSesionSub);
       return;
     }
     setAnalizando(true);
@@ -137,15 +140,15 @@ export default function BuscarPorFotoScreen() {
         body: form,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? 'Error al analizar la foto');
-      if (data.error) { Alert.alert('No se pudo analizar', data.error); return; }
+      if (!res.ok) throw new Error(data?.error ?? t.bpfErrAnalizarDefault);
+      if (data.error) { Alert.alert(t.bpfErrAnalizarTitle, data.error); return; }
 
       if (data.color)  setColor(data.color);
       if (data.raza)   setRaza(data.raza);
       if (data.tamano) setTamano(data.tamano);
       if (data.descripcion) setDescripcionIA(data.descripcion);
     } catch (e: any) {
-      Alert.alert('Error', e.message ?? 'No se pudo analizar la foto. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, e.message ?? t.bpfErrAnalizarFotoSub);
     } finally {
       setAnalizando(false);
     }
@@ -165,13 +168,13 @@ export default function BuscarPorFotoScreen() {
       if (error) throw error;
 
       const conScore = (data ?? [])
-        .map((p) => calcularScore(p as Post, color, raza, tamano, collar, chapita))
+        .map((p) => calcularScore(p as Post, color, raza, tamano, collar, chapita, t))
         .filter((r) => r.score >= 30)
         .sort((a, b) => b.score - a.score);
 
       setResultados(conScore);
     } catch {
-      Alert.alert('Error', 'No se pudo buscar. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.bpfErrBuscar);
     } finally {
       setBuscando(false);
     }
@@ -181,13 +184,12 @@ export default function BuscarPorFotoScreen() {
     return (
       <View style={styles.lockedContainer}>
         <Text style={{ fontSize: 48 }}>✨</Text>
-        <Text style={styles.lockedTitle}>Función de VecindogPro</Text>
+        <Text style={styles.lockedTitle}>{t.bpfLockedTitle}</Text>
         <Text style={styles.lockedSub}>
-          Buscar por foto usa inteligencia artificial para analizar la foto de un perro y compararla
-          con los avisos activos de la comunidad.
+          {t.bpfLockedSub}
         </Text>
         <TouchableOpacity style={styles.lockedBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-          <Text style={styles.lockedBtnText}>Ver planes</Text>
+          <Text style={styles.lockedBtnText}>{t.bpfVerPlanes}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -196,7 +198,7 @@ export default function BuscarPorFotoScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.inner}>
       <Text style={styles.subtitulo}>
-        Subí una foto del perro y la IA va a sugerir color, raza y tamaño para buscarlo entre los avisos activos.
+        {t.bpfSubtitulo}
       </Text>
 
       <TouchableOpacity style={styles.fotoBox} onPress={elegirFoto} disabled={analizando}>
@@ -205,20 +207,20 @@ export default function BuscarPorFotoScreen() {
         ) : (
           <>
             <Text style={{ fontSize: 32 }}>📷</Text>
-            <Text style={styles.fotoBoxText}>Elegir de la galería</Text>
+            <Text style={styles.fotoBoxText}>{t.bpfElegirGaleria}</Text>
           </>
         )}
         {analizando && (
           <View style={styles.fotoOverlay}>
             <ActivityIndicator color={Colors.white} size="large" />
-            <Text style={styles.fotoOverlayText}>Analizando con IA…</Text>
+            <Text style={styles.fotoOverlayText}>{t.bpfAnalizando}</Text>
           </View>
         )}
       </TouchableOpacity>
 
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
         <TouchableOpacity style={styles.camaraBtn} onPress={tomarFoto} disabled={analizando}>
-          <Text style={styles.camaraBtnText}>📸  Tomar foto</Text>
+          <Text style={styles.camaraBtnText}>{t.bpfTomarFoto}</Text>
         </TouchableOpacity>
         {foto && (
           <TouchableOpacity
@@ -226,7 +228,7 @@ export default function BuscarPorFotoScreen() {
             onPress={() => { setFoto(null); setResultados(null); setColor(''); setRaza(''); setTamano(''); setCollar(null); setChapita(null); setDescripcionIA(''); }}
             disabled={analizando}
           >
-            <Text style={styles.camaraBtnText}>↺  Empezar de nuevo</Text>
+            <Text style={styles.camaraBtnText}>{t.bpfEmpezarDeNuevo}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -235,7 +237,7 @@ export default function BuscarPorFotoScreen() {
 
       {foto && !analizando && (
         <>
-          <Text style={styles.label}>Color</Text>
+          <Text style={styles.label}>{t.bpfLabelColor}</Text>
           <View style={styles.chipsRow}>
             {COLORES.map((c) => (
               <TouchableOpacity key={c} style={[styles.chip, color === c && styles.chipActive]} onPress={() => setColor(color === c ? '' : c)}>
@@ -244,19 +246,19 @@ export default function BuscarPorFotoScreen() {
             ))}
           </View>
 
-          <Text style={styles.label}>Tamaño</Text>
+          <Text style={styles.label}>{t.bpfLabelTamano}</Text>
           <View style={styles.chipsRow}>
-            {TAMANOS.map((t) => (
-              <TouchableOpacity key={t} style={[styles.chip, tamano === t && styles.chipActive]} onPress={() => setTamano(tamano === t ? '' : t)}>
-                <Text style={[styles.chipText, tamano === t && styles.chipTextActive]}>{t}</Text>
+            {TAMANOS.map((tm) => (
+              <TouchableOpacity key={tm} style={[styles.chip, tamano === tm && styles.chipActive]} onPress={() => setTamano(tamano === tm ? '' : tm)}>
+                <Text style={[styles.chipText, tamano === tm && styles.chipTextActive]}>{tm}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text style={styles.label}>Raza (opcional)</Text>
+          <Text style={styles.label}>{t.bpfLabelRaza}</Text>
           <TextInput
             style={styles.razaBox}
-            placeholder="Ej: Labrador, Ovejero, Mestizo…"
+            placeholder={t.nuevoPerroRazaPh}
             placeholderTextColor={Colors.inkMuted}
             value={raza}
             onChangeText={handleRazaChange}
@@ -272,18 +274,18 @@ export default function BuscarPorFotoScreen() {
             </View>
           )}
 
-          <Text style={styles.label}>¿Tenía collar?</Text>
+          <Text style={styles.label}>{t.bpfTeniaCollar}</Text>
           <View style={styles.chipsRow}>
-            {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+            {([[true, t.bpfSi], [false, t.bpfNo], [null, t.bpfNoSe]] as const).map(([v, l]) => (
               <TouchableOpacity key={String(v)} style={[styles.chip, collar === v && styles.chipActive]} onPress={() => setCollar(v)}>
                 <Text style={[styles.chipText, collar === v && styles.chipTextActive]}>{l}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text style={styles.label}>¿Tenía chapita?</Text>
+          <Text style={styles.label}>{t.bpfTeniaChapita}</Text>
           <View style={styles.chipsRow}>
-            {([[true, 'Sí'], [false, 'No'], [null, 'No sé']] as const).map(([v, l]) => (
+            {([[true, t.bpfSi], [false, t.bpfNo], [null, t.bpfNoSe]] as const).map(([v, l]) => (
               <TouchableOpacity key={String(v)} style={[styles.chip, chapita === v && styles.chipActive]} onPress={() => setChapita(v)}>
                 <Text style={[styles.chipText, chapita === v && styles.chipTextActive]}>{l}</Text>
               </TouchableOpacity>
@@ -291,7 +293,7 @@ export default function BuscarPorFotoScreen() {
           </View>
 
           <TouchableOpacity style={styles.buscarBtn} onPress={buscar} disabled={buscando}>
-            {buscando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.buscarBtnText}>🔍  Buscar en avisos activos</Text>}
+            {buscando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.buscarBtnText}>{t.bpfBuscarBtn}</Text>}
           </TouchableOpacity>
         </>
       )}
@@ -299,7 +301,7 @@ export default function BuscarPorFotoScreen() {
       {resultados !== null && (
         <View style={{ marginTop: 20 }}>
           <Text style={styles.resultadosTitulo}>
-            {resultados.length === 0 ? 'No encontramos coincidencias' : `${resultados.length} posible${resultados.length > 1 ? 's' : ''} coincidencia${resultados.length > 1 ? 's' : ''}`}
+            {resultados.length === 0 ? t.bpfSinCoincidencias : `${resultados.length} ${resultados.length > 1 ? t.bpfCoincidenciaPlural : t.bpfCoincidenciaSingular}`}
           </Text>
           {resultados.map(({ post, score, matches }) => (
             <TouchableOpacity key={post.id} style={styles.resultCard} onPress={() => router.push(`/publicaciones/${post.id}`)}>
@@ -309,12 +311,12 @@ export default function BuscarPorFotoScreen() {
               }
               <View style={{ flex: 1 }}>
                 <View style={styles.resultHeader}>
-                  <Text style={styles.resultNombre}>{post.nombre || 'Sin nombre'}</Text>
+                  <Text style={styles.resultNombre}>{post.nombre || t.homeSinNombre}</Text>
                   <View style={styles.scoreBadge}><Text style={styles.scoreBadgeText}>{score}%</Text></View>
                 </View>
                 <View style={styles.resultSubRow}>
                   <CategoriaDot categoria={post.categoria} size={8} />
-                  <Text style={styles.resultSub}>{post.categoria === 'perdido' ? 'Perdido' : 'Encontrado'} · {post.zona || post.ciudad || '—'}</Text>
+                  <Text style={styles.resultSub}>{post.categoria === 'perdido' ? t.bpfPerdido : t.bpfEncontrado} · {post.zona || post.ciudad || '—'}</Text>
                 </View>
                 {matches.length > 0 && <Text style={styles.resultMatches}>{matches.join(' · ')}</Text>}
               </View>

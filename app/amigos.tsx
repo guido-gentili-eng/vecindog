@@ -11,6 +11,7 @@ import {
   aceptarSolicitud, rechazarEliminarAmistad, type Amistad, type ResultadoBusquedaPerro,
 } from '@/lib/amistades';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Perfil = { nombre: string | null; apellido: string | null; foto_url: string | null; ciudad: string | null };
 
@@ -24,6 +25,7 @@ function Avatar({ nombre, fotoUrl }: { nombre?: string | null; fotoUrl?: string 
 }
 
 export default function AmigosScreen() {
+  const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [tab, setTab] = useState<'amigos' | 'buscar'>('amigos');
   const [query, setQuery] = useState('');
@@ -77,7 +79,7 @@ export default function AmigosScreen() {
     if (!user) return;
     setAccionando(ownerId);
     try {
-      await enviarSolicitud(user.id, ownerId, profile?.nombre ?? 'Alguien');
+      await enviarSolicitud(user.id, ownerId, profile?.nombre ?? t.amigosAlguienFallback);
       await cargarAmistades();
     } finally {
       setAccionando(null);
@@ -90,7 +92,7 @@ export default function AmigosScreen() {
       await aceptarSolicitud(amistadId);
       await supabase.from('notifications').insert({
         user_id: solicitanteId, post_id: null, tipo: 'amistad_aceptada',
-        mensaje: `${profile?.nombre ?? 'Tu vecino'} aceptó tu solicitud de amistad 🐾`,
+        mensaje: `${profile?.nombre ?? t.notifTuVecinoFallback} ${t.notifAceptoSolicitudSuffix}`,
         leida: false,
       });
       await cargarAmistades();
@@ -112,16 +114,16 @@ export default function AmigosScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
-        <Text style={styles.title}>👥 Amigos {amigosAceptados.length > 0 ? `(${amigosAceptados.length})` : ''}</Text>
+        <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.amigosVolver}</Text></TouchableOpacity>
+        <Text style={styles.title}>{t.amigosTitle} {amigosAceptados.length > 0 ? `(${amigosAceptados.length})` : ''}</Text>
       </View>
 
       <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tab, tab === 'amigos' && styles.tabActive]} onPress={() => setTab('amigos')}>
-          <Text style={[styles.tabText, tab === 'amigos' && styles.tabTextActive]}>Mis amigos</Text>
+          <Text style={[styles.tabText, tab === 'amigos' && styles.tabTextActive]}>{t.amigosTabMisAmigos}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, tab === 'buscar' && styles.tabActive]} onPress={() => setTab('buscar')}>
-          <Text style={[styles.tabText, tab === 'buscar' && styles.tabTextActive]}>Buscar perro</Text>
+          <Text style={[styles.tabText, tab === 'buscar' && styles.tabTextActive]}>{t.amigosTabBuscar}</Text>
         </TouchableOpacity>
       </View>
 
@@ -136,14 +138,14 @@ export default function AmigosScreen() {
             <View style={{ gap: 16 }}>
               {pendientesRecibidas.length > 0 && (
                 <View style={{ gap: 8 }}>
-                  <Text style={styles.sectionLabel}>Solicitudes recibidas ({pendientesRecibidas.length})</Text>
+                  <Text style={styles.sectionLabel}>{t.amigosSolicitudesRecibidas} ({pendientesRecibidas.length})</Text>
                   {pendientesRecibidas.map((a) => {
                     const p = perfilesMap[a.solicitante_id];
                     return (
                       <View key={a.id} style={styles.rowCard}>
                         <Avatar nombre={p?.nombre} fotoUrl={p?.foto_url} />
                         <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={styles.nombre}>{p?.nombre ?? 'Usuario'} {p?.apellido ?? ''}</Text>
+                          <Text style={styles.nombre}>{p?.nombre ?? t.amigosUsuarioFallback} {p?.apellido ?? ''}</Text>
                           {!!p?.ciudad && <Text style={styles.sub}>{p.ciudad}</Text>}
                         </View>
                         <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -152,7 +154,7 @@ export default function AmigosScreen() {
                             disabled={accionando === a.id}
                             onPress={() => handleAceptar(a.id, a.solicitante_id)}
                           >
-                            {accionando === a.id ? <ActivityIndicator size="small" color={Colors.good} /> : <Text style={styles.acceptBtnText}>✓ Aceptar</Text>}
+                            {accionando === a.id ? <ActivityIndicator size="small" color={Colors.good} /> : <Text style={styles.acceptBtnText}>{t.notifAceptar}</Text>}
                           </TouchableOpacity>
                           <TouchableOpacity style={styles.rejectBtn} disabled={accionando === a.id} onPress={() => handleEliminar(a.id)}>
                             <Text style={styles.rejectBtnText}>✕</Text>
@@ -166,7 +168,7 @@ export default function AmigosScreen() {
 
               {amigosAceptados.length > 0 ? (
                 <View style={{ gap: 8 }}>
-                  <Text style={styles.sectionLabel}>Amigos ({amigosAceptados.length})</Text>
+                  <Text style={styles.sectionLabel}>{t.amigosAmigosLabel} ({amigosAceptados.length})</Text>
                   {amigosAceptados.map((a) => {
                     const friendId = a.solicitante_id === user?.id ? a.receptor_id : a.solicitante_id;
                     const p = perfilesMap[friendId];
@@ -174,7 +176,7 @@ export default function AmigosScreen() {
                       <View key={a.id} style={styles.rowCard}>
                         <Avatar nombre={p?.nombre} fotoUrl={p?.foto_url} />
                         <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={styles.nombre}>{p?.nombre ?? 'Usuario'} {p?.apellido ?? ''}</Text>
+                          <Text style={styles.nombre}>{p?.nombre ?? t.amigosUsuarioFallback} {p?.apellido ?? ''}</Text>
                           {!!p?.ciudad && <Text style={styles.sub}>{p.ciudad}</Text>}
                         </View>
                         <TouchableOpacity disabled={accionando === a.id} onPress={() => handleEliminar(a.id)}>
@@ -187,10 +189,10 @@ export default function AmigosScreen() {
               ) : pendientesRecibidas.length === 0 ? (
                 <View style={styles.empty}>
                   <Text style={{ fontSize: 48 }}>👥</Text>
-                  <Text style={styles.emptyTitle}>Todavía no tenés amigos</Text>
-                  <Text style={styles.emptySub}>Buscá el nombre del perro de tu vecino y mandale una solicitud.</Text>
+                  <Text style={styles.emptyTitle}>{t.amigosEmptyTitle}</Text>
+                  <Text style={styles.emptySub}>{t.amigosEmptySub}</Text>
                   <TouchableOpacity style={styles.emptyBtn} onPress={() => setTab('buscar')}>
-                    <Text style={styles.emptyBtnText}>Buscar perro</Text>
+                    <Text style={styles.emptyBtnText}>{t.amigosTabBuscar}</Text>
                   </TouchableOpacity>
                 </View>
               ) : null}
@@ -202,7 +204,7 @@ export default function AmigosScreen() {
           <View style={styles.searchWrap}>
             <TextInput
               style={styles.search}
-              placeholder="🔍  Nombre del perro o dueño…"
+              placeholder={t.amigosSearchPh}
               placeholderTextColor={Colors.inkMuted}
               value={query}
               onChangeText={setQuery}
@@ -217,11 +219,11 @@ export default function AmigosScreen() {
             keyExtractor={(item) => item.perro_id}
             ListEmptyComponent={
               query.trim().length > 0 && !buscando ? (
-                <Text style={styles.emptySearch}>No encontramos ningún perro con ese nombre.</Text>
+                <Text style={styles.emptySearch}>{t.amigosNoEncontrado}</Text>
               ) : !query.trim() ? (
                 <View style={styles.empty}>
                   <Text style={{ fontSize: 40 }}>🔍</Text>
-                  <Text style={styles.emptySub}>Escribí el nombre del perro de tu vecino para buscarlo.</Text>
+                  <Text style={styles.emptySub}>{t.amigosEscribeNombre}</Text>
                 </View>
               ) : null
             }
@@ -236,16 +238,16 @@ export default function AmigosScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={styles.nombre}>{r.nombre}</Text>
                     <Text style={styles.sub} numberOfLines={1}>
-                      de {r.owner_nombre ?? 'Usuario'}{r.raza ? ` · ${r.raza}` : ''}{r.owner_ciudad ? ` · ${r.owner_ciudad}` : ''}
+                      {t.amigosDePrefix} {r.owner_nombre ?? t.amigosUsuarioFallback}{r.raza ? ` · ${r.raza}` : ''}{r.owner_ciudad ? ` · ${r.owner_ciudad}` : ''}
                     </Text>
                   </View>
                   {yaAmigo ? (
-                    <View style={styles.badgeGood}><Text style={styles.badgeGoodText}>✓ Amigos</Text></View>
+                    <View style={styles.badgeGood}><Text style={styles.badgeGoodText}>{t.amigosYaAmigos}</Text></View>
                   ) : pendiente ? (
-                    <View style={styles.badgeMuted}><Text style={styles.badgeMutedText}>⏳ Pendiente</Text></View>
+                    <View style={styles.badgeMuted}><Text style={styles.badgeMutedText}>{t.amigosPendiente}</Text></View>
                   ) : (
                     <TouchableOpacity style={styles.addFriendBtn} disabled={accionando === r.owner_id} onPress={() => handleEnviar(r.owner_id)}>
-                      {accionando === r.owner_id ? <ActivityIndicator size="small" color={Colors.primary} /> : <Text style={styles.addFriendBtnText}>+ Agregar</Text>}
+                      {accionando === r.owner_id ? <ActivityIndicator size="small" color={Colors.primary} /> : <Text style={styles.addFriendBtnText}>{t.genericAgregarBtn}</Text>}
                     </TouchableOpacity>
                   )}
                 </View>

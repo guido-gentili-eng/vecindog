@@ -7,12 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
-
-const EXPERIENCIA_OPTS = [
-  'Soy dueño/a de perros', 'Tuve perros de niño/a', 'Cuidé perros de amigos/familia',
-  'Trabajé con animales', 'Sin experiencia previa',
-];
-const DISPONIBILIDAD_OPTS = ['De lunes a viernes', 'Fines de semana', 'Cualquier día', 'Solo de día', 'Con pernocte incluido'];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
@@ -23,6 +18,9 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 }
 
 export default function QuieroCuidarScreen() {
+  const { t } = useLanguage();
+  const EXPERIENCIA_OPTS = [t.qcExp1, t.qcExp2, t.qcExp3, t.qcExp4, t.qcExp5];
+  const DISPONIBILIDAD_OPTS = [t.qcDisp1, t.qcDisp2, t.qcDisp3, t.qcDisp4, t.qcDisp5];
   const { user, isPro } = useAuth();
   const [nombre, setNombre] = useState('');
   const [experiencias, setExperiencias] = useState<string[]>([]);
@@ -41,21 +39,21 @@ export default function QuieroCuidarScreen() {
   }
 
   async function handleSubmit() {
-    if (!user) { setError('Tenés que iniciar sesión para registrarte.'); return; }
-    if (!nombre.trim()) { setError('El nombre es obligatorio.'); return; }
-    if (!zona.trim()) { setError('La zona es obligatoria.'); return; }
-    if (!contacto.trim()) { setError('El contacto de WhatsApp es obligatorio.'); return; }
-    if (contacto.replace(/\D/g, '').length < 10) { setError('El WhatsApp debe tener al menos 10 dígitos.'); return; }
+    if (!user) { setError(t.qcErrLogin); return; }
+    if (!nombre.trim()) { setError(t.qcErrNombre); return; }
+    if (!zona.trim()) { setError(t.qcErrZona); return; }
+    if (!contacto.trim()) { setError(t.qcErrContacto); return; }
+    if (contacto.replace(/\D/g, '').length < 10) { setError(t.qcErrContactoDigits); return; }
 
     setEnviando(true);
     setError('');
 
     const partes: string[] = [];
-    if (experiencias.length) partes.push(`Experiencia: ${experiencias.join(', ')}.`);
-    if (disponibilidad.length) partes.push(`Disponibilidad: ${disponibilidad.join(', ')}.`);
-    partes.push(`Puede cuidar hasta ${maxPerros} perro${maxPerros !== '1' ? 's' : ''} a la vez.`);
-    if (tienePerros === 'si') partes.push('Tiene perros propios en casa.');
-    if (tienePerros === 'no') partes.push('No tiene perros propios.');
+    if (experiencias.length) partes.push(`${t.qcExperienciaPrefix} ${experiencias.join(', ')}.`);
+    if (disponibilidad.length) partes.push(`${t.qcDisponibilidadPrefix} ${disponibilidad.join(', ')}.`);
+    partes.push(`${t.qcPuedeCuidarPrefix} ${maxPerros} ${maxPerros !== '1' ? t.qcPerroPlural : t.qcPerroSingular} ${t.qcALaVezSuffix}`);
+    if (tienePerros === 'si') partes.push(t.qcTienePerrosSiTexto);
+    if (tienePerros === 'no') partes.push(t.qcTienePerrosNoTexto);
     if (detalles.trim()) partes.push(detalles.trim());
     const descripcion = partes.join(' ');
 
@@ -67,7 +65,7 @@ export default function QuieroCuidarScreen() {
     });
 
     setEnviando(false);
-    if (dbErr) { setError('No se pudo registrar. Intentá de nuevo.'); return; }
+    if (dbErr) { setError(t.qcErrRegistrar); return; }
     setPublicado(true);
     setTimeout(() => router.replace('/cuidado' as any), 1800);
   }
@@ -75,7 +73,7 @@ export default function QuieroCuidarScreen() {
   if (!user) {
     return (
       <View style={styles.centerScreen}>
-        <Text style={styles.centerText}>Iniciá sesión para registrarte como cuidador.</Text>
+        <Text style={styles.centerText}>{t.qcLoginRequired}</Text>
       </View>
     );
   }
@@ -85,12 +83,12 @@ export default function QuieroCuidarScreen() {
       <View style={styles.centerScreen}>
         <View style={styles.proCard}>
           <Text style={{ fontSize: 32 }}>🤲</Text>
-          <Text style={styles.proTitle}>Función exclusiva VecindogPro</Text>
+          <Text style={styles.proTitle}>{t.qcProTitle}</Text>
           <Text style={styles.proSub}>
-            Para registrarte como cuidador y recibir calificaciones de los dueños, necesitás tener el plan Pro activo.
+            {t.qcProSub}
           </Text>
           <TouchableOpacity style={styles.proBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-            <Text style={styles.proBtnText}>Ver planes</Text>
+            <Text style={styles.proBtnText}>{t.bpfVerPlanes}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -101,32 +99,32 @@ export default function QuieroCuidarScreen() {
     return (
       <View style={styles.centerScreen}>
         <Text style={{ fontSize: 48 }}>✅</Text>
-        <Text style={styles.proTitle}>¡Te registraste como cuidador!</Text>
-        <Text style={styles.proSub}>Tu perfil ya aparece en el listado de cuidadores disponibles.</Text>
+        <Text style={styles.proTitle}>{t.qcPublicadoTitle}</Text>
+        <Text style={styles.proSub}>{t.qcPublicadoSub}</Text>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
-      <Text style={styles.title}>Quiero cuidar</Text>
-      <Text style={styles.sub}>Completá tu perfil de cuidador para que los dueños puedan encontrarte.</Text>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
+      <Text style={styles.title}>{t.qcTitle}</Text>
+      <Text style={styles.sub}>{t.qcSub}</Text>
 
-      <Text style={styles.label}>Tu nombre o apodo *</Text>
-      <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ej: Martina G." placeholderTextColor={Colors.inkMuted} />
+      <Text style={styles.label}>{t.qcNombreLabel}</Text>
+      <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder={t.qcNombrePh} placeholderTextColor={Colors.inkMuted} />
 
-      <Text style={styles.label}>Experiencia con perros</Text>
+      <Text style={styles.label}>{t.qcExperienciaLabel}</Text>
       <View style={styles.chipsRow}>
         {EXPERIENCIA_OPTS.map((o) => <Chip key={o} label={o} active={experiencias.includes(o)} onPress={() => toggle(experiencias, setExperiencias, o)} />)}
       </View>
 
-      <Text style={styles.label}>Disponibilidad</Text>
+      <Text style={styles.label}>{t.qcDisponibilidadLabel}</Text>
       <View style={styles.chipsRow}>
         {DISPONIBILIDAD_OPTS.map((o) => <Chip key={o} label={o} active={disponibilidad.includes(o)} onPress={() => toggle(disponibilidad, setDisponibilidad, o)} />)}
       </View>
 
-      <Text style={styles.label}>¿Cuántos perros podés cuidar a la vez?</Text>
+      <Text style={styles.label}>{t.qcCuantosPerrosLabel}</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {['1', '2', '3', '4+'].map((n) => (
           <TouchableOpacity key={n} style={[styles.optBtn, maxPerros === n && styles.optBtnActive]} onPress={() => setMaxPerros(n)}>
@@ -135,9 +133,9 @@ export default function QuieroCuidarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>¿Tenés perros en casa?</Text>
+      <Text style={styles.label}>{t.qcTienesPerrosLabel}</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {([['si', 'Sí'], ['no', 'No']] as const).map(([val, lbl]) => (
+        {([['si', t.bpfSi], ['no', t.bpfNo]] as const).map(([val, lbl]) => (
           <TouchableOpacity
             key={val}
             style={[styles.optBtn, { flex: 1 }, tienePerros === val && styles.optBtnActive]}
@@ -148,24 +146,24 @@ export default function QuieroCuidarScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>Información adicional (opcional)</Text>
+      <Text style={styles.label}>{t.qcInfoAdicionalLabel}</Text>
       <TextInput
         style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
         value={detalles} onChangeText={setDetalles} multiline
-        placeholder="Contá algo más: si tenés patio, si podés hacer pernocte, razas con las que te sentís cómodo/a…"
+        placeholder={t.qcInfoAdicionalPh}
         placeholderTextColor={Colors.inkMuted}
       />
 
-      <Text style={styles.label}>Zona / Barrio *</Text>
-      <TextInput style={styles.input} value={zona} onChangeText={setZona} placeholder="Ej: Palermo, Villa Crespo…" placeholderTextColor={Colors.inkMuted} />
+      <Text style={styles.label}>{t.qcZonaLabel}</Text>
+      <TextInput style={styles.input} value={zona} onChangeText={setZona} placeholder={t.qcZonaPh} placeholderTextColor={Colors.inkMuted} />
 
-      <Text style={styles.label}>WhatsApp de contacto *</Text>
-      <TextInput style={styles.input} value={contacto} onChangeText={setContacto} keyboardType="phone-pad" placeholder="Ej: 1122334455" placeholderTextColor={Colors.inkMuted} />
+      <Text style={styles.label}>{t.qcContactoLabel}</Text>
+      <TextInput style={styles.input} value={contacto} onChangeText={setContacto} keyboardType="phone-pad" placeholder={t.qcContactoPh} placeholderTextColor={Colors.inkMuted} />
 
       {!!error && <Text style={styles.error}>{error}</Text>}
 
       <TouchableOpacity style={[styles.submitBtn, enviando && { opacity: 0.6 }]} onPress={handleSubmit} disabled={enviando}>
-        {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>🤲 Registrarme como cuidador</Text>}
+        {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t.qcSubmitBtn}</Text>}
       </TouchableOpacity>
     </ScrollView>
   );

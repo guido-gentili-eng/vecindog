@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { getComercioReviews, calificarComercio, type ComercioReview, type ResumenReviews } from '@/lib/comercioReviews';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CATEGORIA_LABEL: Record<string, string> = {
   'Veterinaria': '🏥 Veterinaria', 'Pet Shop': '🛍️ Pet Shop', 'Peluquería Canina': '✂️ Peluquería Canina',
@@ -43,19 +44,20 @@ function Estrellas({ valor, size = 14 }: { valor: number; size?: number }) {
 }
 
 function ModalCalificar({ adId, inicial, onGuardado, onClose }: { adId: string; inicial: ComercioReview | null; onGuardado: () => void; onClose: () => void }) {
+  const { t } = useLanguage();
   const [estrellas, setEstrellas] = useState(inicial?.estrellas ?? 0);
   const [comentario, setComentario] = useState(inicial?.comentario ?? '');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSubmit() {
-    if (estrellas === 0) { setError('Seleccioná una puntuación.'); return; }
+    if (estrellas === 0) { setError(t.ratingErrSeleccionaPuntuacion); return; }
     setEnviando(true); setError('');
     try {
       await calificarComercio(adId, estrellas, comentario);
       onGuardado();
     } catch (e: any) {
-      setError(e?.message ?? 'Error al guardar. Intentá de nuevo.');
+      setError(e?.message ?? t.ratingErrGuardarDefault);
     } finally {
       setEnviando(false);
     }
@@ -65,7 +67,7 @@ function ModalCalificar({ adId, inicial, onGuardado, onClose }: { adId: string; 
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalSheet}>
-          <Text style={styles.modalTitle}>Calificar negocio</Text>
+          <Text style={styles.modalTitle}>{t.comercioCalificarTitle}</Text>
           <View style={{ flexDirection: 'row', gap: 6, marginVertical: 14, justifyContent: 'center' }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity key={n} onPress={() => setEstrellas(n)}>
@@ -76,13 +78,13 @@ function ModalCalificar({ adId, inicial, onGuardado, onClose }: { adId: string; 
           <TextInput
             style={[styles.input, { height: 70, textAlignVertical: 'top' }]}
             value={comentario} onChangeText={setComentario} multiline
-            placeholder="Contá tu experiencia (opcional)…" placeholderTextColor={Colors.inkMuted}
+            placeholder={t.comercioComentarioPh} placeholderTextColor={Colors.inkMuted}
           />
           {!!error && <Text style={styles.error}>{error}</Text>}
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelBtnText}>Cancelar</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelBtnText}>{t.perfilCancelar}</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.saveBtn, enviando && { opacity: 0.6 }]} onPress={handleSubmit} disabled={enviando}>
-              {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.saveBtnText}>Guardar</Text>}
+              {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.saveBtnText}>{t.genericGuardar}</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -92,6 +94,7 @@ function ModalCalificar({ adId, inicial, onGuardado, onClose }: { adId: string; 
 }
 
 export default function ComercioDetailScreen() {
+  const { t } = useLanguage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
   const [comercio, setComercio] = useState<Comercio | null>(null);
@@ -139,8 +142,8 @@ export default function ComercioDetailScreen() {
   if (!comercio) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <Text style={{ color: Colors.inkMuted }}>No se encontró este negocio.</Text>
-        <TouchableOpacity onPress={() => router.back()}><Text style={{ color: '#b45309', fontWeight: '700' }}>← Volver</Text></TouchableOpacity>
+        <Text style={{ color: Colors.inkMuted }}>{t.comercioNoEncontrado}</Text>
+        <TouchableOpacity onPress={() => router.back()}><Text style={{ color: '#b45309', fontWeight: '700' }}>{t.cuidadoVolver}</Text></TouchableOpacity>
       </View>
     );
   }
@@ -152,7 +155,7 @@ export default function ComercioDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 50 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       {comercio.imagen_url ? <Image source={{ uri: comercio.imagen_url }} style={styles.banner} /> : (
         <View style={[styles.banner, styles.bannerFallback]}><Text style={{ fontSize: 40 }}>🐾</Text></View>
@@ -175,10 +178,10 @@ export default function ComercioDetailScreen() {
         {!!comercio.telefono_comercio && (
           <>
             <TouchableOpacity style={styles.actionBtn} onPress={() => { track(id, 'click_telefono'); Linking.openURL(`tel:${comercio.telefono_comercio}`); }}>
-              <Text style={styles.actionBtnText}>📞 Llamar</Text>
+              <Text style={styles.actionBtnText}>{t.comercioLlamar}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#25D366' }]} onPress={() => { track(id, 'click_telefono'); Linking.openURL(`https://wa.me/549${waDigits}`); }}>
-              <Text style={styles.actionBtnText}>💬 WhatsApp</Text>
+              <Text style={styles.actionBtnText}>{t.comercioWhatsapp}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -189,14 +192,14 @@ export default function ComercioDetailScreen() {
         )}
         {!esFallback && (
           <TouchableOpacity style={styles.actionBtnOutline} onPress={() => { track(id, 'click_link'); Linking.openURL(comercio.href!); }}>
-            <Text style={styles.actionBtnOutlineText}>🔗 Visitar sitio / perfil</Text>
+            <Text style={styles.actionBtnOutlineText}>{t.comercioVisitarSitio}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {novedades.length > 0 && (
         <View style={{ marginTop: 24 }}>
-          <Text style={styles.sectionTitle}>📰 Novedades</Text>
+          <Text style={styles.sectionTitle}>{t.comercioNovedades}</Text>
           <View style={{ gap: 10, marginTop: 10 }}>
             {novedades.map((n) => (
               <View key={n.id} style={styles.novedadCard}>
@@ -211,10 +214,10 @@ export default function ComercioDetailScreen() {
       )}
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, marginBottom: 10 }}>
-        <Text style={styles.sectionTitle}>⭐ Reseñas {resumen && resumen.total > 0 ? `(${resumen.total})` : ''}</Text>
+        <Text style={styles.sectionTitle}>{t.comercioResenas} {resumen && resumen.total > 0 ? `(${resumen.total})` : ''}</Text>
         {isAuthenticated && (
           <TouchableOpacity style={styles.calificarBtn} onPress={() => setModalAbierto(true)}>
-            <Text style={styles.calificarBtnText}>{yaCalifico ? 'Editar' : 'Calificar'}</Text>
+            <Text style={styles.calificarBtnText}>{yaCalifico ? t.genericEditar : t.ratingCalificar}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -225,16 +228,16 @@ export default function ComercioDetailScreen() {
           <Text style={{ fontSize: 13, fontWeight: '800', color: Colors.ink }}>{resumen.promedio.toFixed(1)}</Text>
         </View>
       )}
-      {guardado && <Text style={styles.guardadoText}>✓ Reseña guardada</Text>}
+      {guardado && <Text style={styles.guardadoText}>{t.comercioGuardadoText}</Text>}
 
       {reviews.length === 0 ? (
-        <View style={styles.emptyBox}><Text style={styles.emptyText}>Todavía no tiene reseñas.</Text></View>
+        <View style={styles.emptyBox}><Text style={styles.emptyText}>{t.comercioSinResenas}</Text></View>
       ) : (
         <View style={{ gap: 10 }}>
           {reviews.map((r) => (
             <View key={r.id} style={styles.reviewCard}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.reviewNombre}>{[r.profiles?.nombre, r.profiles?.apellido].filter(Boolean).join(' ') || 'Usuario'}</Text>
+                <Text style={styles.reviewNombre}>{[r.profiles?.nombre, r.profiles?.apellido].filter(Boolean).join(' ') || t.amigosUsuarioFallback}</Text>
                 <Text style={styles.reviewDate}>{new Date(r.created_at).toLocaleDateString('es-AR')}</Text>
               </View>
               <Estrellas valor={r.estrellas} />

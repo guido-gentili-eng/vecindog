@@ -3,18 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } fr
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PostResuelto {
   id: string; nombre: string | null; categoria: string; images: string[] | null;
 }
 
-const EMOJI_CATEGORIA: Record<string, string> = {
-  perdido: '🏠 Volvió a casa',
-  encontrado: '🏠 Volvió a casa',
-  adopcion: '❤️ Fue adoptado',
-};
-
 export default function VolvieronACasa() {
+  const { t } = useLanguage();
+  const EMOJI_CATEGORIA: Record<string, string> = {
+    perdido: t.vacVolvioACasa,
+    encontrado: t.vacVolvioACasa,
+    adopcion: t.vacFueAdoptado,
+  };
   const [posts, setPosts] = useState<PostResuelto[]>([]);
   const [total, setTotal] = useState(0);
   const [cargando, setCargando] = useState(true);
@@ -35,9 +36,9 @@ export default function VolvieronACasa() {
     <View style={styles.section}>
       <View style={styles.headerRow}>
         <View style={{ flex: 1 }}>
-          <View style={styles.pill}><Text style={styles.pillText}>❤️ Historias reales</Text></View>
-          <Text style={styles.title}>Volvieron a casa 🏠</Text>
-          <Text style={styles.sub}>Gracias a la comunidad, estos perros reencontraron a su familia.</Text>
+          <View style={styles.pill}><Text style={styles.pillText}>{t.vacHistoriasReales}</Text></View>
+          <Text style={styles.title}>{t.vacTitle}</Text>
+          <Text style={styles.sub}>{t.vacSub}</Text>
         </View>
       </View>
 
@@ -53,8 +54,8 @@ export default function VolvieronACasa() {
                 <View style={[styles.thumb, { alignItems: 'center', justifyContent: 'center' }]}><Text>🖼️</Text></View>
               )}
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={styles.nombre} numberOfLines={1}>{post.nombre ?? 'Sin nombre'}</Text>
-                <Text style={styles.categoria}>{EMOJI_CATEGORIA[post.categoria] ?? '🏠 Reencontrado'}</Text>
+                <Text style={styles.nombre} numberOfLines={1}>{post.nombre ?? t.homeSinNombre}</Text>
+                <Text style={styles.categoria}>{EMOJI_CATEGORIA[post.categoria] ?? t.vacReencontrado}</Text>
               </View>
               <Text style={{ fontSize: 15 }}>❤️</Text>
             </TouchableOpacity>
@@ -63,12 +64,12 @@ export default function VolvieronACasa() {
       )}
 
       <TouchableOpacity onPress={() => router.push('/(tabs)/avisos?resueltos=1' as any)}>
-        <Text style={styles.verTodos}>Ver todos →</Text>
+        <Text style={styles.verTodos}>{t.vacVerTodos}</Text>
       </TouchableOpacity>
 
       {!cargando && total >= 10 && (
         <Text style={styles.counter}>
-          🐾 <Text style={styles.counterBold}>{total} perro{total !== 1 ? 's' : ''}</Text> reencontrado{total !== 1 ? 's' : ''} con la ayuda de Vecindog.
+          🐾 <Text style={styles.counterBold}>{total} {total !== 1 ? t.vacCounterPerroPlural : t.vacCounterPerroSingular}</Text> {total !== 1 ? t.vacCounterReencontradoPlural : t.vacCounterReencontradoSingular} {t.vacCounterSuffix}
         </Text>
       )}
     </View>

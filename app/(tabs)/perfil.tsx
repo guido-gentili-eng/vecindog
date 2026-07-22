@@ -11,10 +11,13 @@ import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { subirArchivoEstudio } from '@/lib/estudios';
 import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 type PerroSOS = { id: string; nombre: string; raza: string | null; color: string | null; foto_url: string | null };
 
 export default function PerfilScreen() {
+  const { t } = useLanguage();
   const { user, profile, isPro, isGuest, exitGuest, signOut, saveProfile } = useAuth();
   const [editando,   setEditando]   = useState(false);
   const [saving,     setSaving]     = useState(false);
@@ -69,7 +72,7 @@ export default function PerfilScreen() {
 
   async function cambiarAvatar() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería'); return; }
+    if (status !== 'granted') { Alert.alert(t.perfilPermisoDenegadoTitle, t.perfilPermisoDenegadoSub); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
     if (result.canceled) return;
     setSubiendoAvatar(true);
@@ -86,9 +89,9 @@ export default function PerfilScreen() {
         direccion: profile?.direccion ?? '',
         foto_url:  url,
       });
-      if (err) Alert.alert('Error', err);
+      if (err) Alert.alert(t.perfilErrorGeneric, err);
     } catch {
-      Alert.alert('Error', 'No se pudo actualizar la foto. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.perfilErrorFotoSub);
     } finally {
       setSubiendoAvatar(false);
     }
@@ -96,21 +99,21 @@ export default function PerfilScreen() {
 
   async function guardar() {
     if (!nombre.trim() || !apellido.trim()) {
-      Alert.alert('Campos requeridos', 'Ingresá nombre y apellido');
+      Alert.alert(t.perfilCamposRequeridosTitle, t.perfilCamposRequeridosSub);
       return;
     }
     setSaving(true);
     const err = await saveProfile({ nombre, apellido, telefono, ciudad, provincia, pais, direccion, foto_url: profile?.foto_url ?? null });
     setSaving(false);
-    if (err) { Alert.alert('Error', err); return; }
+    if (err) { Alert.alert(t.perfilErrorGeneric, err); return; }
     setEditando(false);
-    Alert.alert('✅ Guardado', 'Tu perfil fue actualizado.');
+    Alert.alert(t.perfilGuardadoTitle, t.perfilGuardadoSub);
   }
 
   async function handleSignOut() {
-    Alert.alert('Cerrar sesión', '¿Estás seguro?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => signOut() },
+    Alert.alert(t.perfilCerrarSesion, t.perfilCerrarSesionConfirm, [
+      { text: t.perfilCancelar, style: 'cancel' },
+      { text: t.perfilCerrarSesionSalir, style: 'destructive', onPress: () => signOut() },
     ]);
   }
 
@@ -123,12 +126,12 @@ export default function PerfilScreen() {
     return (
       <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', padding: 32 }]}>
         <Text style={{ fontSize: 56, marginBottom: 12 }}>🐾</Text>
-        <Text style={styles.emptyPromptTitle}>Estás navegando como invitado</Text>
+        <Text style={styles.emptyPromptTitle}>{t.perfilGuestTitle}</Text>
         <Text style={[styles.emptyPromptSub, { marginTop: 8, marginBottom: 20 }]}>
-          Creá una cuenta gratis para publicar avisos, contactar vecinos y guardar tus perros.
+          {t.perfilGuestSub}
         </Text>
         <TouchableOpacity style={styles.emptyPromptBtn} onPress={handleCrearCuenta}>
-          <Text style={styles.emptyPromptBtnText}>Crear cuenta gratis →</Text>
+          <Text style={styles.emptyPromptBtnText}>{t.perfilGuestBtn}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -159,32 +162,32 @@ export default function PerfilScreen() {
       {/* Datos personales */}
       <View style={styles.card}>
         <View style={styles.cardHeaderRow}>
-          <Text style={styles.cardTitle}>Datos personales</Text>
+          <Text style={styles.cardTitle}>{t.perfilDatosPersonales}</Text>
           {!editando ? (
             <TouchableOpacity onPress={iniciarEdicion}>
-              <Text style={styles.editLink}>✏️ Editar</Text>
+              <Text style={styles.editLink}>{t.perfilEditar}</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={() => setEditando(false)}>
-              <Text style={[styles.editLink, { color: Colors.bad }]}>Cancelar</Text>
+              <Text style={[styles.editLink, { color: Colors.bad }]}>{t.perfilCancelar}</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {editando ? (
           <View style={styles.form}>
-            <Field label="Nombre *"    value={nombre}    onChange={setNombre}    placeholder="Nombre" />
-            <Field label="Apellido *"  value={apellido}  onChange={setApellido}  placeholder="Apellido" />
-            <Field label="Teléfono"    value={telefono}  onChange={setTelefono}  placeholder="+54 9 291..." keyboardType="phone-pad" />
+            <Field label={t.perfilFieldNombre}    value={nombre}    onChange={setNombre}    placeholder={t.perfilRowNombre} />
+            <Field label={t.perfilFieldApellido}  value={apellido}  onChange={setApellido}  placeholder={t.perfilFieldApellido.replace(' *', '')} />
+            <Field label={t.perfilFieldTelefono}    value={telefono}  onChange={setTelefono}  placeholder={t.perfilFieldTelefonoPh} keyboardType="phone-pad" />
 
             <View style={{ marginBottom: 10 }}>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: Colors.inkMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ciudad</Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: Colors.inkMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t.perfilFieldCiudad}</Text>
               <TextInput
                 style={{ backgroundColor: Colors.bg, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.ink, borderWidth: 1, borderColor: Colors.border }}
                 value={ciudad}
                 onChangeText={handleCiudadChange}
                 onFocus={() => handleCiudadChange(ciudad)}
-                placeholder="Bahía Blanca"
+                placeholder={t.perfilFieldCiudadPh}
                 placeholderTextColor={Colors.inkMuted}
               />
               {mostrarCiudadSug && ciudadSugerencias.length > 0 && (
@@ -199,9 +202,9 @@ export default function PerfilScreen() {
               )}
             </View>
 
-            <Field label="Provincia"   value={provincia} onChange={setProvincia} placeholder="Buenos Aires" />
-            <Field label="País"        value={pais}      onChange={setPais}      placeholder="Argentina" />
-            <Field label="Dirección"   value={direccion} onChange={setDireccion} placeholder="Calle 123" />
+            <Field label={t.perfilFieldProvincia}   value={provincia} onChange={setProvincia} placeholder={t.perfilFieldProvinciaPh} />
+            <Field label={t.perfilFieldPais}        value={pais}      onChange={setPais}      placeholder={t.perfilFieldPaisPh} />
+            <Field label={t.perfilFieldDireccion}   value={direccion} onChange={setDireccion} placeholder={t.perfilFieldDireccionPh} />
 
             <TouchableOpacity
               style={[styles.saveBtn, saving && { opacity: 0.6 }]}
@@ -210,7 +213,7 @@ export default function PerfilScreen() {
             >
               {saving
                 ? <ActivityIndicator color={Colors.white} />
-                : <Text style={styles.saveBtnText}>Guardar cambios</Text>
+                : <Text style={styles.saveBtnText}>{t.perfilGuardarCambios}</Text>
               }
             </TouchableOpacity>
           </View>
@@ -218,23 +221,23 @@ export default function PerfilScreen() {
           /* Perfil vacío — prompt de completado */
           <View style={styles.emptyPrompt}>
             <Text style={styles.emptyPromptEmoji}>👋</Text>
-            <Text style={styles.emptyPromptTitle}>Completá tu perfil</Text>
+            <Text style={styles.emptyPromptTitle}>{t.perfilCompletarTitle}</Text>
             <Text style={styles.emptyPromptSub}>
-              Agregá tu nombre y teléfono para que los vecinos puedan contactarte cuando encontrés o perdás una mascota.
+              {t.perfilCompletarSub}
             </Text>
             <TouchableOpacity style={styles.emptyPromptBtn} onPress={iniciarEdicion}>
-              <Text style={styles.emptyPromptBtnText}>Completar ahora →</Text>
+              <Text style={styles.emptyPromptBtnText}>{t.perfilCompletarBtn}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             {[
-              ['Nombre',    `${profile.nombre} ${profile.apellido}`],
-              ['Teléfono',  profile.telefono  || '—'],
-              ['Ciudad',    profile.ciudad    || '—'],
-              ['Provincia', profile.provincia || '—'],
-              ['País',      profile.pais      || '—'],
-              ['Dirección', profile.direccion || '—'],
+              [t.perfilRowNombre,    `${profile.nombre} ${profile.apellido}`],
+              [t.perfilRowTelefono,  profile.telefono  || '—'],
+              [t.perfilRowCiudad,    profile.ciudad    || '—'],
+              [t.perfilRowProvincia, profile.provincia || '—'],
+              [t.perfilRowPais,      profile.pais      || '—'],
+              [t.perfilRowDireccion, profile.direccion || '—'],
             ].map(([label, value]) => (
               <View key={label} style={styles.row}>
                 <Text style={styles.rowLabel}>{label}</Text>
@@ -250,8 +253,8 @@ export default function PerfilScreen() {
         <TouchableOpacity style={styles.sosBtn} onPress={() => setSosOpen(true)}>
           <View style={styles.sosIcon}><Text style={{ fontSize: 22 }}>🚨</Text></View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.sosTitle}>SOS: se me perdió mi perro</Text>
-            <Text style={styles.sosSub}>Avisá a todos tus amigos de una sola vez</Text>
+            <Text style={styles.sosTitle}>{t.perfilSosTitle}</Text>
+            <Text style={styles.sosSub}>{t.perfilSosSub}</Text>
           </View>
           <Text style={{ fontSize: 18, color: Colors.white, opacity: 0.7 }}>›</Text>
         </TouchableOpacity>
@@ -259,8 +262,8 @@ export default function PerfilScreen() {
         <TouchableOpacity style={styles.sosBtnLocked} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
           <Text style={{ fontSize: 22 }}>🔒</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.sosTitleLocked}>SOS: se me perdió mi perro</Text>
-            <Text style={styles.sosSubLocked}>Función de VecindogPro</Text>
+            <Text style={styles.sosTitleLocked}>{t.perfilSosTitle}</Text>
+            <Text style={styles.sosSubLocked}>{t.perfilSosSubLocked}</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -276,44 +279,52 @@ export default function PerfilScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Vecindog</Text>
         <MenuItem
-          label="🗺️  Ver mis avisos publicados"
+          label={t.perfilLinkMisAvisos}
           onPress={() => router.push('/(tabs)/avisos')}
         />
         <MenuItem
-          label="🏪  Mi red Vecindog"
+          label={t.perfilLinkRedVecindog}
           onPress={() => router.push('/red-vecindog' as any)}
         />
         <MenuItem
-          label="📣  Publicitate"
+          label={t.perfilLinkPublicitate}
           onPress={() => router.push('/publicitate' as any)}
         />
         {user?.email === process.env.EXPO_PUBLIC_ADMIN_EMAIL && (
           <MenuItem
-            label="🛡️  Panel de reportes"
+            label={t.perfilLinkAdmin}
             onPress={() => router.push('/admin/reportes')}
           />
         )}
         <MenuItem
-          label="🌐  Abrir versión web"
+          label={t.perfilLinkWeb}
           onPress={() => Linking.openURL('https://www.mivecindog.com.ar')}
         />
         <MenuItem
-          label="📄  Términos y Condiciones"
+          label={t.perfilLinkTerminos}
           onPress={() => Linking.openURL('https://www.mivecindog.com.ar/terminos')}
         />
         <MenuItem
-          label="🔒  Política de Privacidad"
+          label={t.perfilLinkPrivacidad}
           onPress={() => Linking.openURL('https://www.mivecindog.com.ar/privacidad')}
           last
         />
       </View>
 
+      {/* Idioma */}
+      <View style={styles.card}>
+        <View style={styles.cardHeaderRow}>
+          <Text style={styles.cardTitle}>{t.perfilIdioma}</Text>
+        </View>
+        <LanguageSwitcher />
+      </View>
+
       {/* Cerrar sesión */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOut}>
-        <Text style={styles.logoutText}>Cerrar sesión</Text>
+        <Text style={styles.logoutText}>{t.perfilCerrarSesion}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>Vecindog v1.0.0 · mivecindog.com.ar</Text>
+      <Text style={styles.version}>{t.perfilVersion}</Text>
     </ScrollView>
   );
 }
@@ -340,6 +351,7 @@ function Field({ label, value, onChange, placeholder, keyboardType }: {
 }
 
 function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void }) {
+  const { t } = useLanguage();
   const [perroSel, setPerroSel] = useState<string>(perros[0]?.id ?? '');
   const [enviando, setEnviando] = useState(false);
   const [enviado,  setEnviado]  = useState(false);
@@ -366,7 +378,7 @@ function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void
       setAmigosCount(json.amigos ?? 0);
       setEnviado(true);
     } catch {
-      setErrorSos('No se pudo enviar la alerta. Intentá de nuevo.');
+      setErrorSos(t.perfilModalErrorEnvio);
     } finally {
       setEnviando(false);
     }
@@ -378,8 +390,8 @@ function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void
         <View style={styles.modalSheet}>
           <View style={styles.modalHeader}>
             <View>
-              <Text style={styles.modalTitle}>🚨 Alerta SOS</Text>
-              <Text style={styles.modalSub}>Se notifica a todos tus amigos con un mensaje y un email</Text>
+              <Text style={styles.modalTitle}>{t.perfilModalSosTitle}</Text>
+              <Text style={styles.modalSub}>{t.perfilModalSosSub}</Text>
             </View>
             <TouchableOpacity onPress={onClose}><Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text></TouchableOpacity>
           </View>
@@ -388,11 +400,11 @@ function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void
             <>
               {perros.length === 0 ? (
                 <Text style={styles.modalEmpty}>
-                  Todavía no tenés perros registrados. Registrá uno para poder usar el SOS.
+                  {t.perfilModalSinPerros}
                 </Text>
               ) : (
                 <View style={{ gap: 8, marginBottom: 16 }}>
-                  <Text style={styles.modalLabel}>¿Cuál se perdió?</Text>
+                  <Text style={styles.modalLabel}>{t.perfilModalCualSePerdio}</Text>
                   {perros.map((p) => (
                     <TouchableOpacity
                       key={p.id}
@@ -405,7 +417,7 @@ function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void
                       }
                       <View style={{ flex: 1 }}>
                         <Text style={styles.perroOptNombre}>{p.nombre}</Text>
-                        <Text style={styles.perroOptSub}>{[p.raza, p.color].filter(Boolean).join(' · ') || 'Sin descripción'}</Text>
+                        <Text style={styles.perroOptSub}>{[p.raza, p.color].filter(Boolean).join(' · ') || t.perfilSinDescripcion}</Text>
                       </View>
                       {perroSel === p.id && <Text style={{ color: Colors.bad, fontSize: 16 }}>✓</Text>}
                     </TouchableOpacity>
@@ -423,28 +435,28 @@ function SOSModal({ perros, onClose }: { perros: PerroSOS[]; onClose: () => void
                 >
                   {enviando
                     ? <ActivityIndicator color={Colors.white} />
-                    : <Text style={styles.sosSendBtnText}>🚨 Alertar a mis amigos</Text>}
+                    : <Text style={styles.sosSendBtnText}>{t.perfilModalAlertarBtn}</Text>}
                 </TouchableOpacity>
               )}
               <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
-                <Text style={styles.modalCancelBtnText}>Cerrar</Text>
+                <Text style={styles.modalCancelBtnText}>{t.perfilModalCerrar}</Text>
               </TouchableOpacity>
             </>
           ) : (
             <View style={{ alignItems: 'center', gap: 8, paddingVertical: 12 }}>
               <Text style={{ fontSize: 40 }}>✅</Text>
-              <Text style={styles.modalTitle}>¡Alerta enviada!</Text>
+              <Text style={styles.modalTitle}>{t.perfilModalEnviadaTitle}</Text>
               {amigosCount !== null && amigosCount > 0 ? (
                 <Text style={styles.modalSub}>
-                  Avisamos a {amigosCount} amigo{amigosCount !== 1 ? 's' : ''} tuyo{amigosCount !== 1 ? 's' : ''} por notificación y email.
+                  {t.perfilModalAvisamosPrefix} {amigosCount} {amigosCount !== 1 ? t.perfilModalAmigoPlural : t.perfilModalAmigoSingular} {t.perfilModalAvisamosSuffix}
                 </Text>
               ) : (
                 <Text style={styles.modalSub}>
-                  Todavía no tenés amigos agregados en Vecindog — sumá vecinos desde "Mis perros" &gt; Amigos para que el SOS les llegue.
+                  {t.perfilModalSinAmigos}
                 </Text>
               )}
               <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
-                <Text style={styles.modalCancelBtnText}>Listo</Text>
+                <Text style={styles.modalCancelBtnText}>{t.perfilModalListo}</Text>
               </TouchableOpacity>
             </View>
           )}

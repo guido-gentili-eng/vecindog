@@ -7,8 +7,10 @@ import { router } from 'expo-router';
 import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolean; onResolver: () => void }) {
+  const { t } = useLanguage();
   const esCuidador = p.categoria === 'cuidador_disponible';
   const foto = p.images?.[0];
 
@@ -22,11 +24,11 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
       <View style={{ flex: 1, minWidth: 0 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 6 }}>
           <Text style={styles.cardNombre} numberOfLines={1}>
-            {p.nombre ?? (esCuidador ? 'Cuidador' : 'Busca cuidador')}
+            {p.nombre ?? (esCuidador ? t.cuidadoCuidadorFallback : t.cuidadoBuscaCuidadorFallback)}
           </Text>
           {mio && (
             <TouchableOpacity style={styles.deactivateBtn} onPress={onResolver}>
-              <Text style={styles.deactivateBtnText}>Desactivar</Text>
+              <Text style={styles.deactivateBtnText}>{t.cuidadoDesactivar}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -37,7 +39,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
         </View>
         {esCuidador && (
           <TouchableOpacity onPress={() => router.push(`/cuidado/cuidador/${p.id}` as any)}>
-            <Text style={styles.verPerfil}>⭐ Ver perfil</Text>
+            <Text style={styles.verPerfil}>{t.cuidadoVerPerfil}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -54,6 +56,7 @@ function PostCuidadoCard({ post: p, mio, onResolver }: { post: Post; mio: boolea
 }
 
 export default function CuidadoScreen() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [buscadores, setBuscadores] = useState<Post[]>([]);
   const [cuidadores, setCuidadores] = useState<Post[]>([]);
@@ -76,15 +79,15 @@ export default function CuidadoScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 40 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 20 }}>
-        <View style={styles.chip}><Text style={styles.chipText}>🤝 Comunidad</Text></View>
-        <Text style={styles.title}>Cuidado de perros</Text>
-        <Text style={styles.sub}>Vecinos que se ayudan a cuidar sus perros.</Text>
+        <View style={styles.chip}><Text style={styles.chipText}>{t.cuidadoComunidad}</Text></View>
+        <Text style={styles.title}>{t.cuidadoTitle}</Text>
+        <Text style={styles.sub}>{t.cuidadoSub}</Text>
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.
+            {t.cuidadoWarning}
           </Text>
         </View>
       </View>
@@ -93,17 +96,17 @@ export default function CuidadoScreen() {
       <TouchableOpacity style={[styles.ctaBanner, { backgroundColor: '#0d9488' }]} onPress={() => router.push('/cuidado/busco-cuidador' as any)}>
         <Text style={{ fontSize: 24 }}>🔍</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.ctaTitle}>Busco cuidador</Text>
-          <Text style={styles.ctaSub}>Publicá un pedido para que alguien cuide a tu perro</Text>
+          <Text style={styles.ctaTitle}>{t.cuidadoBuscoTitle}</Text>
+          <Text style={styles.ctaSub}>{t.cuidadoBuscoSub}</Text>
         </View>
         <Text style={styles.ctaArrow}>›</Text>
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>🔍 Buscando cuidador {buscadores.length > 0 && `(${buscadores.length})`}</Text>
+      <Text style={styles.sectionTitle}>{t.cuidadoBuscandoSection} {buscadores.length > 0 && `(${buscadores.length})`}</Text>
       {cargando ? (
         <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} />
       ) : buscadores.length === 0 ? (
-        <View style={styles.emptyBox}><Text style={styles.emptyText}>Todavía no hay pedidos de cuidado.</Text></View>
+        <View style={styles.emptyBox}><Text style={styles.emptyText}>{t.cuidadoEmptyBusco}</Text></View>
       ) : (
         <View style={{ gap: 10, marginBottom: 8 }}>
           {buscadores.map((p) => (
@@ -116,17 +119,17 @@ export default function CuidadoScreen() {
       <TouchableOpacity style={[styles.ctaBanner, { backgroundColor: '#115e59', marginTop: 20 }]} onPress={() => router.push('/cuidado/quiero-cuidar' as any)}>
         <Text style={{ fontSize: 24 }}>🙋</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.ctaTitle}>Quiero cuidar</Text>
-          <Text style={styles.ctaSub}>Registrate como cuidador de tu zona</Text>
+          <Text style={styles.ctaTitle}>{t.cuidadoQuieroTitle}</Text>
+          <Text style={styles.ctaSub}>{t.cuidadoQuieroSub}</Text>
         </View>
         <Text style={styles.ctaArrow}>›</Text>
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>🙋 Cuidadores disponibles {cuidadores.length > 0 && `(${cuidadores.length})`}</Text>
+      <Text style={styles.sectionTitle}>{t.cuidadoDisponiblesSection} {cuidadores.length > 0 && `(${cuidadores.length})`}</Text>
       {cargando ? (
         <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} />
       ) : cuidadores.length === 0 ? (
-        <View style={styles.emptyBox}><Text style={styles.emptyText}>Todavía no hay cuidadores registrados.</Text></View>
+        <View style={styles.emptyBox}><Text style={styles.emptyText}>{t.cuidadoEmptyCuidadores}</Text></View>
       ) : (
         <View style={{ gap: 10 }}>
           {cuidadores.map((p) => (

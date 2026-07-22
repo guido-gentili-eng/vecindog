@@ -6,8 +6,10 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ResetPasswordScreen() {
+  const { t } = useLanguage();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -15,14 +17,14 @@ export default function ResetPasswordScreen() {
   const [listo, setListo] = useState(false);
 
   async function handleSubmit() {
-    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
-    if (password !== confirm) { setError('Las contraseñas no coinciden.'); return; }
+    if (password.length < 6) { setError(t.resetErrPasswordCorta); return; }
+    if (password !== confirm) { setError(t.resetErrPasswordMismatch); return; }
     setEnviando(true);
     setError('');
     const { error: err } = await supabase.auth.updateUser({ password });
     setEnviando(false);
     if (err) {
-      setError(err.message.includes('session') ? 'El link de recuperación es inválido o expiró. Pedí uno nuevo.' : err.message);
+      setError(err.message.includes('session') ? t.resetErrLinkInvalido : err.message);
       return;
     }
     setListo(true);
@@ -32,10 +34,10 @@ export default function ResetPasswordScreen() {
     return (
       <View style={styles.centerScreen}>
         <Text style={{ fontSize: 48 }}>✅</Text>
-        <Text style={styles.title}>¡Contraseña actualizada!</Text>
-        <Text style={styles.sub}>Ya podés seguir usando la app con tu nueva contraseña.</Text>
+        <Text style={styles.title}>{t.resetListoTitle}</Text>
+        <Text style={styles.sub}>{t.resetListoSub}</Text>
         <TouchableOpacity style={styles.submitBtn} onPress={() => router.replace('/(tabs)')}>
-          <Text style={styles.submitBtnText}>Continuar</Text>
+          <Text style={styles.submitBtnText}>{t.resetContinuar}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -44,15 +46,15 @@ export default function ResetPasswordScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={{ padding: 24, paddingTop: 40 }}>
-        <Text style={styles.title}>Nueva contraseña</Text>
-        <Text style={styles.sub}>Ingresá tu nueva contraseña para continuar.</Text>
+        <Text style={styles.title}>{t.resetTitle}</Text>
+        <Text style={styles.sub}>{t.resetSub}</Text>
 
         <TextInput
           style={styles.input}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          placeholder="Nueva contraseña (mín. 6 caracteres)"
+          placeholder={t.resetPasswordPh}
           placeholderTextColor={Colors.inkMuted}
         />
         <TextInput
@@ -60,14 +62,14 @@ export default function ResetPasswordScreen() {
           value={confirm}
           onChangeText={setConfirm}
           secureTextEntry
-          placeholder="Confirmar contraseña"
+          placeholder={t.resetConfirmPh}
           placeholderTextColor={Colors.inkMuted}
         />
 
         {!!error && <Text style={styles.error}>{error}</Text>}
 
         <TouchableOpacity style={[styles.submitBtn, enviando && { opacity: 0.6 }]} onPress={handleSubmit} disabled={enviando}>
-          {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>Guardar contraseña</Text>}
+          {enviando ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t.resetGuardarBtn}</Text>}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

@@ -11,24 +11,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
 import { CATEGORIAS_RED_VECINDOG as CATEGORIAS } from '@/lib/redVecindogCategorias';
 import { Colors } from '@/constants/colors';
-
-const BENEFICIOS = [
-  ['📍', 'En el mapa', 'Tu negocio aparece directamente donde los vecinos buscan perros perdidos.'],
-  ['📞', 'Teléfono visible', 'Los usuarios ven tu número con un toque desde el mapa.'],
-  ['🕐', 'Horario de atención', 'Informá tus días y horarios para que lleguen cuando abrís.'],
-  ['📌', 'Dirección exacta', 'Tu dirección y localidad visibles para toda la comunidad.'],
-];
-
-const BENEFITS_LIST = [
-  'Aparecés en el mapa donde los vecinos buscan perros',
-  'Teléfono, dirección y horario siempre visibles',
-  'Clasificado en tu rubro (vet, petshop, peluquería…)',
-  'Audiencia 100% dueños de mascotas activos',
-  'Sin bots — usuarios reales de tu zona',
-  'Activación en menos de 24 horas',
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function RedVecindogScreen() {
+  const { t } = useLanguage();
+  const BENEFICIOS = [
+    ['📍', t.rvBenef1Titulo, t.rvBenef1Desc],
+    ['📞', t.rvBenef2Titulo, t.rvBenef2Desc],
+    ['🕐', t.rvBenef3Titulo, t.rvBenef3Desc],
+    ['📌', t.rvBenef4Titulo, t.rvBenef4Desc],
+  ];
+  const BENEFITS_LIST = [t.rvList1, t.rvList2, t.rvList3, t.rvList4, t.rvList5, t.rvList6];
   const [precioInfo, setPrecioInfo] = useState({ esPromo: true, precioRegular: 12900 });
   const [modalAbierto, setModalAbierto] = useState(false);
 
@@ -41,18 +34,18 @@ export default function RedVecindogScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 50 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
         <View style={styles.chip}>
           <Text style={styles.chipText}>
-            {precioInfo.esPromo ? '⭐ Promo · 3 meses gratis' : `⭐ Red · $${precioInfo.precioRegular?.toLocaleString('es-AR')} ARS/mes`}
+            {precioInfo.esPromo ? t.rvChipPromo : `${t.rvChipRegularPrefix}${precioInfo.precioRegular?.toLocaleString('es-AR')} ${t.rvChipRegularSuffix}`}
           </Text>
         </View>
-        <Text style={styles.title}>Red Vecindog</Text>
-        <Text style={styles.sub}>Sumá tu negocio y aparecé en el mapa donde los vecinos buscan a sus perros — con tu teléfono, horario y dirección siempre visibles.</Text>
+        <Text style={styles.title}>{t.rvTitle}</Text>
+        <Text style={styles.sub}>{t.rvSub}</Text>
         <TouchableOpacity style={styles.ctaBtn} onPress={() => setModalAbierto(true)}>
-          <Text style={styles.ctaBtnText}>🏢 Registrar mi negocio</Text>
+          <Text style={styles.ctaBtnText}>{t.rvCtaBtn}</Text>
         </TouchableOpacity>
       </View>
 
@@ -66,7 +59,7 @@ export default function RedVecindogScreen() {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Elegí tu rubro</Text>
+      <Text style={styles.sectionTitle}>{t.rvElegiRubro}</Text>
       <View style={{ gap: 10, marginBottom: 24 }}>
         {CATEGORIAS.map((c) => (
           <TouchableOpacity key={c.url} style={styles.catCard} onPress={() => router.push(`/red-vecindog/${c.url}` as any)}>
@@ -83,14 +76,14 @@ export default function RedVecindogScreen() {
       {precioInfo.esPromo && (
         <View style={styles.promoBanner}>
           <Text style={{ fontSize: 26 }}>🎉</Text>
-          <Text style={styles.promoTitle}>Primeros 3 meses gratis</Text>
-          <Text style={styles.promoDesc}>Registrá tu negocio ahora y no pagás nada hasta el 4to mes.</Text>
+          <Text style={styles.promoTitle}>{t.rvPromoTitulo}</Text>
+          <Text style={styles.promoDesc}>{t.rvPromoDesc}</Text>
         </View>
       )}
 
       <View style={styles.pricingCard}>
-        <Text style={styles.pricingTitle}>Una sola tarifa, sin sorpresas</Text>
-        <Text style={styles.pricingPrice}>${precioInfo.precioRegular?.toLocaleString('es-AR')}<Text style={styles.pricingPer}> / mes desde el 4to mes</Text></Text>
+        <Text style={styles.pricingTitle}>{t.rvPricingTitulo}</Text>
+        <Text style={styles.pricingPrice}>${precioInfo.precioRegular?.toLocaleString('es-AR')}<Text style={styles.pricingPer}> {t.rvPricingPerSuffix}</Text></Text>
         <View style={{ gap: 8, marginTop: 14 }}>
           {BENEFITS_LIST.map((b) => (
             <View key={b} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
@@ -100,16 +93,16 @@ export default function RedVecindogScreen() {
           ))}
         </View>
         <TouchableOpacity style={styles.pricingBtn} onPress={() => setModalAbierto(true)}>
-          <Text style={styles.pricingBtnText}>Unirme a la red →</Text>
+          <Text style={styles.pricingBtnText}>{t.rvUnirmeBtn}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.finalCta}>
         <Text style={{ fontSize: 32 }}>🏢</Text>
-        <Text style={styles.finalCtaTitle}>¿Listo para sumarte?</Text>
-        <Text style={styles.finalCtaSub}>Completá el formulario y tu negocio aparece en el mapa en menos de 24 horas.</Text>
+        <Text style={styles.finalCtaTitle}>{t.rvFinalTitulo}</Text>
+        <Text style={styles.finalCtaSub}>{t.rvFinalSub}</Text>
         <TouchableOpacity style={styles.ctaBtn} onPress={() => setModalAbierto(true)}>
-          <Text style={styles.ctaBtnText}>🏢 Registrar mi negocio</Text>
+          <Text style={styles.ctaBtnText}>{t.rvCtaBtn}</Text>
         </TouchableOpacity>
       </View>
 
@@ -119,6 +112,7 @@ export default function RedVecindogScreen() {
 }
 
 function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInfo: { esPromo: boolean; precioRegular: number } }) {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
@@ -157,19 +151,19 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
   }
 
   async function handleSubmit() {
-    if (!nombre.trim()) { setError('Ingresá el nombre del negocio.'); return; }
-    if (!categoria) { setError('Seleccioná una categoría.'); return; }
-    if (!localidad.trim()) { setError('Ingresá tu ciudad.'); return; }
-    if (!telefono.trim()) { setError('Ingresá un teléfono de contacto.'); return; }
-    if (!direccion.trim()) { setError('Ingresá la dirección del negocio.'); return; }
-    if (!email.trim()) { setError('Ingresá tu email.'); return; }
-    if (telefono.replace(/\D/g, '').length < 10) { setError('El teléfono debe tener al menos 10 dígitos.'); return; }
-    if (!user) { setError('Tenés que iniciar sesión para registrar tu negocio.'); return; }
+    if (!nombre.trim()) { setError(t.rvErrNombreNegocio); return; }
+    if (!categoria) { setError(t.rvErrCategoria); return; }
+    if (!localidad.trim()) { setError(t.rvErrCiudad); return; }
+    if (!telefono.trim()) { setError(t.rvErrTelefono); return; }
+    if (!direccion.trim()) { setError(t.rvErrDireccion); return; }
+    if (!email.trim()) { setError(t.rvErrEmail); return; }
+    if (telefono.replace(/\D/g, '').length < 10) { setError(t.rvErrTelefonoDigits); return; }
+    if (!user) { setError(t.rvErrLogin); return; }
 
     setLoading(true); setError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setError('Sesión expirada. Volvé a iniciar sesión.'); setLoading(false); return; }
+      if (!session) { setError(t.rvErrSesionExpirada); setLoading(false); return; }
 
       let imagen_url = '';
       if (fotoUri) imagen_url = await subirImagenAd(fotoUri);
@@ -188,10 +182,10 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
       if (res.ok && data.ok) {
         setEnviado(true);
       } else {
-        setError(data.error ?? 'No se pudo procesar el registro.');
+        setError(data.error ?? t.rvErrProcesar);
       }
     } catch {
-      setError('Error de conexión. Intentá de nuevo.');
+      setError(t.rvErrConexion);
     } finally {
       setLoading(false);
     }
@@ -203,9 +197,9 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
         <ScrollView style={styles.modalSheet} contentContainerStyle={{ padding: 20 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.modalTitle}>Registrar mi negocio</Text>
+              <Text style={styles.modalTitle}>{t.rvModalTitulo}</Text>
               <Text style={styles.modalSub}>
-                {precioInfo.esPromo ? '🎁 3 meses gratis' : `$${precioInfo.precioRegular?.toLocaleString('es-AR')}/mes`}
+                {precioInfo.esPromo ? t.rvModalSubPromo : `$${precioInfo.precioRegular?.toLocaleString('es-AR')}/mes`}
               </Text>
             </View>
             <TouchableOpacity onPress={onClose}><Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text></TouchableOpacity>
@@ -214,9 +208,9 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
           {enviado ? (
             <View style={{ alignItems: 'center', gap: 8, paddingVertical: 20 }}>
               <Text style={{ fontSize: 48 }}>✅</Text>
-              <Text style={styles.modalTitle}>¡Negocio registrado!</Text>
-              <Text style={styles.modalSub}>Ya aparece en la Red Vecindog. Te enviamos un mail con los detalles.</Text>
-              <TouchableOpacity style={styles.submitBtn} onPress={onClose}><Text style={styles.submitBtnText}>Cerrar</Text></TouchableOpacity>
+              <Text style={styles.modalTitle}>{t.rvRegistradoTitulo}</Text>
+              <Text style={styles.modalSub}>{t.rvRegistradoSub}</Text>
+              <TouchableOpacity style={styles.submitBtn} onPress={onClose}><Text style={styles.submitBtnText}>{t.rvCerrarBtn}</Text></TouchableOpacity>
             </View>
           ) : (
             <>
@@ -224,32 +218,32 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
                 {fotoUri ? <Image source={{ uri: fotoUri }} style={styles.fotoPreview} /> : (
                   <View style={[styles.fotoPreview, { alignItems: 'center', justifyContent: 'center' }]}><Text style={{ fontSize: 22 }}>🖼️</Text></View>
                 )}
-                <Text style={styles.fotoBtnText}>{fotoUri ? 'Cambiar foto' : 'Subir foto del local'}</Text>
+                <Text style={styles.fotoBtnText}>{fotoUri ? t.rvCambiarFoto : t.rvSubirFoto}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.label}>Nombre del negocio *</Text>
-              <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Veterinaria Central" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.rvNombreNegocioLabel}</Text>
+              <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder={t.rvNombreNegocioPh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Categoría *</Text>
+              <Text style={styles.label}>{t.rvCategoriaLabel}</Text>
               <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowCatPicker(true)}>
-                <Text style={{ color: categoria ? Colors.ink : Colors.inkMuted }}>{categoria || 'Seleccioná una categoría'}</Text>
+                <Text style={{ color: categoria ? Colors.ink : Colors.inkMuted }}>{categoria || t.rvSeleccionaCategoria}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.label}>Descripción breve</Text>
-              <TextInput style={styles.input} value={descripcion} onChangeText={setDescripcion} placeholder="Especialistas en razas pequeñas…" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.rvDescBreveLabel}</Text>
+              <TextInput style={styles.input} value={descripcion} onChangeText={setDescripcion} placeholder={t.rvDescBrevePh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Dirección *</Text>
-              <TextInput style={styles.input} value={direccion} onChangeText={setDireccion} placeholder="Av. San Martín 1234" placeholderTextColor={Colors.inkMuted} />
+              <Text style={styles.label}>{t.rvDireccionLabel}</Text>
+              <TextInput style={styles.input} value={direccion} onChangeText={setDireccion} placeholder={t.rvDireccionPh} placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Ciudad *</Text>
+              <Text style={styles.label}>{t.rvCiudadLabel}</Text>
               {localidad ? (
                 <View style={styles.selectedRow}>
                   <Text style={styles.selectedText}>📍 {localidad}</Text>
-                  <TouchableOpacity onPress={() => setLocalidad('')}><Text style={styles.changeText}>Cambiar</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => setLocalidad('')}><Text style={styles.changeText}>{t.rvCambiarBtn}</Text></TouchableOpacity>
                 </View>
               ) : (
                 <View>
-                  <TextInput style={styles.input} value={localidadQuery} onChangeText={handleLocalidadChange} placeholder="Ej: Bahía Blanca" placeholderTextColor={Colors.inkMuted} />
+                  <TextInput style={styles.input} value={localidadQuery} onChangeText={handleLocalidadChange} placeholder={t.rvCiudadPh} placeholderTextColor={Colors.inkMuted} />
                   {ciudadSug.length > 0 && (
                     <View style={styles.sugerenciaList}>
                       {ciudadSug.map((c) => (
@@ -263,9 +257,9 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
                 </View>
               )}
 
-              <Text style={styles.label}>Días de atención</Text>
+              <Text style={styles.label}>{t.rvDiasAtencionLabel}</Text>
               <View style={{ flexDirection: 'row', gap: 6 }}>
-                {['Lunes a viernes', 'Lunes a sábado', 'Todos los días'].map((op) => (
+                {[t.rvDia1, t.rvDia2, t.rvDia3].map((op) => (
                   <TouchableOpacity key={op} style={[styles.dayBtn, diasAtencion === op && styles.dayBtnActive]} onPress={() => setDiasAtencion(diasAtencion === op ? '' : op)}>
                     <Text style={[styles.dayBtnText, diasAtencion === op && styles.dayBtnTextActive]}>{op}</Text>
                   </TouchableOpacity>
@@ -274,29 +268,29 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
 
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Apertura</Text>
+                  <Text style={styles.label}>{t.rvAperturaLabel}</Text>
                   <TextInput style={styles.input} value={horarioApertura} onChangeText={setHorarioApertura} placeholder="09:00" placeholderTextColor={Colors.inkMuted} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Cierre</Text>
+                  <Text style={styles.label}>{t.rvCierreLabel}</Text>
                   <TextInput style={styles.input} value={horarioCierre} onChangeText={setHorarioCierre} placeholder="18:00" placeholderTextColor={Colors.inkMuted} />
                 </View>
               </View>
 
-              <Text style={styles.label}>Teléfono *</Text>
+              <Text style={styles.label}>{t.rvTelefonoLabel}</Text>
               <TextInput style={styles.input} value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" placeholder="+54 9 291 578-2910" placeholderTextColor={Colors.inkMuted} />
 
-              <Text style={styles.label}>Link del negocio</Text>
+              <Text style={styles.label}>{t.rvLinkLabel}</Text>
               <TextInput style={styles.input} value={link} onChangeText={setLink} placeholder="https://instagram.com/tunegocio" placeholderTextColor={Colors.inkMuted} autoCapitalize="none" />
 
-              <Text style={styles.label}>Email *</Text>
+              <Text style={styles.label}>{t.rvEmailLabel}</Text>
               <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="info@tunegocio.com" placeholderTextColor={Colors.inkMuted} />
 
               {!!error && <Text style={styles.error}>{error}</Text>}
-              <Text style={styles.trialNote}>Sin costo los primeros 3 meses · después se renueva mensualmente</Text>
+              <Text style={styles.trialNote}>{t.rvTrialNote}</Text>
 
               <TouchableOpacity style={[styles.submitBtn, loading && { opacity: 0.6 }]} onPress={handleSubmit} disabled={loading}>
-                {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>Activar gratis — 3 meses sin costo</Text>}
+                {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t.rvActivarBtn}</Text>}
               </TouchableOpacity>
             </>
           )}

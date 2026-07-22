@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Email del admin — sólo este usuario ve esta pantalla
 const ADMIN_EMAIL = process.env.EXPO_PUBLIC_ADMIN_EMAIL ?? '';
@@ -26,6 +27,7 @@ type Reporte = {
 };
 
 export default function AdminReportesScreen() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [reportes,    setReportes]    = useState<Reporte[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -36,7 +38,7 @@ export default function AdminReportesScreen() {
   if (user?.email !== ADMIN_EMAIL) {
     return (
       <View style={styles.bloqueado}>
-        <Text style={styles.bloqueadoText}>⛔  Acceso restringido</Text>
+        <Text style={styles.bloqueadoText}>{t.adminAccesoRestringido}</Text>
       </View>
     );
   }
@@ -67,12 +69,12 @@ export default function AdminReportesScreen() {
 
   async function eliminarPost(postId: string, reporteId: string) {
     Alert.alert(
-      'Eliminar aviso',
-      '¿Estás seguro? Esta acción no se puede deshacer.',
+      t.adminConfirmEliminarTitle,
+      t.adminConfirmEliminarSub,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t.perfilCancelar, style: 'cancel' },
         {
-          text: 'Eliminar', style: 'destructive',
+          text: t.genericEliminar, style: 'destructive',
           onPress: async () => {
             await supabase.from('posts').update({ estado: 'eliminado' }).eq('id', postId);
             await supabase.from('reports').update({ revisado: true }).eq('post_id', postId);
@@ -93,14 +95,14 @@ export default function AdminReportesScreen() {
       {/* Toggle nuevos / todos */}
       <View style={styles.toolbar}>
         <Text style={styles.toolbarCount}>
-          {reportes.length} {soloNuevos ? 'sin revisar' : 'reportes'}
+          {reportes.length} {soloNuevos ? t.adminSinRevisar : t.adminReportesLabel}
         </Text>
         <TouchableOpacity
           style={[styles.toggleBtn, !soloNuevos && styles.toggleBtnActive]}
           onPress={() => setSoloNuevos((v) => !v)}
         >
           <Text style={[styles.toggleText, !soloNuevos && styles.toggleTextActive]}>
-            {soloNuevos ? 'Ver todos' : 'Solo nuevos'}
+            {soloNuevos ? t.adminVerTodos : t.adminSoloNuevos}
           </Text>
         </TouchableOpacity>
       </View>
@@ -112,7 +114,7 @@ export default function AdminReportesScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            {soloNuevos ? '✅ Sin reportes pendientes.' : 'No hay reportes aún.'}
+            {soloNuevos ? t.adminSinPendientes : t.adminSinReportes}
           </Text>
         }
         renderItem={({ item: r }) => (
@@ -123,16 +125,16 @@ export default function AdminReportesScreen() {
               <View style={[styles.catBadge, { backgroundColor: CAT_BG[r.posts?.categoria ?? ''] ?? '#f3f4f6' }]}>
                 <Text style={styles.catText}>{r.posts?.categoria?.toUpperCase() ?? '—'}</Text>
               </View>
-              {r.revisado && <Text style={styles.revisadoBadge}>Revisado</Text>}
+              {r.revisado && <Text style={styles.revisadoBadge}>{t.adminRevisado}</Text>}
             </View>
 
             {/* Datos del post */}
-            <Text style={styles.postNombre}>{r.posts?.nombre || 'Sin nombre'}</Text>
+            <Text style={styles.postNombre}>{r.posts?.nombre || t.homeSinNombre}</Text>
             {r.posts?.zona ? <Text style={styles.postZona}>📍 {r.posts.zona}</Text> : null}
 
             {/* Motivo del reporte */}
             <View style={styles.motivoBox}>
-              <Text style={styles.motivoLabel}>Motivo</Text>
+              <Text style={styles.motivoLabel}>{t.adminMotivo}</Text>
               <Text style={styles.motivoText}>{r.motivo}</Text>
             </View>
 
@@ -145,19 +147,19 @@ export default function AdminReportesScreen() {
                   style={styles.btnVer}
                   onPress={() => router.push(`/publicaciones/${r.post_id}`)}
                 >
-                  <Text style={styles.btnVerText}>Ver aviso</Text>
+                  <Text style={styles.btnVerText}>{t.adminVerAviso}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.btnOk}
                   onPress={() => marcarRevisado(r.id)}
                 >
-                  <Text style={styles.btnOkText}>✓ Desestimar</Text>
+                  <Text style={styles.btnOkText}>{t.adminDesestimar}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.btnEliminar}
                   onPress={() => eliminarPost(r.post_id, r.id)}
                 >
-                  <Text style={styles.btnEliminarText}>✕ Eliminar</Text>
+                  <Text style={styles.btnEliminarText}>{t.adminEliminar}</Text>
                 </TouchableOpacity>
               </View>
             )}

@@ -11,6 +11,7 @@ import {
 } from '@/lib/transportadorRatings';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function Estrellas({ valor, size = 14 }: { valor: number; size?: number }) {
   return (
@@ -25,6 +26,7 @@ function Estrellas({ valor, size = 14 }: { valor: number; size?: number }) {
 function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: {
   transportadorPostId: string; inicial: TransportadorRating | null; onGuardado: () => void; onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [estrellas, setEstrellas] = useState(inicial?.estrellas ?? 0);
   const [cuidadoAnimal, setCuidadoAnimal] = useState<'excelente' | 'bueno' | 'regular' | null>(inicial?.cuidado_animal ?? null);
   const [fuePuntual, setFuePuntual] = useState<boolean | null>(inicial?.fue_puntual ?? null);
@@ -35,7 +37,7 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
   const [error, setError] = useState('');
 
   async function handleSubmit() {
-    if (estrellas === 0) { setError('Seleccioná una puntuación.'); return; }
+    if (estrellas === 0) { setError(t.ratingErrSeleccionaPuntuacion); return; }
     setEnviando(true);
     setError('');
     try {
@@ -45,7 +47,7 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
       });
       onGuardado();
     } catch (err: any) {
-      setError(err?.message ?? 'Error al guardar. Intentá de nuevo.');
+      setError(err?.message ?? t.ratingErrGuardarDefault);
     } finally {
       setEnviando(false);
     }
@@ -55,9 +57,9 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <ScrollView contentContainerStyle={styles.modalSheet}>
-          <Text style={styles.modalTitle}>Calificar transportador</Text>
+          <Text style={styles.modalTitle}>{t.transportadorModalTitle}</Text>
 
-          <Text style={styles.modalLabel}>Puntuación *</Text>
+          <Text style={styles.modalLabel}>{t.ratingModalPuntuacion}</Text>
           <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12 }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity key={n} onPress={() => setEstrellas(n)}>
@@ -66,9 +68,9 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
             ))}
           </View>
 
-          <Text style={styles.modalLabel}>¿Cómo cuidó al perro?</Text>
+          <Text style={styles.modalLabel}>{t.ratingComoCuido}</Text>
           <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12 }}>
-            {([['excelente', 'Excelente'], ['bueno', 'Bueno'], ['regular', 'Regular']] as const).map(([val, lbl]) => (
+            {([['excelente', t.ratingExcelente], ['bueno', t.ratingBueno], ['regular', t.ratingRegular]] as const).map(([val, lbl]) => (
               <TouchableOpacity
                 key={val}
                 style={[styles.optBtn, cuidadoAnimal === val && styles.optBtnActive]}
@@ -80,14 +82,14 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
           </View>
 
           {([
-            ['¿Fue puntual?', fuePuntual, setFuePuntual],
-            ['¿Buena comunicación?', buenaCom, setBuenaCom],
-            ['¿Lo recomendarías?', loRecomienda, setLoRecomienda],
+            [t.ratingFuePuntual, fuePuntual, setFuePuntual],
+            [t.ratingBuenaCom, buenaCom, setBuenaCom],
+            [t.ratingLoRecomienda, loRecomienda, setLoRecomienda],
           ] as [string, boolean | null, (v: boolean | null) => void][]).map(([pregunta, val, setter]) => (
             <View key={pregunta} style={{ marginBottom: 12 }}>
               <Text style={styles.modalLabel}>{pregunta}</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
-                {([[true, 'Sí'], [false, 'No']] as [boolean, string][]).map(([bval, lbl]) => (
+                {([[true, t.bpfSi], [false, t.bpfNo]] as [boolean, string][]).map(([bval, lbl]) => (
                   <TouchableOpacity
                     key={String(bval)}
                     style={[styles.optBtn, { flex: 1 }, val === bval && styles.optBtnActive]}
@@ -100,19 +102,19 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
             </View>
           ))}
 
-          <Text style={styles.modalLabel}>Comentario (opcional)</Text>
+          <Text style={styles.modalLabel}>{t.ratingComentarioLabel}</Text>
           <TextInput
             style={[styles.modalInput, { height: 60, textAlignVertical: 'top' }]}
             value={comentario} onChangeText={setComentario} multiline
-            placeholder="Contá tu experiencia…" placeholderTextColor={Colors.inkMuted}
+            placeholder={t.ratingComentarioPh} placeholderTextColor={Colors.inkMuted}
           />
 
           {!!error && <Text style={styles.error}>{error}</Text>}
 
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelBtnText}>Cancelar</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelBtnText}>{t.perfilCancelar}</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.saveBtn, enviando && { opacity: 0.6 }]} onPress={handleSubmit} disabled={enviando}>
-              {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.saveBtnText}>Guardar</Text>}
+              {enviando ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.saveBtnText}>{t.genericGuardar}</Text>}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -122,6 +124,7 @@ function ModalPuntuacion({ transportadorPostId, inicial, onGuardado, onClose }: 
 }
 
 export default function PerfilTransportadorScreen() {
+  const { t } = useLanguage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
@@ -154,8 +157,8 @@ export default function PerfilTransportadorScreen() {
   if (!post) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <Text style={{ color: Colors.inkMuted }}>No se encontró este perfil.</Text>
-        <TouchableOpacity onPress={() => router.replace('/transporte' as any)}><Text style={{ color: '#1d4ed8', fontWeight: '700' }}>← Volver</Text></TouchableOpacity>
+        <Text style={{ color: Colors.inkMuted }}>{t.ratingNoEncontrado}</Text>
+        <TouchableOpacity onPress={() => router.replace('/transporte' as any)}><Text style={{ color: '#1d4ed8', fontWeight: '700' }}>{t.cuidadoVolver}</Text></TouchableOpacity>
       </View>
     );
   }
@@ -165,49 +168,49 @@ export default function PerfilTransportadorScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 60 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={styles.headerCard}>
         <View style={styles.avatar}><Text style={{ fontSize: 26 }}>🚗</Text></View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.nombre}>{post.nombre ?? 'Transportador disponible'}</Text>
+          <Text style={styles.nombre}>{post.nombre ?? t.transportadorFallbackNombre}</Text>
           {!!post.zona && <Text style={styles.zona}>📍 {post.zona}</Text>}
           {resumen && resumen.total > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <Estrellas valor={resumen.promedio} />
               <Text style={styles.promedioText}>{resumen.promedio.toFixed(1)}</Text>
-              <Text style={styles.totalText}>({resumen.total} calificaciones)</Text>
+              <Text style={styles.totalText}>({resumen.total} {t.ratingCalificacionesSuffix})</Text>
             </View>
           )}
         </View>
       </View>
       {!!post.contacto && (
         <TouchableOpacity style={styles.waBtn} onPress={() => Linking.openURL(`https://wa.me/${post.contacto!.replace(/\D/g, '')}`)}>
-          <Text style={styles.waBtnText}>📞 Contactar por WhatsApp</Text>
+          <Text style={styles.waBtnText}>{t.ratingContactarWhatsapp}</Text>
         </TouchableOpacity>
       )}
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>🚗 Sobre</Text>
+        <Text style={styles.cardTitle}>🚗 {t.ratingSobre}</Text>
         {!!post.descripcion && <Text style={styles.descripcion}>{post.descripcion}</Text>}
         {!!post.horario && (
-          <View style={styles.dispoBox}><Text style={styles.dispoText}>📅 Disponibilidad: {post.horario}</Text></View>
+          <View style={styles.dispoBox}><Text style={styles.dispoText}>{t.ratingDisponibilidadPrefix} {post.horario}</Text></View>
         )}
       </View>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
-        <Text style={styles.sectionTitle}>⭐ Calificaciones {resumen && resumen.total > 0 ? `(${resumen.total})` : ''}</Text>
+        <Text style={styles.sectionTitle}>{t.ratingCalificaciones} {resumen && resumen.total > 0 ? `(${resumen.total})` : ''}</Text>
         {isAuthenticated && !esPropioPost && (
           <TouchableOpacity style={styles.calificarBtn} onPress={() => setModalAbierto(true)}>
-            <Text style={styles.calificarBtnText}>{yaCalifico ? 'Editar' : 'Calificar'}</Text>
+            <Text style={styles.calificarBtnText}>{yaCalifico ? t.genericEditar : t.ratingCalificar}</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {guardado && <Text style={styles.guardadoText}>✓ Calificación guardada</Text>}
+      {guardado && <Text style={styles.guardadoText}>{t.ratingGuardadoTexto}</Text>}
 
       {ratings.length === 0 ? (
-        <View style={styles.emptyBox}><Text style={styles.emptyText}>Todavía no tiene calificaciones.</Text></View>
+        <View style={styles.emptyBox}><Text style={styles.emptyText}>{t.ratingSinCalificaciones}</Text></View>
       ) : (
         <View style={{ gap: 10 }}>
           {ratings.map((r) => (
@@ -217,10 +220,10 @@ export default function PerfilTransportadorScreen() {
                 <Text style={styles.ratingDate}>{new Date(r.created_at).toLocaleDateString('es-AR')}</Text>
               </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-                {!!r.cuidado_animal && <View style={styles.badge}><Text style={styles.badgeText}>Cuidado: {r.cuidado_animal}</Text></View>}
-                {r.fue_puntual === true && <View style={styles.badge}><Text style={styles.badgeText}>⏰ Puntual</Text></View>}
-                {r.buena_comunicacion === true && <View style={styles.badge}><Text style={styles.badgeText}>💬 Buena comunicación</Text></View>}
-                {r.lo_recomendaria === true && <View style={styles.badgeGold}><Text style={styles.badgeGoldText}>👍 Lo recomienda</Text></View>}
+                {!!r.cuidado_animal && <View style={styles.badge}><Text style={styles.badgeText}>{t.ratingCuidadoPrefix} {r.cuidado_animal}</Text></View>}
+                {r.fue_puntual === true && <View style={styles.badge}><Text style={styles.badgeText}>{t.ratingPuntual}</Text></View>}
+                {r.buena_comunicacion === true && <View style={styles.badge}><Text style={styles.badgeText}>{t.ratingBuenaComBadge}</Text></View>}
+                {r.lo_recomendaria === true && <View style={styles.badgeGold}><Text style={styles.badgeGoldText}>{t.ratingLoRecomiendaBadge}</Text></View>}
               </View>
               {!!r.comentario && <Text style={styles.comentario}>{r.comentario}</Text>}
             </View>

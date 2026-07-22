@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import { thumbUrl } from '@/lib/imageUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/lib/translations';
 
 const CAT_COLOR: Record<string, string> = {
   perdido:    '#ef4444',
@@ -15,9 +17,9 @@ const CAT_COLOR: Record<string, string> = {
   transito:   '#7c3aed',
 };
 
-const LEYENDA_LABEL: Record<string, string> = {
-  perdido: 'Perdido', encontrado: 'Visto', adopcion: 'En adopción', transito: 'En la calle',
-};
+function leyendaLabel(t: Translations): Record<string, string> {
+  return { perdido: t.mapaLeyendaPerdido, encontrado: t.mapaLeyendaEncontrado, adopcion: t.mapaLeyendaAdopcion, transito: t.mapaLeyendaTransito };
+}
 
 function fmt(iso: string | null) {
   if (!iso) return '';
@@ -49,6 +51,8 @@ async function geocodificarZona(zona: string, ciudad?: string | null): Promise<{
 }
 
 export default function MapaScreen() {
+  const { t } = useLanguage();
+  const LEYENDA_LABEL = leyendaLabel(t);
   const [posts,    setPosts]    = useState<any[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -159,10 +163,10 @@ export default function MapaScreen() {
                   <CategoriaDot categoria={p.categoria} size={8} />
                   <Text style={styles.calloutEmoji}>{LEYENDA_LABEL[p.categoria] ?? p.categoria}</Text>
                 </View>
-                <Text style={styles.calloutNombre}>{p.nombre || 'Sin nombre'}</Text>
+                <Text style={styles.calloutNombre}>{p.nombre || t.homeSinNombre}</Text>
                 <Text style={styles.calloutZona}>📍 {p.zona || '—'}</Text>
                 {p.fecha && <Text style={styles.calloutZona}>📅 {fmt(p.fecha)}</Text>}
-                <Text style={styles.calloutLink}>Ver aviso →</Text>
+                <Text style={styles.calloutLink}>{t.mapaVerAviso}</Text>
               </View>
             </Callout>
           </Marker>
@@ -177,7 +181,7 @@ export default function MapaScreen() {
             <Text style={styles.leyendaText}>{LEYENDA_LABEL[cat] ?? cat}</Text>
           </View>
         ))}
-        <Text style={styles.leyendaCount}>{posts.length} avisos</Text>
+        <Text style={styles.leyendaCount}>{posts.length} {t.mapaAvisosSuffix}</Text>
       </View>
     </View>
   );

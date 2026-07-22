@@ -7,6 +7,8 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { obtenerMensajes, enviarMensaje, type Mensaje, type Conversacion } from '@/lib/mensajes';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/lib/translations';
 
 interface Props {
   postId: string;
@@ -17,11 +19,12 @@ interface Props {
 function fmtHora(iso: string) {
   return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
-function nombreDe(p: { nombre: string | null; apellido: string | null } | null) {
-  return [p?.nombre, p?.apellido].filter(Boolean).join(' ') || 'Usuario';
+function nombreDe(p: { nombre: string | null; apellido: string | null } | null, t: Translations) {
+  return [p?.nombre, p?.apellido].filter(Boolean).join(' ') || t.amigosUsuarioFallback;
 }
 
 export default function MensajesHilo({ postId, isAuthenticated, userId }: Props) {
+  const { t } = useLanguage();
   const [abierto,        setAbierto]        = useState(false);
   const [mensajes,       setMensajes]       = useState<Mensaje[]>([]);
   const [conversaciones, setConversaciones]  = useState<Conversacion[] | null>(null);
@@ -76,7 +79,7 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
       setTexto('');
       await cargar();
     } catch (e: any) {
-      setError(e?.message ?? 'No se pudo enviar el mensaje. Intentá de nuevo.');
+      setError(e?.message ?? t.msgErrEnviar);
     } finally {
       setEnviando(false);
     }
@@ -90,8 +93,8 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
       <TouchableOpacity style={styles.header} onPress={() => setAbierto((v) => !v)} activeOpacity={0.7}>
         <Text style={styles.headerIcon}>💬</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Mensajes privados</Text>
-          <Text style={styles.headerSub}>Contacto directo con el dueño del aviso</Text>
+          <Text style={styles.headerTitle}>{t.msgTitle}</Text>
+          <Text style={styles.headerSub}>{t.msgSub}</Text>
         </View>
         {totalBadge > 0 && (
           <View style={styles.badge}><Text style={styles.badgeText}>{totalBadge}</Text></View>
@@ -103,9 +106,9 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
         <View style={styles.body}>
           {!isAuthenticated ? (
             <View style={styles.loginBox}>
-              <Text style={styles.loginText}>Iniciá sesión para enviar mensajes</Text>
+              <Text style={styles.loginText}>{t.msgLoginText}</Text>
               <TouchableOpacity style={styles.loginBtn} onPress={() => router.push('/(auth)/login')}>
-                <Text style={styles.loginBtnText}>Iniciar sesión</Text>
+                <Text style={styles.loginBtnText}>{t.msgIniciarSesion}</Text>
               </TouchableOpacity>
             </View>
           ) : cargando && !mensajes.length && !conversaciones ? (
@@ -122,11 +125,11 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
                     <Image source={{ uri: c.nombre.foto_url }} style={styles.avatar} />
                   ) : (
                     <View style={styles.avatarFallback}>
-                      <Text style={styles.avatarFallbackText}>{nombreDe(c.nombre).charAt(0).toUpperCase()}</Text>
+                      <Text style={styles.avatarFallbackText}>{nombreDe(c.nombre, t).charAt(0).toUpperCase()}</Text>
                     </View>
                   )}
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={styles.convNombre}>{nombreDe(c.nombre)}</Text>
+                    <Text style={styles.convNombre}>{nombreDe(c.nombre, t)}</Text>
                     <Text style={styles.convTexto} numberOfLines={1}>{c.ultimo_texto}</Text>
                   </View>
                 </TouchableOpacity>
@@ -136,17 +139,17 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
             <>
               {conversaciones && conversaciones.length > 1 && selectedWith && (
                 <TouchableOpacity style={styles.volverBtn} onPress={() => setSelectedWith(null)}>
-                  <Text style={styles.volverBtnText}>← Ver todas las conversaciones</Text>
+                  <Text style={styles.volverBtnText}>{t.msgVolverConversaciones}</Text>
                 </TouchableOpacity>
               )}
 
               <ScrollView style={styles.lista} contentContainerStyle={{ gap: 10 }}>
                 {mensajes.length === 0 ? (
-                  <Text style={styles.vacio}>Todavía no hay mensajes. Sé el primero en escribir.</Text>
+                  <Text style={styles.vacio}>{t.msgVacio}</Text>
                 ) : (
                   mensajes.map((m) => {
                     const esPropio = m.sender_id === userId;
-                    const nombre = nombreDe(m.profiles);
+                    const nombre = nombreDe(m.profiles, t);
                     return (
                       <View key={m.id} style={[styles.msgRow, esPropio && styles.msgRowPropio]}>
                         <View style={[styles.bubble, esPropio ? styles.bubblePropia : styles.bubbleAjena]}>
@@ -169,7 +172,7 @@ export default function MensajesHilo({ postId, isAuthenticated, userId }: Props)
                   style={styles.input}
                   value={texto}
                   onChangeText={setTexto}
-                  placeholder="Escribí tu mensaje..."
+                  placeholder={t.msgInputPh}
                   placeholderTextColor={Colors.inkMuted + '80'}
                   multiline
                 />

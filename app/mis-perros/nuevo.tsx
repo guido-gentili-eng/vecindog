@@ -10,11 +10,14 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SEXOS   = ['macho', 'hembra'];
 const TAMANOS = [{ k: 'pequeño', l: 'S' }, { k: 'mediano', l: 'M' }, { k: 'grande', l: 'L' }];
 
 export default function NuevoPerroScreen() {
+  const { t } = useLanguage();
+  const SEXO_LABEL: Record<string, string> = { macho: t.nuevoPerroSexoMacho, hembra: t.nuevoPerroSexoHembra };
   const { user } = useAuth();
   const [nombre,       setNombre]       = useState('');
   const [raza,         setRaza]         = useState('');
@@ -47,13 +50,13 @@ export default function NuevoPerroScreen() {
 
   async function elegirFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso denegado'); return; }
+    if (status !== 'granted') { Alert.alert(t.nuevoPerroErrPermiso); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
     if (!result.canceled) setFotoUri(result.assets[0].uri);
   }
 
   async function guardar() {
-    if (!nombre.trim()) { Alert.alert('Falta el nombre', 'Ingresá el nombre de tu perro'); return; }
+    if (!nombre.trim()) { Alert.alert(t.nuevoPerroErrFaltaNombreTitle, t.nuevoPerroErrFaltaNombreSub); return; }
     setLoading(true);
     try {
       let foto_url = '';
@@ -82,12 +85,12 @@ export default function NuevoPerroScreen() {
         foto_url:    foto_url           || null,
       });
 
-      if (error) { Alert.alert('Error', error.message); return; }
-      Alert.alert('¡Listo!', `${nombre} fue registrado correctamente.`, [
-        { text: 'Ver mis perros', onPress: () => router.back() },
+      if (error) { Alert.alert(t.perfilErrorGeneric, error.message); return; }
+      Alert.alert(t.nuevoPerroListoTitle, `${nombre} ${t.nuevoPerroListoSubSuffix}`, [
+        { text: t.nuevoPerroVerMisPerros, onPress: () => router.back() },
       ]);
     } catch {
-      Alert.alert('Error', 'No se pudo guardar. Verificá tu conexión.');
+      Alert.alert(t.perfilErrorGeneric, t.nuevoPerroErrGuardarSub);
     } finally {
       setLoading(false);
     }
@@ -102,19 +105,19 @@ export default function NuevoPerroScreen() {
           ? <Image source={{ uri: fotoUri }} style={styles.fotoImg} />
           : <View style={styles.fotoPlaceholder}>
               <Text style={{ fontSize: 40 }}>📷</Text>
-              <Text style={styles.fotoText}>Agregar foto</Text>
+              <Text style={styles.fotoText}>{t.nuevoPerroFotoAgregar}</Text>
             </View>
         }
       </TouchableOpacity>
 
       {/* Nombre */}
-      <Text style={styles.label}>Nombre *</Text>
-      <TextInput style={styles.input} placeholder="Ej: Bobby" placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
+      <Text style={styles.label}>{t.nuevoPerroNombre}</Text>
+      <TextInput style={styles.input} placeholder={t.nuevoPerroNombrePh} placeholderTextColor={Colors.inkMuted} value={nombre} onChangeText={setNombre} />
 
-      <Text style={styles.label}>Raza</Text>
+      <Text style={styles.label}>{t.nuevoPerroRaza}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ej: Labrador, Ovejero, Mestizo…"
+        placeholder={t.nuevoPerroRazaPh}
         placeholderTextColor={Colors.inkMuted}
         value={raza}
         onChangeText={handleRazaChange}
@@ -130,18 +133,18 @@ export default function NuevoPerroScreen() {
         </View>
       )}
 
-      <Text style={styles.label}>Color</Text>
+      <Text style={styles.label}>{t.nuevoPerroColor}</Text>
       <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowColorPicker(true)}>
-        <Text style={styles.pickerBtnText}>{color || 'No sé / no recuerdo'}</Text>
+        <Text style={styles.pickerBtnText}>{color || t.nuevoPerroColorNoSe}</Text>
         <Text style={styles.pickerBtnChevron}>⌄</Text>
       </TouchableOpacity>
 
       <Modal visible={showColorPicker} transparent animationType="slide" onRequestClose={() => setShowColorPicker(false)}>
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowColorPicker(false)}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitulo}>Color principal</Text>
+            <Text style={styles.modalTitulo}>{t.nuevoPerroColorModalTitulo}</Text>
             <TouchableOpacity style={styles.modalOption} onPress={() => { setColor(''); setShowColorPicker(false); }}>
-              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>No sé / no recuerdo</Text>
+              <Text style={[styles.modalOptionText, color === '' && styles.modalOptionTextActive]}>{t.nuevoPerroColorNoSe}</Text>
             </TouchableOpacity>
             {COLORES_PERRO.map((c) => (
               <TouchableOpacity key={c} style={styles.modalOption} onPress={() => { setColor(c); setShowColorPicker(false); }}>
@@ -153,17 +156,17 @@ export default function NuevoPerroScreen() {
       </Modal>
 
       {/* Sexo */}
-      <Text style={styles.label}>Sexo</Text>
+      <Text style={styles.label}>{t.nuevoPerroSexo}</Text>
       <View style={styles.row}>
         {SEXOS.map((s) => (
           <TouchableOpacity key={s} style={[styles.opt, sexo === s && styles.optActive]} onPress={() => setSexo(sexo === s ? '' : s)}>
-            <Text style={[styles.optText, sexo === s && styles.optTextActive]}>{s}</Text>
+            <Text style={[styles.optText, sexo === s && styles.optTextActive]}>{SEXO_LABEL[s]}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Tamaño */}
-      <Text style={styles.label}>Tamaño</Text>
+      <Text style={styles.label}>{t.nuevoPerroTamano}</Text>
       <View style={styles.row}>
         {TAMANOS.map(({ k, l }) => (
           <TouchableOpacity key={k} style={[styles.opt, tamano === k && styles.optActive]} onPress={() => setTamano(tamano === k ? '' : k)}>
@@ -172,30 +175,30 @@ export default function NuevoPerroScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>Fecha de nacimiento</Text>
-      <TextInput style={styles.input} placeholder="AAAA-MM-DD" placeholderTextColor={Colors.inkMuted} value={fechaNac} onChangeText={setFechaNac} />
+      <Text style={styles.label}>{t.nuevoPerroFechaNac}</Text>
+      <TextInput style={styles.input} placeholder={t.nuevoPerroFechaNacPh} placeholderTextColor={Colors.inkMuted} value={fechaNac} onChangeText={setFechaNac} />
 
-      <Text style={styles.label}>Nº de Microchip</Text>
-      <TextInput style={styles.input} placeholder="Nº de chip" placeholderTextColor={Colors.inkMuted} value={chip} onChangeText={setChip} />
+      <Text style={styles.label}>{t.nuevoPerroChip}</Text>
+      <TextInput style={styles.input} placeholder={t.nuevoPerroChipPh} placeholderTextColor={Colors.inkMuted} value={chip} onChangeText={setChip} />
 
       {/* Esterilizado */}
       <TouchableOpacity style={styles.checkRow} onPress={() => setEsterilizado(!esterilizado)}>
         <View style={[styles.check, esterilizado && styles.checkActive]}>
           {esterilizado && <Text style={{ color: Colors.white, fontSize: 12, fontWeight: '900' }}>✓</Text>}
         </View>
-        <Text style={styles.checkLabel}>Esterilizado/a</Text>
+        <Text style={styles.checkLabel}>{t.nuevoPerroEsterilizado}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.label}>Descripción</Text>
+      <Text style={styles.label}>{t.nuevoPerroDescripcion}</Text>
       <TextInput
         style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
-        placeholder="Marcas especiales, comportamiento…"
+        placeholder={t.nuevoPerroDescripcionPh}
         placeholderTextColor={Colors.inkMuted}
         value={descripcion} onChangeText={setDescripcion} multiline
       />
 
       <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={guardar} disabled={loading}>
-        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnText}>Guardar perro</Text>}
+        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnText}>{t.nuevoPerroGuardar}</Text>}
       </TouchableOpacity>
 
     </ScrollView>

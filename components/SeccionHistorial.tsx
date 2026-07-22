@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, Share } from 'react-native';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export type Campo = {
   key:         string;
@@ -38,6 +39,7 @@ function fechaValida(s: string): boolean {
 export default function SeccionHistorial({
   titulo, emoji, locked, campos, items, renderItem, onGuardar, onEditar, vacio,
 }: Props) {
+  const { t } = useLanguage();
   const [agregando, setAgregando] = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [valores,   setValores]   = useState<Record<string, string>>({});
@@ -66,12 +68,12 @@ export default function SeccionHistorial({
   async function handleGuardar() {
     const faltante = campos.find((c) => c.requerido && !valores[c.key]?.trim());
     if (faltante) {
-      Alert.alert('Falta un dato', `Completá "${faltante.label}".`);
+      Alert.alert(t.historialFaltaDatoTitle, `${t.historialCompletaPrefix}${faltante.label}${t.historialCompletaSuffix}`);
       return;
     }
     const fechaInvalida = campos.find((c) => c.tipo === 'date' && valores[c.key]?.trim() && !fechaValida(valores[c.key].trim()));
     if (fechaInvalida) {
-      Alert.alert('Fecha inválida', `"${fechaInvalida.label}" tiene que tener el formato AAAA-MM-DD (ej: ${hoy()}).`);
+      Alert.alert(t.errFechaInvalidaTitle, `"${fechaInvalida.label}" ${t.historialFechaInvalidaMiddle} ${hoy()}${t.historialFechaInvalidaEnd}`);
       return;
     }
     setSaving(true);
@@ -85,8 +87,8 @@ export default function SeccionHistorial({
       setValores({});
       setEditingId(null);
     } catch (e) {
-      const msg = e instanceof Error && e.message ? e.message : 'No se pudo guardar. Verificá tu conexión.';
-      Alert.alert('Error', msg);
+      const msg = e instanceof Error && e.message ? e.message : t.genericErrGuardarConexion;
+      Alert.alert(t.perfilErrorGeneric, msg);
     } finally {
       setSaving(false);
     }
@@ -117,11 +119,11 @@ export default function SeccionHistorial({
           )}
           {locked ? (
             <TouchableOpacity style={styles.proBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-              <Text style={styles.proBtnText}>✨ VecindogPro</Text>
+              <Text style={styles.proBtnText}>{t.historialPro}</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.addBtn} onPress={() => (agregando ? (setAgregando(false), setEditingId(null)) : abrirForm())}>
-              <Text style={styles.addBtnText}>{agregando ? '✕' : '+ Agregar'}</Text>
+              <Text style={styles.addBtnText}>{agregando ? '✕' : t.genericAgregarBtn}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -129,7 +131,7 @@ export default function SeccionHistorial({
 
       {!locked && agregando && (
         <View style={styles.form}>
-          {editingId && <Text style={styles.editandoLabel}>Editando registro</Text>}
+          {editingId && <Text style={styles.editandoLabel}>{t.historialEditando}</Text>}
           {campos.map((c) => (
             <View key={c.key} style={styles.campo}>
               <Text style={styles.campoLabel}>{c.label}{c.requerido ? ' *' : ''}</Text>
@@ -150,7 +152,7 @@ export default function SeccionHistorial({
               ) : (
                 <TextInput
                   style={[styles.input, c.tipo === 'textarea' && styles.inputArea]}
-                  placeholder={c.placeholder ?? (c.tipo === 'date' ? 'AAAA-MM-DD' : '')}
+                  placeholder={c.placeholder ?? (c.tipo === 'date' ? t.dateFormatPh : '')}
                   placeholderTextColor={Colors.inkMuted}
                   value={valores[c.key] ?? ''}
                   onChangeText={(t) => setValores((v) => ({ ...v, [c.key]: t }))}
@@ -162,17 +164,17 @@ export default function SeccionHistorial({
           ))}
           <View style={styles.formBtns}>
             <TouchableOpacity style={styles.guardarBtn} onPress={handleGuardar} disabled={saving}>
-              {saving ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarBtnText}>{editingId ? 'Guardar cambios' : 'Guardar'}</Text>}
+              {saving ? <ActivityIndicator color={Colors.white} size="small" /> : <Text style={styles.guardarBtnText}>{editingId ? t.genericGuardarCambios : t.genericGuardar}</Text>}
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelarBtn} onPress={() => { setAgregando(false); setEditingId(null); }}>
-              <Text style={styles.cancelarBtnText}>Cancelar</Text>
+              <Text style={styles.cancelarBtnText}>{t.perfilCancelar}</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
 
       {items.length === 0 && !agregando ? (
-        <Text style={styles.vacio}>{vacio ?? 'Sin datos todavía.'}</Text>
+        <Text style={styles.vacio}>{vacio ?? t.historialVacioDefault}</Text>
       ) : (
         items.map((item) => <View key={item.id}>{renderItem(item, { editar: () => abrirEditar(item) })}</View>)
       )}

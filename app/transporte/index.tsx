@@ -8,8 +8,10 @@ import { listarPostsCuidado, resolverPost, type Post } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post; promedio?: number; mio: boolean; onResolver: () => void }) {
+  const { t } = useLanguage();
   const foto = p.images?.[0];
   return (
     <View style={styles.card}>
@@ -18,10 +20,10 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
       )}
       <View style={{ flex: 1, minWidth: 0 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 6 }}>
-          <Text style={styles.cardNombre} numberOfLines={1}>{p.nombre ?? 'Transportador'}</Text>
+          <Text style={styles.cardNombre} numberOfLines={1}>{p.nombre ?? t.transportadorFallback}</Text>
           {mio && (
             <TouchableOpacity style={styles.deactivateBtn} onPress={onResolver}>
-              <Text style={styles.deactivateBtnText}>Desactivar</Text>
+              <Text style={styles.deactivateBtnText}>{t.cuidadoDesactivar}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -39,7 +41,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
           {!!p.horario && <Text style={styles.cardMeta}>📅 {p.horario}</Text>}
         </View>
         <TouchableOpacity onPress={() => router.push(`/transporte/transportador/${p.id}` as any)}>
-          <Text style={styles.verPerfil}>⭐ Ver perfil</Text>
+          <Text style={styles.verPerfil}>{t.cuidadoVerPerfil}</Text>
         </TouchableOpacity>
       </View>
       {!!p.contacto && (
@@ -52,6 +54,7 @@ function TransportadorCard({ post: p, promedio, mio, onResolver }: { post: Post;
 }
 
 export default function TransporteScreen() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [transportadores, setTransportadores] = useState<Post[]>([]);
   const [promedios, setPromedios] = useState<Record<string, number>>({});
@@ -91,15 +94,15 @@ export default function TransporteScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingTop: 56, paddingBottom: 40 }}>
-      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>← Volver</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}><Text style={styles.back}>{t.cuidadoVolver}</Text></TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 20 }}>
-        <View style={styles.chip}><Text style={styles.chipText}>🚗 Comunidad</Text></View>
-        <Text style={styles.title}>Transporte de perros</Text>
-        <Text style={styles.sub}>Vecinos que ayudan a trasladar mascotas.</Text>
+        <View style={styles.chip}><Text style={styles.chipText}>{t.transporteComunidad}</Text></View>
+        <Text style={styles.title}>{t.transporteTitle}</Text>
+        <Text style={styles.sub}>{t.transporteSub}</Text>
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            🚫 Solo intercambios entre vecinos — está prohibido cobrar o ofrecer servicios comerciales en esta sección.
+            {t.cuidadoWarning}
           </Text>
         </View>
       </View>
@@ -107,17 +110,17 @@ export default function TransporteScreen() {
       <TouchableOpacity style={styles.ctaBanner} onPress={() => router.push('/transporte/quiero-transportar' as any)}>
         <Text style={{ fontSize: 24 }}>🚗</Text>
         <View style={{ flex: 1 }}>
-          <Text style={styles.ctaTitle}>Quiero transportar</Text>
-          <Text style={styles.ctaSub}>Registrate como transportador de tu zona</Text>
+          <Text style={styles.ctaTitle}>{t.transporteQuieroTitle}</Text>
+          <Text style={styles.ctaSub}>{t.transporteQuieroSub}</Text>
         </View>
         <Text style={styles.ctaArrow}>›</Text>
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>🚗 Transportadores disponibles {transportadores.length > 0 && `(${transportadores.length})`}</Text>
+      <Text style={styles.sectionTitle}>{t.transporteDisponiblesSection} {transportadores.length > 0 && `(${transportadores.length})`}</Text>
       {cargando ? (
         <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} />
       ) : transportadores.length === 0 ? (
-        <View style={styles.emptyBox}><Text style={styles.emptyText}>Todavía no hay transportadores registrados.</Text></View>
+        <View style={styles.emptyBox}><Text style={styles.emptyText}>{t.transporteEmptyDisponibles}</Text></View>
       ) : (
         <View style={{ gap: 10 }}>
           {transportadores.map((p) => (

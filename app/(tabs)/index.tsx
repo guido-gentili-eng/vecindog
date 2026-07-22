@@ -113,14 +113,19 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.subGreeting}>{t.homeSubGreeting}</Text>
         </View>
-        <TouchableOpacity style={styles.bellBtn} onPress={() => router.push('/notificaciones')}>
-          <Text style={{ fontSize: 22 }}>🔔</Text>
-          {noLeidas > 0 && (
-            <View style={styles.bellBadge}>
-              <Text style={styles.bellBadgeText}>{noLeidas > 9 ? '9+' : noLeidas}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.redVecindogBtn} onPress={() => router.push('/red-vecindog' as any)}>
+            <Text style={{ fontSize: 22 }}>🏪</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.bellBtn} onPress={() => router.push('/notificaciones')}>
+            <Text style={{ fontSize: 22 }}>🔔</Text>
+            {noLeidas > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{noLeidas > 9 ? '9+' : noLeidas}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Filtros */}
@@ -244,6 +249,8 @@ const styles = StyleSheet.create({
   header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16, backgroundColor: Colors.white },
   greeting:       { fontSize: 20, fontWeight: '800', color: Colors.ink },
   subGreeting:    { fontSize: 13, color: Colors.inkMuted, marginTop: 2 },
+  headerActions:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  redVecindogBtn: { padding: 4 },
   bellBtn:        { position: 'relative', padding: 4 },
   bellBadge:      { position: 'absolute', top: 0, right: 0, backgroundColor: Colors.bad, borderRadius: 8, minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   bellBadgeText:  { color: Colors.white, fontSize: 9, fontWeight: '900' },

@@ -283,10 +283,6 @@ export default function PerfilScreen() {
           onPress={() => router.push('/(tabs)/avisos')}
         />
         <MenuItem
-          label={t.perfilLinkRedVecindog}
-          onPress={() => router.push('/red-vecindog' as any)}
-        />
-        <MenuItem
           label={t.perfilLinkPublicitate}
           onPress={() => router.push('/publicitate' as any)}
         />

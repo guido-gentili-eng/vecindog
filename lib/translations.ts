@@ -135,7 +135,6 @@ export interface Translations {
   perfilSosSub: string;
   perfilSosSubLocked: string;
   perfilLinkMisAvisos: string;
-  perfilLinkRedVecindog: string;
   perfilLinkPublicitate: string;
   perfilLinkAdmin: string;
   perfilLinkWeb: string;
@@ -1058,7 +1057,6 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilSosSub: 'Avisá a todos tus amigos de una sola vez',
     perfilSosSubLocked: 'Función de VecindogPro',
     perfilLinkMisAvisos: '🗺️  Ver mis avisos publicados',
-    perfilLinkRedVecindog: '🏪  Mi red Vecindog',
     perfilLinkPublicitate: '📣  Publicitate',
     perfilLinkAdmin: '🛡️  Panel de reportes',
     perfilLinkWeb: '🌐  Abrir versión web',

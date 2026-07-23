@@ -75,14 +75,14 @@ export async function POST(req: NextRequest) {
       leida:   false,
     });
 
-    // Enviar push al dueño del aviso (lazy import)
-    import('@/lib/pushNotification').then(({ sendPushToUser }) =>
-      sendPushToUser(post.user_id, {
-        title: '👁️ Alguien vio tu aviso',
-        body:  mensaje,
-        url:   `/publicaciones/${post_id}`,
-      }, admin)
-    ).catch(() => {});
+    // Enviar push al dueño del aviso (lazy import, esperado antes de responder
+    // para que la serverless function no se congele con el envío a mitad de camino)
+    const { sendPushToUser } = await import('@/lib/pushNotification');
+    await sendPushToUser(post.user_id, {
+      title: '👁️ Alguien vio tu aviso',
+      body:  mensaje,
+      url:   `/publicaciones/${post_id}`,
+    }, admin).catch((e) => console.error('[notificar-visita] push error:', e));
 
     return NextResponse.json({ ok: true });
   } catch {

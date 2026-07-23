@@ -21,13 +21,20 @@ export async function GET(req: NextRequest) {
   const hoyMD = `${mes}-${dia}`; // "MM-DD"
 
   // Buscar perros que cumplen años hoy (comparar mes-día de fecha_nac)
-  // Usamos LIKE en el formato YYYY-MM-DD: busca cualquier año con el mismo MM-DD
-  const { data: perros } = await admin
+  // fecha_nac es tipo `date`, que no soporta LIKE en Postgres: se trae todo y se filtra en JS.
+  const { data: perrosAll, error: perrosError } = await admin
     .from('perros')
     .select('id, nombre, fecha_nac, user_id, foto_url')
-    .like('fecha_nac', `%-${hoyMD}`);
+    .not('fecha_nac', 'is', null);
 
-  if (!perros || perros.length === 0) {
+  if (perrosError) {
+    console.error('[cumpleanos] query error:', perrosError);
+    return NextResponse.json({ error: 'query failed' }, { status: 500 });
+  }
+
+  const perros = (perrosAll ?? []).filter((p) => p.fecha_nac?.slice(5) === hoyMD);
+
+  if (perros.length === 0) {
     return NextResponse.json({ ok: true, procesados: 0 });
   }
 

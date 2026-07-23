@@ -39,13 +39,15 @@ export interface ResultadoBusquedaPerro {
 export async function buscarPerrosPorNombre(nombre: string): Promise<ResultadoBusquedaPerro[]> {
   if (!nombre.trim()) return [];
 
-  // 1. Buscar owners cuyo nombre/apellido coincida
-  const { data: profilesMatch } = await supabase
-    .from('profiles_public')
-    .select('id, nombre, apellido, ciudad')
-    .or(`nombre.ilike.%${nombre}%,apellido.ilike.%${nombre}%`)
-    .limit(20);
-  const ownerIds = (profilesMatch ?? []).map((p: Record<string, unknown>) => p.id as string);
+  // 1. Buscar owners cuyo nombre/apellido coincida.
+  // Dos queries separadas (no un solo .or()) porque el texto de búsqueda es libre y
+  // una coma o paréntesis rompería la sintaxis del filtro .or() de PostgREST.
+  const [porNombre, porApellido] = await Promise.all([
+    supabase.from('profiles_public').select('id, nombre, apellido, ciudad').ilike('nombre', `%${nombre}%`).limit(20),
+    supabase.from('profiles_public').select('id, nombre, apellido, ciudad').ilike('apellido', `%${nombre}%`).limit(20),
+  ]);
+  const profilesMatch = [...((porNombre.data ?? []) as Record<string, unknown>[]), ...((porApellido.data ?? []) as Record<string, unknown>[])];
+  const ownerIds = [...new Set(profilesMatch.map((p) => p.id as string))];
 
   // 2. Buscar perros y posts por nombre (sin join — profiles se resuelve aparte)
   const [r0, r1, r2, r3] = await Promise.all([

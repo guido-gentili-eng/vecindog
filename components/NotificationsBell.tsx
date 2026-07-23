@@ -104,9 +104,8 @@ export default function NotificationsBell() {
     try {
       await resolverPost(notif.post_id);
       await marcarLeida(notif.id);
-      // Extraer nombre del perro del mensaje
-      const match = notif.mensaje.match(/\(([^)]+)\)/);
-      setFoundModal({ nombre: match?.[1] ?? null });
+      const { data: post } = await supabase.from('posts').select('nombre').eq('id', notif.post_id).single();
+      setFoundModal({ nombre: post?.nombre ?? null });
       setOpen(false);
     } finally { setAccioning(null); }
   }

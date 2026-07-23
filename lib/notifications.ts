@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
@@ -40,9 +41,9 @@ export async function registrarPushToken(userId: string): Promise<string | null>
   }
 
   // Obtener token
-  const token = (await Notifications.getExpoPushTokenAsync({
-    projectId: 'vecindog',
-  })).data;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+  if (!projectId) return null;
+  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
 
   // Guardar en Supabase para poder enviar notificaciones desde el servidor
   if (token) {

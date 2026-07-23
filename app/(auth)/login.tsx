@@ -228,7 +228,12 @@ export default function LoginScreen() {
         >
           {googleLoading
             ? <ActivityIndicator color={Colors.ink} />
-            : <Text style={styles.googleBtnText}>{t.loginGoogle}</Text>
+            : (
+              <View style={styles.googleBtnContent}>
+                <View style={styles.googleDot} />
+                <Text style={styles.googleBtnText}>{t.loginGoogle}</Text>
+              </View>
+            )
           }
         </TouchableOpacity>
 
@@ -334,6 +339,8 @@ const styles = StyleSheet.create({
   dividerLine:  { flex: 1, height: 1, backgroundColor: Colors.border },
   dividerText:  { fontSize: 12, color: Colors.inkMuted, fontWeight: '600' },
   googleBtn:    { backgroundColor: Colors.white, borderRadius: 16, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
+  googleBtnContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  googleDot:    { width: 10, height: 10, borderRadius: 5, backgroundColor: '#4285F4' },
   googleBtnText: { fontSize: 15, fontWeight: '700', color: Colors.ink },
   guestBtn:     { alignItems: 'center', paddingVertical: 14, marginTop: 8 },
   guestBtnText: { fontSize: 14, fontWeight: '700', color: Colors.inkMuted, textDecorationLine: 'underline' },

@@ -135,9 +135,6 @@ function RootLayoutNav() {
       <Stack.Screen name="publicaciones/[id]"
         options={{ headerShown: true, title: t.headerAviso, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />
-      <Stack.Screen name="admin/reportes"
-        options={{ headerShown: true, title: t.headerReportes, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
-      />
       <Stack.Screen name="buscar-por-foto"
         options={{ headerShown: true, title: t.headerBuscarPorFoto, headerTintColor: Colors.primary, headerStyle: { backgroundColor: Colors.white }, headerShadowVisible: false }}
       />

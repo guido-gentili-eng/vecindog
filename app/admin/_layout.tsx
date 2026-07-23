@@ -20,6 +20,7 @@ function BackButton() {
 }
 
 export default function AdminLayout() {
+  const { t } = useLanguage();
   return (
     <Stack
       screenOptions={{
@@ -28,6 +29,8 @@ export default function AdminLayout() {
         headerShadowVisible: false,
         headerLeft:         () => <BackButton />,
       }}
-    />
+    >
+      <Stack.Screen name="reportes" options={{ title: t.headerReportes }} />
+    </Stack>
   );
 }

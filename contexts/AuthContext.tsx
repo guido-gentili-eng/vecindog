@@ -252,13 +252,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // que el cron de downgrade (app/api/cron/plan-vencido/route.ts), comparamos como strings de
   // fecha en UTC en vez de instanciar un Date a medianoche UTC y compararlo con "ahora" en hora
   // local, que le cortaba el Pro a usuarios de Argentina (UTC-3) hasta ~21hs antes de tiempo.
-  const isPro = useMemo(() => {
-    if (profile?.is_admin === true) return true;
-    if (profile?.plan !== 'pro') return false;
-    if (!profile.plan_vencimiento) return true;
-    const hoyStr = new Date().toISOString().slice(0, 10);
-    return profile.plan_vencimiento >= hoyStr;
-  }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
+  // Pro se volvió gratis para todos (decisión de negocio, jul/2026) — se deja el cálculo
+  // original comentado en vez de borrarlo por si se retoma el cobro más adelante.
+  const isPro = true;
+  // const isPro = useMemo(() => {
+  //   if (profile?.is_admin === true) return true;
+  //   if (profile?.plan !== 'pro') return false;
+  //   if (!profile.plan_vencimiento) return true;
+  //   const hoyStr = new Date().toISOString().slice(0, 10);
+  //   return profile.plan_vencimiento >= hoyStr;
+  // }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
   const isSuspendido = useMemo(
     () => profile?.suspendido === true && profile?.is_admin !== true,
     [profile?.suspendido, profile?.is_admin]

@@ -18,21 +18,10 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('plan, plan_vencimiento, is_admin')
-      .eq('id', user.id)
-      .single();
+    // Pro se volvió gratis para todos (jul/2026) — ya no se gatea esta función,
+    // pero se mantiene el rate limit de abajo para no exponer la API de Anthropic sin control.
 
-    const hoy = new Date().toISOString().slice(0, 10);
-    const isPro = profile?.plan === 'pro' &&
-      (!profile?.plan_vencimiento || profile.plan_vencimiento >= hoy);
-
-    if (!isPro && !profile?.is_admin) {
-      return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
-    }
-
-    // Sin esto, cualquier cuenta Pro/admin podía martillar la API de Anthropic
+    // Sin esto, cualquier cuenta podía martillar la API de Anthropic
     // sin límite (mismo problema que ai-help ya tenía resuelto).
     if (!(await checkRateLimit(`analizar-foto:${user.id}`, 20, 3600))) {
       return NextResponse.json({ error: 'Demasiadas consultas. Esperá un momento.' }, { status: 429 });

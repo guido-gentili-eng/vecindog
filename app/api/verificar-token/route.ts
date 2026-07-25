@@ -25,18 +25,8 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(token);
   if (!user) return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
 
-  // El QR de "Socio Vecindog" es un beneficio exclusivo de Pro — sin este check,
-  // cualquier usuario free podría pedir el token directo al endpoint sin pasar
-  // por el botón (que solo se muestra en el frontend si isPro).
-  const { data: perfil } = await admin
-    .from('profiles')
-    .select('plan, plan_vencimiento, is_admin')
-    .eq('id', user.id)
-    .single();
-  const hoy = new Date().toISOString().slice(0, 10);
-  const esPro = perfil?.is_admin === true ||
-    (perfil?.plan === 'pro' && (!perfil?.plan_vencimiento || perfil.plan_vencimiento >= hoy));
-  if (!esPro) return NextResponse.json({ error: 'Función exclusiva de VecindogPro' }, { status: 403 });
+  // El QR de "Socio Vecindog" era un beneficio exclusivo de Pro — Pro se volvió
+  // gratis para todos (jul/2026), así que ya no se gatea este token.
 
   let hmac: string;
   try {

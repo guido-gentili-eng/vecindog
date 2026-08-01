@@ -30,6 +30,8 @@ import {
 } from '@/lib/procedimientos';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
+import { captureRef } from 'react-native-view-shot';
 import { actualizarPerro, type EstadoSalud } from '@/lib/perros';
 import { buscarRazas, COLORES_PERRO } from '@/lib/razas';
 import { agregarVacuna, actualizarVacuna, eliminarVacuna, type Vacuna } from '@/lib/vacunas';
@@ -41,7 +43,7 @@ import {
 import {
   listarFotos, subirFotoGaleria, agregarFoto, eliminarFoto, type FotoPerro,
 } from '@/lib/fotosPerro';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, type Profile } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import SeccionHistorial from '@/components/SeccionHistorial';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -90,7 +92,7 @@ export default function PerroDetalleScreen() {
   const ESTADOS_SALUD = estadosSalud(t);
   const SECCIONES = secciones(t);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { isPro } = useAuth();
+  const { isPro, profile } = useAuth();
   const [perro,    setPerro]    = useState<Perro | null>(null);
   const [vacunas,  setVacunas]  = useState<Vacuna[]>([]);
   const [estudios, setEstudios] = useState<Estudio[]>([]);
@@ -430,8 +432,13 @@ export default function PerroDetalleScreen() {
         <Text style={styles.historiaBtnText}>{t.perroHistoriaBtn}</Text>
       </TouchableOpacity>
 
-      {/* QR de collar + accesos a herramientas web */}
-      <ExtrasSection perro={perro} perroId={id} />
+      {/* QR de collar + cartel/PDF/historia/timeline */}
+      <ExtrasSection
+        perro={perro}
+        perroId={id}
+        profile={profile}
+        registros={{ vacunas, desparasitaciones, medicamentos, pesos, visitasVet, procedimientos }}
+      />
 
       {/* Perfil extendido: alergias, veterinario, dirección, dieta, estado de salud */}
       <View style={styles.seccion}>
@@ -1253,17 +1260,145 @@ function TurnoWidget({
   );
 }
 
+type RegistrosMedicos = {
+  vacunas: Vacuna[]; desparasitaciones: Desparasitacion[]; medicamentos: Medicamento[];
+  pesos: Peso[]; visitasVet: VisitaVet[]; procedimientos: Procedimiento[];
+};
+
+type EventoTimeline = { fecha: string; emoji: string; titulo: string; sub?: string };
+
+function construirTimeline(r: RegistrosMedicos): EventoTimeline[] {
+  const eventos: EventoTimeline[] = [];
+  r.vacunas.forEach((v) => eventos.push({ fecha: v.fecha, emoji: '💉', titulo: `Vacuna: ${v.nombre}`, sub: v.veterinario || undefined }));
+  r.desparasitaciones.forEach((d) => eventos.push({ fecha: d.fecha, emoji: '🐛', titulo: `Desparasitación: ${d.producto}`, sub: d.veterinario || undefined }));
+  r.medicamentos.forEach((m) => eventos.push({ fecha: m.fecha_inicio, emoji: '💊', titulo: `Medicamento: ${m.nombre}`, sub: m.dosis || undefined }));
+  r.pesos.forEach((p) => eventos.push({ fecha: p.fecha, emoji: '⚖️', titulo: `Peso: ${p.valor_kg} kg` }));
+  r.visitasVet.forEach((vv) => eventos.push({ fecha: vv.fecha, emoji: '🏥', titulo: `Visita al veterinario: ${vv.motivo}`, sub: vv.diagnostico ?? undefined }));
+  r.procedimientos.forEach((pr) => eventos.push({ fecha: pr.fecha, emoji: '🔧', titulo: pr.tipo, sub: pr.descripcion || undefined }));
+  return eventos.filter((e) => e.fecha).sort((a, b) => b.fecha.localeCompare(a.fecha));
+}
+
+function construirCartelHTML(perro: Perro, profile: Profile | null, perdido: boolean): string {
+  const accent = perdido ? '#dc2626' : '#1e3a5f';
+  const accentBg = perdido ? '#fef2f2' : '#eff6ff';
+  const accentLight = perdido ? '#fee2e2' : '#dbeafe';
+  const nombreDuenio = profile ? `${profile.nombre} ${profile.apellido}` : '';
+  const telefono = profile?.telefono ?? '';
+  const digits = telefono.replace(/\D/g, '');
+  const waNum = digits ? (digits.startsWith('54') ? digits : `54${digits}`) : '';
+  const qrUrl = waNum ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`https://wa.me/${waNum}`)}` : '';
+  const caracteristicas = ([
+    ['Raza', perro.raza], ['Color', perro.color], ['Tamaño', perro.tamano],
+    ['Sexo', perro.sexo], ['Microchip', perro.chip],
+  ] as [string, string | undefined][]).filter(([, v]) => v);
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8" />
+  <style>body{font-family:Arial,sans-serif;margin:0;}</style></head><body>
+  <div>
+    <div style="height:8px;background:${accent};"></div>
+    <div style="padding:20px 24px 16px;border-bottom:2px solid ${accentLight};display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;">Vecindog · mivecindog.com.ar</p>
+        <p style="margin:2px 0 0;font-size:${perdido ? '28px' : '18px'};font-weight:900;color:${accent};letter-spacing:-0.5px;">
+          ${perdido ? '⚠ SE BUSCA · PERRO PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
+        </p>
+      </div>
+      <div style="background:${accent};color:#fff;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;">
+        ${perdido ? 'PERDIDO' : 'REGISTRADO'}
+      </div>
+    </div>
+    <div style="padding:20px 24px;display:flex;gap:20px;">
+      <div style="flex:0 0 auto;width:160px;">
+        ${perro.foto_url
+          ? `<img src="${perro.foto_url}" style="width:160px;height:190px;object-fit:cover;border-radius:10px;border:3px solid ${accent};display:block;" />`
+          : `<div style="width:160px;height:190px;background:${accentBg};border-radius:10px;border:3px solid ${accentLight};display:flex;align-items:center;justify-content:center;font-size:56px;">🐶</div>`
+        }
+        <div style="margin-top:8px;background:${accent};border-radius:8px;padding:6px 10px;text-align:center;">
+          <p style="margin:0;font-size:20px;font-weight:900;color:#fff;">${perro.nombre}</p>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div style="background:${accentBg};border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+          <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${accent};">Características</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            ${caracteristicas.map(([label, value]) => `
+              <tr>
+                <td style="padding:3px 8px 3px 0;color:#666;font-weight:600;width:90px;font-size:12px;">${label}</td>
+                <td style="padding:3px 0;color:#1a1a1a;font-weight:700;text-transform:capitalize;">${value}</td>
+              </tr>`).join('')}
+          </table>
+        </div>
+        ${perro.descripcion ? `
+        <div style="background:#f9f9f9;border-radius:8px;padding:10px 12px;margin-bottom:12px;border-left:3px solid ${accent};">
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${accent};">Descripción</p>
+          <p style="margin:0;font-size:12px;color:#444;line-height:1.5;">${perro.descripcion}</p>
+        </div>` : ''}
+        ${perro.direccion ? `
+        <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;">
+          📍 <strong>Zona:</strong> ${perro.direccion}
+        </div>` : ''}
+      </div>
+    </div>
+    <div style="margin:0 24px 20px;background:${accent};border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:20px;">
+      ${qrUrl ? `
+      <div style="flex:0 0 auto;text-align:center;">
+        <img src="${qrUrl}" style="width:90px;height:90px;border-radius:8px;background:#fff;padding:4px;display:block;" />
+        <p style="color:rgba(255,255,255,0.7);font-size:9px;margin:4px 0 0;text-align:center;font-weight:700;letter-spacing:1px;text-transform:uppercase;">WhatsApp</p>
+      </div>` : ''}
+      <div style="flex:1;">
+        <p style="color:rgba(255,255,255,0.7);font-size:10px;margin:0 0 2px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">Si lo encontraste, contactate</p>
+        ${nombreDuenio ? `<p style="color:#fff;font-size:15px;font-weight:800;margin:0 0 4px;">${nombreDuenio}</p>` : ''}
+        ${telefono ? `<p style="color:#fff;font-size:24px;font-weight:900;margin:0;letter-spacing:-0.5px;">${telefono}</p>` : ''}
+      </div>
+      <div style="flex:0 0 auto;text-align:center;opacity:0.4;">
+        <p style="color:#fff;font-size:22px;margin:0;">🐾</p>
+        <p style="color:#fff;font-size:8px;font-weight:700;letter-spacing:1px;margin:2px 0 0;">VECINDOG</p>
+      </div>
+    </div>
+    <div style="border-top:1px solid ${accentLight};padding:10px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <p style="margin:0;font-size:10px;color:#bbb;">Generado en <strong>mivecindog.com.ar</strong> · Red vecinal de mascotas · Argentina</p>
+      <div style="height:4px;width:80px;background:${accent};border-radius:2px;"></div>
+    </div>
+    <div style="height:8px;background:${accent};"></div>
+  </div>
+  </body></html>`;
+}
+
+async function perroEstaPerdido(perroId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('posts')
+    .select('id')
+    .eq('perro_id', perroId)
+    .eq('categoria', 'perdido')
+    .neq('estado', 'resuelto')
+    .limit(1)
+    .maybeSingle();
+  return !!data;
+}
+
 function ExtrasSection({
-  perro, perroId,
+  perro, perroId, profile, registros,
 }: {
-  perro: Perro; perroId: string;
+  perro: Perro; perroId: string; profile: Profile | null; registros: RegistrosMedicos;
 }) {
   const { t } = useLanguage();
   const [mostrarQR, setMostrarQR] = useState(false);
   const [compartiendoQR, setCompartiendoQR] = useState(false);
+  const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [historiaOpen, setHistoriaOpen] = useState(false);
+  const [perdidoHistoria, setPerdidoHistoria] = useState(false);
+  const [mostrarTelHistoria, setMostrarTelHistoria] = useState(true);
+  const [compartiendoHistoria, setCompartiendoHistoria] = useState(false);
+  const storyRef = useRef<View>(null);
 
   const urlHistoria = `https://www.mivecindog.com.ar/historia/${perroId}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlHistoria)}`;
+  const timeline = construirTimeline(registros);
+  const accentHistoria = perdidoHistoria ? Colors.bad : Colors.primary;
+  const caracteristicasHistoria = ([
+    ['Raza', perro.raza], ['Color', perro.color], ['Tamaño', perro.tamano], ['Sexo', perro.sexo],
+  ] as [string, string | undefined][]).filter(([, v]) => v);
 
   async function compartirQR() {
     setCompartiendoQR(true);
@@ -1279,6 +1414,43 @@ function ExtrasSection({
       Alert.alert(t.perfilErrorGeneric, t.perroErrCompartirQr);
     } finally {
       setCompartiendoQR(false);
+    }
+  }
+
+  async function handleCartelPDF() {
+    setGenerandoPdf(true);
+    try {
+      const perdido = await perroEstaPerdido(perroId);
+      const html = construirCartelHTML(perro, profile, perdido);
+      const { uri } = await Print.printToFileAsync({ html, base64: false });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
+      }
+    } catch {
+      Alert.alert(t.perfilErrorGeneric, t.perroErrPdf);
+    } finally {
+      setGenerandoPdf(false);
+    }
+  }
+
+  async function abrirHistoria() {
+    const perdido = await perroEstaPerdido(perroId);
+    setPerdidoHistoria(perdido);
+    setHistoriaOpen(true);
+  }
+
+  async function handleCompartirHistoria() {
+    if (!storyRef.current) return;
+    setCompartiendoHistoria(true);
+    try {
+      const uri = await captureRef(storyRef, { format: 'png', quality: 1 });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png' });
+      }
+    } catch {
+      Alert.alert(t.perfilErrorGeneric, t.perroErrHistoriaImg);
+    } finally {
+      setCompartiendoHistoria(false);
     }
   }
 
@@ -1303,22 +1475,141 @@ function ExtrasSection({
         )}
       </View>
 
-      {/* Herramientas que solo están en la web por ahora */}
+      {/* Cartel / historia / timeline / PDF — generados nativamente */}
       <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 14, gap: 8 }}>
         <Text style={styles.extraWebHint}>{t.perroExtraHint}</Text>
-        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/cartel`)}>
+        <TouchableOpacity style={styles.extraRow} onPress={handleCartelPDF} disabled={generandoPdf}>
           <Text style={styles.extraRowText}>{t.perroExtraCartel}</Text>
+          {generandoPdf && <ActivityIndicator size="small" color={Colors.primary} />}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/historia`)}>
+        <TouchableOpacity style={styles.extraRow} onPress={abrirHistoria}>
           <Text style={styles.extraRowText}>{t.perroExtraHistoria}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/timeline`)}>
+        <TouchableOpacity style={styles.extraRow} onPress={() => setTimelineOpen(true)}>
           <Text style={styles.extraRowText}>{t.perroExtraTimeline}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.extraRow} onPress={() => Linking.openURL(`https://www.mivecindog.com.ar/mis-perros/${perroId}/cartel`)}>
+        <TouchableOpacity style={styles.extraRow} onPress={handleCartelPDF} disabled={generandoPdf}>
           <Text style={styles.extraRowText}>{t.perroExtraCarnetPdf}</Text>
+          {generandoPdf && <ActivityIndicator size="small" color={Colors.primary} />}
         </TouchableOpacity>
       </View>
+
+      {/* Modal: línea de tiempo */}
+      <Modal visible={timelineOpen} transparent animationType="slide" onRequestClose={() => setTimelineOpen(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { maxHeight: '75%' }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.ink }}>{t.perroTimelineTitle}</Text>
+              <TouchableOpacity onPress={() => setTimelineOpen(false)}>
+                <Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 420 }}>
+              {timeline.length === 0 ? (
+                <Text style={styles.emptyRowText}>{t.perroTimelineVacio}</Text>
+              ) : (
+                timeline.map((ev, i) => (
+                  <View key={i} style={{ flexDirection: 'row', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
+                    <Text style={{ fontSize: 18 }}>{ev.emoji}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: Colors.ink }}>{ev.titulo}</Text>
+                      {ev.sub ? <Text style={{ fontSize: 11, color: Colors.inkMuted, marginTop: 1 }}>{ev.sub}</Text> : null}
+                      <Text style={{ fontSize: 11, color: Colors.inkMuted, marginTop: 2, fontWeight: '600' }}>{fmt(ev.fecha)}</Text>
+                    </View>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal: historia para Instagram/Facebook */}
+      <Modal visible={historiaOpen} transparent animationType="slide" onRequestClose={() => setHistoriaOpen(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { maxHeight: '90%' }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%' }}>
+              <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.ink }}>{t.perroHistoriaTitle}</Text>
+              <TouchableOpacity onPress={() => setHistoriaOpen(false)}>
+                <Text style={{ fontSize: 20, color: Colors.inkMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+
+            <View ref={storyRef} collapsable={false} style={{ width: 300, height: 533, backgroundColor: '#0a0a0a', borderRadius: 20, overflow: 'hidden' }}>
+              <View style={{ height: 4, backgroundColor: accentHistoria }} />
+              <View style={{ padding: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8, fontWeight: '700', letterSpacing: 1.5, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>mivecindog.com.ar</Text>
+                  <Text style={{ fontSize: perdidoHistoria ? 15 : 12, fontWeight: '900', color: accentHistoria, marginTop: 2 }}>
+                    {perdidoHistoria ? '⚠ SE BUSCA · PERDIDO' : 'IDENTIFICACIÓN DE MASCOTA'}
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: accentHistoria, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ fontSize: 8, fontWeight: '800', color: '#fff', textTransform: 'uppercase' }}>{perdidoHistoria ? 'PERDIDO' : 'REGISTRADO'}</Text>
+                </View>
+              </View>
+              <View style={{ paddingHorizontal: 16, flexDirection: 'row', gap: 12 }}>
+                {perro.foto_url
+                  ? <Image source={{ uri: perro.foto_url }} style={{ width: 100, height: 116, borderRadius: 10, borderWidth: 2, borderColor: accentHistoria }} />
+                  : <View style={{ width: 100, height: 116, borderRadius: 10, backgroundColor: accentHistoria + '33', alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 32 }}>🐶</Text></View>
+                }
+                <View style={{ flex: 1, backgroundColor: accentHistoria + '22', borderRadius: 8, padding: 8 }}>
+                  <Text style={{ fontSize: 7, fontWeight: '700', letterSpacing: 1.2, color: accentHistoria, textTransform: 'uppercase', marginBottom: 4 }}>Características</Text>
+                  {caracteristicasHistoria.map(([label, value]) => (
+                    <View key={label} style={{ flexDirection: 'row', marginBottom: 2 }}>
+                      <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: '600', width: 44 }}>{label}</Text>
+                      <Text style={{ fontSize: 9, color: '#fff', fontWeight: '700', flexShrink: 1 }}>{value}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <View style={{ margin: 12, backgroundColor: accentHistoria, borderRadius: 8, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: '700' }}>
+                    {perdidoHistoria ? 'Si lo encontraste, avisá' : 'Dueño'}
+                  </Text>
+                  {profile?.nombre && (
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', marginTop: 2 }}>{profile.nombre} {profile.apellido}</Text>
+                  )}
+                  {profile?.telefono && (
+                    <Text style={{ color: '#fff', fontSize: 15, fontWeight: '900', letterSpacing: 0.5, marginTop: 2 }}>
+                      {mostrarTelHistoria ? profile.telefono : profile.telefono.replace(/\d/g, '✱')}
+                    </Text>
+                  )}
+                </View>
+                <Text style={{ fontSize: 18, opacity: 0.5 }}>🐾</Text>
+              </View>
+              <View style={{ paddingVertical: 8, alignItems: 'center' }}>
+                <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.7)' }}>{t.perroHistoriaFelizYSano}</Text>
+                <Text style={{ fontSize: 12, fontWeight: '900', color: '#fff', marginTop: 2 }}>{t.perroHistoriaSocio}</Text>
+                <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: '800', marginTop: 6 }}>www.mivecindog.com.ar</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14 }}
+              onPress={() => setMostrarTelHistoria((v) => !v)}
+            >
+              <View style={[styles.estadoChip, mostrarTelHistoria && styles.estadoChipActive]}>
+                <Text style={[styles.estadoChipText, mostrarTelHistoria && styles.estadoChipTextActive]}>{t.perroHistoriaMostrarTel}</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.guardarPerfilBtn, { width: '100%', marginTop: 14 }]}
+              onPress={handleCompartirHistoria}
+              disabled={compartiendoHistoria}
+            >
+              {compartiendoHistoria
+                ? <ActivityIndicator color={Colors.white} size="small" />
+                : <Text style={styles.guardarPerfilBtnText}>{t.perroHistoriaCompartir}</Text>
+              }
+            </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

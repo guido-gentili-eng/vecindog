@@ -65,8 +65,6 @@ export interface Translations {
   tabPerfil: string;
   // ── Avisos (listado) ─────────────────────────────────
   avisosTitle: string;
-  avisosVerResueltos: string;
-  avisosIncluyeResueltos: string;
   avisosSearchPh: string;
   avisosCatTodos: string;
   avisosCatPerdido: string;
@@ -141,6 +139,13 @@ export interface Translations {
   perfilLinkTerminos: string;
   perfilLinkPrivacidad: string;
   perfilIdioma: string;
+  perfilBiometricTitle: string;
+  perfilBiometricSub: string;
+  perfilBiometricEnableFail: string;
+  lockScreenTitle: string;
+  lockScreenSub: string;
+  lockScreenBtn: string;
+  lockScreenSalir: string;
   perfilCerrarSesion: string;
   perfilCerrarSesionConfirm: string;
   perfilCerrarSesionSalir: string;
@@ -303,6 +308,15 @@ export interface Translations {
   perroErrGuardarAirtag: string;
   perroErrSubirArchivo: string;
   perroErrCompartirQr: string;
+  perroErrPdf: string;
+  perroErrHistoriaImg: string;
+  perroTimelineTitle: string;
+  perroTimelineVacio: string;
+  perroHistoriaTitle: string;
+  perroHistoriaMostrarTel: string;
+  perroHistoriaCompartir: string;
+  perroHistoriaFelizYSano: string;
+  perroHistoriaSocio: string;
   perroNoEncontrado: string;
   perroErrCargarTitle: string;
   perroErrCargarSub: string;
@@ -377,6 +391,9 @@ export interface Translations {
   notifEmptySub: string;
   notifAceptar: string;
   notifRechazar: string;
+  notifLoEncontre: string;
+  notifSigoBuscando: string;
+  notifErrGeneric: string;
   notifHacePrefix: string;
   notifMinSuffix: string;
   notifHsSuffix: string;
@@ -896,7 +913,8 @@ export interface Translations {
   pbTeniaCollar: string;
   pbTeniaChapitaPlaquita: string;
   pbUbicacionLabel: string;
-  pbUbicacionCapturadaPrefix: string;
+  pbUbicacionConfirmada: string;
+  pbUbicacionCambiar: string;
   pbPermisoDenegadoMapa: string;
   pbUsarUbicacionActual: string;
   pbDireccionZonaLabel: string;
@@ -990,8 +1008,6 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     tabMisPerros: 'Mis perros',
     tabPerfil: 'Perfil',
     avisosTitle: 'Avisos',
-    avisosVerResueltos: 'Ver resueltos',
-    avisosIncluyeResueltos: '✅ Incluye resueltos',
     avisosSearchPh: '🔍  Buscar por nombre, raza, zona…',
     avisosCatTodos: 'Todos',
     avisosCatPerdido: 'Perdido',
@@ -1063,6 +1079,13 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilLinkTerminos: '📄  Términos y Condiciones',
     perfilLinkPrivacidad: '🔒  Política de Privacidad',
     perfilIdioma: '🌐  Idioma',
+    perfilBiometricTitle: 'Desbloqueo biométrico',
+    perfilBiometricSub: 'Usá Face ID o Touch ID para entrar más rápido la próxima vez.',
+    perfilBiometricEnableFail: 'No se pudo verificar tu identidad. Probá de nuevo.',
+    lockScreenTitle: 'Vecindog',
+    lockScreenSub: 'Desbloqueá con Face ID o Touch ID para continuar.',
+    lockScreenBtn: 'Desbloquear',
+    lockScreenSalir: 'Cerrar sesión',
     perfilCerrarSesion: 'Cerrar sesión',
     perfilCerrarSesionConfirm: '¿Estás seguro?',
     perfilCerrarSesionSalir: 'Salir',
@@ -1198,7 +1221,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroSeccionExtras: '✨  Extras',
     perroQrCollar: '📱  QR para el collar',
     perroCompartirQr: 'Compartir QR',
-    perroExtraHint: 'Estas herramientas por ahora solo están disponibles en la web (te va a pedir iniciar sesión la primera vez):',
+    perroExtraHint: 'Generá y compartí estos documentos directo desde la app:',
     perroExtraCartel: '🚨  Cartel de perdido',
     perroExtraHistoria: '📸  Historia para Instagram/Facebook',
     perroExtraTimeline: '🗓️  Línea de tiempo',
@@ -1223,6 +1246,15 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroErrGuardarAirtag: 'No se pudo guardar el AirTag. Verificá tu conexión.',
     perroErrSubirArchivo: 'No se pudo subir el archivo. Verificá tu conexión.',
     perroErrCompartirQr: 'No se pudo compartir el QR.',
+    perroErrPdf: 'No se pudo generar el PDF.',
+    perroErrHistoriaImg: 'No se pudo generar la imagen.',
+    perroTimelineTitle: '🗓️  Línea de tiempo',
+    perroTimelineVacio: 'Todavía no hay registros médicos cargados.',
+    perroHistoriaTitle: '📸  Historia para Instagram/Facebook',
+    perroHistoriaMostrarTel: 'Mostrar teléfono en la imagen',
+    perroHistoriaCompartir: 'Compartir',
+    perroHistoriaFelizYSano: 'feliz y sano 🎉',
+    perroHistoriaSocio: 'Soy socio de Vecindog 🐾',
     perroNoEncontrado: 'Perro no encontrado',
     perroErrCargarTitle: 'No se pudo cargar',
     perroErrCargarSub: 'Verificá tu conexión e intentá de nuevo.',
@@ -1295,6 +1327,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     notifEmptySub: 'Te avisaremos cuando haya avisos cerca de tu casa.',
     notifAceptar: '✓ Aceptar',
     notifRechazar: '✕ Rechazar',
+    notifLoEncontre: '¡Lo encontré!',
+    notifSigoBuscando: 'Lo sigo buscando',
+    notifErrGeneric: 'Ocurrió un error. Probá de nuevo.',
     notifHacePrefix: 'Hace',
     notifMinSuffix: 'min',
     notifHsSuffix: 'h',
@@ -1797,7 +1832,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     pbTeniaCollar: '¿Tenía collar?',
     pbTeniaChapitaPlaquita: '¿Tenía chapita / plaquita identificadora?',
     pbUbicacionLabel: 'Ubicación en el mapa',
-    pbUbicacionCapturadaPrefix: '📍 Ubicación capturada (',
+    pbUbicacionConfirmada: '✓ Ubicación GPS capturada',
+    pbUbicacionCambiar: 'Cambiar',
     pbPermisoDenegadoMapa: '⚠️  Permiso denegado — el aviso no aparecerá en el mapa',
     pbUsarUbicacionActual: '📍  Usar mi ubicación actual',
     pbDireccionZonaLabel: 'Dirección o zona *',
@@ -1889,8 +1925,6 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     tabMisPerros: 'My dogs',
     tabPerfil: 'Profile',
     avisosTitle: 'Posts',
-    avisosVerResueltos: 'Show resolved',
-    avisosIncluyeResueltos: '✅ Includes resolved',
     avisosSearchPh: '🔍  Search by name, breed, area…',
     avisosCatTodos: 'All',
     avisosCatPerdido: 'Lost',
@@ -1962,6 +1996,13 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilLinkTerminos: '📄  Terms and Conditions',
     perfilLinkPrivacidad: '🔒  Privacy Policy',
     perfilIdioma: '🌐  Language',
+    perfilBiometricTitle: 'Biometric unlock',
+    perfilBiometricSub: 'Use Face ID or Touch ID to log in faster next time.',
+    perfilBiometricEnableFail: 'We could not verify your identity. Try again.',
+    lockScreenTitle: 'Vecindog',
+    lockScreenSub: 'Unlock with Face ID or Touch ID to continue.',
+    lockScreenBtn: 'Unlock',
+    lockScreenSalir: 'Log out',
     perfilCerrarSesion: 'Log out',
     perfilCerrarSesionConfirm: 'Are you sure?',
     perfilCerrarSesionSalir: 'Log out',
@@ -2097,7 +2138,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroSeccionExtras: '✨  Extras',
     perroQrCollar: '📱  QR for the collar',
     perroCompartirQr: 'Share QR',
-    perroExtraHint: 'These tools are only available on the web for now (it will ask you to log in the first time):',
+    perroExtraHint: 'Generate and share these documents right from the app:',
     perroExtraCartel: '🚨  Lost dog poster',
     perroExtraHistoria: '📸  Story for Instagram/Facebook',
     perroExtraTimeline: '🗓️  Timeline',
@@ -2122,6 +2163,15 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroErrGuardarAirtag: "We couldn't save the AirTag. Check your connection.",
     perroErrSubirArchivo: "We couldn't upload the file. Check your connection.",
     perroErrCompartirQr: "We couldn't share the QR.",
+    perroErrPdf: "We couldn't generate the PDF.",
+    perroErrHistoriaImg: "We couldn't generate the image.",
+    perroTimelineTitle: '🗓️  Timeline',
+    perroTimelineVacio: 'No medical records yet.',
+    perroHistoriaTitle: '📸  Story for Instagram/Facebook',
+    perroHistoriaMostrarTel: 'Show phone number in the image',
+    perroHistoriaCompartir: 'Share',
+    perroHistoriaFelizYSano: 'happy and healthy 🎉',
+    perroHistoriaSocio: "I'm a Vecindog member 🐾",
     perroNoEncontrado: 'Dog not found',
     perroErrCargarTitle: "Couldn't load",
     perroErrCargarSub: 'Check your connection and try again.',
@@ -2194,6 +2244,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     notifEmptySub: "We'll let you know when there are posts near your home.",
     notifAceptar: '✓ Accept',
     notifRechazar: '✕ Decline',
+    notifLoEncontre: 'I found it!',
+    notifSigoBuscando: "I'm still looking",
+    notifErrGeneric: 'Something went wrong. Try again.',
     notifHacePrefix: '',
     notifMinSuffix: 'min ago',
     notifHsSuffix: 'h ago',
@@ -2696,7 +2749,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     pbTeniaCollar: 'Did it have a collar?',
     pbTeniaChapitaPlaquita: 'Did it have an ID tag?',
     pbUbicacionLabel: 'Location on the map',
-    pbUbicacionCapturadaPrefix: '📍 Location captured (',
+    pbUbicacionConfirmada: '✓ GPS location captured',
+    pbUbicacionCambiar: 'Change',
     pbPermisoDenegadoMapa: "⚠️  Permission denied — the post won't show up on the map",
     pbUsarUbicacionActual: '📍  Use my current location',
     pbDireccionZonaLabel: 'Address or area *',
@@ -2788,8 +2842,6 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     tabMisPerros: 'Meus cães',
     tabPerfil: 'Perfil',
     avisosTitle: 'Avisos',
-    avisosVerResueltos: 'Ver resolvidos',
-    avisosIncluyeResueltos: '✅ Inclui resolvidos',
     avisosSearchPh: '🔍  Buscar por nome, raça, zona…',
     avisosCatTodos: 'Todos',
     avisosCatPerdido: 'Perdido',
@@ -2861,6 +2913,13 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilLinkTerminos: '📄  Termos e Condições',
     perfilLinkPrivacidad: '🔒  Política de Privacidade',
     perfilIdioma: '🌐  Idioma',
+    perfilBiometricTitle: 'Desbloqueio biométrico',
+    perfilBiometricSub: 'Use Face ID ou Touch ID para entrar mais rápido na próxima vez.',
+    perfilBiometricEnableFail: 'Não foi possível verificar sua identidade. Tente novamente.',
+    lockScreenTitle: 'Vecindog',
+    lockScreenSub: 'Desbloqueie com Face ID ou Touch ID para continuar.',
+    lockScreenBtn: 'Desbloquear',
+    lockScreenSalir: 'Sair',
     perfilCerrarSesion: 'Sair',
     perfilCerrarSesionConfirm: 'Tem certeza?',
     perfilCerrarSesionSalir: 'Sair',
@@ -2996,7 +3055,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroSeccionExtras: '✨  Extras',
     perroQrCollar: '📱  QR para a coleira',
     perroCompartirQr: 'Compartilhar QR',
-    perroExtraHint: 'Estas ferramentas por enquanto só estão disponíveis na web (vai pedir para você entrar na primeira vez):',
+    perroExtraHint: 'Gere e compartilhe estes documentos direto do app:',
     perroExtraCartel: '🚨  Cartaz de perdido',
     perroExtraHistoria: '📸  História para Instagram/Facebook',
     perroExtraTimeline: '🗓️  Linha do tempo',
@@ -3021,6 +3080,15 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perroErrGuardarAirtag: 'Não foi possível salvar o AirTag. Verifique sua conexão.',
     perroErrSubirArchivo: 'Não foi possível enviar o arquivo. Verifique sua conexão.',
     perroErrCompartirQr: 'Não foi possível compartilhar o QR.',
+    perroErrPdf: 'Não foi possível gerar o PDF.',
+    perroErrHistoriaImg: 'Não foi possível gerar a imagem.',
+    perroTimelineTitle: '🗓️  Linha do tempo',
+    perroTimelineVacio: 'Ainda não há registros médicos.',
+    perroHistoriaTitle: '📸  História para Instagram/Facebook',
+    perroHistoriaMostrarTel: 'Mostrar telefone na imagem',
+    perroHistoriaCompartir: 'Compartilhar',
+    perroHistoriaFelizYSano: 'feliz e saudável 🎉',
+    perroHistoriaSocio: 'Sou sócio da Vecindog 🐾',
     perroNoEncontrado: 'Cão não encontrado',
     perroErrCargarTitle: 'Não foi possível carregar',
     perroErrCargarSub: 'Verifique sua conexão e tente novamente.',
@@ -3093,6 +3161,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     notifEmptySub: 'Vamos avisar quando houver avisos perto da sua casa.',
     notifAceptar: '✓ Aceitar',
     notifRechazar: '✕ Recusar',
+    notifLoEncontre: 'Já encontrei!',
+    notifSigoBuscando: 'Ainda estou procurando',
+    notifErrGeneric: 'Ocorreu um erro. Tente novamente.',
     notifHacePrefix: 'Há',
     notifMinSuffix: 'min',
     notifHsSuffix: 'h',
@@ -3595,7 +3666,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     pbTeniaCollar: 'Tinha coleira?',
     pbTeniaChapitaPlaquita: 'Tinha plaquinha identificadora?',
     pbUbicacionLabel: 'Localização no mapa',
-    pbUbicacionCapturadaPrefix: '📍 Localização capturada (',
+    pbUbicacionConfirmada: '✓ Localização GPS capturada',
+    pbUbicacionCambiar: 'Alterar',
     pbPermisoDenegadoMapa: '⚠️  Permissão negada — o aviso não aparecerá no mapa',
     pbUsarUbicacionActual: '📍  Usar minha localização atual',
     pbDireccionZonaLabel: 'Endereço ou zona *',

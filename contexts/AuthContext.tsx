@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -36,6 +38,7 @@ interface AuthCtx {
   signIn:          (email: string, pw: string) => Promise<string | null>;
   signUp:          (email: string, pw: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signInWithGoogle: () => Promise<string | null>;
+  signInWithApple:  () => Promise<string | null>;
   resetPassword:   (email: string) => Promise<string | null>;
   signOut:         () => Promise<void>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
@@ -135,6 +138,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  const signInWithApple = async (): Promise<string | null> => {
+    try {
+      const rawNonce = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+      if (!credential.identityToken) return 'No se pudo completar el ingreso con Apple.';
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+        nonce: rawNonce,
+      });
+      if (error) return error.message;
+      exitGuest();
+
+      // Apple solo manda el nombre completo la primera vez que el usuario autoriza la app.
+      if (credential.fullName?.givenName && data.user) {
+        const { data: existente } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle();
+        if (!existente) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            nombre: credential.fullName.givenName ?? '',
+            apellido: credential.fullName.familyName ?? '',
+          });
+        }
+      }
+      return null;
+    } catch (e: any) {
+      if (e?.code === 'ERR_REQUEST_CANCELED') return null; // el usuario canceló, no es un error real
+      return 'No se pudo completar el ingreso con Apple.';
+    }
+  };
+
   const resetPassword = async (email: string): Promise<string | null> => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: Linking.createURL('reset-password'),
@@ -156,13 +198,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
-  const isPro = useMemo(() => {
-    if (profile?.is_admin === true) return true;
-    if (profile?.plan !== 'pro') return false;
-    if (!profile.plan_vencimiento) return true;
-    const exp = new Date(profile.plan_vencimiento);
-    return !isNaN(exp.getTime()) && exp > new Date();
-  }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
+  // Pro se volvió gratis para todos (decisión de negocio, jul/2026) — se deja el cálculo
+  // original comentado en vez de borrarlo por si se retoma el cobro más adelante.
+  const isPro = true;
+  // const isPro = useMemo(() => {
+  //   if (profile?.is_admin === true) return true;
+  //   if (profile?.plan !== 'pro') return false;
+  //   if (!profile.plan_vencimiento) return true;
+  //   const exp = new Date(profile.plan_vencimiento);
+  //   return !isNaN(exp.getTime()) && exp > new Date();
+  // }, [profile?.plan, profile?.plan_vencimiento, profile?.is_admin]);
 
   return (
     <AuthContext.Provider value={{
@@ -171,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isGuest,
       hasChosen: !!user || isGuest,
       isPro,
-      signIn, signUp, signInWithGoogle, resetPassword, signOut, saveProfile,
+      signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, saveProfile,
       enterAsGuest, exitGuest,
     }}>
       {children}

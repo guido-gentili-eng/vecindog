@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, RefreshControl,
+  ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import CategoriaDot, { CATEGORIA_COLOR } from '@/components/CategoriaDot';
 import { aceptarSolicitud, rechazarEliminarAmistad } from '@/lib/amistades';
+import { resolverPost, renovarPost } from '@/lib/posts';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Notif {
@@ -117,6 +118,35 @@ export default function NotificacionesScreen() {
     }
   }
 
+  async function handleLoEncontre(n: Notif) {
+    if (!n.post_id) return;
+    setProcesando(n.id);
+    try {
+      await resolverPost(n.post_id);
+      marcarLeida(n.id);
+      setProcesadas((prev) => new Set(prev).add(n.id));
+    } catch {
+      Alert.alert(t.perfilErrorGeneric, t.notifErrGeneric);
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  async function handleSigoBuscando(n: Notif) {
+    if (!n.post_id) return;
+    setProcesando(n.id);
+    try {
+      await renovarPost(n.post_id);
+      await supabase.from('posts').update({ notified_expiration: false }).eq('id', n.post_id);
+      marcarLeida(n.id);
+      setProcesadas((prev) => new Set(prev).add(n.id));
+    } catch {
+      Alert.alert(t.perfilErrorGeneric, t.notifErrGeneric);
+    } finally {
+      setProcesando(null);
+    }
+  }
+
   const noLeidas = notifs.filter((n) => !n.leida).length;
 
   function formatTiempo(iso: string) {
@@ -161,7 +191,10 @@ export default function NotificacionesScreen() {
           }
           renderItem={({ item: n }) => {
             const meta = metaAmistad(n);
-            const mostrarAcciones = !!meta && !procesadas.has(n.id);
+            const esExpiracion = n.tipo === 'expiracion' && !!n.post_id;
+            const mostrarAccionesAmistad = !!meta && !procesadas.has(n.id);
+            const mostrarAccionesExpiracion = esExpiracion && !procesadas.has(n.id);
+            const mostrarAcciones = mostrarAccionesAmistad || mostrarAccionesExpiracion;
             return (
             <TouchableOpacity
               style={[styles.card, !n.leida && styles.cardUnread]}
@@ -182,7 +215,7 @@ export default function NotificacionesScreen() {
                 <Text style={[styles.mensaje, !n.leida && { fontWeight: '700', color: Colors.ink }]}>
                   {n.mensaje}
                 </Text>
-                {mostrarAcciones && (
+                {mostrarAccionesAmistad && (
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                     <TouchableOpacity
                       style={styles.aceptarBtn}
@@ -199,6 +232,26 @@ export default function NotificacionesScreen() {
                       onPress={() => handleRechazarAmistad(n)}
                     >
                       <Text style={styles.rechazarBtnText}>{t.notifRechazar}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {mostrarAccionesExpiracion && (
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    <TouchableOpacity
+                      style={styles.aceptarBtn}
+                      disabled={procesando === n.id}
+                      onPress={() => handleLoEncontre(n)}
+                    >
+                      {procesando === n.id
+                        ? <ActivityIndicator size="small" color={Colors.good} />
+                        : <Text style={styles.aceptarBtnText}>{t.notifLoEncontre}</Text>}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.rechazarBtn}
+                      disabled={procesando === n.id}
+                      onPress={() => handleSigoBuscando(n)}
+                    >
+                      <Text style={styles.rechazarBtnText}>{t.notifSigoBuscando}</Text>
                     </TouchableOpacity>
                   </View>
                 )}

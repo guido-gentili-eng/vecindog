@@ -51,7 +51,14 @@
         }
       ],
       "expo-sharing",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Vecindog usa Face ID para desbloquear la app rápidamente."
+        }
+      ],
+      "expo-apple-authentication"
     ],
     "extra": {
       "eas": {

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Platform, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AiHelpButton from '@/components/AiHelpButton';
+import { isBiometricEnabled, authenticateWithBiometrics } from '@/lib/biometrics';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +126,7 @@ function RootLayoutNav() {
 
   return (
     <View style={{ flex: 1 }}>
+    <BiometricGate>
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)"            options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)"            options={{ headerShown: false }} />
@@ -143,9 +145,97 @@ function RootLayoutNav() {
       />
     </Stack>
     <AiHelpButton />
+    </BiometricGate>
     </View>
   );
 }
+
+function BiometricGate({ children }: { children: React.ReactNode }) {
+  const { t } = useLanguage();
+  const { isAuthenticated, loading, signOut } = useAuth();
+  const [ready, setReady] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
+  // Guarda si ya hay una autenticación en curso — expo-local-authentication
+  // no es reentrante: llamarlo dos veces en paralelo puede dejar la promesa
+  // colgada para siempre.
+  const inFlight = useRef(false);
+  // El chequeo de bloqueo corre UNA sola vez, al arrancar la app (cold start).
+  // Antes también se repetía cada vez que la app volvía de segundo plano,
+  // pero el propio diálogo nativo de Face ID dispara transiciones de
+  // AppState (inactive→active) mientras está en pantalla, lo que terminaba
+  // re-disparando el chequeo en paralelo y dejando la sesión en un estado
+  // inconsistente (llegó a cerrar sesión sola). Bloquear solo en cold start
+  // es menos estricto pero mucho más estable.
+  const checkedOnce = useRef(false);
+
+  useEffect(() => {
+    if (loading || checkedOnce.current) return;
+    checkedOnce.current = true;
+    (async () => {
+      if (isAuthenticated) {
+        const enabled = await isBiometricEnabled();
+        setLocked(enabled);
+      }
+      setReady(true);
+    })();
+  }, [loading, isAuthenticated]);
+
+  async function tryUnlock() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setAuthenticating(true);
+    try {
+      const ok = await authenticateWithBiometrics(t.lockScreenSub);
+      if (ok) setLocked(false);
+    } finally {
+      inFlight.current = false;
+      setAuthenticating(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!ready || !locked) return;
+    // Pequeño delay: si se dispara el prompt nativo apenas la pantalla de
+    // bloqueo se monta (cold start), el módulo puede quedarse colgado sin
+    // resolver nunca — dar tiempo a que la app esté totalmente activa.
+    const timer = setTimeout(() => { tryUnlock(); }, 400);
+    return () => clearTimeout(timer);
+  }, [ready, locked]);
+
+  if (!ready) return null;
+
+  if (locked) {
+    return (
+      <View style={lockStyles.container}>
+        <Text style={lockStyles.paw}>🐾</Text>
+        <Text style={lockStyles.title}>{t.lockScreenTitle}</Text>
+        <Text style={lockStyles.sub}>{t.lockScreenSub}</Text>
+        <TouchableOpacity style={lockStyles.btn} onPress={tryUnlock} disabled={authenticating}>
+          {authenticating
+            ? <ActivityIndicator color={Colors.white} />
+            : <Text style={lockStyles.btnText}>{t.lockScreenBtn}</Text>
+          }
+        </TouchableOpacity>
+        <TouchableOpacity style={{ marginTop: 18 }} onPress={signOut}>
+          <Text style={lockStyles.logout}>{t.lockScreenSalir}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+const lockStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.bg, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  paw:       { fontSize: 56, marginBottom: 8 },
+  title:     { fontSize: 26, fontWeight: '900', color: Colors.primary, marginBottom: 8 },
+  sub:       { fontSize: 14, color: Colors.inkMuted, textAlign: 'center', marginBottom: 28 },
+  btn:       { backgroundColor: Colors.primary, borderRadius: 16, paddingVertical: 15, paddingHorizontal: 32, alignItems: 'center' },
+  btnText:   { color: Colors.white, fontWeight: '800', fontSize: 15 },
+  logout:    { fontSize: 13, fontWeight: '700', color: Colors.inkMuted, textDecorationLine: 'underline' },
+});
 
 export default function RootLayout() {
   return (

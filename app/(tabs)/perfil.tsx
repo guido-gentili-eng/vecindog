@@ -13,6 +13,7 @@ import { subirArchivoEstudio } from '@/lib/estudios';
 import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, authenticateWithBiometrics } from '@/lib/biometrics';
 
 type PerroSOS = { id: string; nombre: string; raza: string | null; color: string | null; foto_url: string | null };
 
@@ -26,12 +27,34 @@ export default function PerfilScreen() {
   const [mostrarCiudadSug,  setMostrarCiudadSug]  = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
   const [perrosSOS, setPerrosSOS] = useState<PerroSOS[]>([]);
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricOn, setBiometricOn] = useState(false);
+  const [biometricBusy, setBiometricBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase.from('perros').select('id, nombre, raza, color, foto_url').eq('user_id', user.id).order('nombre')
       .then(({ data }) => setPerrosSOS(data ?? []));
   }, [user]);
+
+  useEffect(() => {
+    isBiometricAvailable().then(setBiometricSupported);
+    isBiometricEnabled().then(setBiometricOn);
+  }, []);
+
+  async function handleToggleBiometric(value: boolean) {
+    if (!value) {
+      await setBiometricEnabled(false);
+      setBiometricOn(false);
+      return;
+    }
+    setBiometricBusy(true);
+    const ok = await authenticateWithBiometrics(t.perfilBiometricTitle);
+    setBiometricBusy(false);
+    if (!ok) { Alert.alert(t.perfilErrorGeneric, t.perfilBiometricEnableFail); return; }
+    await setBiometricEnabled(true);
+    setBiometricOn(true);
+  }
 
   // Form state
   const [nombre,    setNombre]    = useState(profile?.nombre    ?? '');
@@ -315,6 +338,28 @@ export default function PerfilScreen() {
         <LanguageSwitcher />
       </View>
 
+      {/* Desbloqueo biométrico */}
+      {biometricSupported && (
+        <View style={styles.card}>
+          <View style={styles.biometricRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>{t.perfilBiometricTitle}</Text>
+              <Text style={styles.biometricSub}>{t.perfilBiometricSub}</Text>
+            </View>
+            {biometricBusy
+              ? <ActivityIndicator color={Colors.primary} />
+              : (
+                <Switch
+                  value={biometricOn}
+                  onValueChange={handleToggleBiometric}
+                  trackColor={{ true: Colors.primary }}
+                />
+              )
+            }
+          </View>
+        </View>
+      )}
+
       {/* Cerrar sesión */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOut}>
         <Text style={styles.logoutText}>{t.perfilCerrarSesion}</Text>
@@ -504,6 +549,8 @@ const styles = StyleSheet.create({
   logoutBtn:     { backgroundColor: '#fee2e2', borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   logoutText:    { color: Colors.bad, fontWeight: '700', fontSize: 15 },
   version:          { textAlign: 'center', color: Colors.inkMuted, fontSize: 11, marginTop: 20 },
+  biometricRow:     { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  biometricSub:     { fontSize: 12, color: Colors.inkMuted, marginTop: 4, lineHeight: 17 },
   emptyPrompt:      { alignItems: 'center', paddingVertical: 20, gap: 8 },
   emptyPromptEmoji: { fontSize: 36 },
   emptyPromptTitle: { fontSize: 16, fontWeight: '800', color: Colors.ink },

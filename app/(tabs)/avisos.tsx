@@ -34,12 +34,12 @@ async function fetchAvisosPage({
   pageParam,
   search,
   categoria,
-  verResueltos,
+  soloResueltos,
 }: {
   pageParam: string | null;
   search: string;
   categoria: string;
-  verResueltos: boolean;
+  soloResueltos: boolean;
 }): Promise<PostSummary[]> {
   let q = supabase
     .from('posts')
@@ -47,7 +47,7 @@ async function fetchAvisosPage({
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE);
 
-  if (!verResueltos) q = q.eq('estado', 'activo');
+  q = q.eq('estado', soloResueltos ? 'resuelto' : 'activo');
   if (categoria)     q = q.eq('categoria', categoria);
   if (pageParam)     q = q.lt('created_at', pageParam);
 
@@ -78,10 +78,10 @@ export default function AvisosScreen() {
     label: key === '' ? t.avisosCatTodos : CAT_LABEL[key],
   }));
   const { resueltos } = useLocalSearchParams<{ resueltos?: string }>();
+  const soloResueltos = resueltos === '1';
   const [search,         setSearch]         = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoria,      setCategoria]      = useState('');
-  const [verResueltos,   setVerResueltos]   = useState(resueltos === '1');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce: actualiza debouncedSearch 400ms después del último keystroke
@@ -101,9 +101,9 @@ export default function AvisosScreen() {
     isRefetching,
     isError,
   } = useInfiniteQuery({
-    queryKey:         ['avisos', debouncedSearch, categoria, verResueltos],
+    queryKey:         ['avisos', debouncedSearch, categoria, soloResueltos],
     queryFn:          ({ pageParam }) =>
-      fetchAvisosPage({ pageParam: pageParam as string | null, search: debouncedSearch, categoria, verResueltos }),
+      fetchAvisosPage({ pageParam: pageParam as string | null, search: debouncedSearch, categoria, soloResueltos }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage: PostSummary[]) => {
       if (lastPage.length < PAGE_SIZE) return undefined;
@@ -117,15 +117,7 @@ export default function AvisosScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{t.avisosTitle}</Text>
-          <TouchableOpacity
-            style={[styles.toggleBtn, verResueltos && styles.toggleBtnActive]}
-            onPress={() => setVerResueltos((v) => !v)}
-          >
-            <Text style={[styles.toggleText, verResueltos && styles.toggleTextActive]}>
-              {verResueltos ? t.avisosIncluyeResueltos : t.avisosVerResueltos}
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.title}>{soloResueltos ? t.vacTitle : t.avisosTitle}</Text>
         </View>
         <TextInput
           style={styles.search}
@@ -258,10 +250,6 @@ const styles = StyleSheet.create({
   header:          { backgroundColor: Colors.white, paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12 },
   titleRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   title:           { fontSize: 24, fontWeight: '900', color: Colors.ink },
-  toggleBtn:       { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white },
-  toggleBtnActive: { borderColor: Colors.good, backgroundColor: '#f0fdf4' },
-  toggleText:      { fontSize: 12, fontWeight: '600', color: Colors.inkMuted },
-  toggleTextActive: { color: Colors.good },
   search:    { backgroundColor: Colors.cream, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: Colors.ink },
   catRow:    { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   catChip:       { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },

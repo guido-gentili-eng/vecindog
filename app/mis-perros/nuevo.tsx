@@ -4,6 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Alert, Image, Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { File } from 'expo-file-system';
 import { resizeForUpload } from '@/lib/imageUtils';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -63,8 +64,8 @@ export default function NuevoPerroScreen() {
       if (fotoUri) {
         const path    = `perros/${Date.now()}.jpg`;
         const resized = await resizeForUpload(fotoUri);
-        const blob    = await fetch(resized).then((r) => r.blob());
-        const { error: upErr } = await supabase.storage.from('perros').upload(path, blob, { contentType: 'image/jpeg' });
+        const bytes   = new Uint8Array(await new File(resized).arrayBuffer());
+        const { error: upErr } = await supabase.storage.from('perros').upload(path, bytes, { contentType: 'image/jpeg' });
         if (!upErr) {
           const { data } = supabase.storage.from('perros').getPublicUrl(path);
           foto_url = data.publicUrl;

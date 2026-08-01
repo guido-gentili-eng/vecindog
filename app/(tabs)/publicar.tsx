@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { File } from 'expo-file-system';
 import { resizeForUpload } from '@/lib/imageUtils';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -93,8 +94,24 @@ export default function PublicarScreen() {
     }
     try {
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+      const { latitude: lat, longitude: lng } = loc.coords;
+      setCoords({ lat, lng });
       setLocStatus('ok');
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+          { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
+        );
+        const data = await res.json();
+        if (data?.address) {
+          const a = data.address;
+          const calle = a.road ?? a.pedestrian ?? a.footway ?? '';
+          const numero = a.house_number ?? '';
+          const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
+          const zonaTexto = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
+          if (zonaTexto) setZona(zonaTexto);
+        }
+      } catch { /* sin reverse geocode, el usuario puede escribir la dirección a mano */ }
     } catch {
       setLocStatus('denied');
     }
@@ -193,8 +210,8 @@ export default function PublicarScreen() {
       async function subirFoto(uri: string): Promise<string> {
         const path    = `${categoria}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
         const resized = await resizeForUpload(uri);
-        const blob    = await fetch(resized).then((r) => r.blob());
-        const { error } = await supabase.storage.from('posts').upload(path, blob, { contentType: 'image/jpeg' });
+        const bytes   = new Uint8Array(await new File(resized).arrayBuffer());
+        const { error } = await supabase.storage.from('posts').upload(path, bytes, { contentType: 'image/jpeg' });
         if (error) throw new Error(error.message);
         subidosPaths.push(path); // registrar solo cuando el upload fue exitoso
         setUploadedCount((n) => n + 1);
@@ -475,22 +492,27 @@ export default function PublicarScreen() {
 
       {/* Ubicación GPS */}
       <Text style={styles.label}>{t.pbUbicacionLabel}</Text>
-      <TouchableOpacity
-        style={[styles.locBtn, locStatus === 'ok' && styles.locBtnOk]}
-        onPress={capturarUbicacion}
-        disabled={locStatus === 'loading'}
-      >
-        {locStatus === 'loading'
-          ? <ActivityIndicator color={Colors.primary} size="small" />
-          : <Text style={[styles.locBtnText, locStatus === 'ok' && styles.locBtnTextOk]}>
-              {locStatus === 'ok'
-                ? `${t.pbUbicacionCapturadaPrefix}${coords!.lat.toFixed(4)}, ${coords!.lng.toFixed(4)})`
-                : locStatus === 'denied'
-                  ? t.pbPermisoDenegadoMapa
-                  : t.pbUsarUbicacionActual}
-            </Text>
-        }
-      </TouchableOpacity>
+      {locStatus === 'ok' ? (
+        <View style={[styles.locBtn, styles.locBtnOk, styles.locOkRow]}>
+          <Text style={[styles.locBtnText, styles.locBtnTextOk]}>{t.pbUbicacionConfirmada}</Text>
+          <TouchableOpacity onPress={() => { setLocStatus('idle'); setCoords(null); }}>
+            <Text style={styles.locCambiarText}>{t.pbUbicacionCambiar}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.locBtn}
+          onPress={capturarUbicacion}
+          disabled={locStatus === 'loading'}
+        >
+          {locStatus === 'loading'
+            ? <ActivityIndicator color={Colors.primary} size="small" />
+            : <Text style={styles.locBtnText}>
+                {locStatus === 'denied' ? t.pbPermisoDenegadoMapa : t.pbUsarUbicacionActual}
+              </Text>
+          }
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.label}>{t.pbDireccionZonaLabel}</Text>
       <View>
@@ -611,6 +633,8 @@ const styles = StyleSheet.create({
   locBtnOk:           { borderColor: Colors.good, backgroundColor: '#f0fdf4' },
   locBtnText:         { fontSize: 14, fontWeight: '600', color: Colors.inkMuted },
   locBtnTextOk:       { color: Colors.good },
+  locOkRow:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  locCambiarText:     { fontSize: 12, fontWeight: '600', color: Colors.inkMuted, textDecorationLine: 'underline' },
   perroDropBtn:       { borderWidth: 1.5, borderColor: Colors.primary, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 14, backgroundColor: '#fef0ec', alignItems: 'center' },
   perroDropBtnText:   { fontSize: 14, fontWeight: '700', color: Colors.primary },
   perroList:          { borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginTop: 6 },

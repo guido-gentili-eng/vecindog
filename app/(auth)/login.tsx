@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
@@ -11,12 +12,13 @@ import { Colors } from '@/constants/colors';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginScreen() {
-  const { signIn, signUp, signInWithGoogle, resetPassword, enterAsGuest } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, enterAsGuest } = useAuth();
   const { t } = useLanguage();
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [loading,    setLoading]    = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading,  setAppleLoading]  = useState(false);
   const [mode,          setMode]          = useState<'login' | 'register'>('login');
   const [recovering,    setRecovering]    = useState(false);
   const [confirm,       setConfirm]       = useState('');
@@ -47,6 +49,16 @@ export default function LoginScreen() {
       if (err) Alert.alert('Error', err);
     } finally {
       setGoogleLoading(false);
+    }
+  }
+
+  async function handleApple() {
+    setAppleLoading(true);
+    try {
+      const err = await signInWithApple();
+      if (err) Alert.alert('Error', err);
+    } finally {
+      setAppleLoading(false);
     }
   }
 
@@ -237,6 +249,22 @@ export default function LoginScreen() {
           }
         </TouchableOpacity>
 
+        {Platform.OS === 'ios' && (
+          appleLoading ? (
+            <View style={[styles.appleBtn, { alignItems: 'center', justifyContent: 'center' }]}>
+              <ActivityIndicator color={Colors.white} />
+            </View>
+          ) : (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={16}
+              style={styles.appleBtn}
+              onPress={handleApple}
+            />
+          )
+        )}
+
         <TouchableOpacity style={styles.guestBtn} onPress={handleGuest}>
           <Text style={styles.guestBtnText}>{t.loginGuest}</Text>
         </TouchableOpacity>
@@ -339,6 +367,7 @@ const styles = StyleSheet.create({
   dividerLine:  { flex: 1, height: 1, backgroundColor: Colors.border },
   dividerText:  { fontSize: 12, color: Colors.inkMuted, fontWeight: '600' },
   googleBtn:    { backgroundColor: Colors.white, borderRadius: 16, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
+  appleBtn:     { width: '100%', height: 50, marginTop: 12 },
   googleBtnContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   googleDot:    { width: 10, height: 10, borderRadius: 5, backgroundColor: '#4285F4' },
   googleBtnText: { fontSize: 15, fontWeight: '700', color: Colors.ink },

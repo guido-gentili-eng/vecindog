@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Linking, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { getAdForSlot, type Ad, type AdVariant } from '@/lib/ads';
 import { Colors } from '@/constants/colors';
@@ -36,8 +36,14 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
 
   if (!ad) {
     // House ad — auto-promo de Vecindog hacia /publicitate
+    // Guideline 2.1(b): en iOS este flujo de precios/planes se resuelve en la web, no nativo (ver AGENTS.md / auditoría 2026-08-02).
     return (
-      <TouchableOpacity style={styles.houseAd} onPress={() => router.push('/publicitate' as any)}>
+      <TouchableOpacity
+        style={styles.houseAd}
+        onPress={() => Platform.OS === 'ios'
+          ? Linking.openURL('https://www.mivecindog.com.ar/publicitate')
+          : router.push('/publicitate' as any)}
+      >
         <Text style={styles.adBadge}>{t.adPublicidad}</Text>
         <Text style={styles.houseAdTitle}>{t.adHouseTitle}</Text>
         <Text style={styles.houseAdSub}>{t.adHouseSub}</Text>

@@ -41,6 +41,7 @@ interface AuthCtx {
   signInWithApple:  () => Promise<string | null>;
   resetPassword:   (email: string) => Promise<string | null>;
   signOut:         () => Promise<void>;
+  deleteAccount:   () => Promise<string | null>;
   saveProfile:     (data: Omit<Profile, 'id'>) => Promise<string | null>;
   enterAsGuest:    () => void;
   exitGuest:       () => void;
@@ -190,6 +191,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     exitGuest();
   };
 
+  const deleteAccount = async (): Promise<string | null> => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (!currentSession) return 'No hay sesión activa.';
+    try {
+      const res = await fetch('https://www.mivecindog.com.ar/api/account/delete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentSession.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return data.error ?? 'No se pudo eliminar la cuenta.';
+      await supabase.auth.signOut();
+      setProfile(null);
+      exitGuest();
+      return null;
+    } catch {
+      return 'Hubo un problema de conexión. Probá de nuevo.';
+    }
+  };
+
   const saveProfile = async (data: Omit<Profile, 'id'>): Promise<string | null> => {
     if (!user) return 'No hay sesión activa.';
     const { error } = await supabase.from('profiles').upsert({ id: user.id, ...data });
@@ -216,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isGuest,
       hasChosen: !!user || isGuest,
       isPro,
-      signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, saveProfile,
+      signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, deleteAccount, saveProfile,
       enterAsGuest, exitGuest,
     }}>
       {children}

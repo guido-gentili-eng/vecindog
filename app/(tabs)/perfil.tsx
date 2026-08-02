@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Alert, Linking, TextInput,
-  ActivityIndicator, Switch, Image, Modal,
+  ActivityIndicator, Switch, Image, Modal, Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -19,9 +19,10 @@ type PerroSOS = { id: string; nombre: string; raza: string | null; color: string
 
 export default function PerfilScreen() {
   const { t } = useLanguage();
-  const { user, profile, isPro, isGuest, exitGuest, signOut, saveProfile } = useAuth();
+  const { user, profile, isPro, isGuest, exitGuest, signOut, deleteAccount, saveProfile } = useAuth();
   const [editando,   setEditando]   = useState(false);
   const [saving,     setSaving]     = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [ciudadSugerencias, setCiudadSugerencias] = useState<Ciudad[]>([]);
   const [mostrarCiudadSug,  setMostrarCiudadSug]  = useState(false);
@@ -137,6 +138,22 @@ export default function PerfilScreen() {
     Alert.alert(t.perfilCerrarSesion, t.perfilCerrarSesionConfirm, [
       { text: t.perfilCancelar, style: 'cancel' },
       { text: t.perfilCerrarSesionSalir, style: 'destructive', onPress: () => signOut() },
+    ]);
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(t.perfilEliminarCuentaConfirmTitle, t.perfilEliminarCuentaConfirmSub, [
+      { text: t.perfilCancelar, style: 'cancel' },
+      {
+        text: t.perfilEliminarCuentaBtn,
+        style: 'destructive',
+        onPress: async () => {
+          setDeletingAccount(true);
+          const err = await deleteAccount();
+          setDeletingAccount(false);
+          if (err) Alert.alert(t.perfilErrorGeneric, err);
+        },
+      },
     ]);
   }
 
@@ -307,7 +324,9 @@ export default function PerfilScreen() {
         />
         <MenuItem
           label={t.perfilLinkPublicitate}
-          onPress={() => router.push('/publicitate' as any)}
+          onPress={() => Platform.OS === 'ios'
+            ? Linking.openURL('https://www.mivecindog.com.ar/publicitate')
+            : router.push('/publicitate' as any)}
         />
         {user?.email === process.env.EXPO_PUBLIC_ADMIN_EMAIL && (
           <MenuItem
@@ -363,6 +382,17 @@ export default function PerfilScreen() {
       {/* Cerrar sesión */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOut}>
         <Text style={styles.logoutText}>{t.perfilCerrarSesion}</Text>
+      </TouchableOpacity>
+
+      {/* Eliminar cuenta */}
+      <TouchableOpacity
+        style={{ marginTop: 14, alignItems: 'center', paddingVertical: 8, opacity: deletingAccount ? 0.6 : 1 }}
+        onPress={handleDeleteAccount}
+        disabled={deletingAccount}
+      >
+        {deletingAccount
+          ? <ActivityIndicator color={Colors.inkMuted} />
+          : <Text style={{ color: Colors.inkMuted, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>{t.perfilEliminarCuenta}</Text>}
       </TouchableOpacity>
 
       <Text style={styles.version}>{t.perfilVersion}</Text>

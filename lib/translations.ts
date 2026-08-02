@@ -149,6 +149,11 @@ export interface Translations {
   perfilCerrarSesion: string;
   perfilCerrarSesionConfirm: string;
   perfilCerrarSesionSalir: string;
+  perfilEliminarCuenta: string;
+  perfilEliminarCuentaConfirmTitle: string;
+  perfilEliminarCuentaConfirmSub: string;
+  perfilEliminarCuentaBtn: string;
+  perfilEliminarCuentaEnCurso: string;
   perfilVersion: string;
   perfilPermisoDenegadoTitle: string;
   perfilPermisoDenegadoSub: string;
@@ -1089,6 +1094,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilCerrarSesion: 'Cerrar sesión',
     perfilCerrarSesionConfirm: '¿Estás seguro?',
     perfilCerrarSesionSalir: 'Salir',
+    perfilEliminarCuenta: 'Eliminar mi cuenta',
+    perfilEliminarCuentaConfirmTitle: 'Eliminar tu cuenta',
+    perfilEliminarCuentaConfirmSub: 'Se van a borrar tu perfil, tus perros, avisos, mensajes y toda tu información de Vecindog de forma permanente. Esta acción no se puede deshacer.',
+    perfilEliminarCuentaBtn: 'Eliminar cuenta',
+    perfilEliminarCuentaEnCurso: 'Eliminando tu cuenta…',
     perfilVersion: 'Vecindog v1.0.0 · mivecindog.com.ar',
     perfilPermisoDenegadoTitle: 'Permiso denegado',
     perfilPermisoDenegadoSub: 'Necesitamos acceso a tu galería',
@@ -2006,6 +2016,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilCerrarSesion: 'Log out',
     perfilCerrarSesionConfirm: 'Are you sure?',
     perfilCerrarSesionSalir: 'Log out',
+    perfilEliminarCuenta: 'Delete my account',
+    perfilEliminarCuentaConfirmTitle: 'Delete your account',
+    perfilEliminarCuentaConfirmSub: 'Your profile, dogs, posts, messages and all your Vecindog data will be permanently deleted. This action cannot be undone.',
+    perfilEliminarCuentaBtn: 'Delete account',
+    perfilEliminarCuentaEnCurso: 'Deleting your account…',
     perfilVersion: 'Vecindog v1.0.0 · mivecindog.com.ar',
     perfilPermisoDenegadoTitle: 'Permission denied',
     perfilPermisoDenegadoSub: 'We need access to your gallery',
@@ -2923,6 +2938,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     perfilCerrarSesion: 'Sair',
     perfilCerrarSesionConfirm: 'Tem certeza?',
     perfilCerrarSesionSalir: 'Sair',
+    perfilEliminarCuenta: 'Excluir minha conta',
+    perfilEliminarCuentaConfirmTitle: 'Excluir sua conta',
+    perfilEliminarCuentaConfirmSub: 'Seu perfil, cães, anúncios, mensagens e todos os seus dados do Vecindog serão excluídos permanentemente. Esta ação não pode ser desfeita.',
+    perfilEliminarCuentaBtn: 'Excluir conta',
+    perfilEliminarCuentaEnCurso: 'Excluindo sua conta…',
     perfilVersion: 'Vecindog v1.0.0 · mivecindog.com.ar',
     perfilPermisoDenegadoTitle: 'Permissão negada',
     perfilPermisoDenegadoSub: 'Precisamos de acesso à sua galeria',

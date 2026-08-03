@@ -24,6 +24,9 @@ export interface Translations {
   loginPendingTitle: string;
   loginPendingBodyPrefix: string;
   loginPendingBodySuffix: string;
+  loginCodigoPh: string;
+  loginConfirmarBtn: string;
+  loginCodigoErr: string;
   loginResend: string;
   loginAlreadyConfirmed: string;
   loginErrFields: string;
@@ -973,8 +976,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     loginTermsSuffix: ', incluyendo el tratamiento de mis datos personales conforme a la Ley 25.326.',
     loginAgeConsent: 'Confirmo que tengo 13 años o más. Las personas menores de 13 años no pueden registrarse en Vecindog.',
     loginPendingTitle: 'Confirmá tu cuenta',
-    loginPendingBodyPrefix: 'Te enviamos un link a',
-    loginPendingBodySuffix: 'Tocá el link del email para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.',
+    loginPendingBodyPrefix: 'Te enviamos un código a',
+    loginPendingBodySuffix: 'Ingresá el código de 6 dígitos para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.',
+    loginCodigoPh: 'Código de 6 dígitos',
+    loginConfirmarBtn: 'Confirmar cuenta',
+    loginCodigoErr: 'Código inválido o vencido. Probá reenviarlo.',
     loginResend: 'Reenviar email de confirmación',
     loginAlreadyConfirmed: 'Ya confirmé → Iniciar sesión',
     loginErrFields: 'Completá todos los campos',
@@ -1895,8 +1901,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     loginTermsSuffix: ', including the processing of my personal data.',
     loginAgeConsent: 'I confirm I am 13 years or older. People under 13 cannot register on Vecindog.',
     loginPendingTitle: 'Confirm your account',
-    loginPendingBodyPrefix: 'We sent a link to',
-    loginPendingBodySuffix: "Tap the link in the email to activate your account. If you don't see it, check your spam folder.",
+    loginPendingBodyPrefix: 'We sent a code to',
+    loginPendingBodySuffix: "Enter the 6-digit code to activate your account. If you don't see it, check your spam folder.",
+    loginCodigoPh: '6-digit code',
+    loginConfirmarBtn: 'Confirm account',
+    loginCodigoErr: 'Invalid or expired code. Try resending it.',
     loginResend: 'Resend confirmation email',
     loginAlreadyConfirmed: 'Already confirmed → Log in',
     loginErrFields: 'Fill in all the fields',
@@ -2817,8 +2826,11 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     loginTermsSuffix: ', incluindo o tratamento dos meus dados pessoais.',
     loginAgeConsent: 'Confirmo que tenho 13 anos ou mais. Menores de 13 anos não podem se cadastrar no Vecindog.',
     loginPendingTitle: 'Confirme sua conta',
-    loginPendingBodyPrefix: 'Enviamos um link para',
-    loginPendingBodySuffix: 'Toque no link do email para ativar sua conta. Se não encontrar, verifique a pasta de spam.',
+    loginPendingBodyPrefix: 'Enviamos um código para',
+    loginPendingBodySuffix: 'Digite o código de 6 dígitos para ativar sua conta. Se não encontrar, verifique a pasta de spam.',
+    loginCodigoPh: 'Código de 6 dígitos',
+    loginConfirmarBtn: 'Confirmar conta',
+    loginCodigoErr: 'Código inválido ou expirado. Tente reenviar.',
     loginResend: 'Reenviar email de confirmação',
     loginAlreadyConfirmed: 'Já confirmei → Entrar',
     loginErrFields: 'Preencha todos os campos',

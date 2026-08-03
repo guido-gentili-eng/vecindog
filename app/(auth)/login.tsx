@@ -24,6 +24,8 @@ export default function LoginScreen() {
   const [confirm,       setConfirm]       = useState('');
   const [pendingEmail,  setPendingEmail]  = useState<string | null>(null);
   const [resending,     setResending]     = useState(false);
+  const [codigo,        setCodigo]        = useState('');
+  const [verificando,   setVerificando]   = useState(false);
   const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const [esMayorEdad,    setEsMayorEdad]    = useState(false);
 
@@ -90,6 +92,20 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleVerificarCodigo() {
+    if (!pendingEmail || !codigo.trim()) return;
+    setVerificando(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: pendingEmail,
+      token: codigo.trim(),
+      type: 'signup',
+    });
+    setVerificando(false);
+    if (error) Alert.alert('Error', t.loginCodigoErr);
+    // Si no hay error, el listener onAuthStateChange de AuthContext detecta la
+    // sesion nueva y el _layout.tsx raiz redirige solo a (tabs).
+  }
+
   async function handleResend() {
     if (!pendingEmail) return;
     setResending(true);
@@ -114,14 +130,35 @@ export default function LoginScreen() {
             {'\n\n'}{t.loginPendingBodySuffix}
           </Text>
 
+          <TextInput
+            style={[styles.input, { width: '100%', textAlign: 'center', fontSize: 20, letterSpacing: 4, marginTop: 20 }]}
+            value={codigo}
+            onChangeText={setCodigo}
+            placeholder={t.loginCodigoPh}
+            placeholderTextColor={Colors.inkMuted}
+            keyboardType="number-pad"
+            maxLength={6}
+          />
+
           <TouchableOpacity
-            style={[styles.btn, resending && styles.btnDisabled]}
+            style={[styles.btn, (verificando || !codigo.trim()) && styles.btnDisabled, { marginTop: 12 }]}
+            onPress={handleVerificarCodigo}
+            disabled={verificando || !codigo.trim()}
+          >
+            {verificando
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.btnText}>{t.loginConfirmarBtn}</Text>
+            }
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.btn, styles.btnOutline, resending && styles.btnDisabled, { marginTop: 12 }]}
             onPress={handleResend}
             disabled={resending}
           >
             {resending
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.btnText}>{t.loginResend}</Text>
+              ? <ActivityIndicator color={Colors.primary} />
+              : <Text style={styles.btnOutlineText}>{t.loginResend}</Text>
             }
           </TouchableOpacity>
 
@@ -361,6 +398,8 @@ const styles = StyleSheet.create({
   },
   btnDisabled:  { opacity: 0.6 },
   btnText:      { color: Colors.white, fontWeight: '800', fontSize: 16 },
+  btnOutline:      { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: Colors.primary },
+  btnOutlineText:  { color: Colors.primary, fontWeight: '800', fontSize: 16 },
   forgotBtn:    { alignItems: 'center', paddingVertical: 10 },
   forgotText:   { fontSize: 13, fontWeight: '600', color: Colors.primary },
   dividerRow:   { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20, marginBottom: 16 },

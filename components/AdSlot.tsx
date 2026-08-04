@@ -25,6 +25,10 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
   const tracked = useRef(false);
 
   useEffect(() => {
+    // Guideline 3.1.1: en iOS la app no debe mostrar contenido pago
+    // (anuncios/comercios de Red Vecindog) comprado fuera de la app sin IAP.
+    // No se pide ni se renderiza nada de /ads en iOS, ni siquiera el house ad.
+    if (Platform.OS === 'ios') return;
     getAdForSlot(variant).then(setAd).catch(() => setAd(null));
   }, [variant]);
 
@@ -32,17 +36,16 @@ export default function AdSlot({ variant }: { variant: AdVariant }) {
     if (ad && !tracked.current) { tracked.current = true; track(ad.id, 'view'); }
   }, [ad]);
 
+  if (Platform.OS === 'ios') return null;
+
   if (ad === undefined) return null;
 
   if (!ad) {
-    // House ad — auto-promo de Vecindog hacia /publicitate
-    // Guideline 2.1(b): en iOS este flujo de precios/planes se resuelve en la web, no nativo (ver AGENTS.md / auditoría 2026-08-02).
+    // House ad — auto-promo de Vecindog hacia /publicitate (solo Android, en iOS este componente ya retornó null)
     return (
       <TouchableOpacity
         style={styles.houseAd}
-        onPress={() => Platform.OS === 'ios'
-          ? Linking.openURL('https://www.mivecindog.com.ar/publicitate')
-          : router.push('/publicitate' as any)}
+        onPress={() => router.push('/publicitate' as any)}
       >
         <Text style={styles.adBadge}>{t.adPublicidad}</Text>
         <Text style={styles.houseAdTitle}>{t.adHouseTitle}</Text>

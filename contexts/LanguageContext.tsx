@@ -1878,8 +1878,8 @@ const translations: Record<Lang, Translations> = {
     pubBuscarCaractTitle: 'Buscar por características',
     pubBuscarCaractCTA: 'Color, tamaño, collar, chapita…',
     // Planes
-    plansTitle: 'Elegí tu plan',
-    plansSub: 'Vecindog es gratis para empezar. Pasate a Pro para la experiencia completa.',
+    plansTitle: 'Todo Vecindog, gratis',
+    plansSub: 'Todas las funciones están disponibles para todos, sin costo.',
     plansBack: 'Volver',
     plansFreeLabel: 'Gratis',
     plansFreePrice: '$0',
@@ -3478,8 +3478,8 @@ const translations: Record<Lang, Translations> = {
     pubBuscarCaractTitle: 'Search by characteristics',
     pubBuscarCaractCTA: 'Color, size, collar, tag…',
     // Planes
-    plansTitle: 'Choose your plan',
-    plansSub: 'Vecindog is free to start. Upgrade to Pro for the full experience.',
+    plansTitle: 'All of Vecindog, free',
+    plansSub: 'Every feature is available to everyone, at no cost.',
     plansBack: 'Back',
     plansFreeLabel: 'Free',
     plansFreePrice: '$0',
@@ -5078,8 +5078,8 @@ const translations: Record<Lang, Translations> = {
     pubBuscarCaractTitle: 'Buscar por características',
     pubBuscarCaractCTA: 'Cor, tamanho, coleira, plaquinha…',
     // Planes
-    plansTitle: 'Escolha seu plano',
-    plansSub: 'O Vecindog é gratuito para começar. Atualize para Pro para a experiência completa.',
+    plansTitle: 'Tudo do Vecindog, grátis',
+    plansSub: 'Todas as funções estão disponíveis para todos, sem custo.',
     plansBack: 'Voltar',
     plansFreeLabel: 'Grátis',
     plansFreePrice: '$0',

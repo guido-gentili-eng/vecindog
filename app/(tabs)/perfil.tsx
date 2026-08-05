@@ -322,12 +322,12 @@ export default function PerfilScreen() {
           label={t.perfilLinkMisAvisos}
           onPress={() => router.push('/(tabs)/avisos')}
         />
-        <MenuItem
-          label={t.perfilLinkPublicitate}
-          onPress={() => Platform.OS === 'ios'
-            ? Linking.openURL('https://www.mivecindog.com.ar/publicitate')
-            : router.push('/publicitate' as any)}
-        />
+        {Platform.OS !== 'ios' && (
+          <MenuItem
+            label={t.perfilLinkPublicitate}
+            onPress={() => router.push('/publicitate' as any)}
+          />
+        )}
         {user?.email === process.env.EXPO_PUBLIC_ADMIN_EMAIL && (
           <MenuItem
             label={t.perfilLinkAdmin}

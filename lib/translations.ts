@@ -744,6 +744,8 @@ export interface Translations {
   rvTrialNote: string;
   rvActivarBtn: string;
   rvRegistrarBtn: string;
+  rvIosActivarBtn: string;
+  rvIosPagoNote: string;
   // ── Red Vecindog (categoria) ─────────────────────────
   rvcNoEncontrada: string;
   rvcCompletaCiudad: string;
@@ -1681,6 +1683,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvEmailLabel: 'Email *',
     rvTrialNote: 'Sin costo los primeros 3 meses · después se renueva mensualmente',
     rvActivarBtn: 'Activar gratis — 3 meses sin costo',
+    rvIosActivarBtn: 'Activar suscripción',
+    rvIosPagoNote: 'Se cobra a través de tu cuenta de Apple · se renueva mensualmente',
     rvRegistrarBtn: 'Registrar mi negocio',
     rvcNoEncontrada: 'Categoría no encontrada.',
     rvcCompletaCiudad: 'Completá tu ciudad',
@@ -2606,6 +2610,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvEmailLabel: 'Email *',
     rvTrialNote: 'Free for the first 3 months · renews monthly after that',
     rvActivarBtn: 'Activate free — 3 months at no cost',
+    rvIosActivarBtn: 'Activate subscription',
+    rvIosPagoNote: 'Billed through your Apple account · renews monthly',
     rvRegistrarBtn: 'Register my business',
     rvcNoEncontrada: 'Category not found.',
     rvcCompletaCiudad: 'Complete your city',
@@ -3531,6 +3537,8 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvEmailLabel: 'Email *',
     rvTrialNote: 'Sem custo nos primeiros 3 meses · depois renova mensalmente',
     rvActivarBtn: 'Ativar grátis — 3 meses sem custo',
+    rvIosActivarBtn: 'Ativar assinatura',
+    rvIosPagoNote: 'Cobrado através da sua conta Apple · renova mensalmente',
     rvRegistrarBtn: 'Cadastrar meu negócio',
     rvcNoEncontrada: 'Categoria não encontrada.',
     rvcCompletaCiudad: 'Complete sua cidade',

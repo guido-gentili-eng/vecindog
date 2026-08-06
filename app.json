@@ -58,7 +58,8 @@
           "faceIDPermission": "Vecindog usa Face ID para desbloquear la app rápidamente."
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "expo-iap"
     ],
     "extra": {
       "eas": {

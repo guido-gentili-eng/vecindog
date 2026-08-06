@@ -731,6 +731,7 @@ export interface Translations {
   rvDescBrevePh: string;
   rvDireccionLabel: string;
   rvDireccionPh: string;
+  rvPermisoDenegadoMapa: string;
   rvCiudadLabel: string;
   rvCiudadPh: string;
   rvCambiarBtn: string;
@@ -1671,6 +1672,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvDescBrevePh: 'Especialistas en razas pequeñas…',
     rvDireccionLabel: 'Dirección *',
     rvDireccionPh: 'Av. San Martín 1234',
+    rvPermisoDenegadoMapa: '⚠️  Permiso denegado — escribí la dirección a mano',
     rvCiudadLabel: 'Ciudad *',
     rvCiudadPh: 'Ej: Bahía Blanca',
     rvCambiarBtn: 'Cambiar',
@@ -2598,6 +2600,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvDescBrevePh: 'Small breed specialists…',
     rvDireccionLabel: 'Address *',
     rvDireccionPh: '123 Main St',
+    rvPermisoDenegadoMapa: "⚠️  Permission denied — type the address manually",
     rvCiudadLabel: 'City *',
     rvCiudadPh: 'E.g: Bahía Blanca',
     rvCambiarBtn: 'Change',
@@ -3525,6 +3528,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvDescBrevePh: 'Especialistas em raças pequenas…',
     rvDireccionLabel: 'Endereço *',
     rvDireccionPh: 'Av. San Martín 1234',
+    rvPermisoDenegadoMapa: '⚠️  Permissão negada — digite o endereço manualmente',
     rvCiudadLabel: 'Cidade *',
     rvCiudadPh: 'Ex: Bahía Blanca',
     rvCambiarBtn: 'Trocar',

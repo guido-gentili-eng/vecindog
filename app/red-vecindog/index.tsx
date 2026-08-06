@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, Image, Modal, Linking,
@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { subirImagenAd } from '@/lib/ads';
 import { useAuth } from '@/contexts/AuthContext';
 import { buscarCiudades, type Ciudad } from '@/lib/ciudades';
+import { capturarUbicacionGPS, buscarDirecciones, type DireccionSugerencia } from '@/lib/ubicacion';
 import { CATEGORIAS_RED_VECINDOG as CATEGORIAS } from '@/lib/redVecindogCategorias';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -135,12 +136,55 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
   const [error, setError] = useState('');
   const [enviado, setEnviado] = useState(false);
 
+  const [locStatus, setLocStatus] = useState<'idle' | 'loading' | 'ok' | 'denied'>('idle');
+  const [direccionSug, setDireccionSug] = useState<DireccionSugerencia[]>([]);
+  const [direccionLoading, setDireccionLoading] = useState(false);
+  const [mostrarDireccionSug, setMostrarDireccionSug] = useState(false);
+  const direccionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function handleLocalidadChange(v: string) {
     setLocalidadQuery(v);
     setCiudadSug(v.trim().length > 0 ? buscarCiudades(v).slice(0, 6) : []);
   }
   function seleccionarCiudad(c: Ciudad) {
     setLocalidad(c.nombre); setLocalidadQuery(''); setLocalidadLat(c.lat); setLocalidadLng(c.lng); setCiudadSug([]);
+  }
+
+  async function handleCapturarUbicacion() {
+    setLocStatus('loading');
+    try {
+      const res = await capturarUbicacionGPS();
+      if (!res) { setLocStatus('denied'); return; }
+      setLocalidadLat(res.lat); setLocalidadLng(res.lng);
+      if (res.direccion) setDireccion(res.direccion);
+      setLocStatus('ok');
+    } catch {
+      setLocStatus('denied');
+    }
+  }
+
+  function handleDireccionChange(v: string) {
+    setDireccion(v);
+    setMostrarDireccionSug(true);
+    if (direccionDebounceRef.current) clearTimeout(direccionDebounceRef.current);
+    if (v.trim().length < 3) { setDireccionSug([]); return; }
+    direccionDebounceRef.current = setTimeout(async () => {
+      setDireccionLoading(true);
+      try {
+        setDireccionSug(await buscarDirecciones(v, localidad || undefined));
+      } catch {
+        setDireccionSug([]);
+      } finally {
+        setDireccionLoading(false);
+      }
+    }, 400);
+  }
+
+  function seleccionarDireccionSug(s: DireccionSugerencia) {
+    setDireccion(s.label);
+    setDireccionSug([]);
+    setMostrarDireccionSug(false);
+    if (!isNaN(s.lat) && !isNaN(s.lng)) { setLocalidadLat(s.lat); setLocalidadLng(s.lng); }
   }
 
   async function elegirFoto() {
@@ -233,7 +277,39 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
               <TextInput style={styles.input} value={descripcion} onChangeText={setDescripcion} placeholder={t.rvDescBrevePh} placeholderTextColor={Colors.inkMuted} />
 
               <Text style={styles.label}>{t.rvDireccionLabel}</Text>
-              <TextInput style={styles.input} value={direccion} onChangeText={setDireccion} placeholder={t.rvDireccionPh} placeholderTextColor={Colors.inkMuted} />
+              {locStatus === 'ok' ? (
+                <View style={[styles.locBtn, styles.locBtnOk, styles.locOkRow]}>
+                  <Text style={[styles.locBtnText, styles.locBtnTextOk]}>{t.pbUbicacionConfirmada}</Text>
+                  <TouchableOpacity onPress={() => setLocStatus('idle')}><Text style={styles.locCambiarText}>{t.pbUbicacionCambiar}</Text></TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.locBtn} onPress={handleCapturarUbicacion} disabled={locStatus === 'loading'}>
+                  {locStatus === 'loading'
+                    ? <ActivityIndicator color={Colors.primary} size="small" />
+                    : <Text style={styles.locBtnText}>{locStatus === 'denied' ? t.rvPermisoDenegadoMapa : t.pbUsarUbicacionActual}</Text>}
+                </TouchableOpacity>
+              )}
+              <View>
+                <TextInput
+                  style={styles.input}
+                  value={direccion}
+                  onChangeText={handleDireccionChange}
+                  onFocus={() => direccionSug.length > 0 && setMostrarDireccionSug(true)}
+                  placeholder={t.rvDireccionPh}
+                  placeholderTextColor={Colors.inkMuted}
+                />
+                {direccionLoading && <ActivityIndicator style={styles.zonaLoadingIcon} color={Colors.inkMuted} size="small" />}
+                {mostrarDireccionSug && direccionSug.length > 0 && (
+                  <View style={styles.sugerenciaList}>
+                    {direccionSug.map((s, i) => (
+                      <TouchableOpacity key={`${s.label}-${i}`} style={styles.sugerenciaItem} onPress={() => seleccionarDireccionSug(s)}>
+                        <Text style={styles.sugerenciaText}>📍 {s.label}</Text>
+                        {!!s.sub && <Text style={styles.sugerenciaSub}>{s.sub}</Text>}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               <Text style={styles.label}>{t.rvCiudadLabel}</Text>
               {localidad ? (
@@ -362,6 +438,13 @@ const styles = StyleSheet.create({
   sugerenciaItem: { paddingHorizontal: 14, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: Colors.border },
   sugerenciaText: { fontSize: 13, fontWeight: '600', color: Colors.ink },
   sugerenciaSub: { fontSize: 11, color: Colors.inkMuted },
+  locBtn: { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 14, backgroundColor: Colors.white, marginBottom: 8 },
+  locBtnOk: { borderColor: Colors.good, backgroundColor: '#f0fdf4' },
+  locBtnText: { fontSize: 13, fontWeight: '600', color: Colors.inkMuted },
+  locBtnTextOk: { color: Colors.good },
+  locOkRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  locCambiarText: { fontSize: 12, fontWeight: '600', color: Colors.inkMuted, textDecorationLine: 'underline' },
+  zonaLoadingIcon: { position: 'absolute', right: 14, top: 15 },
   dayBtn: { flex: 1, borderWidth: 2, borderColor: Colors.border, borderRadius: 12, paddingVertical: 8, alignItems: 'center' },
   dayBtnActive: { borderColor: '#f59e0b', backgroundColor: '#fffbeb' },
   dayBtnText: { fontSize: 10, fontWeight: '700', color: Colors.inkMuted, textAlign: 'center' },

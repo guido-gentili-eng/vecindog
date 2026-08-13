@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Image, ActivityIndicator, Linking,
+  Image, ActivityIndicator, Linking, Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -82,10 +82,14 @@ export default function CategoriaRedVecindogScreen() {
         <View style={styles.emptyCard}>
           <Text style={{ fontSize: 32 }}>{cat.emoji}</Text>
           <Text style={styles.emptyTitle}>{t.rvcSinNegociosPrefix} {profile.ciudad}</Text>
-          <Text style={styles.emptySub}>{t.rvcSumate}</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/red-vecindog' as any)}>
-            <Text style={styles.emptyBtnText}>{t.rvcRegistrarNegocio}</Text>
-          </TouchableOpacity>
+          {Platform.OS !== 'ios' && (
+            <>
+              <Text style={styles.emptySub}>{t.rvcSumate}</Text>
+              <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/red-vecindog' as any)}>
+                <Text style={styles.emptyBtnText}>{t.rvcRegistrarNegocio}</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       ) : (
         <View style={{ gap: 10 }}>

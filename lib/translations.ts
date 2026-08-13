@@ -747,6 +747,7 @@ export interface Translations {
   rvRegistrarBtn: string;
   rvIosActivarBtn: string;
   rvIosPagoNote: string;
+  rvIosBrowseSub: string;
   // ── Red Vecindog (categoria) ─────────────────────────
   rvcNoEncontrada: string;
   rvcCompletaCiudad: string;
@@ -1687,6 +1688,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvActivarBtn: 'Activar gratis — 3 meses sin costo',
     rvIosActivarBtn: 'Activar suscripción',
     rvIosPagoNote: 'Se cobra a través de tu cuenta de Apple · se renueva mensualmente',
+    rvIosBrowseSub: 'Encontrá comercios y servicios para tu perro cerca tuyo.',
     rvRegistrarBtn: 'Registrar mi negocio',
     rvcNoEncontrada: 'Categoría no encontrada.',
     rvcCompletaCiudad: 'Completá tu ciudad',
@@ -2615,6 +2617,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvActivarBtn: 'Activate free — 3 months at no cost',
     rvIosActivarBtn: 'Activate subscription',
     rvIosPagoNote: 'Billed through your Apple account · renews monthly',
+    rvIosBrowseSub: 'Find businesses and services for your dog near you.',
     rvRegistrarBtn: 'Register my business',
     rvcNoEncontrada: 'Category not found.',
     rvcCompletaCiudad: 'Complete your city',
@@ -3543,6 +3546,7 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     rvActivarBtn: 'Ativar grátis — 3 meses sem custo',
     rvIosActivarBtn: 'Ativar assinatura',
     rvIosPagoNote: 'Cobrado através da sua conta Apple · renova mensalmente',
+    rvIosBrowseSub: 'Encontre comércios e serviços para seu cão perto de você.',
     rvRegistrarBtn: 'Cadastrar meu negócio',
     rvcNoEncontrada: 'Categoria não encontrada.',
     rvcCompletaCiudad: 'Complete sua cidade',

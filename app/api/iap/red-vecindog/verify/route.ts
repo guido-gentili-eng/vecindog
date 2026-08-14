@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     if (!email?.trim())     return NextResponse.json({ error: 'Email requerido' },     { status: 400 });
 
     const environment = peekEnvironment(purchaseToken);
+    const isSandbox = environment === Environment.SANDBOX;
     const verifier = new SignedDataVerifier([APPLE_ROOT_CERT], true, environment, BUNDLE_ID);
 
     let transaction;
@@ -143,6 +144,7 @@ export async function POST(req: NextRequest) {
       original_transaction_id: transaction.originalTransactionId,
       ad_id: ad.id,
       user_id: user.id,
+      is_sandbox: isSandbox,
     });
 
     await admin.from('pagos_procesados').insert({

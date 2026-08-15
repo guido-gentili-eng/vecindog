@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, ScrollView, FlatList,
-  TouchableOpacity, ActivityIndicator, RefreshControl, Image,
+  TouchableOpacity, ActivityIndicator, RefreshControl, Image, Platform,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -114,12 +114,14 @@ export default function HomeScreen() {
           <Text style={styles.subGreeting}>{t.homeSubGreeting}</Text>
         </View>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.redVecindogBtn}
-            onPress={() => router.push('/red-vecindog' as any)}
-          >
-            <Text style={{ fontSize: 22 }}>🏪</Text>
-          </TouchableOpacity>
+          {Platform.OS !== 'ios' && (
+            <TouchableOpacity
+              style={styles.redVecindogBtn}
+              onPress={() => router.push('/red-vecindog' as any)}
+            >
+              <Text style={{ fontSize: 22 }}>🏪</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.bellBtn} onPress={() => router.push('/notificaciones')}>
             <Text style={{ fontSize: 22 }}>🔔</Text>
             {noLeidas > 0 && (

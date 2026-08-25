@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         imagen_logo_url: (!esCard && imagen_logo_url) ? imagen_logo_url : null,
         href:            link,
         cta:             cta            || null,
-        anunciante:      email          || null,
+        anunciante:      email          ? email.trim().toLowerCase() : null,
         plan,
         activo:          false,
         fecha_inicio:    null,

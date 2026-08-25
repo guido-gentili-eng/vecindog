@@ -72,7 +72,13 @@ export async function listarAds(): Promise<Ad[]> {
 }
 
 export async function crearAd(input: AdInput): Promise<void> {
-  const { error } = await supabase.from('ads').insert(input);
+  // anunciante se usa después para matchear contra el email de sesión del dueño
+  // (===  exacto) en /mi-comercio, comercio-stats, novedades, etc. — normalizar acá
+  // asegura que ese match funcione sin importar cómo lo haya tipeado el usuario.
+  const normalized = input.anunciante
+    ? { ...input, anunciante: input.anunciante.trim().toLowerCase() }
+    : input;
+  const { error } = await supabase.from('ads').insert(normalized);
   if (error) throw error;
 }
 

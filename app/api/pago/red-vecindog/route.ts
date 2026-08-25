@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       imagen_logo_url:    null,
       href,
       cta:                null,
-      anunciante:         email.trim(),
+      anunciante:         email.trim().toLowerCase(),
       plan:               'comercio',
       activo:             false,
       fecha_inicio:       null,

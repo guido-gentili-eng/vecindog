@@ -18,6 +18,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    // notifications tampoco tiene migración versionada (mismo problema que pagos_procesados
+    // más abajo) -- se borran a mano las propias del usuario y las que apunten a sus avisos
+    // (ej. "un vecino comentó tu aviso") antes de tocar posts, para no depender de que su FK
+    // a auth.users/posts tenga CASCADE real.
+    const { data: ownPosts } = await admin.from('posts').select('id').eq('user_id', user.id);
+    const postIds = (ownPosts ?? []).map((p) => p.id);
+
+    const { error: notifOwnError } = await admin.from('notifications').delete().eq('user_id', user.id);
+    if (notifOwnError) {
+      console.error('[account/delete] notifications (own):', notifOwnError);
+      return NextResponse.json({ ok: false, error: 'No se pudo eliminar la cuenta' }, { status: 500 });
+    }
+    if (postIds.length > 0) {
+      const { error: notifPostsError } = await admin.from('notifications').delete().in('post_id', postIds);
+      if (notifPostsError) {
+        console.error('[account/delete] notifications (posts):', notifPostsError);
+        return NextResponse.json({ ok: false, error: 'No se pudo eliminar la cuenta' }, { status: 500 });
+      }
+    }
+
     // perros/posts/profiles son tablas core creadas a mano desde el dashboard de Supabase,
     // sin migración versionada que confirme que su FK a auth.users tiene ON DELETE CASCADE.
     // Se borran acá explícitamente para no depender de eso -- si no, deleteUser() falla con
@@ -50,6 +70,14 @@ export async function POST(req: NextRequest) {
     if (pagosError) {
       console.error('[account/delete] pagos_procesados:', pagosError);
       return NextResponse.json({ ok: false, error: 'No se pudo eliminar la cuenta' }, { status: 500 });
+    }
+
+    // ads.user_id sí tiene ON DELETE SET NULL versionado (20260608_ads_user_id.sql), así que
+    // esto no bloquea el borrado -- pero sin desactivarlos, un comercio/publicidad pago del
+    // usuario borrado queda activo y visible indefinidamente, sin nadie que lo administre.
+    const { error: adsError } = await admin.from('ads').update({ activo: false }).eq('user_id', user.id);
+    if (adsError) {
+      console.error('[account/delete] ads (no bloqueante):', adsError);
     }
 
     const { error } = await admin.auth.admin.deleteUser(user.id);

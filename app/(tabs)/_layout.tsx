@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { View, Text, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColorValue } from 'react-native';
@@ -26,6 +27,7 @@ function PublishIcon() {
 
 export default function TabsLayout() {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -35,9 +37,12 @@ export default function TabsLayout() {
           backgroundColor:   Colors.white,
           borderTopColor:    Colors.border,
           borderTopWidth:    1,
-          paddingBottom:     Platform.OS === 'ios' ? 20 : 6,
+          // En Android con navegacion por gestos, el sistema reserva una franja
+          // abajo (insets.bottom) que no se resta del alto de la app -- sin
+          // sumarla al padding/height, esa franja tapa la fila de iconos/labels.
+          paddingBottom:     Platform.OS === 'ios' ? 20 : 6 + insets.bottom,
           paddingTop:        6,
-          height:            Platform.OS === 'ios' ? 80 : 64,
+          height:            Platform.OS === 'ios' ? 80 : 64 + insets.bottom,
         },
         tabBarLabelStyle:    { fontSize: 11, fontWeight: '700', marginTop: 3 },
         headerShown:         false,

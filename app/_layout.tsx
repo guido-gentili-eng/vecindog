@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
@@ -239,13 +240,15 @@ const lockStyles = StyleSheet.create({
 
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          <StatusBar style="dark" />
-          <RootLayoutNav />
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <AuthProvider>
+            <StatusBar style="dark" />
+            <RootLayoutNav />
+          </AuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

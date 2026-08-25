@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import CategoriaDot from '@/components/CategoriaDot';
 import { thumbUrl } from '@/lib/imageUtils';
+import { obtenerPosicionActual } from '@/lib/ubicacion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Translations } from '@/lib/translations';
 
@@ -43,6 +44,7 @@ async function geocodificarZona(zona: string, ciudad?: string | null): Promise<{
     const data = await res.json();
     if (data?.[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      if (!Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) return null;
       geocodeCache.set(key, coords);
       return coords;
     }
@@ -121,7 +123,8 @@ export default function MapaScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const loc = await obtenerPosicionActual();
+      if (!loc) return;
       const { latitude, longitude } = loc.coords;
       setLocation({ lat: latitude, lng: longitude });
       setRegion({
@@ -147,8 +150,10 @@ export default function MapaScreen() {
         showsUserLocation
         showsMyLocationButton
       >
-        {/* Marcadores de avisos */}
-        {posts.map((p) => (
+        {/* Marcadores de avisos — se descartan coordenadas no numéricas para
+            no crashear el SDK nativo de Google Maps en Android (NaN/undefined
+            en lat/lng ahí tira una excepción no manejada, no un warning). */}
+        {posts.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => (
           <Marker
             key={p.id}
             coordinate={{ latitude: p.lat, longitude: p.lng }}

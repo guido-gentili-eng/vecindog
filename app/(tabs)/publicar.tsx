@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { File } from 'expo-file-system';
 import { resizeForUpload } from '@/lib/imageUtils';
+import { obtenerPosicionActual } from '@/lib/ubicacion';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -93,7 +94,8 @@ export default function PublicarScreen() {
       return;
     }
     try {
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const loc = await obtenerPosicionActual();
+      if (!loc) { setLocStatus('idle'); return; }
       const { latitude: lat, longitude: lng } = loc.coords;
       setCoords({ lat, lng });
       setLocStatus('ok');

@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '@/lib/supabase';
 import { actualizarZonaPost } from '@/lib/posts';
+import { obtenerPosicionActual } from '@/lib/ubicacion';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -57,7 +58,8 @@ export default function LoViPanel({ postId, ownerId, categoria, nombre, zonaActu
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') { setGps('error'); setManual(true); return; }
     try {
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const loc = await obtenerPosicionActual();
+      if (!loc) { setGps('error'); setManual(true); return; }
       setLat(loc.coords.latitude); setLng(loc.coords.longitude);
       setGps('ok');
       try {

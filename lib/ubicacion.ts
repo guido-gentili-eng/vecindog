@@ -4,12 +4,26 @@ const NOMINATIM_HEADERS = { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.
 
 export type DireccionSugerencia = { label: string; sub: string; lat: number; lng: number };
 
+/**
+ * getCurrentPositionAsync puede colgarse indefinidamente si no hay fix de GPS (señal
+ * débil, adentro de un edificio, ubicación desactivada a medias) -- se corta a los 15s
+ * y se trata como "sin ubicación", mismo patrón que el timeout de 7s que ya usa
+ * lib/biometrics.ts para LocalAuthentication.authenticateAsync.
+ */
+export async function obtenerPosicionActual(timeoutMs = 15000): Promise<Location.LocationObject | null> {
+  return Promise.race([
+    Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+  ]);
+}
+
 /** Pide permiso de ubicación, toma el GPS y devuelve la dirección por reverse-geocode (Nominatim). */
 export async function capturarUbicacionGPS(): Promise<{ lat: number; lng: number; direccion: string | null } | null> {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') return null;
 
-  const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+  const loc = await obtenerPosicionActual();
+  if (!loc) return null;
   const { latitude: lat, longitude: lng } = loc.coords;
 
   let direccion: string | null = null;

@@ -1403,7 +1403,11 @@ function ExtrasSection({
   async function compartirQR() {
     setCompartiendoQR(true);
     try {
-      const destino = new File(Paths.cache, `qr-${perro.nombre}-${Date.now()}.png`);
+      // perro.nombre es texto libre -- sanitizar antes de usarlo en un nombre de archivo,
+      // si no un "/" (u otro carácter no válido) rompe el path y compartirQR falla en
+      // silencio con un error genérico que no da ninguna pista de la causa real.
+      const nombreArchivo = perro.nombre.replace(/[^a-zA-Z0-9._-]+/g, '_');
+      const destino = new File(Paths.cache, `qr-${nombreArchivo}-${Date.now()}.png`);
       const archivo = await File.downloadFileAsync(qrUrl, destino, { idempotent: true });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(archivo.uri);

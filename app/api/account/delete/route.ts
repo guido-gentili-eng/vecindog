@@ -18,32 +18,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // notifications tampoco tiene migración versionada (mismo problema que pagos_procesados
-    // más abajo) -- se borran a mano las propias del usuario y las que apunten a sus avisos
-    // (ej. "un vecino comentó tu aviso") antes de tocar posts, para no depender de que su FK
-    // a auth.users/posts tenga CASCADE real.
-    const { data: ownPosts } = await admin.from('posts').select('id').eq('user_id', user.id);
-    const postIds = (ownPosts ?? []).map((p) => p.id);
-
-    const { error: notifOwnError } = await admin.from('notifications').delete().eq('user_id', user.id);
-    if (notifOwnError) {
-      console.error('[account/delete] notifications (own):', notifOwnError);
-      return NextResponse.json({ ok: false, error: 'No se pudo eliminar la cuenta' }, { status: 500 });
-    }
-    if (postIds.length > 0) {
-      const { error: notifPostsError } = await admin.from('notifications').delete().in('post_id', postIds);
-      if (notifPostsError) {
-        console.error('[account/delete] notifications (posts):', notifPostsError);
-        return NextResponse.json({ ok: false, error: 'No se pudo eliminar la cuenta' }, { status: 500 });
-      }
-    }
-
-    // perros/posts/profiles son tablas core creadas a mano desde el dashboard de Supabase,
-    // sin migración versionada que confirme que su FK a auth.users tiene ON DELETE CASCADE.
-    // Se borran acá explícitamente para no depender de eso -- si no, deleteUser() falla con
-    // violación de FK para cualquier usuario que ya tenga un perro o un aviso publicado.
-    // Sus tablas hijas (vacunas, medicamentos, mensajes, turnos, ratings, etc.) sí tienen
-    // CASCADE versionado hacia perros/posts, así que se limpian solas.
+    // Se borran perros/posts/profiles a mano por borrado real de datos (no por evitar una
+    // violación de FK -- verificado 2026-08-25 via pg_constraint que perros/profiles tienen
+    // CASCADE y posts tiene SET NULL hacia auth.users, ninguno bloquearía deleteUser()).
+    // Sin este borrado explícito, deleteUser() "funcionaría" pero dejaría los posts del
+    // usuario huérfanos (user_id=NULL) en vez de eliminados, que no es lo que se quiere al
+    // borrar una cuenta. Las tablas hijas (vacunas, medicamentos, mensajes, turnos, ratings,
+    // notifications, etc.) sí tienen CASCADE versionado hacia perros/posts, así que se
+    // limpian solas.
     const { error: postsError } = await admin.from('posts').delete().eq('user_id', user.id);
     if (postsError) {
       console.error('[account/delete] posts:', postsError);

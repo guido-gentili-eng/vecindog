@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, Plus, ImagePlus, X, AlertCircle, Camera, Star,
   ArrowLeft, Dog, Loader2, Home, MapPin, ScanSearch, Sparkles, ArrowRight,
-  Navigation, CheckCheck, Lock,
+  CheckCheck, Lock,
 } from 'lucide-react';
 import {
   type Categoria, type Especie,
@@ -23,9 +23,8 @@ import { obtenerPerro, listarMisPerros, type Perro } from '@/lib/perros';
 import { listarPosts, actualizarZonaPost, contarPostsActivosDelUsuario, type Post } from '@/lib/posts';
 import { notificarAmigosPerroPerdido } from '@/lib/amistades';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import LocationPicker from '@/components/LocationPicker';
 import RazaAutocomplete from '@/components/RazaAutocomplete';
-import dynamicImport from 'next/dynamic';
-const MapPinPicker = dynamicImport(() => import('@/components/MapPinPicker'), { ssr: false });
 
 /* ─── Tipos ─── */
 
@@ -125,7 +124,6 @@ export default function PublicarPage() {
   const contactoRef   = useRef<HTMLDivElement>(null);
   const [submitError,   setSubmitError]   = useState('');
   const [showWaConfirm, setShowWaConfirm] = useState(false);
-  const [gpsEstado,   setGpsEstado]   = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
 
   const [perroData,         setPerroData]         = useState<Perro | null>(null);
   const [perroFotoRemovida, setPerroFotoRemovida] = useState(false);
@@ -141,8 +139,7 @@ export default function PublicarPage() {
   const [latVisto,        setLatVisto]        = useState<number | null>(null);
   const [lngVisto,        setLngVisto]        = useState<number | null>(null);
   const [horarioVisto,    setHorarioVisto]    = useState('');
-  const [zonaManual,      setZonaManual]      = useState(false);
-  const [showMapPicker,   setShowMapPicker]   = useState(false);
+  const [locationResetKey, setLocationResetKey] = useState(0);
 
   useEffect(() => {
     if (enviado) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -241,37 +238,6 @@ export default function PublicarPage() {
   function handleHacerPrincipal(idx: number) {
     if (idx === 0) return;
     setFotos((prev) => { const c = [...prev]; const [m] = c.splice(idx, 1); c.unshift(m); return c; });
-  }
-
-  async function capturarGPS() {
-    if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
-    setGpsEstado('cargando');
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const dentroDeArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
-        if (!dentroDeArgentina) { setGpsEstado('error'); setZonaManual(true); return; }
-        setForm((f) => ({ ...f, lat, lng }));
-        setGpsEstado('ok');
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
-            { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
-          );
-          const data = await res.json();
-          if (data?.address) {
-            const a = data.address;
-            const calle = a.road ?? a.pedestrian ?? a.footway ?? '';
-            const numero = a.house_number ?? '';
-            const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
-            const zona = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
-            if (zona) handleChange('zona', zona);
-          }
-        } catch { /* sin reverse geocode */ }
-      },
-      () => { setGpsEstado('error'); setZonaManual(true); },
-      { timeout: 10000, enableHighAccuracy: true }
-    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -516,8 +482,7 @@ export default function PublicarPage() {
                 setLatVisto(null);
                 setLngVisto(null);
                 setHorarioVisto('');
-                setZonaManual(false);
-                setGpsEstado('idle');
+                setLocationResetKey((k) => k + 1);
                 setEnviado(false);
               }}
               className="btn-secondary"
@@ -1090,72 +1055,23 @@ export default function PublicarPage() {
               </div>
             )}
 
-            <div className="sm:col-span-2 space-y-3">
-              {gpsEstado === 'ok' ? (
-                <div className="flex items-center justify-between rounded-2xl bg-good/10 px-4 py-3 ring-1 ring-good/20">
-                  <div className="flex items-center gap-2 text-sm font-bold text-good">
-                    <CheckCheck className="h-4 w-4 shrink-0" />
-                    <span>{t.pbrGpsOk}</span>
-                  </div>
-                  <button type="button"
-                    onClick={() => { setGpsEstado('idle'); setZonaManual(true); setForm((f) => ({ ...f, lat: null, lng: null })); }}
-                    className="text-xs text-ink-muted hover:text-bad transition">{t.pbrGpsCambiar}</button>
-                </div>
-              ) : gpsEstado === 'cargando' ? (
-                <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-4 py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
-                  <span className="text-sm font-bold text-brand-primary">{t.pbrGpsCargando}</span>
-                </div>
-              ) : !zonaManual ? (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={capturarGPS}
-                    className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-4 py-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 active:scale-[0.99]"
-                  >
-                    <Navigation className="h-5 w-5" />
-                    {gpsEstado === 'error' ? t.pbrGpsError : t.pbrGpsUsar}
-                  </button>
-                  <button type="button" onClick={() => setZonaManual(true)}
-                    className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
-                    {t.pbrGpsManual}
-                  </button>
-                </div>
-              ) : null}
-
-              {(zonaManual || gpsEstado === 'ok') && (
-                <Field label={gpsEstado === 'ok' ? t.pbrConfirmDir : t.pbrDireccionZona}>
-                  <AddressAutocomplete
-                    value={form.zona}
-                    onChange={(v) => { handleChange('zona', v); setShowMapPicker(false); }}
-                    onSelectCoords={(lat, lng) => {
-                      setForm((f) => ({ ...f, lat, lng }));
-                      setGpsEstado('ok');
-                      setShowMapPicker(true);
-                    }}
-                    onClearCoords={() => { setForm((f) => ({ ...f, lat: null, lng: null })); setShowMapPicker(false); }}
-                    placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
-                    ciudad={efectivaCiudad}
-                    required
-                  />
-                  {zonaManual && gpsEstado !== 'ok' && (
-                    <button type="button" onClick={() => { setZonaManual(false); capturarGPS(); }}
-                      className="mt-1 text-xs text-brand-primary hover:underline">
-                      {t.pbrGpsVolver}
-                    </button>
-                  )}
-                </Field>
-              )}
-
-              {showMapPicker && form.lat && form.lng && (
-                <MapPinPicker
-                  lat={form.lat}
-                  lng={form.lng}
-                  onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
-                  onConfirm={() => setShowMapPicker(false)}
-                />
-              )}
-
+            <div className="sm:col-span-2">
+              <LocationPicker
+                key={locationResetKey}
+                value={form.zona}
+                onChange={(v) => handleChange('zona', v)}
+                lat={form.lat}
+                lng={form.lng}
+                onCoordsChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+                ciudad={efectivaCiudad}
+                placeholder="Ej: Av. Colón 1200, Villa Mitre, Centro…"
+                required
+                labels={{
+                  gpsOk: t.pbrGpsOk, gpsCambiar: t.pbrGpsCambiar, gpsCargando: t.pbrGpsCargando,
+                  gpsUsar: t.pbrGpsUsar, gpsError: t.pbrGpsError, gpsManual: t.pbrGpsManual,
+                  gpsVolver: t.pbrGpsVolver, confirmDir: t.pbrConfirmDir, direccionZona: t.pbrDireccionZona,
+                }}
+              />
             </div>
 
             <Field label={t.pbrFecha}>

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { buscarCiudades } from '@/lib/ciudades';
 import { useAuth } from '@/contexts/AuthContext';
-import AddressAutocomplete from '@/components/AddressAutocomplete';
+import LocationPicker from '@/components/LocationPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PrecioInfo {
@@ -431,10 +431,16 @@ function AdminComercioModal({ onClose }: { onClose: () => void }) {
               <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Ubicación</p>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-ink-muted">Dirección <span className="text-bad">*</span></label>
-                <AddressAutocomplete value={direccion} onChange={setDireccion}
-                  onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
-                  onClearCoords={() => { setAdLat(null); setAdLng(null); }}
-                  placeholder="Av. San Martín 1234" ciudad={localidad || null} required />
+                <LocationPicker
+                  value={direccion}
+                  onChange={setDireccion}
+                  lat={adLat}
+                  lng={adLng}
+                  onCoordsChange={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
+                  placeholder="Av. San Martín 1234"
+                  ciudad={localidad || null}
+                  required
+                />
               </div>
               <div className="relative">
                 <label className="mb-1 block text-xs font-semibold text-ink-muted">Localidad / Ciudad</label>
@@ -722,10 +728,16 @@ function RegistroModal({ onClose, precioInfo }: { onClose: () => void; precioInf
               <label className="mb-1 block text-xs font-semibold text-ink-muted">
                 {t.rvnFormAddrLabel} <span className="text-bad">*</span>
               </label>
-              <AddressAutocomplete value={direccion} onChange={setDireccion}
-                onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
-                onClearCoords={() => { setAdLat(null); setAdLng(null); }}
-                placeholder="Av. San Martín 1234" ciudad={localidad || null} required />
+              <LocationPicker
+                value={direccion}
+                onChange={setDireccion}
+                lat={adLat}
+                lng={adLng}
+                onCoordsChange={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
+                placeholder="Av. San Martín 1234"
+                ciudad={localidad || null}
+                required
+              />
             </div>
             <div className="relative">
               <label className="mb-1 block text-xs font-semibold text-ink-muted">

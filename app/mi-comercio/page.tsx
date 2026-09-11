@@ -12,7 +12,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { subirImagenAd, type Ad } from '@/lib/ads';
-import AddressAutocomplete from '@/components/AddressAutocomplete';
+import LocationPicker from '@/components/LocationPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 function fmtFecha(iso: string | null) {
@@ -618,11 +618,12 @@ function EditarComercioModal({
               </Field>
 
               <Field label={t.mcomDireccionLabel}>
-                <AddressAutocomplete
+                <LocationPicker
                   value={direccion}
                   onChange={setDireccion}
-                  onSelectCoords={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
-                  onClearCoords={() => { setAdLat(null); setAdLng(null); }}
+                  lat={adLat}
+                  lng={adLng}
+                  onCoordsChange={(lat, lng) => { setAdLat(lat); setAdLng(lng); }}
                   placeholder="Av. San Martín 1234"
                 />
               </Field>

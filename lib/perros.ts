@@ -42,6 +42,8 @@ export interface PerroInput {
   vet_nombre:       string;
   vet_telefono:     string;
   direccion:        string;
+  lat:              number | null;
+  lng:              number | null;
   foto_url:         string;
   estado_salud:     EstadoSalud | '';
   dieta_marca:      string;
@@ -119,6 +121,8 @@ export async function crearPerro(
       vet_nombre:   input.vet_nombre   || null,
       vet_telefono: input.vet_telefono || null,
       direccion:    input.direccion    || null,
+      lat:          input.lat          ?? null,
+      lng:          input.lng          ?? null,
       foto_url:     input.foto_url     || null,
     })
     .select('id')
@@ -169,6 +173,8 @@ export async function actualizarPerro(
   if (input.vet_nombre       !== undefined) patch.vet_nombre       = input.vet_nombre       || null;
   if (input.vet_telefono     !== undefined) patch.vet_telefono     = input.vet_telefono     || null;
   if (input.direccion        !== undefined) patch.direccion        = input.direccion        || null;
+  if (input.lat              !== undefined) patch.lat              = input.lat              ?? null;
+  if (input.lng              !== undefined) patch.lng              = input.lng              ?? null;
   if (input.foto_url         !== undefined) patch.foto_url         = input.foto_url         || null;
   if (input.estado_salud     !== undefined) patch.estado_salud     = input.estado_salud     || null;
   if (input.dieta_marca      !== undefined) patch.dieta_marca      = input.dieta_marca      || null;

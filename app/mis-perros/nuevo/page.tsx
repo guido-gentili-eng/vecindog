@@ -6,9 +6,8 @@ import Link from 'next/link';
 import {
   Dog, ImagePlus, X, Plus, Trash2, Syringe, Loader2,
   AlertCircle, ChevronLeft, CheckCircle2, Lock, Sparkles, Stethoscope,
-  Navigation, CheckCheck,
 } from 'lucide-react';
-import AddressAutocomplete from '@/components/AddressAutocomplete';
+import LocationPicker from '@/components/LocationPicker';
 import { listarMisPerros } from '@/lib/perros';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,7 +23,7 @@ interface FotoPreview { file: File; preview: string; }
 const FORM_INICIAL: PerroInput = {
   nombre: '', raza: '', color: '', tamano: '', sexo: '',
   fecha_nac: '', chip: '', esterilizado: false, descripcion: '',
-  alergias: '', vet_nombre: '', vet_telefono: '', direccion: '', foto_url: '',
+  alergias: '', vet_nombre: '', vet_telefono: '', direccion: '', lat: null, lng: null, foto_url: '',
   estado_salud: '', dieta_marca: '', dieta_cantidad: '', dieta_frecuencia: '', dieta_notas: '',
 };
 
@@ -43,8 +42,6 @@ export default function NuevoPerroPage() {
   const [error,      setError]      = useState('');
   const [errorFoto,  setErrorFoto]  = useState('');
   const [bloqueado,  setBloqueado]  = useState(false);
-  const [gpsEstado,  setGpsEstado]  = useState<'idle' | 'cargando' | 'ok' | 'error'>('idle');
-  const [zonaManual, setZonaManual] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || isPro) return;
@@ -57,36 +54,6 @@ export default function NuevoPerroPage() {
 
   function campo<K extends keyof PerroInput>(k: K, v: PerroInput[K]) {
     setForm((f) => ({ ...f, [k]: v }));
-  }
-
-  async function capturarGPS() {
-    if (!navigator.geolocation) { setGpsEstado('error'); setZonaManual(true); return; }
-    setGpsEstado('cargando');
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const dentroDeArgentina = lat >= -55 && lat <= -21 && lng >= -73 && lng <= -53;
-        if (!dentroDeArgentina) { setGpsEstado('error'); setZonaManual(true); return; }
-        setGpsEstado('ok');
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
-            { headers: { 'User-Agent': 'Vecindog/1.0 (noreply@mivecindog.com.ar)' } }
-          );
-          const data = await res.json();
-          if (data?.address) {
-            const a = data.address;
-            const calle  = a.road ?? a.pedestrian ?? a.footway ?? '';
-            const numero = a.house_number ?? '';
-            const barrio = a.suburb ?? a.neighbourhood ?? a.quarter ?? '';
-            const zona   = [calle && numero ? `${calle} ${numero}` : calle, barrio].filter(Boolean).join(', ');
-            if (zona) campo('direccion', zona);
-          }
-        } catch { /* sin reverse geocode */ }
-      },
-      () => { setGpsEstado('error'); setZonaManual(true); },
-      { timeout: 10000, enableHighAccuracy: true }
-    );
   }
 
   function onFotos(e: React.ChangeEvent<HTMLInputElement>) {
@@ -345,52 +312,14 @@ export default function NuevoPerroPage() {
 
           <div>
             <label className="label">{t.mpnDireccion}</label>
-            <div className="space-y-2">
-              {gpsEstado === 'ok' ? (
-                <div className="flex items-center justify-between rounded-2xl bg-good/10 px-4 py-3 ring-1 ring-good/20">
-                  <div className="flex items-center gap-2 text-sm font-bold text-good">
-                    <CheckCheck className="h-4 w-4 shrink-0" />
-                    <span>Ubicación capturada</span>
-                  </div>
-                  <button type="button"
-                    onClick={() => { setGpsEstado('idle'); setZonaManual(true); campo('direccion', ''); }}
-                    className="text-xs text-ink-muted hover:text-bad transition">Cambiar</button>
-                </div>
-              ) : gpsEstado === 'cargando' ? (
-                <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-primary/30 bg-brand-primary/5 px-4 py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
-                  <span className="text-sm font-bold text-brand-primary">Obteniendo ubicación…</span>
-                </div>
-              ) : !zonaManual ? (
-                <div className="space-y-2">
-                  <button type="button" onClick={capturarGPS}
-                    className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-brand-primary bg-brand-primary/5 px-4 py-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary/10 active:scale-[0.99]">
-                    <Navigation className="h-5 w-5" />
-                    {gpsEstado === 'error' ? 'No se pudo obtener el GPS — intentar de nuevo' : 'Usar mi ubicación GPS'}
-                  </button>
-                  <button type="button" onClick={() => setZonaManual(true)}
-                    className="w-full text-center text-xs text-ink-muted hover:text-brand-primary transition underline">
-                    No tengo GPS / prefiero escribir la dirección
-                  </button>
-                </div>
-              ) : null}
-
-              {(zonaManual || gpsEstado === 'ok') && (
-                <AddressAutocomplete
-                  value={form.direccion}
-                  onChange={(v) => campo('direccion', v)}
-                  onSelectCoords={() => {}}
-                  placeholder={t.mpnDireccionPh}
-                />
-              )}
-
-              {zonaManual && gpsEstado !== 'ok' && (
-                <button type="button" onClick={() => { setZonaManual(false); capturarGPS(); }}
-                  className="text-xs text-brand-primary hover:underline">
-                  ← Volver a usar GPS
-                </button>
-              )}
-            </div>
+            <LocationPicker
+              value={form.direccion}
+              onChange={(v) => campo('direccion', v)}
+              lat={form.lat}
+              lng={form.lng}
+              onCoordsChange={(lat, lng) => { campo('lat', lat); campo('lng', lng); }}
+              placeholder={t.mpnDireccionPh}
+            />
             <p className="mt-1 text-xs text-ink-muted">{t.mpnDireccionInfo}</p>
           </div>
         </Section>

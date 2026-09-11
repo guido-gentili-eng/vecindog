@@ -46,6 +46,7 @@ import {
 import { useAuth, type Profile } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import SeccionHistorial from '@/components/SeccionHistorial';
+import ProfileCompletion from '@/components/ProfileCompletion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Translations } from '@/lib/translations';
 
@@ -402,6 +403,59 @@ export default function PerroDetalleScreen() {
   }
   if (!perro)  return <Text style={{ textAlign: 'center', marginTop: 80 }}>{t.perroNoEncontrado}</Text>;
 
+  function renderSeccionEstudio({ tipo, titulo, emoji, aceptaArchivos }: { tipo: TipoEstudio; titulo: string; emoji: string; aceptaArchivos: boolean }) {
+    const items = estudios.filter((e) => e.tipo === tipo);
+    return (
+      <View key={tipo} style={styles.seccion}>
+        <View style={styles.seccionHeader}>
+          <Text style={styles.seccionTitulo}>{emoji}  {titulo}</Text>
+          <TouchableOpacity
+            style={[styles.subirBtn, subiendo === tipo && styles.subirBtnDisabled]}
+            onPress={() => aceptaArchivos ? subirArchivo(tipo) : agregarAirtag()}
+            disabled={subiendo !== null}
+          >
+            {subiendo === tipo
+              ? <ActivityIndicator color={Colors.primary} size="small" />
+              : <Text style={styles.subirBtnText}>{aceptaArchivos ? t.perroSubirBtn : t.genericAgregarBtn}</Text>
+            }
+          </TouchableOpacity>
+        </View>
+
+        {items.length === 0
+          ? <EmptyRow texto={tipo === 'airtag' ? t.perroVacioAirtag : t.perroVacioEstudio} />
+          : items.map((e) => (
+              <View key={e.id} style={styles.item}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.itemNombre} numberOfLines={1}>{e.nombre}</Text>
+                  {e.fecha && <Text style={styles.itemSub}>{fmt(e.fecha)}</Text>}
+                </View>
+                <View style={styles.itemActions}>
+                  {e.archivo_url && (
+                    <TouchableOpacity
+                      style={styles.verBtn}
+                      onPress={() => Linking.openURL(e.archivo_url!)}
+                    >
+                      <Text style={styles.verBtnText}>{t.genericVer}</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity onPress={() => borrarEstudio(e)}>
+                    <Text style={styles.borrarBtn}>🗑</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))
+        }
+        {(tipo === 'radiografia' || tipo === 'ecografia') && (
+          <TurnoWidget
+            turno={turnos.find((t) => t.tipo === tipo) ?? null}
+            onRegistrar={(fecha, nota) => registrarTurno(tipo as TipoTurno, fecha, nota)}
+            onEliminar={borrarTurno}
+          />
+        )}
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.inner}>
 
@@ -426,6 +480,16 @@ export default function PerroDetalleScreen() {
           {perro.chip && <Text style={styles.chip}>💾 Chip: {perro.chip}</Text>}
         </View>
       </View>
+
+      {/* Completado del perfil */}
+      <ProfileCompletion
+        perro={perro}
+        vacunas={vacunas}
+        estudios={estudios}
+        pesos={pesos}
+        contactos={contactos}
+        dataLoaded={!loading}
+      />
 
       {/* Botón Historia Clínica */}
       <TouchableOpacity style={styles.historiaBtn} onPress={compartirHistoria}>
@@ -787,6 +851,9 @@ export default function PerroDetalleScreen() {
         }}
       />
 
+      {/* Estudios: Laboratorio, Radiografías, Ecografías, certificados — mismo orden que la web */}
+      {SECCIONES.filter((s) => s.tipo !== 'airtag').map(renderSeccionEstudio)}
+
       {/* Visitas al veterinario */}
       <SeccionHistorial
         titulo={t.perroSeccionVisitas}
@@ -873,6 +940,32 @@ export default function PerroDetalleScreen() {
       {/* Grooming */}
       <GroomingSection perroId={id} grooming={grooming} locked={!isPro} onGuardado={setGrooming} onEliminado={() => setGrooming(null)} />
 
+      {/* Galería de fotos */}
+      <View style={styles.seccion}>
+        <View style={styles.seccionHeader}>
+          <Text style={styles.seccionTitulo}>{t.perroSeccionGaleria}</Text>
+          {isPro ? (
+            <TouchableOpacity style={styles.subirBtn} onPress={elegirFotoGaleria} disabled={subiendoFoto}>
+              {subiendoFoto ? <ActivityIndicator color={Colors.primary} size="small" /> : <Text style={styles.subirBtnText}>{t.perroGaleriaAgregar}</Text>}
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.subirBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
+              <Text style={styles.subirBtnText}>{t.perroGaleriaPro}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {fotos.length === 0 ? <EmptyRow texto={t.perroVacioGaleria} /> : (
+          <View style={styles.galeriaGrid}>
+            {fotos.map((f) => (
+              <TouchableOpacity key={f.id} style={styles.galeriaItem} onLongPress={() => borrarFotoGaleria(f)}>
+                <Image source={{ uri: f.url }} style={styles.galeriaImg} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+        {fotos.length > 0 && <Text style={styles.galeriaHint}>{t.perroGaleriaHint}</Text>}
+      </View>
+
       {/* Contactos de emergencia — gratis para todos, igual que en la web */}
       <SeccionHistorial
         titulo={t.perroSeccionContactos}
@@ -910,96 +1003,19 @@ export default function PerroDetalleScreen() {
         )}
       />
 
-      {/* Galería de fotos */}
-      <View style={styles.seccion}>
-        <View style={styles.seccionHeader}>
-          <Text style={styles.seccionTitulo}>{t.perroSeccionGaleria}</Text>
-          {isPro ? (
-            <TouchableOpacity style={styles.subirBtn} onPress={elegirFotoGaleria} disabled={subiendoFoto}>
-              {subiendoFoto ? <ActivityIndicator color={Colors.primary} size="small" /> : <Text style={styles.subirBtnText}>{t.perroGaleriaAgregar}</Text>}
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.subirBtn} onPress={() => Linking.openURL('https://www.mivecindog.com.ar/planes')}>
-              <Text style={styles.subirBtnText}>{t.perroGaleriaPro}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        {fotos.length === 0 ? <EmptyRow /> : (
-          <View style={styles.galeriaGrid}>
-            {fotos.map((f) => (
-              <TouchableOpacity key={f.id} style={styles.galeriaItem} onLongPress={() => borrarFotoGaleria(f)}>
-                <Image source={{ uri: f.url }} style={styles.galeriaImg} />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        {fotos.length > 0 && <Text style={styles.galeriaHint}>{t.perroGaleriaHint}</Text>}
-      </View>
-
-      {/* Secciones de estudios */}
-      {SECCIONES.map(({ tipo, titulo, emoji, aceptaArchivos }) => {
-        const items = estudios.filter((e) => e.tipo === tipo);
-        return (
-          <View key={tipo} style={styles.seccion}>
-            <View style={styles.seccionHeader}>
-              <Text style={styles.seccionTitulo}>{emoji}  {titulo}</Text>
-              <TouchableOpacity
-                style={[styles.subirBtn, subiendo === tipo && styles.subirBtnDisabled]}
-                onPress={() => aceptaArchivos ? subirArchivo(tipo) : agregarAirtag()}
-                disabled={subiendo !== null}
-              >
-                {subiendo === tipo
-                  ? <ActivityIndicator color={Colors.primary} size="small" />
-                  : <Text style={styles.subirBtnText}>{aceptaArchivos ? t.perroSubirBtn : t.genericAgregarBtn}</Text>
-                }
-              </TouchableOpacity>
-            </View>
-
-            {items.length === 0
-              ? <EmptyRow />
-              : items.map((e) => (
-                  <View key={e.id} style={styles.item}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.itemNombre} numberOfLines={1}>{e.nombre}</Text>
-                      {e.fecha && <Text style={styles.itemSub}>{fmt(e.fecha)}</Text>}
-                    </View>
-                    <View style={styles.itemActions}>
-                      {e.archivo_url && (
-                        <TouchableOpacity
-                          style={styles.verBtn}
-                          onPress={() => Linking.openURL(e.archivo_url!)}
-                        >
-                          <Text style={styles.verBtnText}>{t.genericVer}</Text>
-                        </TouchableOpacity>
-                      )}
-                      <TouchableOpacity onPress={() => borrarEstudio(e)}>
-                        <Text style={styles.borrarBtn}>🗑</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ))
-            }
-            {(tipo === 'radiografia' || tipo === 'ecografia') && (
-              <TurnoWidget
-                turno={turnos.find((t) => t.tipo === tipo) ?? null}
-                onRegistrar={(fecha, nota) => registrarTurno(tipo as TipoTurno, fecha, nota)}
-                onEliminar={borrarTurno}
-              />
-            )}
-          </View>
-        );
-      })}
+      {/* AirTag — al final, mismo orden que la web */}
+      {renderSeccionEstudio(SECCIONES.find((s) => s.tipo === 'airtag')!)}
 
       <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
 
-function EmptyRow() {
+function EmptyRow({ texto }: { texto?: string } = {}) {
   const { t } = useLanguage();
   return (
     <View style={styles.emptyRow}>
-      <Text style={styles.emptyRowText}>✗  {t.historialVacioDefault}</Text>
+      <Text style={styles.emptyRowText}>✗  {texto ?? t.historialVacioDefault}</Text>
     </View>
   );
 }

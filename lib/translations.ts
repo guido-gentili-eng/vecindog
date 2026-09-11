@@ -370,6 +370,9 @@ export interface Translations {
   historialEditando: string;
   historialPro: string;
   historialVacioDefault: string;
+  perroVacioGaleria: string;
+  perroVacioEstudio: string;
+  perroVacioAirtag: string;
   historialFaltaDatoTitle: string;
   historialCompletaPrefix: string;
   historialCompletaSuffix: string;
@@ -1320,6 +1323,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     historialEditando: 'Editando registro',
     historialPro: '✨ VecindogPro',
     historialVacioDefault: 'Sin datos todavía.',
+    perroVacioGaleria: 'No hay fotos en la galería.',
+    perroVacioEstudio: 'No hay archivos subidos.',
+    perroVacioAirtag: 'No hay AirTag registrado.',
     historialFaltaDatoTitle: 'Falta un dato',
     historialCompletaPrefix: 'Completá "',
     historialCompletaSuffix: '".',
@@ -2249,6 +2255,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     historialEditando: 'Editing record',
     historialPro: '✨ VecindogPro',
     historialVacioDefault: 'No data yet.',
+    perroVacioGaleria: 'No photos in the gallery.',
+    perroVacioEstudio: 'No files uploaded.',
+    perroVacioAirtag: 'No AirTag registered.',
     historialFaltaDatoTitle: 'Missing info',
     historialCompletaPrefix: 'Fill in "',
     historialCompletaSuffix: '".',
@@ -3178,6 +3187,9 @@ export const TRANSLATIONS: Record<'es' | 'en' | 'pt', Translations> = {
     historialEditando: 'Editando registro',
     historialPro: '✨ VecindogPro',
     historialVacioDefault: 'Nenhum dado ainda.',
+    perroVacioGaleria: 'Nenhuma foto na galeria.',
+    perroVacioEstudio: 'Nenhum arquivo enviado.',
+    perroVacioAirtag: 'Nenhum AirTag registrado.',
     historialFaltaDatoTitle: 'Falta um dado',
     historialCompletaPrefix: 'Preencha "',
     historialCompletaSuffix: '".',
